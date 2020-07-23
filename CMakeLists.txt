@@ -9,6 +9,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/AtomRenderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ComputationChain.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/CppProcessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/GUI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceNode.cpp
@@ -28,6 +29,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/CppProcessor.hpp
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/GUI.hpp
     ${TINC_INCLUDE_PATH}/tinc/ImageDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/JsonDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/NetCDFDiskBuffer.hpp
