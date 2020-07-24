@@ -12,18 +12,30 @@
 
 namespace tinc {
 
-template <class DataType> class DiskBuffer : public BufferManager<DataType> {
+class AbstractDiskBuffer {
 public:
-  DiskBuffer(std::string name, std::string fileName = "", std::string path = "",
-             uint16_t size = 2);
-
-  virtual bool updateData(std::string filename = "");
+  std::string id;
 
   // Careful, this is not thread safe. Needs to be called synchronously to any
   // process functions
   std::string getCurrentFileName() { return m_fileName; }
 
+  virtual bool updateData(std::string filename) = 0;
   void exposeToNetwork(al::ParameterServer &p);
+
+protected:
+  std::string m_fileName;
+  std::string m_path;
+  std::shared_ptr<al::ParameterString> m_trigger;
+};
+
+template <class DataType>
+class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
+public:
+  DiskBuffer(std::string name, std::string fileName = "", std::string path = "",
+             uint16_t size = 2);
+
+  bool updateData(std::string filename = "") override;
 
 protected:
   virtual bool parseFile(std::ifstream &file,
@@ -32,18 +44,13 @@ protected:
   // Make this function private as users should not have a way to make the
   // buffer writable. Data writing should be done by writing to the file.
   using BufferManager<DataType>::getWritable;
-
-  std::string m_fileName;
-  std::string m_name;
-  std::string m_path;
-  std::shared_ptr<al::ParameterString> m_trigger;
 };
 
 template <class DataType>
 DiskBuffer<DataType>::DiskBuffer(std::string name, std::string fileName,
                                  std::string path, uint16_t size)
     : BufferManager<DataType>(size) {
-  m_name = name;
+  id = name;
   // TODO there should be a check through a singleton to make sure names are
   // unique
   m_fileName = fileName;
@@ -69,24 +76,6 @@ bool DiskBuffer<DataType>::updateData(std::string filename) {
     std::cerr << "Error code: " << strerror(errno);
     return false;
   }
-}
-
-template <class DataType>
-void DiskBuffer<DataType>::exposeToNetwork(al::ParameterServer &p) {
-  if (m_trigger) {
-    std::cerr << "ERROR: already registered. Aborting." << std::endl;
-    return;
-  }
-  std::string pathPrefix = "/__DiskBuffer/";
-  //    if (m_fileName[0] != '/') {
-  //      pathPrefix += "/";
-  //    }
-  m_trigger = std::make_shared<al::ParameterString>(pathPrefix + m_name);
-  p.registerParameter(*m_trigger);
-  m_trigger->registerChangeCallback(
-      [this](std::string value) { this->updateData(value); });
-  // There will be problems if this object is destroyed before the parameter
-  // server Should this be a concern?
 }
 
 } // namespace tinc

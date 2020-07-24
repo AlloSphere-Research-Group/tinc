@@ -152,4 +152,63 @@ void TincServer::onMessage(al::osc::Message &m) {
     }
     return;
   }
+  if (m.addressPattern().substr(0, sizeof("/diskBuffers") - 1) ==
+      "/diskBuffers") {
+    if (m.typeTags()[0] == 'i') {
+      int port;
+      m >> port;
+      for (auto *db : mDiskBuffers) {
+        al::osc::Packet oscPacket;
+        std::cout << "Sending info on DiskBuffer " << db->id << " to "
+                  << m.senderAddress() << ":" << port << std::endl;
+        oscPacket.beginMessage("/registerProcessor");
+
+        std::string type = "DiskBuffer";
+        // TODO specilizations for specific types. Should use the visitor
+        // pattern
+
+        //              if (strcmp(typeid(*p).name(), typeid().name()) == 0) {
+        //                  type = "DataScript";
+        //              } else if (strcmp(typeid(*p).name(),
+        //              typeid(ComputationChain).name()) ==
+        //                         0) {
+        //                  type = "ComputationChain";
+        //              } else if (strcmp(typeid(*p).name(),
+        //              typeid(CppProcessor).name()) ==
+        //                         0) {
+        //                  type = "CppProcessor";
+        //              }
+
+        oscPacket << type << db->id << "";
+
+        oscPacket.endMessage();
+
+        //              al::osc::Send listenerRequest(port,
+        //              m.senderAddress().c_str());
+        //              listenerRequest.send(oscPacket);
+        //              for (auto config : p->configuration) {
+
+        //                  oscPacket.clear();
+        //                  oscPacket.beginMessage("/processor/configuration");
+        //                  oscPacket << p->id << config.first;
+        //                  switch (config.second.type) {
+        //                  case FLAG_DOUBLE:
+        //                      oscPacket << config.second.flagValueDouble;
+        //                      break;
+        //                  case FLAG_INT:
+        //                      oscPacket << (int)config.second.flagValueInt;
+        //                      break;
+        //                  case FLAG_STRING:
+        //                      oscPacket << config.second.flagValueStr;
+        //                      break;
+        //                  }
+
+        //                  oscPacket.endMessage();
+
+        //                  listenerRequest.send(oscPacket);
+        //              }
+      }
+    }
+    return;
+  }
 }

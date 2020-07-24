@@ -9,6 +9,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/AtomRenderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ComputationChain.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/CppProcessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/GUI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp

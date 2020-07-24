@@ -4,6 +4,7 @@
 #include "al/protocol/al_OSC.hpp"
 #include "al/ui/al_ParameterServer.hpp"
 
+#include "tinc/DiskBuffer.hpp"
 #include "tinc/ParameterSpace.hpp"
 #include "tinc/Processor.hpp"
 
@@ -14,7 +15,7 @@ public:
   TincServer();
 
   void exposeToNetwork(al::ParameterServer &pserver) {
-    pserver.appendCommandHandler(*this);
+    pserver.registerServerHandler(this);
   }
 
   void registerProcessor(Processor &processor) {
@@ -23,6 +24,10 @@ public:
 
   void registerParameterSpace(ParameterSpace &ps) {
     mParameterSpaces.push_back(&ps);
+  }
+
+  void registerDiskBuffer(AbstractDiskBuffer &db) {
+    mDiskBuffers.push_back(&db);
   }
 
   TincServer &operator<<(Processor &p) {
@@ -35,11 +40,17 @@ public:
     return *this;
   }
 
+  TincServer &operator<<(AbstractDiskBuffer &db) {
+    registerDiskBuffer(db);
+    return *this;
+  }
+
   void onMessage(al::osc::Message &m) override;
 
 protected:
   std::vector<Processor *> mProcessors;
   std::vector<ParameterSpace *> mParameterSpaces;
+  std::vector<AbstractDiskBuffer *> mDiskBuffers;
 };
 
 } // namespace tinc
