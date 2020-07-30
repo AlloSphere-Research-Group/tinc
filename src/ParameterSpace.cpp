@@ -385,13 +385,10 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if ((retval = nc_inq_dimlen(parameters_ids[i], dimidsp[0], &lenp))) {
         return false;
       }
-      char totalData[lenp * 80];
-      std::vector<char *> idData;
 
-      idData.resize(lenp);
-      for (int i = 0; i < lenp; i++) {
-        idData[i] = totalData + (i * 80);
-      }
+      // FIXME this looks wrong, what should it do?
+      std::vector<char *> idData;
+      idData.resize(lenp * 80);
       if ((retval =
                nc_get_var_string(parameters_ids[i], varid, idData.data()))) {
         return false;
@@ -401,7 +398,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
           std::make_shared<ParameterSpaceDimension>(parameterName);
       pdim->append(data.data(), data.size());
       pdim->mIds.resize(lenp);
-      for (int i = 0; i < lenp; i++) {
+      for (size_t i = 0; i < lenp; i++) {
         pdim->mIds[i] = idData[i];
       }
 

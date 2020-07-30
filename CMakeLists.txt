@@ -58,29 +58,60 @@ set_target_properties(tinc PROPERTIES
 
 ##### Binary dependencies
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/external/usr)
-message(" ********** ${CMAKE_CURRENT_LIST_DIR}/external/usr")
-FIND_PACKAGE(HDF5 COMPONENTS C HL REQUIRED)
-FIND_LIBRARY(NETCDF_LIBRARY netCDF
-  PATHS
-  ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib
-  )
 
-if(HDF5_FOUND)
+if(WIN32)
+    set(NETCDF4_INSTALL_ROOT "C:/Program Files/netCDF 4.7.4/" CACHE STRING
+        "Path to installation directory of netCDF4.")
+else()
+    set(NETCDF4_INSTALL_ROOT "" CACHE STRING
+        "Path to installation directory of netCDF4.")
+endif()
+
+if (NETCDF4_INSTALL_ROOT)
+
+    set(HDF5_INCLUDE_DIRS "C:/Program Files/netCDF 4.7.4/include")
+
+    set(HDF5_LIBRARIES "C:/Program Files/netCDF 4.7.4/lib/hdf5_cpp.lib"
+        "C:/Program Files/netCDF 4.7.4/lib/libhdf5_hl_cpp.lib"
+        "C:/Program Files/netCDF 4.7.4/lib/libhdf5_tools.lib")
+    set(HDF5_FOUND ON)
+
+    FIND_LIBRARY(NETCDF_LIBRARY netCDF
+      PATHS
+      "${CMAKE_CURRENT_LIST_DIR}/external/usr/lib"
+      /usr/lib
+      "C:/Program Files/netCDF 4.7.4/lib"
+      )
+
+    find_file(NETCDF_HEADER netcdf.h
+      PATHS
+      "${CMAKE_CURRENT_LIST_DIR}/external/usr/include"
+      /usr/lib
+      "C:/Program Files/netCDF 4.7.4/include"
+      )
+
+    get_filename_component(NETCDF_INCLUDE_DIRS ${NETCDF_HEADER} DIRECTORY)
+else()
+    FIND_PACKAGE(HDF5 COMPONENTS C HL REQUIRED)
+    FIND_LIBRARY(NETCDF_LIBRARY netCDF
+      PATHS
+      ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib
+      )
+endif()
+
+if(NETCDF_LIBRARY AND HDF5_FOUND)
+  message("Using NetCDF: ${NETCDF_LIBRARY}")
+  target_compile_definitions(tinc PUBLIC -DTINC_HAS_NETCDF)
+  target_include_directories(tinc PUBLIC "${NETCDF_INCLUDE_DIRS}")
+  target_link_libraries(tinc PUBLIC ${NETCDF_LIBRARY})
+  target_link_directories(tinc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib)
+
   message("Using HDF5 root: ${HDF5_LIBRARIES}")
   target_compile_definitions(tinc PUBLIC -DTINC_HAS_HDF5)
   target_link_libraries(tinc PUBLIC ${HDF5_LIBRARIES})
   target_link_directories(tinc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib)
 else()
-
-endif(HDF5_FOUND)
-
-if(NETCDF_LIBRARY AND HDF5_FOUND)
-  message("Using NetCDF: ${NETCDF_LIBRARY}")
-  target_compile_definitions(tinc PUBLIC -DTINC_HAS_NETCDF)
-  target_link_libraries(tinc PUBLIC ${NETCDF_LIBRARY})
-  target_link_directories(tinc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib)
-else()
-
+    message("NetCDF4 not found. Not using netcdf or HDF5.")
 endif(NETCDF_LIBRARY AND HDF5_FOUND)
 
 ##### In tree build dependencies
