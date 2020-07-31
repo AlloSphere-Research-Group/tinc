@@ -67,7 +67,7 @@ else()
         "Path to installation directory of netCDF4.")
 endif()
 
-if (NETCDF4_INSTALL_ROOT)
+if (NOT NETCDF4_INSTALL_ROOT STREQUAL "")
 
     set(HDF5_INCLUDE_DIRS "C:/Program Files/netCDF 4.7.4/include")
 
@@ -93,7 +93,7 @@ if (NETCDF4_INSTALL_ROOT)
     get_filename_component(NETCDF_INCLUDE_DIRS ${NETCDF_HEADER} DIRECTORY)
 else()
     FIND_PACKAGE(HDF5 COMPONENTS C HL REQUIRED)
-    FIND_LIBRARY(NETCDF_LIBRARY netCDF
+	FIND_LIBRARY(NETCDF_LIBRARY NAMES netCDF netcdf
       PATHS
       ${CMAKE_CURRENT_LIST_DIR}/external/usr/lib
       )
