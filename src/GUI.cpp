@@ -14,14 +14,14 @@ void drawControl(std::shared_ptr<tinc::ParameterSpaceDimension> dim) {
   } else if (dim->size() > 1) {
     if (dim->type == ParameterSpaceDimension::MAPPED) {
       int v = dim->getCurrentIndex();
-      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size())) {
+      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
     } else if (dim->type == ParameterSpaceDimension::INDEX) {
       int v = dim->getCurrentIndex();
-      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size())) {
+      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();

@@ -204,7 +204,7 @@ void ParameterSpaceDimension::stepIncrement() {
     float prevTemp = at(curIndex - 1);
     if (prevTemp > temp) {
       parameter().set(prevTemp);
-    }
+    } /*else if (curIndex = )*/
   }
 }
 
@@ -220,7 +220,7 @@ void ParameterSpaceDimension::stepDecrease() {
     parameter().set(nextTemp);
   } else {
     float prevTemp = temp;
-    while (prevTemp == temp && (int)curIndex > 1) {
+    while (prevTemp == temp && (int)curIndex > 0) {
       prevTemp = at(--curIndex);
     }
     if (prevTemp != temp) {
@@ -345,6 +345,7 @@ void ParameterSpaceDimension::conform() {
       mParameterValue.min(value);
     }
   }
+  mParameterValue.setNoCalls(at(0));
 }
 
 void ParameterSpaceDimension::reserve(size_t totalSize) {
