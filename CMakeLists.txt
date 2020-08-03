@@ -64,7 +64,7 @@ if(WIN32)
         "Path to installation directory of netCDF4.")
 else()
     set(NETCDF4_INSTALL_ROOT "" CACHE STRING
-        "Path to installation directory of netCDF4.")
+        "Path to installation directory of netCDF4. Leave blanc if using build_deps script")
 endif()
 
 if (NOT NETCDF4_INSTALL_ROOT STREQUAL "")
