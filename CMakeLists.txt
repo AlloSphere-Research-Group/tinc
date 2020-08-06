@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.8)
 project(TINC)
 
 option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
+option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
 
 set(TINC_SRC
 
@@ -120,6 +121,11 @@ include(buildDependencies.cmake)
 ##### Examples
 if(TINC_BUILD_EXAMPLES)
   message("Building TINC Examples")
-add_subdirectory(examples)
-add_subdirectory(cookbook)
+  add_subdirectory(examples)
+  add_subdirectory(cookbook)
 endif(TINC_BUILD_EXAMPLES)
+
+if(TINC_BUILD_TESTS)
+  message("Building TINC Tests")
+  add_subdirectory(tests)
+endif(TINC_BUILD_TESTS)
