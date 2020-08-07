@@ -45,20 +45,12 @@ PushDirectory::~PushDirectory() {
 
 // --------------------------------------------------
 
-bool Processor::process(bool forceRecompute,
-                        Processor::Configuration parameterOverride) {
-  Configuration oldConfig;
-  if (parameterOverride.size() == 0) {
-    oldConfig = configuration;
-    configuration = parameterOverride;
+bool Processor::isRunning() {
+  if (mProcessLock.try_lock()) {
+    mProcessLock.unlock();
+    return false;
   }
-
-  bool ret = internalProcessingFunction(forceRecompute);
-
-  if (oldConfig.size() == 0) {
-    configuration = oldConfig;
-  }
-  return ret;
+  return true;
 }
 
 void Processor::setDataDirectory(std::string directory) {

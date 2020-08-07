@@ -54,7 +54,7 @@ struct MyApp : public App {
 
     // Define processing functions
     process1.processingFunction = [&]() {
-      data1 = mainChain.parameterValues["value"].valueDouble + 1.0;
+      data1 = mainChain.configuration["value"].valueDouble + 1.0;
       al_sleep(0.5);
       std::cout << "Done processing 1" << std::endl;
       return true;
@@ -63,7 +63,7 @@ struct MyApp : public App {
 
     process2.processingFunction = [&]() {
       data2 = -1.0;
-      al_sleep(mainChain.parameterValues["value"].valueDouble);
+      al_sleep(mainChain.configuration["value"].valueDouble);
       std::cout << "Done processing 2" << std::endl;
       return true;
     };

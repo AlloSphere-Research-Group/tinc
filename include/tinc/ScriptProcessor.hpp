@@ -39,12 +39,11 @@ public:
   // TODO change constructor to match Processor constructor
   ScriptProcessor(std::string id = "") : Processor(id) {}
 
-  virtual ~ScriptProcessor() { waitForAsyncDone(); }
+  virtual ~ScriptProcessor() {}
 
   // Copy constructor
   ScriptProcessor(ScriptProcessor &p)
-      : mScriptCommand(p.mScriptCommand), mScriptName(p.mScriptName),
-        mMaxAsyncProcesses(p.mMaxAsyncProcesses) {}
+      : mScriptCommand(p.mScriptCommand), mScriptName(p.mScriptName) {}
 
   /**
    * @brief Set the script's main command (e.g. python)
@@ -90,7 +89,7 @@ public:
   /**
    * @brief process
    */
-  bool internalProcessingFunction(bool forceRecompute = false) override;
+  bool process(bool forceRecompute = false) override;
 
   /**
    * @brief Cleans a name up so it can be written to disk
@@ -103,19 +102,19 @@ public:
    */
   static std::string sanitizeName(std::string output_name);
 
-  // TODO remove these async calls
-  bool processAsync(bool noWait = false,
-                    std::function<void(bool)> doneCallback = nullptr);
+  //  // TODO remove these async calls
+  //  bool processAsync(bool noWait = false,
+  //                    std::function<void(bool)> doneCallback = nullptr);
 
-  bool processAsync(std::map<std::string, std::string> options,
-                    bool noWait = false,
-                    std::function<void(bool)> doneCallback = nullptr);
+  //  bool processAsync(std::map<std::string, std::string> options,
+  //                    bool noWait = false,
+  //                    std::function<void(bool)> doneCallback = nullptr);
 
-  bool runningAsync();
+  //  bool runningAsync();
 
-  bool waitForAsyncDone();
+  //  bool waitForAsyncDone();
 
-  void maxAsyncProcesses(int num) { mMaxAsyncProcesses = num; }
+  //  void maxAsyncProcesses(int num) { mMaxAsyncProcesses = num; }
 
 protected:
   std::string writeJsonConfig();
@@ -147,79 +146,11 @@ private:
   std::string metaFilename();
 };
 
-class CacheManager {
-public:
-  void registerProcessor(Processor &processor) {
-    mProcessors.push_back(&processor);
-  }
-
-  void setRunningDirectory(std::string outputDirectory) {
-    for (auto *processor : mProcessors) {
-      processor->setRunningDirectory(outputDirectory);
-    }
-  }
-
-  void setOutputDirectory(std::string outputDirectory) {
-    for (auto *processor : mProcessors) {
-      processor->setOutputDirectory(outputDirectory);
-    }
-  }
-
-  void clearCache() {
-    throw "Mot implemented yet.";
-    // TODO implement clear cache
-  }
-
-private:
-  std::vector<Processor *> mProcessors;
-};
-
-class ParallelProcessor : public ScriptProcessor {
-public:
-  // TODO is this worth finishing?
-
-  void processSpace(const std::vector<std::vector<std::string>> &allVecs,
-                    size_t vecIndex,
-                    std::vector<size_t> indeces = std::vector<size_t>()) {
-    if (vecIndex >= allVecs.size()) {
-      return;
-    }
-    if (indeces.size() == 0) {
-      indeces.resize(allVecs.size(), 0);
-    }
-    std::vector<std::string> currentValues(allVecs.size());
-    auto indecesIt = indeces.begin();
-    auto currentValuesIt = currentValues.begin();
-    for (auto allVecsIt = allVecs.begin(); allVecsIt != allVecs.end();
-         allVecsIt++) {
-      *currentValuesIt = (*allVecsIt)[*indecesIt];
-      indecesIt++;
-      currentValuesIt++;
-    }
-    for (size_t i = 0; i < allVecs[vecIndex].size(); i++) {
-      indeces[vecIndex] = i;
-      auto value = allVecs[vecIndex][i];
-      processSpace(allVecs, vecIndex + 1, indeces);
-    }
-  }
-
-  void start(std::vector<std::vector<std::string>> parameterSpace,
-             std::vector<std::pair<unsigned, unsigned>> parameterRanges) {}
-
-  void waitForEnd() {}
-
-  void stop() {}
-
-private:
-  std::shared_ptr<std::thread> mParallelProcess;
-  std::atomic<bool> mRunning;
-};
-
 } // namespace tinc
 
-#ifdef AL_WINDOWS
-#undef popen
-#undef pclose
-#endif
+//#ifdef AL_WINDOWS
+//#undef popen
+//#undef pclose
+//#endif
 
 #endif // DATASCRIPT_HPP

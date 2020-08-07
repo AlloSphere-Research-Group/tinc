@@ -39,7 +39,7 @@ public:
     return *this;
   }
 
-  bool internalProcessingFunction(bool forceRecompute = false) override;
+  bool process(bool forceRecompute = false) override;
   bool waitUntilDone();
 
   Processor *processor() const;

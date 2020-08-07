@@ -19,14 +19,15 @@ void ComputationChain::addProcessor(Processor &chain) {
   }
 }
 
-bool ComputationChain::internalProcessingFunction(bool forceRecompute) {
+bool ComputationChain::process(bool forceRecompute) {
   if (!enabled) {
     // TODO should callbacks be called if disabled?
     //    callDoneCallbacks(true);
     return true;
   }
 
-  std::unique_lock<std::mutex> lk(mChainLock);
+  std::unique_lock<std::mutex> lk(mProcessLock);
+  std::unique_lock<std::mutex> lk2(mChainLock);
   if (prepareFunction && !prepareFunction()) {
     std::cerr << "ERROR preparing processor: " << id << std::endl;
     return false;

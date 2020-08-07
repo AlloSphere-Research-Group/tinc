@@ -53,7 +53,7 @@ class MyApp : public al::App {
     g.clear(0);
 
     al::imguiBeginFrame();
-    al::ParameterGUI::beginPanel("Parameter Space");
+    al::ParameterGUI::beginPanel("Parameter Space", 0, 0, 640, 150);
     tinc::gui::drawControls(ps);
     al::ParameterGUI::endPanel();
 
@@ -62,6 +62,8 @@ class MyApp : public al::App {
     // Finally, draw the GUI
     al::imguiDraw();
   }
+
+  void onExit() override { al::imguiShutdown(); }
 };
 
 int main() {

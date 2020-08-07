@@ -60,7 +60,7 @@ std::string ScriptProcessor::outputFile(bool fullPath, int index) {
   }
 }
 
-bool ScriptProcessor::internalProcessingFunction(bool forceRecompute) {
+bool ScriptProcessor::process(bool forceRecompute) {
   if (!enabled) {
     return true;
   }
@@ -68,12 +68,12 @@ bool ScriptProcessor::internalProcessingFunction(bool forceRecompute) {
     std::cerr << "ERROR preparing processor: " << id << std::endl;
     return false;
   }
-  std::unique_lock<std::mutex> lk(mProcessingLock);
   if (mScriptName == "" || mScriptCommand == "") {
     std::cout << "ERROR: process() for '" << id
               << "' missing script name or script command." << std::endl;
     return false;
   }
+  std::unique_lock<std::mutex> lk(mProcessingLock);
 
   auto jsonFilename = writeJsonConfig();
   if (jsonFilename.size() == 0) {
@@ -105,102 +105,103 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
   return output_name;
 }
 
-bool ScriptProcessor::processAsync(bool noWait,
-                                   std::function<void(bool)> doneCallback) {
-  std::lock_guard<std::mutex> lk(mProcessingLock);
+// bool ScriptProcessor::processAsync(bool noWait,
+//                                   std::function<void(bool)> doneCallback) {
+//  std::lock_guard<std::mutex> lk(mProcessingLock);
 
-  if (needsRecompute()) {
-    std::string command = makeCommandLine();
-    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
-      mNumAsyncProcesses--;
-      if (noWait) {
-        return false; // Async process not started
-      }
-      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
-      std::cout << "Async waiting 2 " << mNumAsyncProcesses << std::endl;
-      mAsyncDoneTrigger.wait(lk2);
-      std::cout << "Async done waiting 2 " << mNumAsyncProcesses << std::endl;
-    }
-    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
-    mAsyncThreads.emplace_back(std::thread([this, command, doneCallback]() {
-      bool ok = runCommand(command);
+//  if (needsRecompute()) {
+//    std::string command = makeCommandLine();
+//    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
+//      mNumAsyncProcesses--;
+//      if (noWait) {
+//        return false; // Async process not started
+//      }
+//      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
+//      std::cout << "Async waiting 2 " << mNumAsyncProcesses << std::endl;
+//      mAsyncDoneTrigger.wait(lk2);
+//      std::cout << "Async done waiting 2 " << mNumAsyncProcesses << std::endl;
+//    }
+//    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
+//    mAsyncThreads.emplace_back(std::thread([this, command, doneCallback]() {
+//      bool ok = runCommand(command);
 
-      if (doneCallback) {
-        doneCallback(ok);
-      }
-      mNumAsyncProcesses--;
-      mAsyncDoneTrigger.notify_all();
-      //                std::cout << "Async runner done" << mNumAsyncProcesses
-      //                << std::endl;
-    }));
+//      if (doneCallback) {
+//        doneCallback(ok);
+//      }
+//      mNumAsyncProcesses--;
+//      mAsyncDoneTrigger.notify_all();
+//      //                std::cout << "Async runner done" << mNumAsyncProcesses
+//      //                << std::endl;
+//    }));
 
-    PushDirectory p(mRunningDirectory, mVerbose);
-    writeMeta();
-  } else {
-    if (doneCallback) {
-      doneCallback(true);
-    }
-  }
-  return true;
-}
+//    PushDirectory p(mRunningDirectory, mVerbose);
+//    writeMeta();
+//  } else {
+//    if (doneCallback) {
+//      doneCallback(true);
+//    }
+//  }
+//  return true;
+//}
 
-bool ScriptProcessor::processAsync(std::map<std::string, std::string> options,
-                                   bool noWait,
-                                   std::function<void(bool)> doneCallback) {
-  std::unique_lock<std::mutex> lk(mProcessingLock);
+// bool ScriptProcessor::processAsync(std::map<std::string, std::string>
+// options,
+//                                   bool noWait,
+//                                   std::function<void(bool)> doneCallback) {
+//  std::unique_lock<std::mutex> lk(mProcessingLock);
 
-  if (needsRecompute()) {
-    lk.unlock();
-    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
-      mNumAsyncProcesses--;
-      if (noWait) {
-        return false; // Async process not started
-      }
-      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
-      std::cout << "Async waiting " << mNumAsyncProcesses << std::endl;
-      mAsyncDoneTrigger.wait(lk2);
-      std::cout << "Async done waiting " << mNumAsyncProcesses << std::endl;
-    }
-    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
+//  if (needsRecompute()) {
+//    lk.unlock();
+//    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
+//      mNumAsyncProcesses--;
+//      if (noWait) {
+//        return false; // Async process not started
+//      }
+//      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
+//      std::cout << "Async waiting " << mNumAsyncProcesses << std::endl;
+//      mAsyncDoneTrigger.wait(lk2);
+//      std::cout << "Async done waiting " << mNumAsyncProcesses << std::endl;
+//    }
+//    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
 
-    if (mVerbose) {
-      std::cout << "Starting asyc thread" << std::endl;
-    }
-    mAsyncThreads.emplace_back(std::thread([this, doneCallback]() {
-      bool ok = process(true);
+//    if (mVerbose) {
+//      std::cout << "Starting asyc thread" << std::endl;
+//    }
+//    mAsyncThreads.emplace_back(std::thread([this, doneCallback]() {
+//      bool ok = process(true);
 
-      PushDirectory p(mRunningDirectory, mVerbose);
-      writeMeta();
+//      PushDirectory p(mRunningDirectory, mVerbose);
+//      writeMeta();
 
-      if (doneCallback) {
-        doneCallback(ok);
-      }
-      mNumAsyncProcesses--;
-      mAsyncDoneTrigger.notify_all();
-      //                std::cout << "Async runner done" <<
-      //                mNumAsyncProcesses << std::endl;
-    }));
-  } else {
-    doneCallback(true);
-  }
-  return true;
-}
+//      if (doneCallback) {
+//        doneCallback(ok);
+//      }
+//      mNumAsyncProcesses--;
+//      mAsyncDoneTrigger.notify_all();
+//      //                std::cout << "Async runner done" <<
+//      //                mNumAsyncProcesses << std::endl;
+//    }));
+//  } else {
+//    doneCallback(true);
+//  }
+//  return true;
+//}
 
-bool ScriptProcessor::runningAsync() {
-  if (mNumAsyncProcesses > 0) {
-    return true;
-  } else {
-    return false;
-  }
-}
+// bool ScriptProcessor::runningAsync() {
+//  if (mNumAsyncProcesses > 0) {
+//    return true;
+//  } else {
+//    return false;
+//  }
+//}
 
-bool ScriptProcessor::waitForAsyncDone() {
-  bool ok = true;
-  for (auto &t : mAsyncThreads) {
-    t.join();
-  }
-  return ok;
-}
+// bool ScriptProcessor::waitForAsyncDone() {
+//  bool ok = true;
+//  for (auto &t : mAsyncThreads) {
+//    t.join();
+//  }
+//  return ok;
+//}
 
 std::string ScriptProcessor::writeJsonConfig() {
   using json = nlohmann::json;

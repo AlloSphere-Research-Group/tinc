@@ -12,6 +12,9 @@
 using namespace al;
 using namespace tinc;
 
+// This example shows ParameterSpace::sweepAsync() performing
+// a parameter sweep while the GUI remains responsive.
+
 struct MyApp : public App {
 
   ParameterSpace ps;

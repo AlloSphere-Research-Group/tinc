@@ -18,7 +18,7 @@ public:
 
   void addProcessor(Processor &chain);
 
-  bool internalProcessingFunction(bool forceRecompute = false);
+  bool process(bool forceRecompute = false) override;
 
   ComputationChain &operator<<(Processor &processor) {
     addProcessor(processor);
@@ -30,8 +30,8 @@ public:
   registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
     param.registerChangeCallback([&](ParameterType value) {
-      parameterValues[param.getName()] = value;
-      internalProcessingFunction();
+      configuration[param.getName()] = value;
+      process();
     });
     return *this;
   }

@@ -82,9 +82,13 @@ struct VariantValue {
   double valueDouble;
 };
 
-// You must call prepareFunction(), callDoneCallbacks() and test for 'enabled'
-// within the process() function of all child classes. ( Should we wrap this to
-// avoid user error here? )
+/**
+ * @brief The Processor class presents an abstraction to filesystem based
+ * computation
+ *
+ * An instance of Processor can only run a single instance of its process()
+ * function.
+ */
 class Processor {
 public:
   typedef std::map<std::string, VariantValue> Configuration;
@@ -98,12 +102,17 @@ public:
   virtual ~Processor() {}
 
   /**
-   * @brief
+   * @brief override this function to determine how subclasses should process
    *
-   * If configuration is empty, internal configuration is used.
+   * You must call prepareFunction(), callDoneCallbacks() and test for 'enabled'
+   * within the process() function of all child classes.
    */
-  bool process(bool forceRecompute = false,
-               Configuration parameterOverride = {});
+  virtual bool process(bool forceRecompute = false) = 0;
+
+  /**
+   * @brief returns true is the process() function is currently running
+   */
+  bool isRunning();
 
   /**
    * @brief Convenience function to set input and output directory
@@ -196,8 +205,8 @@ public:
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
     param.registerChangeCallback([&](ParameterType value) {
-      parameterValues[param.getName()] = value;
-      internalProcessingFunction();
+      configuration[param.getName()] = value;
+      process();
     });
     return *this;
   }
@@ -209,16 +218,11 @@ public:
 
   /**
    * @brief Current internal configuration key value pairs
+   *
+   * Reflects the most recently completed configuration or the
+   * configuration for the currently running process.
    */
   Configuration configuration;
-  /**
-   * @brief Current parameter values.
-   *
-   * This values are updated internally and this member should be used for query
-   * only.
-   */
-  // TODO make accesible through memebr that protects constness
-  Configuration parameterValues;
 
 protected:
   std::string mRunningDirectory;
@@ -235,14 +239,10 @@ protected:
       cb(result);
     }
   }
-  /**
-   * @brief override this function to determine how subclasses should process
-   */
-  virtual bool internalProcessingFunction(bool forceRecompute = false) = 0;
+  std::mutex mProcessLock;
 
 private:
   std::vector<std::function<void(bool)>> mDoneCallbacks;
-  std::mutex mProcessLock;
 };
 
 } // namespace tinc

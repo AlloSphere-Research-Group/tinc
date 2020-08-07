@@ -21,7 +21,7 @@ ProcessorAsync::~ProcessorAsync() {
   mThread->join();
 }
 
-bool ProcessorAsync::internalProcessingFunction(bool forceRecompute) {
+bool ProcessorAsync::process(bool forceRecompute) {
   {
     std::unique_lock<std::mutex> lk(mLock);
     //    std::cout << "start " << mProcessor->id << std::endl;

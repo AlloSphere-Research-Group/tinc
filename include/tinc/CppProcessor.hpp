@@ -11,7 +11,7 @@ class CppProcessor : public Processor {
 public:
   CppProcessor(std::string id = "");
 
-  bool internalProcessingFunction(bool forceRecompute = true) override;
+  bool process(bool forceRecompute = true) override;
 
   std::function<bool(void)> processingFunction;
 
