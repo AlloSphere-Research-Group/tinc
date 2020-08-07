@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <errno.h>
 
 #include "al/io/al_File.hpp"
 #include "al/ui/al_Parameter.hpp"
@@ -34,12 +35,25 @@ class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
 public:
   DiskBuffer(std::string name, std::string fileName = "", std::string path = "",
              uint16_t size = 2);
-
+  /**
+   * @brief updateData
+   * @param filename
+   * @return
+   *
+   * Whenever overriding this function, you must make sure you call the
+   * update callbacks in mUpdateCallbacks
+   */
   bool updateData(std::string filename = "") override;
+
+  void registerUpdateCallback(std::function<void(bool)> cb) {
+    mUpdateCallbacks.push_back(cb);
+  }
 
 protected:
   virtual bool parseFile(std::ifstream &file,
                          std::shared_ptr<DataType> newData) = 0;
+
+  std::vector<std::function<void(bool)>> mUpdateCallbacks;
 
   // Make this function private as users should not have a way to make the
   // buffer writable. Data writing should be done by writing to the file.
@@ -67,15 +81,18 @@ bool DiskBuffer<DataType>::updateData(std::string filename) {
     m_fileName = filename;
   }
   std::ifstream file(m_path + m_fileName);
+  bool ret = false;
   if (file.good()) {
     auto buffer = getWritable();
-    bool ret = parseFile(file, buffer);
+    ret = parseFile(file, buffer);
     BufferManager<DataType>::doneWriting(buffer);
-    return ret;
   } else {
     std::cerr << "Error code: " << strerror(errno);
-    return false;
   }
+  for (auto cb : mUpdateCallbacks) {
+    cb(ret);
+  }
+  return ret;
 }
 
 } // namespace tinc

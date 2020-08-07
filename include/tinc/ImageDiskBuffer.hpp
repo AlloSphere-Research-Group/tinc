@@ -17,14 +17,17 @@ public:
       m_fileName = filename;
     }
     auto buffer = getWritable();
+    bool ret = false;
     if (buffer->load(m_path + m_fileName)) {
-
       BufferManager<al::Image>::doneWriting(buffer);
-      return true;
+      ret = true;
     } else {
       std::cerr << "Error reading Image: " << m_path + m_fileName << std::endl;
-      return false;
     }
+    for (auto cb : mUpdateCallbacks) {
+      cb(ret);
+    }
+    return ret;
   }
 
 protected:

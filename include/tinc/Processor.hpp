@@ -28,47 +28,47 @@ enum FlagType {
   FLAG_STRING
 };
 
-struct Flag {
+struct VariantValue {
 
-  Flag() {}
-  Flag(std::string value) {
+  VariantValue() {}
+  VariantValue(std::string value) {
     type = FLAG_STRING;
-    flagValueStr = value;
+    valueStr = value;
   }
-  Flag(const char *value) {
+  VariantValue(const char *value) {
     type = FLAG_STRING;
-    flagValueStr = value;
+    valueStr = value;
   }
 
-  Flag(int64_t value) {
+  VariantValue(int64_t value) {
     type = FLAG_INT;
-    flagValueInt = value;
+    valueInt = value;
   }
 
-  Flag(double value) {
+  VariantValue(double value) {
     type = FLAG_DOUBLE;
-    flagValueDouble = value;
+    valueDouble = value;
   }
 
-  //  ~Flag()
+  //  ~VariantValue()
   //  {
   //      delete[] cstring;  // deallocate
   //  }
 
-  //  Flag(const Flag& other) // copy constructor
-  //      : Flag(other.cstring)
+  //  VariantValue(const VariantValue& other) // copy constructor
+  //      : VariantValue(other.cstring)
   //  {}
 
-  //  Flag(Flag&& other) noexcept // move constructor
+  //  VariantValue(VariantValue&& other) noexcept // move constructor
   //      : cstring(std::exchange(other.cstring, nullptr))
   //  {}
 
-  //  Flag& operator=(const Flag& other) // copy assignment
+  //  VariantValue& operator=(const VariantValue& other) // copy assignment
   //  {
-  //      return *this = Flag(other);
+  //      return *this = VariantValue(other);
   //  }
 
-  //  Flag& operator=(Flag&& other) noexcept // move assignment
+  //  VariantValue& operator=(VariantValue&& other) noexcept // move assignment
   //  {
   //      std::swap(cstring, other.cstring);
   //      return *this;
@@ -77,9 +77,9 @@ struct Flag {
   std::string commandFlag; // A prefix to the flag (e.g. -o)
 
   FlagType type;
-  std::string flagValueStr;
-  int64_t flagValueInt;
-  double flagValueDouble;
+  std::string valueStr;
+  int64_t valueInt;
+  double valueDouble;
 };
 
 // You must call prepareFunction(), callDoneCallbacks() and test for 'enabled'
@@ -87,17 +87,26 @@ struct Flag {
 // avoid user error here? )
 class Processor {
 public:
+  typedef std::map<std::string, VariantValue> Configuration;
+
   Processor(std::string id_ = "") : id(id_) {
     if (id_.size() == 0) {
       id = al::demangle(typeid(*this).name()) + "@" +
-           std::to_string((uint64_t)this);
+           std::to_string((uint64_t) this);
     }
   }
   virtual ~Processor() {}
-  virtual bool process(bool forceRecompute = false) = 0;
 
   /**
-   * @brief Convenience function to set input, output and running directory
+   * @brief
+   *
+   * If configuration is empty, internal configuration is used.
+   */
+  bool process(bool forceRecompute = false,
+               Configuration parameterOverride = {});
+
+  /**
+   * @brief Convenience function to set input and output directory
    */
   void setDataDirectory(std::string directory);
 
@@ -107,9 +116,19 @@ public:
   void setOutputDirectory(std::string outputDirectory);
 
   /**
+   * @brief Get the directory for output files
+   */
+  std::string getOutputDirectory() { return mOutputDirectory; }
+
+  /**
    * @brief Set the directory for input files
    */
   void setInputDirectory(std::string inputDirectory);
+
+  /**
+   * @brief Get the directory for input files
+   */
+  std::string getInputDirectory() { return mInputDirectory; }
 
   /**
    * @brief Set the names of output files
@@ -141,6 +160,11 @@ public:
    */
   void setRunningDirectory(std::string directory);
 
+  /**
+   * @brief Get the directory for input files
+   */
+  std::string getRunningDirectory() { return mRunningDirectory; }
+
   std::string inputDirectory() { return mInputDirectory; }
   std::string outputDirectory() { return mOutputDirectory; }
   std::string runningDirectory() { return mRunningDirectory; }
@@ -158,12 +182,13 @@ public:
   bool enabled{true};
 
   /**
-   * @brief Add configuration key value pairs here
-   */
-  std::map<std::string, Flag> configuration;
-
-  /**
    * @brief Set a function to be called before computing to prepare data
+   *
+   * When writing the prepare function you should access values and ids through
+   * Processor::configuration. If you access values directly from dimensions,
+   * you will likely break ParameterSpace::sweep used with this Processor as
+   * sweep() does not change the internal values of the parameter space and its
+   * dimensions.
    */
   std::function<bool(void)> prepareFunction;
 
@@ -171,8 +196,8 @@ public:
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
     param.registerChangeCallback([&](ParameterType value) {
-      configuration[param.getName()] = value;
-      process();
+      parameterValues[param.getName()] = value;
+      internalProcessingFunction();
     });
     return *this;
   }
@@ -181,6 +206,19 @@ public:
   Processor &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
     return registerParameter(newParam);
   }
+
+  /**
+   * @brief Current internal configuration key value pairs
+   */
+  Configuration configuration;
+  /**
+   * @brief Current parameter values.
+   *
+   * This values are updated internally and this member should be used for query
+   * only.
+   */
+  // TODO make accesible through memebr that protects constness
+  Configuration parameterValues;
 
 protected:
   std::string mRunningDirectory;
@@ -197,9 +235,14 @@ protected:
       cb(result);
     }
   }
+  /**
+   * @brief override this function to determine how subclasses should process
+   */
+  virtual bool internalProcessingFunction(bool forceRecompute = false) = 0;
 
 private:
   std::vector<std::function<void(bool)>> mDoneCallbacks;
+  std::mutex mProcessLock;
 };
 
 } // namespace tinc

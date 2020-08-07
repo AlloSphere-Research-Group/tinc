@@ -44,8 +44,12 @@ void drawControl(std::shared_ptr<tinc::ParameterSpaceDimension> dim) {
 }
 
 void drawControls(ParameterSpace &ps) {
-  for (auto dim : ps.dimensions) {
-    drawControl(dim);
+    // This causes a crash because dim point to null. Not sure why...
+  //for (auto dim : ps.dimensions) {
+  //  drawControl(dim);
+  //}
+  for (size_t i = 0; i < ps.dimensions.size(); i++) {
+      drawControl(ps.dimensions[i]);
   }
 }
 

@@ -19,7 +19,7 @@ void ComputationChain::addProcessor(Processor &chain) {
   }
 }
 
-bool ComputationChain::process(bool forceRecompute) {
+bool ComputationChain::internalProcessingFunction(bool forceRecompute) {
   if (!enabled) {
     // TODO should callbacks be called if disabled?
     //    callDoneCallbacks(true);
@@ -39,16 +39,22 @@ bool ComputationChain::process(bool forceRecompute) {
       chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
-      // When running async ignoreFail has no effect
-      ret &= ((ProcessorAsync *)chain)->waitUntilDone();
+      thisRet = ((ProcessorAsync *)chain)->waitUntilDone();
+      if (!chain->ignoreFail) {
+        if (!chain->ignoreFail) {
+          ret &= thisRet;
+        }
+      }
     }
     break;
   case PROCESS_SERIAL:
     for (auto chain : mProcessors) {
       thisRet = chain->process(forceRecompute);
-      ret &= thisRet;
-      if (!thisRet && !chain->ignoreFail) {
-        break;
+      if (!chain->ignoreFail) {
+        ret &= thisRet;
+        if (!thisRet) {
+          break;
+        }
       }
     }
     break;

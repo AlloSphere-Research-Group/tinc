@@ -41,10 +41,20 @@ public:
 
   virtual ~ScriptProcessor() { waitForAsyncDone(); }
 
+  // Copy constructor
+  ScriptProcessor(ScriptProcessor &p)
+      : mScriptCommand(p.mScriptCommand), mScriptName(p.mScriptName),
+        mMaxAsyncProcesses(p.mMaxAsyncProcesses) {}
+
   /**
    * @brief Set the script's main command (e.g. python)
    */
   void setCommand(std::string command) { mScriptCommand = command; }
+
+  /**
+   * @brief Get the script's main command (e.g. python)
+   */
+  std::string getCommand() { return mScriptCommand; }
 
   /**
    * @brief Set name of script to be run
@@ -56,6 +66,11 @@ public:
     std::replace(mScriptName.begin(), mScriptName.end(), '\\', '/');
     mScriptName = scriptName;
   }
+
+  /**
+   * @brief Get name of script to be run
+   */
+  std::string getScriptName() { return mScriptName; }
 
   /**
    * @brief Query current script file name
@@ -75,7 +90,7 @@ public:
   /**
    * @brief process
    */
-  bool process(bool forceRecompute = false) override;
+  bool internalProcessingFunction(bool forceRecompute = false) override;
 
   /**
    * @brief Cleans a name up so it can be written to disk

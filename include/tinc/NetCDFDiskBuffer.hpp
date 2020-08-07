@@ -29,6 +29,9 @@ struct NC_Dimension {
   */
 };
 
+// TODO we should have the option to check if there is already a file on disk
+// and start with that data.
+
 class NetCDFDiskBufferDouble : public DiskBuffer<std::vector<double>> {
 public:
   NetCDFDiskBufferDouble(std::string name, std::string fileName = "",
@@ -45,7 +48,7 @@ public:
     if (filename.size() > 0) {
       m_fileName = filename;
     }
-
+    bool ret = false;
     auto buffer = getWritable();
 
     int ncid, retval;
@@ -54,11 +57,11 @@ public:
     /* Open the file. NC_NOWRITE tells netCDF we want read-only access
      * to the file.*/
     if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) {
-      return false;
+      goto done;
     }
     int varid;
     if ((retval = nc_inq_varid(ncid, "data", &varid))) {
-      return false;
+      goto done;
     }
 
     nc_type xtypep;
@@ -68,18 +71,18 @@ public:
     int *nattsp = nullptr;
     if ((retval = nc_inq_var(ncid, varid, name, &xtypep, &ndimsp, dimidsp,
                              nattsp))) {
-      return false;
+      goto done;
     }
 
     size_t lenp;
     if ((retval = nc_inq_dimlen(ncid, dimidsp[0], &lenp))) {
-      return false;
+      goto done;
     }
     buffer->resize(lenp);
 
     /* Read the data. */
     if ((retval = nc_get_var_double(ncid, varid, buffer->data()))) {
-      return false;
+      goto done;
     }
 
     //    /* Check the data. */
@@ -90,12 +93,16 @@ public:
 
     /* Close the file, freeing all resources. */
     if ((retval = nc_close(ncid))) {
-      return false;
+      goto done;
     }
-#endif
-
+    ret = true;
     BufferManager<std::vector<double>>::doneWriting(buffer);
-    return true;
+#endif
+  done:
+    for (auto cb : mUpdateCallbacks) {
+      cb(ret);
+    }
+    return ret;
   }
 
 protected:

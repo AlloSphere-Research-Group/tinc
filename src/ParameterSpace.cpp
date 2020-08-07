@@ -160,34 +160,50 @@ void ParameterSpace::sweep(Processor &processor,
   }
   bool done = false;
   while (!done && mSweepRunning) {
-    for (auto ps : dimensions) {
-      if (ps->type == ParameterSpaceDimension::INTERNAL) {
-        processor.configuration[ps->getName()] =
-            ps->at(currentIndeces[ps->getName()]);
-      } else if (ps->type == ParameterSpaceDimension::MAPPED) {
-        processor.configuration[ps->getName()] =
-            ps->idAt(currentIndeces[ps->getName()]);
-      } else if (ps->type == ParameterSpaceDimension::INDEX) {
-        assert(currentIndeces[ps->getName()] <
-               std::numeric_limits<int64_t>::max());
-        processor.configuration[ps->getName()] =
-            (int64_t)currentIndeces[ps->getName()];
+    std::map<std::string, size_t> allIndeces = currentIndeces;
+    for (auto dim : dimensions) {
+      if (dim->type == ParameterSpaceDimension::INTERNAL) {
+        if (currentIndeces.find(dim->getName()) != currentIndeces.end()) {
+          processor.configuration[dim->getName()] =
+              dim->at(currentIndeces[dim->getName()]);
+        } else {
+          allIndeces[dim->getName()] = dim->getCurrentIndex();
+        }
+      } else if (dim->type == ParameterSpaceDimension::MAPPED) {
+        if (currentIndeces.find(dim->getName()) != currentIndeces.end()) {
+          processor.configuration[dim->getName()] =
+              dim->idAt(currentIndeces[dim->getName()]);
+        } else {
+          allIndeces[dim->getName()] = dim->getCurrentIndex();
+        }
+      } else if (dim->type == ParameterSpaceDimension::INDEX) {
+        if (currentIndeces.find(dim->getName()) != currentIndeces.end()) {
+          assert(currentIndeces[dim->getName()] <
+                 std::numeric_limits<int64_t>::max());
+          processor.configuration[dim->getName()] =
+              (int64_t)currentIndeces[dim->getName()];
+        } else {
+          allIndeces[dim->getName()] = dim->getCurrentIndex();
+        }
       }
     }
     auto path = al::File::conformPathToOS(rootPath) +
-                generateRelativeRunPath(currentIndeces);
+                generateRelativeRunPath(allIndeces);
     if (path.size() > 0) {
       // TODO allow fine grained options of what directory to set
       processor.setRunningDirectory(path);
     }
     if (!processor.process(recompute) && !processor.ignoreFail) {
       std::cerr << "Processor failed in parameter sweep. Aborting" << std::endl;
+      done = true;
+      mSweepRunning = false;
       return;
+    } else {
+      if (onSweepProcess) {
+        onSweepProcess(currentIndeces, sweepCount / (double)sweepTotal);
+      }
     }
     sweepCount++;
-    if (onSweepProcess) {
-      onSweepProcess(currentIndeces, sweepCount / (double)sweepTotal);
-    }
     done = incrementIndeces(currentIndeces);
   }
   mSweepRunning = false;
@@ -781,8 +797,8 @@ void ParameterSpace::updateParameterSpace(float oldValue,
     std::string subPath;
     bool needsRefresh = false;
 
-    while (oldIt != newPathComponents.end() &&
-           newIt != oldPathComponents.end()) {
+    while (oldIt != oldPathComponents.end() &&
+           newIt != newPathComponents.end()) {
       if (*oldIt != *newIt) {
         subPath += *newIt + AL_FILE_DELIMITER_STR;
         oldSubPath += *oldIt + AL_FILE_DELIMITER_STR;

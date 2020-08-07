@@ -62,6 +62,12 @@ public:
    */
   bool incrementIndeces(std::map<std::string, size_t> &currentIndeces);
 
+  /**
+   * @brief sweep the parameter space across all or specified dimensions
+   * @param processor processor to sweep with parameter space
+   * @param dimensionNames names of dimensions to sweep, all if empty
+   * @param recompute force recompute if true
+   */
   void sweep(Processor &processor, std::vector<std::string> dimensionNames = {},
              bool recompute = false);
 
@@ -142,10 +148,11 @@ public:
         }
         return path;
       };
+  std::function<std::vector<std::string>(std::map<std::string, size_t>)>
+      generateOutpuFileNames;
 
   std::function<void(std::map<std::string, size_t> currentIndeces,
-                     double progress)>
-      onSweepProcess;
+                     double progress)> onSweepProcess;
 
   bool readDimensionsInNetCDFFile(
       std::string filename,

@@ -60,7 +60,7 @@ std::string ScriptProcessor::outputFile(bool fullPath, int index) {
   }
 }
 
-bool ScriptProcessor::process(bool forceRecompute) {
+bool ScriptProcessor::internalProcessingFunction(bool forceRecompute) {
   if (!enabled) {
     return true;
   }
@@ -216,13 +216,13 @@ std::string ScriptProcessor::writeJsonConfig() {
 
   for (auto c : configuration) {
     if (c.second.type == FLAG_STRING) {
-      j[c.first] = c.second.flagValueStr;
+      j[c.first] = c.second.valueStr;
 
     } else if (c.second.type == FLAG_INT) {
-      j[c.first] = c.second.flagValueInt;
+      j[c.first] = c.second.valueInt;
 
     } else if (c.second.type == FLAG_DOUBLE) {
-      j[c.first] = c.second.flagValueDouble;
+      j[c.first] = c.second.valueDouble;
     }
   }
 
@@ -274,16 +274,16 @@ std::string ScriptProcessor::makeCommandLine() {
   for (auto &flag : configuration) {
     switch (flag.second.type) {
     case FLAG_STRING:
-      commandLine += flag.second.commandFlag + flag.second.flagValueStr + " ";
+      commandLine += flag.second.commandFlag + flag.second.valueStr + " ";
 
       break;
     case FLAG_INT:
-      commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.flagValueInt) + " ";
+      commandLine +=
+          flag.second.commandFlag + std::to_string(flag.second.valueInt) + " ";
       break;
     case FLAG_DOUBLE:
       commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.flagValueDouble) + " ";
+                     std::to_string(flag.second.valueDouble) + " ";
 
       break;
     }
@@ -348,13 +348,13 @@ bool ScriptProcessor::writeMeta() {
   for (auto option : configuration) {
     switch (option.second.type) {
     case FLAG_STRING:
-      j[option.first] = option.second.flagValueStr;
+      j[option.first] = option.second.valueStr;
       break;
     case FLAG_INT:
-      j[option.first] = option.second.flagValueInt;
+      j[option.first] = option.second.valueInt;
       break;
     case FLAG_DOUBLE:
-      j[option.first] = option.second.flagValueDouble;
+      j[option.first] = option.second.valueDouble;
       break;
     }
   }
@@ -427,6 +427,9 @@ bool ScriptProcessor::needsRecompute() {
     if (metaData["__input_modified"] != modified(inputFile().c_str())) {
       return true;
     }
+  }
+  if (!al::File::exists(outputFile())) {
+    return true;
   }
 
   return false;

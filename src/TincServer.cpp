@@ -58,13 +58,13 @@ void TincServer::onMessage(al::osc::Message &m) {
           oscPacket << p->id << config.first;
           switch (config.second.type) {
           case FLAG_DOUBLE:
-            oscPacket << config.second.flagValueDouble;
+            oscPacket << config.second.valueDouble;
             break;
           case FLAG_INT:
-            oscPacket << (int)config.second.flagValueInt;
+            oscPacket << (int)config.second.valueInt;
             break;
           case FLAG_STRING:
-            oscPacket << config.second.flagValueStr;
+            oscPacket << config.second.valueStr;
             break;
           }
 
@@ -120,13 +120,13 @@ void TincServer::onMessage(al::osc::Message &m) {
               oscPacket << childProcessor->id << config.first;
               switch (config.second.type) {
               case FLAG_DOUBLE:
-                oscPacket << config.second.flagValueDouble;
+                oscPacket << config.second.valueDouble;
                 break;
               case FLAG_INT:
-                oscPacket << (int)config.second.flagValueInt;
+                oscPacket << (int)config.second.valueInt;
                 break;
               case FLAG_STRING:
-                oscPacket << config.second.flagValueStr;
+                oscPacket << config.second.valueStr;
                 break;
               }
               oscPacket.endMessage();
@@ -193,13 +193,13 @@ void TincServer::onMessage(al::osc::Message &m) {
         //                  oscPacket << p->id << config.first;
         //                  switch (config.second.type) {
         //                  case FLAG_DOUBLE:
-        //                      oscPacket << config.second.flagValueDouble;
+        //                      oscPacket << config.second.valueDouble;
         //                      break;
         //                  case FLAG_INT:
-        //                      oscPacket << (int)config.second.flagValueInt;
+        //                      oscPacket << (int)config.second.valueInt;
         //                      break;
         //                  case FLAG_STRING:
-        //                      oscPacket << config.second.flagValueStr;
+        //                      oscPacket << config.second.valueStr;
         //                      break;
         //                  }
 

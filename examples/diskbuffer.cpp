@@ -46,9 +46,13 @@ public:
     reportText.set(std::string("Set image " + imageName));
   }
 
-  void generateJson() {}
+  void generateJson() {
+    // TODO finish example
+  }
 
-  void generateNc() {}
+  void generateNc() {
+    // TODO finish example
+  }
 
   // Application virtual functions
 

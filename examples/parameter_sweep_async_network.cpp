@@ -63,39 +63,35 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.registerChangeCallback(
-        [&](float /*value*/, ParameterSpaceDimension * /*changedDimension*/) {
-          std::string name =
-              "out_" + ps.getDimension("dim1")->getCurrentId() + " -- " +
-              std::to_string(ps.getDimension("dim2")->getCurrentIndex()) +
-              " -- " +
-              std::to_string(
-                  ps.getDimension("inner_param")->getCurrentValue()) +
-              ".txt";
-          std::ifstream f(ps.currentRunPath() + name);
-          if (f.is_open()) {
-            f.seekg(0, std::ios::end);
-            displayText.reserve(f.tellg());
-            f.seekg(0, std::ios::beg);
+    ps.registerChangeCallback([&](
+        float /*value*/, ParameterSpaceDimension * /*changedDimension*/) {
+      std::string name =
+          "out_" + ps.getDimension("dim1")->getCurrentId() + " -- " +
+          std::to_string(ps.getDimension("dim2")->getCurrentIndex()) + " -- " +
+          std::to_string(ps.getDimension("inner_param")->getCurrentValue()) +
+          ".txt";
+      std::ifstream f(ps.currentRunPath() + name);
+      if (f.is_open()) {
+        f.seekg(0, std::ios::end);
+        displayText.reserve(f.tellg());
+        f.seekg(0, std::ios::beg);
 
-            displayText.assign((std::istreambuf_iterator<char>(f)),
-                               std::istreambuf_iterator<char>());
-          } else {
-            displayText = "Sample not created";
-          }
-          return true;
-        });
+        displayText.assign((std::istreambuf_iterator<char>(f)),
+                           std::istreambuf_iterator<char>());
+      } else {
+        displayText = "Sample not created";
+      }
+      return true;
+    });
   }
 
   void initializeComputation() {
 
     processor.prepareFunction = [&]() {
       std::string name =
-          "out_" + processor.configuration["dim1"].flagValueStr + " -- " +
-          std::to_string(processor.configuration["dim2"].flagValueInt) +
-          " -- " +
-          std::to_string(
-              processor.configuration["inner_param"].flagValueDouble) +
+          "out_" + processor.configuration["dim1"].valueStr + " -- " +
+          std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
+          std::to_string(processor.configuration["inner_param"].valueDouble) +
           ".txt";
       processor.setOutputFileNames({name});
       return true;
@@ -103,9 +99,9 @@ struct MyApp : public App {
 
     // processing function takes longer than one second
     processor.processingFunction = [&]() {
-      std::string text = std::to_string(
-          processor.configuration["dim2"].flagValueInt +
-          processor.configuration["inner_param"].flagValueDouble);
+      std::string text =
+          std::to_string(processor.configuration["dim2"].valueInt +
+                         processor.configuration["inner_param"].valueDouble);
 
       std::ofstream f(processor.runningDirectory() +
                       processor.getOutputFileNames()[0]);
