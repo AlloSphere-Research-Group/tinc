@@ -3,7 +3,6 @@
 #include "al/ui/al_ControlGUI.hpp"
 
 using namespace al;
-using namespace tinc;
 
 // This example shows how to have a Parameter call its callbacks
 // on request rather than synchronously. This is useful when
