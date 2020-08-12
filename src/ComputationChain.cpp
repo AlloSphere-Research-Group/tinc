@@ -37,6 +37,9 @@ bool ComputationChain::process(bool forceRecompute) {
   switch (mType) {
   case PROCESS_ASYNC:
     for (auto chain : mProcessors) {
+      for (auto configEntry : configuration) {
+        chain->configuration[configEntry.first] = configEntry.second;
+      }
       chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
@@ -50,6 +53,9 @@ bool ComputationChain::process(bool forceRecompute) {
     break;
   case PROCESS_SERIAL:
     for (auto chain : mProcessors) {
+      for (auto configEntry : configuration) {
+        chain->configuration[configEntry.first] = configEntry.second;
+      }
       thisRet = chain->process(forceRecompute);
       if (!chain->ignoreFail) {
         ret &= thisRet;
