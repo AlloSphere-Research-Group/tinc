@@ -204,6 +204,7 @@ public:
   template <class ParameterType>
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
+    configuration[param.getName()] = param.get();
     param.registerChangeCallback([&](ParameterType value) {
       configuration[param.getName()] = value;
       process();
@@ -219,8 +220,8 @@ public:
   /**
    * @brief Current internal configuration key value pairs
    *
-   * Reflects the most recently completed configuration or the
-   * configuration for the currently running process.
+   * Reflects the most recently used configuration (whether successful or
+   * failed) or the configuration for the currently running process.
    */
   Configuration configuration;
 

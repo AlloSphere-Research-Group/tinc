@@ -101,14 +101,14 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.registerChangeCallback([&](float value,
-                                  ParameterSpaceDimension *changedDimension) {
+    ps.onValueChange = [&](float value,
+                           ParameterSpaceDimension *changedDimension) {
       processor.setRunningDirectory(ps.currentRunPath());
       processor.process();
       textureFile.set(ps.currentRunPath() + processor.getOutputFileNames()[0]);
 
       return true;
-    });
+    };
 
     // Whenever the texture file changes, we load texture, however, we need to
     // ensure we process this change within the graphics thread, as OpenGL is

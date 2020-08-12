@@ -34,7 +34,8 @@ struct MyApp : public App {
   PresetHandler presetHandler;
 
   PickableBB pickable; // BoundingBox pickable to wrap texture
-  PickableManager pickableManager; // pickableManager to easily handle mouse events 
+  PickableManager
+      pickableManager; // pickableManager to easily handle mouse events
 
   std::string clean_double_to_string(double value) {
     std::string val_as_string = std::to_string(value);
@@ -106,14 +107,14 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.registerChangeCallback([&](float value,
-                                  ParameterSpaceDimension *changedDimension) {
+    ps.onValueChange = [&](float value,
+                           ParameterSpaceDimension *changedDimension) {
       processor.setRunningDirectory(ps.currentRunPath());
       processor.process();
       textureFile.set(ps.currentRunPath() + processor.getOutputFileNames()[0]);
 
       return true;
-    });
+    };
 
     // Whenever the texture file changes, we load texture, however, we need to
     // ensure we process this change within the graphics thread, as OpenGL is
@@ -161,10 +162,9 @@ struct MyApp : public App {
                   << ps.getDimension("eci3")->parameter()
                   << ps.getDimension("eci4")->parameter();
 
-    
     // set pickable bounding box to slightly larger than graph bounds
-    pickable.bb.set(Vec3f(-1,-0.75,0)*1.05, Vec3f(1,0.75,0)*1.05); 
-    pickable.pose.setPos(Vec3f(0,0,-4)); // set pickable initial position
+    pickable.bb.set(Vec3f(-1, -0.75, 0) * 1.05, Vec3f(1, 0.75, 0) * 1.05);
+    pickable.pose.setPos(Vec3f(0, 0, -4)); // set pickable initial position
     pickableManager << pickable; // Register pickable with pickable manager
 
     // Now sweep the parameter space asynchronously to fill cache while user is
@@ -181,7 +181,7 @@ struct MyApp : public App {
 
     g.clear(0);
 
-    pickable.drawBB(g); // draw pickable bounding box
+    pickable.drawBB(g);     // draw pickable bounding box
     pickable.pushMatrix(g); // apply pickable's pose transformations
     g.texture();
     g.quad(graphTex, -1, 0.75, 2, -1.5);

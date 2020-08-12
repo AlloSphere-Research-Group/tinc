@@ -66,8 +66,8 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.registerChangeCallback([&](
-        float /*value*/, ParameterSpaceDimension * /*changedDimension*/) {
+    ps.onValueChange = [&](float /*value*/,
+                           ParameterSpaceDimension * /*changedDimension*/) {
       std::string name =
           "out_" + ps.getDimension("dim1")->getCurrentId() + "_" +
           std::to_string(ps.getDimension("dim2")->getCurrentIndex()) + "_" +
@@ -85,7 +85,7 @@ struct MyApp : public App {
         displayText = "Sample not created";
       }
       return true;
-    });
+    };
   }
 
   void initializeComputation() {

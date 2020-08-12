@@ -75,14 +75,14 @@ public:
                   std::vector<std::string> dimensionNames = {},
                   bool recompute = false);
 
+  void stopSweep();
+
   /**
    * @brief Create necessary filesystem directories to be populated by data
    * @return true if successfully created (or checked existence) of
    * directories.
    */
   bool createDataDirectories();
-
-  void stopSweep();
 
   /**
    * @brief Load parameter space dimensions from disk file
@@ -103,19 +103,21 @@ public:
   bool writeToNetCDF(std::string fileName = "parameter_space.nc");
 
   /**
-   * @brief callback when the value in any particular dimension changes.
-   * @param changeCallback
+   * @brief Read dimensions from parameter space netcdf file
+   * @param filename
+   * @param[out] newDimensions
+   * @return true if read was succesful
    */
-  void registerChangeCallback(
-      std::function<void(float, ParameterSpaceDimension *)> changeCallback);
+  bool readDimensionsInNetCDFFile(
+      std::string filename,
+      std::vector<std::shared_ptr<ParameterSpaceDimension>> &newDimensions);
 
   /**
-   * @brief update current position to value in dimension ps
-   * @param value
-   * @param ps
+   * @brief Filesystem root path for parameter space
+   *
+   * This root path is where the root parameter space should be localted and
+   * should contain all data directories
    */
-  void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
-
   std::string rootPath;
 
   // These should not be modifed by the user (perhaps make private?)
@@ -151,16 +153,38 @@ public:
   std::function<std::vector<std::string>(std::map<std::string, size_t>)>
       generateOutpuFileNames;
 
+  /**
+   * @brief onSweepProcess is called after a sample completes processing as part
+   * of a sweep
+   */
   std::function<void(std::map<std::string, size_t> currentIndeces,
                      double progress)> onSweepProcess;
 
-  bool readDimensionsInNetCDFFile(
-      std::string filename,
-      std::vector<std::shared_ptr<ParameterSpaceDimension>> &newDimensions);
+  /**
+   * @brief callback when the value in any particular dimension changes.
+   *
+   * You should use this callback whenever you need to know the specific
+   * dimension that has changed. For this reason, you should not update
+   * processor configurations from here, as this function will not be called,
+   * except when a particualr dimension has changed
+   */
+  // FIXME we need to account for other parameter types not only float
+  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension)>
+      onValueChange = [](float /*oldValue*/,
+                         ParameterSpaceDimension * /*changedDimension*/) {};
+
+  std::function<void()> updateConfiguration = []() {};
 
 protected:
-  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension)>
-      mChangeCallback = [](float, ParameterSpaceDimension *) {};
+  /**
+ * @brief update current position to value in dimension ps
+ * @param oldValue You should pass the previous value here.
+ * @param ps
+ *
+ * This function checks if new dataset directory needs a reload of
+ * parameter_space.nc and processes the parameter space changes
+ */
+  void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
 
   std::unique_ptr<std::thread> mAsyncProcessingThread;
 

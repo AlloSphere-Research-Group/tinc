@@ -1,5 +1,7 @@
 #include "tinc/ParameterSpaceDimension.hpp"
 
+#include <limits>
+
 using namespace tinc;
 
 float ParameterSpaceDimension::at(size_t x) {
@@ -79,33 +81,62 @@ size_t ParameterSpaceDimension::getFirstIndexForValue(float value,
       i++;
     }
   } else {
-    value = at(getFirstIndexForValue(value));
-    size_t i = mValues.size();
-    for (auto it = mValues.rbegin(); it != mValues.rend(); it++) {
-      if (*it == value) {
-        paramIndex = i;
-        break;
-      } else if (*it < value && (i == 0)) {
-        break;
-      }
-      auto next = it;
-      std::advance(next, 1);
-      if (next != mValues.rend()) {
-        if (*it<value && * next> value) { // space is sorted and descending
+    if (mValues.size() > 0) {
+
+      value = at(getFirstIndexForValue(value));
+      size_t i = mValues.size();
+      for (auto it = mValues.rbegin(); it != mValues.rend(); it++) {
+        if (*it == value) {
           paramIndex = i;
           break;
-        } else if (*it > value &&
-                   *next < value) { // space is sorted and ascending
-          paramIndex = i - 1;
+        } else if (*it < value && (i == 0)) {
           break;
         }
+        auto next = it;
+        std::advance(next, 1);
+        if (next != mValues.rend()) {
+          if (*it<value && * next> value) { // space is sorted and descending
+            paramIndex = i;
+            break;
+          } else if (*it > value &&
+                     *next < value) { // space is sorted and ascending
+            paramIndex = i - 1;
+            break;
+          }
+        }
+        i--;
       }
-      i--;
     }
   }
   if (paramIndex < 0) {
     //          std::cerr << "WARNING: index not found" << std::endl;
     paramIndex = 0;
+  }
+  return paramIndex;
+}
+
+size_t ParameterSpaceDimension::getFirstIndexForId(std::string id,
+                                                   bool reverse) {
+  size_t paramIndex = std::numeric_limits<size_t>::max();
+
+  if (!reverse) {
+    size_t i = 0;
+    for (auto it = mIds.begin(); it != mIds.end(); it++) {
+      if (*it == id) {
+        paramIndex = i;
+        break;
+      }
+      i++;
+    }
+  } else {
+    size_t i = mIds.size() - 1;
+    for (auto it = mIds.rbegin(); it != mIds.rend(); it++) {
+      if (*it == id) {
+        paramIndex = i;
+        break;
+      }
+      i--;
+    }
   }
   return paramIndex;
 }

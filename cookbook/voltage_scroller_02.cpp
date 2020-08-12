@@ -118,18 +118,18 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.registerChangeCallback(
-        [&](float value, ParameterSpaceDimension *changedDimension) {
-          processor.setRunningDirectory(ps.currentRunPath());
-          processor.process();
-          Image img(ps.currentRunPath() + processor.getOutputFileNames()[0]);
-          graphTex.resize(img.width(), img.height());
-          graphTex.submit(img.array().data(), GL_RGBA, GL_UNSIGNED_BYTE);
+    ps.onValueChange = [&](float value,
+                           ParameterSpaceDimension *changedDimension) {
+      processor.setRunningDirectory(ps.currentRunPath());
+      processor.process();
+      Image img(ps.currentRunPath() + processor.getOutputFileNames()[0]);
+      graphTex.resize(img.width(), img.height());
+      graphTex.submit(img.array().data(), GL_RGBA, GL_UNSIGNED_BYTE);
 
-          graphTex.filter(Texture::LINEAR);
+      graphTex.filter(Texture::LINEAR);
 
-          return true;
-        });
+      return true;
+    };
   }
 
   void initializeComputation() {

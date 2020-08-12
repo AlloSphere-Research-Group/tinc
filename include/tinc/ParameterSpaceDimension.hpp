@@ -60,6 +60,16 @@ public:
   // an index that would match the value.
   size_t getFirstIndexForValue(float value, bool reverse = false);
 
+  /**
+   * @brief getFirstIndexForId
+   * @param id
+   * @param reverse
+   * @return
+   *
+   * Returns numeric_limits<size_t>::max() if id is not found.
+   */
+  size_t getFirstIndexForId(std::string id, bool reverse = false);
+
   float at(size_t x);
 
   std::string idAt(size_t x);
