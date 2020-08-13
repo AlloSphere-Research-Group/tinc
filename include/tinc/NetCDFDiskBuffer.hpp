@@ -54,6 +54,7 @@ public:
     int ncid, retval;
 
 #ifdef TINC_HAS_NETCDF
+    int *nattsp = nullptr;
     /* Open the file. NC_NOWRITE tells netCDF we want read-only access
      * to the file.*/
     if ((retval = nc_open(filename.c_str(), NC_NOWRITE, &ncid))) {
@@ -68,7 +69,6 @@ public:
     char name[32];
     int ndimsp;
     int dimidsp[32];
-    int *nattsp = nullptr;
     if ((retval = nc_inq_var(ncid, varid, name, &xtypep, &ndimsp, dimidsp,
                              nattsp))) {
       goto done;
