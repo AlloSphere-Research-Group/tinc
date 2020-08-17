@@ -37,6 +37,7 @@ public:
   ParameterSpaceDimension(std::string name, std::string group = "")
       : mParameterValue(name, group) {}
   std::string getName();
+  std::string getGroup();
 
   // Access to current
   float getCurrentValue();
@@ -122,6 +123,8 @@ public:
 
   Datatype datatype{FLOAT};
   DimensionType type{INTERNAL};
+
+  std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
 private:
   // Data

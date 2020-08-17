@@ -100,9 +100,10 @@ struct MyApp : public App {
 
     // This function provided with a map of parameter name to index into
     // that parameter knows how to find the folder to run a process from
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces) {
+    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
+                                     ParameterSpace *ps) {
       std::string path = "AMX2_spinel_diffusion_0.0_0.0";
-      for (const auto &mapped_param : ps.dimensions) {
+      for (const auto &mapped_param : ps->dimensions) {
         path +=
             mapped_param->idAt(indeces[mapped_param->parameter().getName()]);
       }
@@ -112,17 +113,17 @@ struct MyApp : public App {
     ps.createDataDirectories();
 
     // Register callback after every process call in a parameter sweep
-    ps.onSweepProcess = [&](std::map<std::string, size_t> currentIndeces,
-                            double progress) {
+    ps.onSweepProcess = [&](double progress) {
       std::cout << "Progress: " << progress * 100 << "%" << std::endl;
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.onValueChange = [&](float value,
-                           ParameterSpaceDimension *changedDimension) {
-      processor.setRunningDirectory(ps.currentRunPath());
+    ps.onValueChange = [&](float oldValue,
+                           ParameterSpaceDimension *changedDimension,
+                           ParameterSpace *ps) {
+      processor.setRunningDirectory(ps->currentRunPath());
       processor.process();
-      Image img(ps.currentRunPath() + processor.getOutputFileNames()[0]);
+      Image img(ps->currentRunPath() + processor.getOutputFileNames()[0]);
       graphTex.resize(img.width(), img.height());
       graphTex.submit(img.array().data(), GL_RGBA, GL_UNSIGNED_BYTE);
 

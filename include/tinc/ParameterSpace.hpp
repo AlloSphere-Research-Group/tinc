@@ -131,8 +131,9 @@ public:
   // FIXME this interface is a little uncomfortable and not consistent with
   // the other similar functionality in setOuputFilename(), perhaps an output
   // filename generator function should be provided?
-  std::function<std::string(std::map<std::string, size_t>)>
-      generateRelativeRunPath = [&](std::map<std::string, size_t> indeces) {
+  std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
+      generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
+                                    ParameterSpace *ps) {
         std::string path;
         for (auto dimensionSample : indeces) {
           std::shared_ptr<ParameterSpaceDimension> dimension;
@@ -157,8 +158,7 @@ public:
    * @brief onSweepProcess is called after a sample completes processing as part
    * of a sweep
    */
-  std::function<void(std::map<std::string, size_t> currentIndeces,
-                     double progress)> onSweepProcess;
+  std::function<void(double progress)> onSweepProcess;
 
   /**
    * @brief callback when the value in any particular dimension changes.
@@ -169,11 +169,10 @@ public:
    * except when a particualr dimension has changed
    */
   // FIXME we need to account for other parameter types not only float
-  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension)>
-      onValueChange = [](float /*oldValue*/,
-                         ParameterSpaceDimension * /*changedDimension*/) {};
-
-  std::function<void()> updateConfiguration = []() {};
+  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps)> onValueChange =
+      [](float /*oldValue*/, ParameterSpaceDimension * /*changedDimension*/,
+         ParameterSpace *ps) {};
 
 protected:
   /**
@@ -187,6 +186,7 @@ protected:
   void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
 
   std::unique_ptr<std::thread> mAsyncProcessingThread;
+  std::shared_ptr<ParameterSpace> mAsyncPSCopy;
 
   bool mSweepRunning{false};
 
@@ -194,6 +194,7 @@ protected:
   std::map<std::string, std::string> mSpecialDirs;
 
 private:
+  std::mutex mSpaceLock;
 };
 } // namespace tinc
 

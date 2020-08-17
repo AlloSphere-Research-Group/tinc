@@ -97,9 +97,10 @@ struct MyApp : public App {
 
     // This function provided with a map of parameter name to index into
     // that parameter knows how to find the folder to run a process from
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces) {
+    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
+                                     ParameterSpace *ps) {
       std::string path = "AMX2_spinel_diffusion_0.0_0.0";
-      for (const auto &mapped_param : ps.dimensions) {
+      for (const auto &mapped_param : ps->dimensions) {
         path +=
             mapped_param->idAt(indeces[mapped_param->parameter().getName()]);
       }
@@ -109,10 +110,8 @@ struct MyApp : public App {
     ps.createDataDirectories();
 
     // Register callback after every process call in a parameter sweep
-    ps.onSweepProcess = [&](std::map<std::string, size_t> currentIndeces,
-                            double progress) {
-      std::cout << "Processed: " << ps.generateRelativeRunPath(currentIndeces)
-                << std::endl;
+    ps.onSweepProcess = [&](double progress) {
+      std::cout << "Processed: " << ps.currentRunPath() << std::endl;
       std::cout << "Progress: " << progress * 100 << "%" << std::endl;
     };
   }

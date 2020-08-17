@@ -48,7 +48,8 @@ int main() {
         std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
         std::to_string(processor.configuration["inner_param"].valueDouble);
 
-    std::cout << "Writing: "
+    std::cout << "Writing value: "
+              << processor.configuration["inner_param"].valueDouble << " to: "
               << processor.runningDirectory() +
                      processor.getOutputFileNames()[0]
               << std::endl;

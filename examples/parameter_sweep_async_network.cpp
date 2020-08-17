@@ -50,27 +50,28 @@ struct MyApp : public App {
     ps.registerDimension(dimension2);
     ps.registerDimension(inner_param);
 
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces) {
+    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
+                                     ParameterSpace *ps) {
       return "asyncdata/";
     };
     // Create necessary filesystem directories to be populated by data
     ps.createDataDirectories();
 
     // Register callback after every process call in a parameter sweep
-    ps.onSweepProcess = [&](std::map<std::string, size_t> currentIndeces,
-                            double progress) {
+    ps.onSweepProcess = [&](double progress) {
       std::cout << "Progress: " << progress * 100 << "%" << std::endl;
     };
 
     // Whenever the parameter space point changes, this function is called
     ps.onValueChange = [&](float /*value*/,
-                           ParameterSpaceDimension * /*changedDimension*/) {
+                           ParameterSpaceDimension * /*changedDimension*/,
+                           ParameterSpace *ps) {
       std::string name =
-          "out_" + ps.getDimension("dim1")->getCurrentId() + " -- " +
-          std::to_string(ps.getDimension("dim2")->getCurrentIndex()) + " -- " +
-          std::to_string(ps.getDimension("inner_param")->getCurrentValue()) +
+          "out_" + ps->getDimension("dim1")->getCurrentId() + " -- " +
+          std::to_string(ps->getDimension("dim2")->getCurrentIndex()) + " -- " +
+          std::to_string(ps->getDimension("inner_param")->getCurrentValue()) +
           ".txt";
-      std::ifstream f(ps.currentRunPath() + name);
+      std::ifstream f(ps->currentRunPath() + name);
       if (f.is_open()) {
         f.seekg(0, std::ios::end);
         displayText.reserve(f.tellg());

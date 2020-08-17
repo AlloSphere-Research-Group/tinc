@@ -23,6 +23,7 @@ ParameterSpace::~ParameterSpace() { stopSweep(); }
 std::shared_ptr<ParameterSpaceDimension>
 ParameterSpace::getDimension(std::string name) {
 
+  std::unique_lock<std::mutex> lk(mSpaceLock);
   if (parameterNameMap.find(name) != parameterNameMap.end()) {
     name = parameterNameMap[name];
   }
@@ -36,6 +37,7 @@ ParameterSpace::getDimension(std::string name) {
 
 void ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> dimension) {
+  std::unique_lock<std::mutex> lk(mSpaceLock);
   for (size_t i = 0; i < dimensions.size(); i++) {
     if (dimensions[i]->getName() == dimension->getName()) {
       dimensions[i]->mValues = dimension->values();
@@ -55,8 +57,7 @@ void ParameterSpace::registerDimension(
     dimension->parameter().setNoCalls(value);
 
     this->updateParameterSpace(oldValue, dimension.get());
-    this->updateConfiguration();
-    this->onValueChange(oldValue, dimension.get());
+    this->onValueChange(oldValue, dimension.get(), this);
     dimension->parameter().setNoCalls(oldValue);
     // The internal parameter will get set internally to the new value
     // later on inside the Parameter classes
@@ -76,7 +77,7 @@ std::vector<std::string> ParameterSpace::runningPaths() {
   while (!done) {
     done = true;
     auto path = al::File::conformPathToOS(rootPath) +
-                generateRelativeRunPath(currentIndeces);
+                generateRelativeRunPath(currentIndeces, this);
     if (path.size() > 0) {
       paths.push_back(path);
     }
@@ -87,16 +88,20 @@ std::vector<std::string> ParameterSpace::runningPaths() {
 
 std::string ParameterSpace::currentRunPath() {
   std::map<std::string, size_t> indeces;
-  for (auto ps : dimensions) {
-    if (ps->type == ParameterSpaceDimension::MAPPED ||
-        ps->type == ParameterSpaceDimension::INDEX) {
-      indeces[ps->getName()] = ps->getCurrentIndex();
+  {
+    std::unique_lock<std::mutex> lk(mSpaceLock);
+    for (auto ps : dimensions) {
+      if (ps->type == ParameterSpaceDimension::MAPPED ||
+          ps->type == ParameterSpaceDimension::INDEX) {
+        indeces[ps->getName()] = ps->getCurrentIndex();
+      }
     }
   }
-  return al::File::conformPathToOS(generateRelativeRunPath(indeces));
+  return al::File::conformPathToOS(generateRelativeRunPath(indeces, this));
 }
 
 std::vector<std::string> ParameterSpace::dimensionNames() {
+  std::unique_lock<std::mutex> lk(mSpaceLock);
   std::vector<std::string> dimensionNames;
   for (auto ps : dimensions) {
     dimensionNames.push_back(ps->parameter().getName());
@@ -105,6 +110,7 @@ std::vector<std::string> ParameterSpace::dimensionNames() {
 }
 
 std::vector<std::string> ParameterSpace::dimensionsForFilesystem() {
+  std::unique_lock<std::mutex> lk(mSpaceLock);
   std::vector<std::string> dimensionNames;
   for (auto ps : dimensions) {
     if (ps->type == ParameterSpaceDimension::MAPPED ||
@@ -116,6 +122,7 @@ std::vector<std::string> ParameterSpace::dimensionsForFilesystem() {
 }
 
 void ParameterSpace::clear() {
+  std::unique_lock<std::mutex> lk(mSpaceLock);
   dimensions.clear();
   mSpecialDirs.clear();
 }
@@ -144,11 +151,10 @@ void ParameterSpace::sweep(Processor &processor,
   if (dimensionNames_.size() == 0) {
     dimensionNames_ = dimensionNames();
   }
-  std::map<std::string, size_t> currentIndeces;
   for (auto dimensionName : dimensionNames_) {
-    if (getDimension(dimensionName)) {
-      currentIndeces[dimensionName] = 0;
-      sweepTotal *= getDimension(dimensionName)->size();
+    auto dim = getDimension(dimensionName);
+    if (dim) {
+      sweepTotal *= dim->size();
     } else {
       std::cerr << __FUNCTION__
                 << " ERROR: dimension not found: " << dimensionName
@@ -156,78 +162,63 @@ void ParameterSpace::sweep(Processor &processor,
     }
   }
 
-  // Write configuration to processor
-  for (auto dim : dimensions) {
-    if (dim->type == ParameterSpaceDimension::INTERNAL) {
-      if (currentIndeces.find(dim->getName()) == currentIndeces.end()) {
-        processor.configuration[dim->getName()] = dim->getCurrentValue();
-      }
-    } else if (dim->type == ParameterSpaceDimension::MAPPED) {
-      if (currentIndeces.find(dim->getName()) == currentIndeces.end()) {
-        processor.configuration[dim->getName()] = dim->getCurrentId();
-      }
-    } else if (dim->type == ParameterSpaceDimension::INDEX) {
-      if (currentIndeces.find(dim->getName()) == currentIndeces.end()) {
-        assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-        processor.configuration[dim->getName()] =
-            (int64_t)dim->getCurrentIndex();
-      }
+  std::map<std::string, size_t> previousIndeces;
+  for (auto dimName : dimensionNames_) {
+    auto dim = getDimension(dimName);
+    if (dim) {
+      previousIndeces[dimName] = dim->getCurrentIndex();
     }
   }
 
-  bool done = false;
-  std::map<std::string, size_t> previousIndeces;
-  while (!done && mSweepRunning) {
-    std::map<std::string, size_t> allIndeces = currentIndeces;
-    for (auto dim : dimensions) {
-      if (dim->type == ParameterSpaceDimension::INTERNAL) {
-        if (allIndeces.find(dim->getName()) != allIndeces.end()) {
+  while (mSweepRunning) {
+    {
+      std::unique_lock<std::mutex> lk(mSpaceLock);
+      for (auto dim : dimensions) {
+        if (dim->type == ParameterSpaceDimension::INTERNAL) {
+          processor.configuration[dim->getName()] = dim->getCurrentValue();
+        } else if (dim->type == ParameterSpaceDimension::MAPPED) {
+          processor.configuration[dim->getName()] = dim->getCurrentId();
+        } else if (dim->type == ParameterSpaceDimension::INDEX) {
+          assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
           processor.configuration[dim->getName()] =
-              dim->at(allIndeces[dim->getName()]);
-        } else {
-          allIndeces[dim->getName()] = dim->getIndexForValue(
-              processor.configuration[dim->getName()].valueDouble);
-        }
-      } else if (dim->type == ParameterSpaceDimension::MAPPED) {
-        if (allIndeces.find(dim->getName()) != allIndeces.end()) {
-          processor.configuration[dim->getName()] =
-              dim->idAt(allIndeces[dim->getName()]);
-        } else {
-          allIndeces[dim->getName()] = dim->getFirstIndexForId(
-              processor.configuration[dim->getName()].valueStr);
-        }
-      } else if (dim->type == ParameterSpaceDimension::INDEX) {
-        if (allIndeces.find(dim->getName()) != allIndeces.end()) {
-          assert(allIndeces[dim->getName()] <
-                 std::numeric_limits<int64_t>::max());
-          processor.configuration[dim->getName()] =
-              (int64_t)allIndeces[dim->getName()];
-        } else {
-          allIndeces[dim->getName()] =
-              processor.configuration[dim->getName()].valueInt;
+              (int64_t)dim->getCurrentIndex();
         }
       }
     }
-    this->updateConfiguration();
-    auto path = al::File::conformPathToOS(rootPath) +
-                generateRelativeRunPath(allIndeces);
+
+    auto path = currentRunPath();
     if (path.size() > 0) {
       // TODO allow fine grained options of what directory to set
       processor.setRunningDirectory(path);
     }
+    sweepCount++;
     if (!processor.process(recompute) && !processor.ignoreFail) {
       std::cerr << "Processor failed in parameter sweep. Aborting" << std::endl;
-      done = true;
-      mSweepRunning = false;
-      return;
+      break;
     } else {
       if (onSweepProcess) {
-        onSweepProcess(currentIndeces, sweepCount / (double)sweepTotal);
+        onSweepProcess(sweepCount / (double)sweepTotal);
       }
     }
-    previousIndeces = currentIndeces;
-    sweepCount++;
-    done = incrementIndeces(currentIndeces);
+
+    auto currentDimension = dimensionNames_.begin();
+    while (currentDimension != dimensionNames_.end()) {
+      auto dim = getDimension(*currentDimension);
+      if (dim->getCurrentIndex() == dim->size() - 1) {
+        dim->setCurrentIndex(0);
+      } else {
+        dim->stepIncrement();
+        break;
+      }
+      currentDimension++;
+    }
+    if (currentDimension == dimensionNames_.end()) {
+      break;
+    }
+  }
+  // Put back previous value
+  for (auto previousIndex : previousIndeces) {
+    getDimension(previousIndex.first)->setCurrentIndex(previousIndex.second);
   }
   mSweepRunning = false;
 }
@@ -235,22 +226,24 @@ void ParameterSpace::sweep(Processor &processor,
 void ParameterSpace::sweepAsync(Processor &processor,
                                 std::vector<std::string> dimensions,
                                 bool recompute) {
-#if defined(AL_OSX) || defined(AL_LINUX) || defined(AL_EMSCRIPTEN)
-  pid_t pid;
-  pid = fork();
-  if (pid == -1)
-    std::cerr << "Fork failed. Could not sweep parameter space" << std::endl;
-  if (pid > 0) {
-    // Nothing to do for parent. We don't want to wait for sweep;
-  } else { // Child process
-    this->sweep(processor, dimensions, recompute);
-    exit(0); // Die immediately
+  if (mAsyncProcessingThread || mAsyncPSCopy) {
+    stopSweep();
   }
-#else
-
-  mAsyncProcessingThread = std::make_unique<std::thread>(
-      [=, &processor]() { this->sweep(processor, dimensions, recompute); });
-#endif
+  mAsyncPSCopy = std::make_shared<ParameterSpace>();
+  {
+    std::unique_lock<std::mutex> lk(mSpaceLock);
+    for (auto dim : ParameterSpace::dimensions) {
+      auto dimCopy = dim->deepCopy();
+      mAsyncPSCopy->registerDimension(dimCopy);
+    }
+    mAsyncPSCopy->onSweepProcess = onSweepProcess;
+    mAsyncPSCopy->onValueChange = onValueChange;
+    mAsyncPSCopy->generateRelativeRunPath = generateRelativeRunPath;
+    mAsyncPSCopy->generateOutpuFileNames = generateOutpuFileNames;
+  }
+  mAsyncProcessingThread = std::make_unique<std::thread>([=, &processor]() {
+    mAsyncPSCopy->sweep(processor, dimensions, recompute);
+  });
 }
 
 bool ParameterSpace::createDataDirectories() {
@@ -266,10 +259,14 @@ bool ParameterSpace::createDataDirectories() {
 
 void ParameterSpace::stopSweep() {
   mSweepRunning = false;
+  if (mAsyncPSCopy) {
+    mAsyncPSCopy->stopSweep();
+  }
   if (mAsyncProcessingThread) {
     mAsyncProcessingThread->join();
     mAsyncProcessingThread = nullptr;
   }
+  mAsyncPSCopy = nullptr;
 }
 
 bool readNetCDFValues(int grpid,
@@ -509,7 +506,7 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
   bool done = false;
   std::vector<std::string> innerDimensions;
   while (!done) {
-    auto path = generateRelativeRunPath(currentIndeces);
+    auto path = generateRelativeRunPath(currentIndeces, this);
 
     std::stringstream ss(path);
     std::string item;
@@ -814,7 +811,7 @@ void ParameterSpace::updateParameterSpace(float oldValue,
   }
 
   if (isFileSystemParam) {
-    std::string oldPath = generateRelativeRunPath(indeces);
+    std::string oldPath = generateRelativeRunPath(indeces, this);
     std::stringstream ss(oldPath);
     std::string item;
     std::vector<std::string> oldPathComponents;

@@ -164,6 +164,10 @@ std::string ParameterSpaceDimension::getCurrentId() {
 
 std::string ParameterSpaceDimension::getName() { return parameter().getName(); }
 
+std::string ParameterSpaceDimension::getGroup() {
+  return parameter().getGroup();
+}
+
 std::vector<std::string> ParameterSpaceDimension::getAllCurrentIds() {
   float value = getCurrentValue();
   return getAllIds(value);
@@ -386,6 +390,20 @@ void ParameterSpaceDimension::reserve(size_t totalSize) {
 void ParameterSpaceDimension::addConnectedParameterSpace(
     ParameterSpaceDimension *paramSpace) {
   mConnectedSpaces.push_back(paramSpace);
+}
+
+std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {
+  lock();
+  auto dimCopy =
+      std::make_shared<ParameterSpaceDimension>(getName(), getGroup());
+  dimCopy->datatype = datatype;
+  dimCopy->type = type;
+  dimCopy->mIds = mIds;
+  dimCopy->mValues = mValues;
+  dimCopy->setCurrentIndex(getCurrentIndex());
+
+  unlock();
+  return dimCopy;
 }
 
 class sort_indices {
