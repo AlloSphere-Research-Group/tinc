@@ -5,7 +5,7 @@ using namespace tinc;
 CppProcessor::CppProcessor(std::string id) : Processor(id) {}
 
 bool CppProcessor::process(bool forceRecompute) {
-  PushDirectory(mRunningDirectory, mVerbose);
+  PushDirectory dir(mRunningDirectory, mVerbose);
   if (!enabled) {
     return true;
   }

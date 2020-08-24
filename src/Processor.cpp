@@ -31,6 +31,9 @@ PushDirectory::PushDirectory(std::string directory, bool verbose)
   chdir(directory.c_str());
   if (mVerbose) {
     std::cout << "Pushing directory: " << directory << std::endl;
+    char curDir[4096];
+    getcwd(curDir, sizeof(curDir));
+    std::cout << "now at: " << curDir << std::endl;
   }
 }
 

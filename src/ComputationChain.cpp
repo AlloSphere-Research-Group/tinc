@@ -20,6 +20,7 @@ void ComputationChain::addProcessor(Processor &chain) {
 }
 
 bool ComputationChain::process(bool forceRecompute) {
+  mResults.clear();
   if (!enabled) {
     // TODO should callbacks be called if disabled?
     //    callDoneCallbacks(true);
@@ -40,10 +41,11 @@ bool ComputationChain::process(bool forceRecompute) {
       for (auto configEntry : configuration) {
         chain->configuration[configEntry.first] = configEntry.second;
       }
-      chain->process(forceRecompute);
+      mResults[chain->id] = chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
       thisRet = ((ProcessorAsync *)chain)->waitUntilDone();
+      mResults[chain->id] = thisRet;
       if (!chain->ignoreFail) {
         if (!chain->ignoreFail) {
           ret &= thisRet;
@@ -57,6 +59,7 @@ bool ComputationChain::process(bool forceRecompute) {
         chain->configuration[configEntry.first] = configEntry.second;
       }
       thisRet = chain->process(forceRecompute);
+      mResults[chain->id] = thisRet;
       if (!chain->ignoreFail) {
         ret &= thisRet;
         if (!thisRet) {

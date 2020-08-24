@@ -21,15 +21,16 @@ namespace tinc {
  *
  * This allows mapping continuous parameters to string ids, for example
  * for mapping to directory structures
- *
- * ParameterSpaces can be linked together using addConnectedParameterSpace()
- * to have the final ids be deduced from the combinations of two parameters
+ * A parameter space groups discrete dimensions together that represent the
+ * possible values or states parameters can take. The paramter space class also
+ * holds a "current" value in this parameter space.
  *
  */
 class ParameterSpaceDimension {
   friend class ParameterSpace;
 
 public:
+  // TODO implement more data types (in particular DOUBLE, INT64, STRING)
   typedef enum { FLOAT, UINT8, INT32, UINT32 } Datatype;
 
   typedef enum { INTERNAL, INDEX, MAPPED } DimensionType;
@@ -90,20 +91,16 @@ public:
   // Through this instance.
   al::Parameter &parameter();
 
-  // Move parameter space
-
+  // Move current position in parameter space
   void stepIncrement();
   void stepDecrease();
 
-  //
   size_t size();
   void reserve(size_t totalSize);
 
   void sort();
   void clear();
 
-  // There is no check to see if value is already present. Could cause trouble
-  // if value is there already.
   void push_back(float value, std::string id = "");
 
   void append(float *values, size_t count, std::string idprefix = "");

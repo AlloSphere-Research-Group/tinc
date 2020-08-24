@@ -265,6 +265,10 @@ void ParameterSpaceDimension::stepDecrease() {
 }
 
 void ParameterSpaceDimension::push_back(float value, std::string id) {
+
+  // FIXME There is no check to see if value is already present. Could cause
+  // trouble
+  // if value is there already.
   mValues.emplace_back(value);
 
   if (id.size() > 0) {
@@ -351,12 +355,13 @@ void ParameterSpaceDimension::append(uint8_t *values, size_t count,
                                      std::string idprefix) {
   size_t oldSize = mValues.size();
   mValues.resize(mValues.size() + count);
-  auto valueIt = mValues.begin() + oldSize;
-  auto idIt = mIds.begin() + oldSize;
   bool useIds = false;
   if (mIds.size() > 0 || idprefix.size() > 0) {
     useIds = true;
+    mIds.resize(mIds.size() + count);
   }
+  auto valueIt = mValues.begin() + oldSize;
+  auto idIt = mIds.begin() + oldSize;
   for (size_t i = 0; i < count; i++) {
     if (useIds) {
       *idIt = idprefix + std::to_string(*values);

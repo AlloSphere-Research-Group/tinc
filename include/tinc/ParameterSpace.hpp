@@ -20,6 +20,15 @@ public:
 
   std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);
 
+  /**
+   * @brief create and register a new dimension for this parameter space
+   * @param name dimension name
+   * @return the newly created dimension.
+   */
+  std::shared_ptr<ParameterSpaceDimension>
+  newDimension(std::string name, ParameterSpaceDimension::DimensionType type =
+                                     ParameterSpaceDimension::INTERNAL);
+
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
   /**
@@ -83,6 +92,15 @@ public:
    * directories.
    */
   bool createDataDirectories();
+
+  /**
+   * @brief Prepare data directoires, leaving them empty if they had any
+   * contents
+   * @return
+   *
+   * Use this function with extreme care, as it can be very destructive!!
+   */
+  bool cleanDataDirectories();
 
   /**
    * @brief Load parameter space dimensions from disk file
@@ -166,12 +184,17 @@ public:
    * You should use this callback whenever you need to know the specific
    * dimension that has changed. For this reason, you should not update
    * processor configurations from here, as this function will not be called,
-   * except when a particualr dimension has changed
+   * except when a particular dimension has changed
    */
   // FIXME we need to account for other parameter types not only float
   std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps)> onValueChange =
       [](float /*oldValue*/, ParameterSpaceDimension * /*changedDimension*/,
+         ParameterSpace *ps) {};
+
+  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps)> updateComputationSettings =
+      [](float oldValue, ParameterSpaceDimension *changedDimension,
          ParameterSpace *ps) {};
 
 protected:

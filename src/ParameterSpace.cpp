@@ -35,6 +35,16 @@ ParameterSpace::getDimension(std::string name) {
   return nullptr;
 }
 
+std::shared_ptr<ParameterSpaceDimension>
+ParameterSpace::newDimension(std::string name,
+                             ParameterSpaceDimension::DimensionType type) {
+  auto newDim = std::make_shared<ParameterSpaceDimension>(name);
+
+  newDim->type = type;
+  registerDimension(newDim);
+  return newDim;
+}
+
 void ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> dimension) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
@@ -57,6 +67,7 @@ void ParameterSpace::registerDimension(
     dimension->parameter().setNoCalls(value);
 
     this->updateParameterSpace(oldValue, dimension.get());
+    this->updateComputationSettings(oldValue, dimension.get(), this);
     this->onValueChange(oldValue, dimension.get(), this);
     dimension->parameter().setNoCalls(oldValue);
     // The internal parameter will get set internally to the new value
@@ -167,6 +178,7 @@ void ParameterSpace::sweep(Processor &processor,
     auto dim = getDimension(dimName);
     if (dim) {
       previousIndeces[dimName] = dim->getCurrentIndex();
+      dim->setCurrentIndex(0);
     }
   }
 
@@ -255,6 +267,17 @@ bool ParameterSpace::createDataDirectories() {
     }
   }
   return true;
+}
+
+bool ParameterSpace::cleanDataDirectories() {
+  for (auto path : runningPaths()) {
+    if (al::File::isDirectory(path)) {
+      if (!al::Dir::removeRecursively(path)) {
+        return false;
+      }
+    }
+  }
+  return createDataDirectories();
 }
 
 void ParameterSpace::stopSweep() {

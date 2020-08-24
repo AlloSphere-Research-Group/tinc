@@ -20,6 +20,17 @@ public:
 
   bool process(bool forceRecompute = false) override;
 
+  /**
+   * @brief get map of results of computation by processor name
+   *
+   * This function will block if computation is currently executing and will
+   * return after computation is done.
+   */
+  std::map<std::string, bool> getResults() {
+    std::unique_lock<std::mutex> lk2(mChainLock);
+    return mResults;
+  }
+
   ComputationChain &operator<<(Processor &processor) {
     addProcessor(processor);
     return *this;
@@ -40,10 +51,13 @@ public:
   ComputationChain &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
     return registerParameter(newParam);
   }
-
+  /**
+   * @brief Return list of currently registered processors.
+   */
   std::vector<Processor *> processors() { return mProcessors; }
 
 private:
+  std::map<std::string, bool> mResults;
   std::vector<Processor *> mProcessors;
   std::vector<ProcessorAsync *> mAsyncProcessesInternal;
   // TODO check, this lock might not be needed as Processor already has a mutex
