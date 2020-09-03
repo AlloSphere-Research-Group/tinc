@@ -15,7 +15,20 @@ using namespace tinc;
 
 DataPool::DataPool(ParameterSpace &ps, std::string sliceCacheDir)
     : mParameterSpace(&ps),
-      mSliceCacheDirectory(al::File::conformDirectory(sliceCacheDir)) {}
+      mSliceCacheDirectory(al::File::conformDirectory(sliceCacheDir)) {
+  if (sliceCacheDir.size() == 0) {
+    mSliceCacheDirectory = al::File::currentPath();
+  }
+}
+
+DataPool::DataPool(std::string id, ParameterSpace &ps,
+                   std::string sliceCacheDir)
+    : mId(id), mParameterSpace(&ps),
+      mSliceCacheDirectory(al::File::conformDirectory(sliceCacheDir)) {
+  if (sliceCacheDir.size() == 0) {
+    mSliceCacheDirectory = al::File::currentPath();
+  }
+}
 
 std::string DataPool::createDataSlice(std::string field,
                                       std::string sliceDimension) {

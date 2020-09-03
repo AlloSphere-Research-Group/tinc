@@ -3,6 +3,7 @@
 
 #include "tinc/ParameterSpaceDimension.hpp"
 #include "tinc/Processor.hpp"
+#include "tinc/IdObject.hpp"
 
 #include <functional>
 #include <memory>
@@ -12,10 +13,9 @@
 
 namespace tinc {
 
-class ParameterSpace {
+class ParameterSpace : public IdObject {
 public:
-  ParameterSpace();
-
+  ParameterSpace(std::string id = std::string()) { setId(id); }
   ~ParameterSpace();
 
   std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);

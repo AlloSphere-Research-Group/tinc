@@ -39,10 +39,10 @@ struct MyApp : public App {
   ComputationChain mainChain;
   ComputationChain joinChain{ComputationChain::PROCESS_ASYNC};
   ComputationChain chain1_3;
-  CppProcessor process1;
-  CppProcessor process2;
-  CppProcessor process3;
-  CppProcessor process4;
+  CppProcessor process1{"1"};
+  CppProcessor process2{"2"};
+  CppProcessor process3{"3"};
+  CppProcessor process4{"4"};
 
   Parameter value{"value", "", 0.0, "", 0.0, 1.0};
   ControlGUI gui;
@@ -59,7 +59,6 @@ struct MyApp : public App {
       std::cout << "Done processing 1" << std::endl;
       return true;
     };
-    process1.id = "1";
 
     process2.processingFunction = [&]() {
       data2 = -1.0;
@@ -67,7 +66,6 @@ struct MyApp : public App {
       std::cout << "Done processing 2" << std::endl;
       return true;
     };
-    process2.id = "2";
 
     process3.processingFunction = [&]() {
       data1 += 1.0;
@@ -75,7 +73,6 @@ struct MyApp : public App {
       std::cout << "Done processing 3" << std::endl;
       return true;
     };
-    process3.id = "3";
 
     process4.processingFunction = [&]() {
       data1 = data1 + data2;
@@ -83,7 +80,6 @@ struct MyApp : public App {
       std::cout << "Done processing 4" << std::endl;
       return true;
     };
-    process4.id = "4";
 
     // Organize processing chains
     chain1_3 << process1 << process3;

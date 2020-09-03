@@ -42,7 +42,7 @@ std::string ScriptProcessor::inputFile(bool fullPath, int index) {
   }
 
   if (fullPath) {
-    return runningDirectory() + inputName;
+    return getRunningDirectory() + inputName;
   } else {
     return inputName;
   }
@@ -54,7 +54,7 @@ std::string ScriptProcessor::outputFile(bool fullPath, int index) {
     outputName = mOutputFileNames[index];
   }
   if (fullPath) {
-    return outputDirectory() + outputName;
+    return getOutputDirectory() + outputName;
   } else {
     return outputName;
   }
@@ -65,11 +65,11 @@ bool ScriptProcessor::process(bool forceRecompute) {
     return true;
   }
   if (prepareFunction && !prepareFunction()) {
-    std::cerr << "ERROR preparing processor: " << id << std::endl;
+    std::cerr << "ERROR preparing processor: " << getId() << std::endl;
     return false;
   }
   if (mScriptName == "" || mScriptCommand == "") {
-    std::cout << "ERROR: process() for '" << id
+    std::cout << "ERROR: process() for '" << getId()
               << "' missing script name or script command." << std::endl;
     return false;
   }
@@ -208,9 +208,9 @@ std::string ScriptProcessor::writeJsonConfig() {
   json j;
 
   j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
-  j["__output_dir"] = outputDirectory();
+  j["__output_dir"] = getOutputDirectory();
   j["__output_name"] = outputFile(false);
-  j["__input_dir"] = inputDirectory();
+  j["__input_dir"] = getInputDirectory();
   j["__input_name"] = inputFile(false);
 
   parametersToConfig(j);
@@ -219,7 +219,7 @@ std::string ScriptProcessor::writeJsonConfig() {
     if (c.second.type == FLAG_STRING) {
       j[c.first] = c.second.valueStr;
 
-    } else if (c.second.type == FLAG_INT) {
+    } else if (c.second.type == FLAG_INT64) {
       j[c.first] = c.second.valueInt;
 
     } else if (c.second.type == FLAG_DOUBLE) {
@@ -278,7 +278,7 @@ std::string ScriptProcessor::makeCommandLine() {
       commandLine += flag.second.commandFlag + flag.second.valueStr + " ";
 
       break;
-    case FLAG_INT:
+    case FLAG_INT64:
       commandLine +=
           flag.second.commandFlag + std::to_string(flag.second.valueInt) + " ";
       break;
@@ -336,11 +336,11 @@ bool ScriptProcessor::writeMeta() {
   j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
   j["__script"] = scriptFile(false);
   j["__script_modified"] = modified(scriptFile().c_str());
-  j["__running_directory"] = runningDirectory();
+  j["__running_directory"] = getRunningDirectory();
   // TODO add support for multiple input and output files.
-  j["__output_dir"] = outputDirectory();
+  j["__output_dir"] = getOutputDirectory();
   j["__output_name"] = outputFile(false);
-  j["__input_dir"] = inputDirectory();
+  j["__input_dir"] = getInputDirectory();
   j["__input_modified"] = modified(inputFile().c_str());
   j["__input_name"] = inputFile(false);
 
@@ -351,7 +351,7 @@ bool ScriptProcessor::writeMeta() {
     case FLAG_STRING:
       j[option.first] = option.second.valueStr;
       break;
-    case FLAG_INT:
+    case FLAG_INT64:
       j[option.first] = option.second.valueInt;
       break;
     case FLAG_DOUBLE:
@@ -437,7 +437,7 @@ bool ScriptProcessor::needsRecompute() {
 }
 
 std::string ScriptProcessor::metaFilename() {
-  std::string outPath = outputDirectory();
+  std::string outPath = getOutputDirectory();
   std::string outName = outputFile(false);
   std::string metafilename =
       al::File::conformPathToOS(outPath) + outName + ".meta";

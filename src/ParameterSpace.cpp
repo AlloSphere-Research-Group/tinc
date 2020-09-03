@@ -16,8 +16,6 @@
 
 using namespace tinc;
 
-ParameterSpace::ParameterSpace() {}
-
 ParameterSpace::~ParameterSpace() { stopSweep(); }
 
 std::shared_ptr<ParameterSpaceDimension>

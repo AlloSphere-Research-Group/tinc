@@ -14,6 +14,9 @@ NETCDF4_INSTALL_ROOT cmake variable using ccmake or on the command line
 with:
 
     -DNETCDF4_INSTALL_ROOT="C:/Program Files/netCDF 4.7.4/"
+    
+If you use a binary installation, make sure you download a netCDF version that includes *hdf5 AND DAP* support.
 
 Or you can use the *./build_deps.sh script on *nix platforms.
+
 

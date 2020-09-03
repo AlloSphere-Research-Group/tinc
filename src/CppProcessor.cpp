@@ -10,7 +10,7 @@ bool CppProcessor::process(bool forceRecompute) {
     return true;
   }
   if (prepareFunction && !prepareFunction()) {
-    std::cerr << "ERROR preparing processor: " << id << std::endl;
+    std::cerr << "ERROR preparing processor: " << mId << std::endl;
     return false;
   }
   bool ret = processingFunction();

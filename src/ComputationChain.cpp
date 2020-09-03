@@ -30,7 +30,7 @@ bool ComputationChain::process(bool forceRecompute) {
   std::unique_lock<std::mutex> lk(mProcessLock);
   std::unique_lock<std::mutex> lk2(mChainLock);
   if (prepareFunction && !prepareFunction()) {
-    std::cerr << "ERROR preparing processor: " << id << std::endl;
+    std::cerr << "ERROR preparing processor: " << mId << std::endl;
     return false;
   }
   bool ret = true;
@@ -41,11 +41,11 @@ bool ComputationChain::process(bool forceRecompute) {
       for (auto configEntry : configuration) {
         chain->configuration[configEntry.first] = configEntry.second;
       }
-      mResults[chain->id] = chain->process(forceRecompute);
+      mResults[chain->getId()] = chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
       thisRet = ((ProcessorAsync *)chain)->waitUntilDone();
-      mResults[chain->id] = thisRet;
+      mResults[chain->getId()] = thisRet;
       if (!chain->ignoreFail) {
         if (!chain->ignoreFail) {
           ret &= thisRet;
@@ -59,7 +59,7 @@ bool ComputationChain::process(bool forceRecompute) {
         chain->configuration[configEntry.first] = configEntry.second;
       }
       thisRet = chain->process(forceRecompute);
-      mResults[chain->id] = thisRet;
+      mResults[chain->getId()] = thisRet;
       if (!chain->ignoreFail) {
         ret &= thisRet;
         if (!thisRet) {

@@ -1,6 +1,8 @@
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
+#include "tinc/IdObject.hpp"
+
 #include "al/scene/al_PolySynth.hpp"
 
 #include <string>
@@ -23,7 +25,7 @@ private:
 };
 
 enum FlagType {
-  FLAG_INT = 0,
+  FLAG_INT64 = 0,
   FLAG_DOUBLE, // The script to be run
   FLAG_STRING
 };
@@ -41,7 +43,7 @@ struct VariantValue {
   }
 
   VariantValue(int64_t value) {
-    type = FLAG_INT;
+    type = FLAG_INT64;
     valueInt = value;
   }
 
@@ -89,16 +91,11 @@ struct VariantValue {
  * An instance of Processor can only run a single instance of its process()
  * function.
  */
-class Processor {
+class Processor : public IdObject {
 public:
   typedef std::map<std::string, VariantValue> Configuration;
 
-  Processor(std::string id_ = "") : id(id_) {
-    if (id_.size() == 0) {
-      id = al::demangle(typeid(*this).name()) + "@" +
-           std::to_string((uint64_t) this);
-    }
-  }
+  Processor(std::string id_ = "") { setId(id_); }
   virtual ~Processor() {}
 
   /**
@@ -173,10 +170,6 @@ public:
    * @brief Get the directory for input files
    */
   std::string getRunningDirectory() { return mRunningDirectory; }
-
-  std::string inputDirectory() { return mInputDirectory; }
-  std::string outputDirectory() { return mOutputDirectory; }
-  std::string runningDirectory() { return mRunningDirectory; }
 
   void registerDoneCallback(std::function<void(bool)> func) {
     mDoneCallbacks.push_back(func);

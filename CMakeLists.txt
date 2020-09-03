@@ -13,6 +13,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/GUI.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceNode.cpp
@@ -34,6 +35,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/GUI.hpp
+    ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
     ${TINC_INCLUDE_PATH}/tinc/ImageDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/JsonDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/NetCDFDiskBuffer.hpp

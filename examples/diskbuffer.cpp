@@ -67,7 +67,7 @@ public:
     newNc.registerChangeCallback([&](bool value) { generateNc(); });
 
     // Connect TINC server to network
-    tincServer.exposeToNetwork(parameterServer());
+    tincServer.registerParameterServer(parameterServer());
     // Expose buffers on TINC server
     tincServer << imageBuffer << jsonBuffer << netcdfBuffer;
   }

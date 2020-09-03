@@ -50,10 +50,10 @@ int main() {
 
     std::cout << "Writing value: "
               << processor.configuration["inner_param"].valueDouble << " to: "
-              << processor.runningDirectory() +
+              << processor.getRunningDirectory() +
                      processor.getOutputFileNames()[0]
               << std::endl;
-    std::ofstream f(processor.runningDirectory() +
+    std::ofstream f(processor.getRunningDirectory() +
                         processor.getOutputFileNames()[0],
                     std::ofstream::app);
     f << text << std::endl;

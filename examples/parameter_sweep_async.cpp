@@ -108,12 +108,12 @@ struct MyApp : public App {
           std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
           std::to_string(processor.configuration["inner_param"].valueDouble);
 
-      std::ofstream f(processor.outputDirectory() +
+      std::ofstream f(processor.getOutputDirectory() +
                       processor.getOutputFileNames()[0]);
       f << text << std::endl;
       f.close();
       std::cout << "Wrote "
-                << processor.outputDirectory() +
+                << processor.getOutputDirectory() +
                        processor.getOutputFileNames()[0]
                 << std::endl;
       al_sleep(0.5);

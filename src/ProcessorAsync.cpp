@@ -12,7 +12,7 @@ ProcessorAsync::ProcessorAsync(std::string id) : Processor(id) {
 }
 
 ProcessorAsync::ProcessorAsync(Processor *processor)
-    : Processor(processor->id), mProcessor(processor) {
+    : Processor(processor->getId()), mProcessor(processor) {
   startThread();
 }
 

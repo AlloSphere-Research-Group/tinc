@@ -104,7 +104,7 @@ struct MyApp : public App {
           std::to_string(processor.configuration["dim2"].valueInt +
                          processor.configuration["inner_param"].valueDouble);
 
-      std::ofstream f(processor.runningDirectory() +
+      std::ofstream f(processor.getRunningDirectory() +
                       processor.getOutputFileNames()[0]);
       f << text << std::endl;
       f.close();

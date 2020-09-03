@@ -40,6 +40,7 @@ public:
   ComputationChain &
   registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
+    configuration[param.getName()] = param.get();
     param.registerChangeCallback([&](ParameterType value) {
       configuration[param.getName()] = value;
       process();
