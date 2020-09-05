@@ -47,11 +47,16 @@ public:
   };
 
   enum {
-    PARAMETER = 0x01,
-    PARAMETER_STRING = 0x02,
-    PARAMETER_INT = 0x03,
-    PARAMETER_VEC3 = 0x04,
-    PARAMETER_COLOR = 0x05
+    PARAMETER_FLOAT = 0x01,
+    PARAMETER_BOOL = 0x02,
+    PARAMETER_STRING = 0x03,
+    PARAMETER_INT32 = 0x04,
+    PARAMETER_VEC3F = 0x05,
+    PARAMETER_VEC4F = 0x06,
+    PARAMETER_COLORF = 0x07,
+    PARAMETER_POSED = 0x08,
+    PARAMETER_CHOICE = 0x09,
+    PARAMETER_TRIGGER = 0x10
   };
 
   enum { DATA_DOUBLE = 0x01, DATA_INT64 = 0x02, DATA_STRING = 0x03 };
@@ -66,55 +71,44 @@ public:
   // Data pool commands
   enum { CREATE_DATA_SLICE = 0x01 };
 
+  // Parameter configure commands
+  enum {
+    CONFIGURE_PARAMETER_VALUE = 0x01,
+    CONFIGURE_PARAMETER_MIN = 0x02,
+    CONFIGURE_PARAMETER_MAX = 0x03
+  };
+
   static_assert(REQUEST_PARAMETERS >= COMMAND_LAST_INTERNAL, "Command overlap");
 
   TincServer();
 
-  void registerParameterServer(al::ParameterServer &pserver) {
-    mParameterServers.push_back(&pserver);
-  }
+  void registerParameterServer(al::ParameterServer &pserver);
 
-  void registerProcessor(Processor &processor) {
-    mProcessors.push_back(&processor);
-  }
+  void registerProcessor(Processor &processor);
 
-  void registerParameterSpace(ParameterSpace &ps) {
-    mParameterSpaces.push_back(&ps);
-  }
+  void registerParameterSpace(ParameterSpace &ps);
 
-  void registerDiskBuffer(AbstractDiskBuffer &db) {
-    mDiskBuffers.push_back(&db);
-  }
+  void registerParameterSpaceDimension(ParameterSpaceDimension &psd);
 
-  void registerDataPool(DataPool &dp) { mDataPools.push_back(&dp); }
+  void registerDiskBuffer(AbstractDiskBuffer &db);
 
-  TincServer &operator<<(Processor &p) {
-    registerProcessor(p);
-    return *this;
-  }
+  void registerDataPool(DataPool &dp);
 
-  TincServer &operator<<(ParameterSpace &p) {
-    registerParameterSpace(p);
-    return *this;
-  }
+  TincServer &operator<<(Processor &p);
 
-  TincServer &operator<<(AbstractDiskBuffer &db) {
-    registerDiskBuffer(db);
-    return *this;
-  }
+  TincServer &operator<<(ParameterSpace &p);
 
-  TincServer &operator<<(DataPool &db) {
-    registerDataPool(db);
-    return *this;
-  }
+  TincServer &operator<<(AbstractDiskBuffer &db);
 
-  bool processIncomingMessage(uint8_t *message, size_t length,
-                              al::Socket *src) override;
+  TincServer &operator<<(DataPool &db);
+
+  bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
 protected:
   std::vector<Processor *> mProcessors;
   std::vector<al::ParameterServer *> mParameterServers;
   std::vector<ParameterSpace *> mParameterSpaces;
+  std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
   std::vector<AbstractDiskBuffer *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
@@ -126,8 +120,14 @@ private:
   void sendConfigureProcessorMessage(Processor *p);
   void sendRegisterDataPoolMessage(DataPool *p);
   void sendRegisterParameterSpaceMessage(ParameterSpace *p);
+  void sendRegisterParameterSpaceDimensionMessage(ParameterSpaceDimension *p);
 
-  bool processObjectCommand(uint8_t *message, size_t length, al::Socket *src);
+  bool processObjectCommand(al::Message &message, al::Socket *src);
+  bool processConfigureParameter(al::Message &message, al::Socket *src);
+  bool processConfigureParameterSpace(al::Message &message, al::Socket *src);
+  bool processConfigureProcessor(al::Message &message, al::Socket *src);
+  bool processConfigureDataPool(al::Message &message, al::Socket *src);
+  bool processConfigureDiskBuffer(al::Message &message, al::Socket *src);
 };
 
 } // namespace tinc

@@ -10,19 +10,18 @@
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/BufferManager.hpp"
+#include "tinc/IdObject.hpp"
 
 namespace tinc {
 
-class AbstractDiskBuffer {
+class AbstractDiskBuffer : public IdObject {
 public:
-  std::string id;
-
   // Careful, this is not thread safe. Needs to be called synchronously to any
   // process functions
   std::string getCurrentFileName() { return m_fileName; }
 
   virtual bool updateData(std::string filename) = 0;
-  void exposeToNetwork(al::ParameterServer &p);
+  //  void exposeToNetwork(al::ParameterServer &p);
 
 protected:
   std::string m_fileName;
@@ -33,8 +32,8 @@ protected:
 template <class DataType>
 class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
 public:
-  DiskBuffer(std::string name, std::string fileName = "", std::string path = "",
-             uint16_t size = 2);
+  DiskBuffer(std::string id = "", std::string fileName = "",
+             std::string path = "", uint16_t size = 2);
   /**
    * @brief updateData
    * @param filename
@@ -61,10 +60,10 @@ protected:
 };
 
 template <class DataType>
-DiskBuffer<DataType>::DiskBuffer(std::string name, std::string fileName,
+DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
                                  std::string path, uint16_t size)
     : BufferManager<DataType>(size) {
-  id = name;
+  mId = id;
   // TODO there should be a check through a singleton to make sure names are
   // unique
   m_fileName = fileName;

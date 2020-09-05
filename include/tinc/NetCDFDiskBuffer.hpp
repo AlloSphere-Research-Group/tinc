@@ -34,9 +34,9 @@ struct NC_Dimension {
 
 class NetCDFDiskBufferDouble : public DiskBuffer<std::vector<double>> {
 public:
-  NetCDFDiskBufferDouble(std::string name, std::string fileName = "",
+  NetCDFDiskBufferDouble(std::string id, std::string fileName = "",
                          std::string path = "", uint16_t size = 2)
-      : DiskBuffer<std::vector<double>>(name, fileName, path, size) {
+      : DiskBuffer<std::vector<double>>(id, fileName, path, size) {
 #ifndef TINC_HAS_NETCDF
     std::cerr << "ERROR: NetCDFDiskBufferDouble built wihtout NetCDF support"
               << std::endl;

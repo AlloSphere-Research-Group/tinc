@@ -1,12 +1,14 @@
 #include "al/app/al_DistributedApp.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
+#include "tinc/TincServer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
 
 using namespace al;
 using namespace tinc;
 
 struct TincApp : DistributedApp {
+  TincServer tserv;
 
   Parameter range{"range", "", 0.5, "", 0.0, 1.0};
   JsonDiskBuffer dataBuffer{"random_data", "rand_output.json"};
@@ -18,10 +20,12 @@ struct TincApp : DistributedApp {
 
   void onInit() override {
     // Expose to network to allow receiving messages to load disk data
-    dataBuffer.exposeToNetwork(parameterServer());
+    tserv << dataBuffer;
 
+    tserv.start();
+
+    // FIXME expose this parameter through the TINC server instead
     parameterServer() << range;
-    //    parameterServer().verbose();
   }
 
   void onCreate() override {
@@ -58,7 +62,10 @@ struct TincApp : DistributedApp {
     gui.draw(g);
   }
 
-  void onExit() override { gui.cleanup(); }
+  void onExit() override {
+    gui.cleanup();
+    tserv.stop();
+  }
 };
 
 int main() {

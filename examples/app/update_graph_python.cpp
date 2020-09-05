@@ -3,6 +3,7 @@
 #include "al/ui/al_ControlGUI.hpp"
 
 #include "tinc/ImageDiskBuffer.hpp"
+#include "tinc/TincServer.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -10,16 +11,19 @@ using namespace tinc;
 struct TincApp : DistributedApp {
 
   Parameter param{"param", "", 0.5, "", 0.0, 1.0};
-
   ImageDiskBuffer dataBuffer{"graph", "output.png"};
+  TincServer tserv;
 
   ControlGUI gui;
-
   Texture graphTex;
 
   void onInit() override {
+
+    // FIXME expose parameter on TINC server
     parameterServer() << param;
-    dataBuffer.exposeToNetwork(parameterServer());
+
+    tserv << dataBuffer;
+    tserv.start();
   }
 
   void onCreate() override {
@@ -55,7 +59,10 @@ struct TincApp : DistributedApp {
     gui.draw(g);
   }
 
-  void onExit() override { gui.cleanup(); }
+  void onExit() override {
+    gui.cleanup();
+    tserv.stop();
+  }
 };
 
 int main() {

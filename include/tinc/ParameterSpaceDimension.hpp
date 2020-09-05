@@ -39,6 +39,7 @@ public:
       : mParameterValue(name, group) {}
   std::string getName();
   std::string getGroup();
+  std::string getFullAddress();
 
   // Access to current
   float getCurrentValue();

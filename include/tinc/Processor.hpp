@@ -210,6 +210,8 @@ public:
     return registerParameter(newParam);
   }
 
+  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
+
   /**
    * @brief Current internal configuration key value pairs
    *

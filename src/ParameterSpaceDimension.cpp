@@ -168,6 +168,10 @@ std::string ParameterSpaceDimension::getGroup() {
   return parameter().getGroup();
 }
 
+std::string ParameterSpaceDimension::getFullAddress() {
+  return parameter().getFullAddress();
+}
+
 std::vector<std::string> ParameterSpaceDimension::getAllCurrentIds() {
   float value = getCurrentValue();
   return getAllIds(value);

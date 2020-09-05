@@ -1,12 +1,15 @@
 #include "al/app/al_DistributedApp.hpp"
 #include "al/graphics/al_Font.hpp"
 
+#include "tinc/TincServer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
 
 using namespace al;
 using namespace tinc;
 
 struct TincApp : DistributedApp {
+  TincServer tserv;
+
   JsonDiskBuffer backgroundBuffer{"background", "background.json"};
   JsonDiskBuffer dataBuffer{"sine_data", "output.json"};
 
@@ -17,10 +20,10 @@ struct TincApp : DistributedApp {
   VAOMesh mesh;
 
   void onInit() override {
-    // Expose to network to allow receiving messages to load disk data
-    backgroundBuffer.exposeToNetwork(parameterServer());
-    dataBuffer.exposeToNetwork(parameterServer());
-    //    parameterServer().verbose();
+
+    // Expose the buffers through the TINC server
+    tserv << backgroundBuffer << dataBuffer;
+    tserv.start();
   }
 
   void onAnimate(double dt) override {
@@ -66,6 +69,8 @@ struct TincApp : DistributedApp {
     g.color(1.0);
     g.draw(mesh);
   }
+
+  void onExit() override { tserv.stop(); }
 };
 
 int main() {

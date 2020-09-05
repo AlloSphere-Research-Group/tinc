@@ -8,56 +8,28 @@
 
 using namespace tinc;
 
-class Message {
-public:
-  Message(uint8_t *message, size_t length) : mData(message), mSize(length) {}
-  std::string getString() {
-    size_t startIndex = mReadIndex;
-    while (mReadIndex < mSize && mData[mReadIndex] != 0x00) {
-      mReadIndex++;
-    }
-    std::string s;
-    if (mReadIndex < mSize && mReadIndex != startIndex) {
-      s.resize(mReadIndex - startIndex);
-      s.assign((const char *)&mData[startIndex]);
-    }
-    mReadIndex++; // skip final null
-    return s;
-  }
-
-  uint8_t getByte() {
-    uint8_t val = mData[mReadIndex];
-    mReadIndex++;
-    return val;
-  }
-
-  uint32_t getUint32() {
-    uint32_t val;
-    memcpy(&val, &mData[mReadIndex], 4);
-    mReadIndex += 4;
-    return val;
-  }
-
-  std::vector<std::string> getVectorString() {
-    std::vector<std::string> vs;
-    uint8_t count = mData[mReadIndex];
-    mReadIndex++;
-    for (uint8_t i = 0; i < count; i++) {
-      vs.push_back(getString());
-    }
-    return vs;
-  }
-
-private:
-  uint8_t *mData;
-  const size_t mSize;
-  size_t mReadIndex{0};
-};
-
 // Message parsing and packing --- Should be moved to their own class or
-// namespace eventually
+// namespace eventually. Perhaps using templates to simplify?
+
+void insertUint64InMessage(std::vector<uint8_t> &message, const uint64_t &v) {
+  size_t messageLen = message.size();
+  message.resize(message.size() + 8);
+  memcpy(&message[messageLen], &v, 8);
+}
 
 void insertUint32InMessage(std::vector<uint8_t> &message, const uint32_t &v) {
+  size_t messageLen = message.size();
+  message.resize(message.size() + 4);
+  memcpy(&message[messageLen], &v, 4);
+}
+
+void insertInt32InMessage(std::vector<uint8_t> &message, const int32_t &v) {
+  size_t messageLen = message.size();
+  message.resize(message.size() + 4);
+  memcpy(&message[messageLen], &v, 4);
+}
+
+void insertFloatInMessage(std::vector<uint8_t> &message, const float &v) {
   size_t messageLen = message.size();
   message.resize(message.size() + 4);
   memcpy(&message[messageLen], &v, 4);
@@ -69,6 +41,7 @@ void insertStringInMessage(std::vector<uint8_t> &message,
   if (s.size() > 0) {
     size_t messageLen = message.size();
     message.resize(message.size() + s.size() + 1);
+    // c_str() is guaranteed to be null terminated
     memcpy(&message[messageLen], s.c_str(), s.size() + 1);
   } else {
     message.push_back('\0');
@@ -118,6 +91,114 @@ void insertParameterSpaceDefinition(std::vector<uint8_t> &message,
   insertStringInMessage(message, p->getId());
 }
 
+void insertParameterSpaceDimensionDefinition(std::vector<uint8_t> &message,
+                                             ParameterSpaceDimension *dim) {
+  auto *param = &dim->parameter();
+  message.push_back(TincServer::REGISTER_PARAMETER);
+  insertStringInMessage(message, param->getName());
+  insertStringInMessage(message, param->getGroup());
+  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
+    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+    message.push_back(TincServer::PARAMETER_BOOL);
+    insertFloatInMessage(message, p->getDefault());
+  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
+    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+    message.push_back(TincServer::PARAMETER_FLOAT);
+    insertFloatInMessage(message, p->getDefault());
+    insertFloatInMessage(message, p->min());
+    insertFloatInMessage(message, p->max());
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
+             0) {
+    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+    message.push_back(TincServer::PARAMETER_INT32);
+    insertInt32InMessage(message, p->getDefault());
+    insertInt32InMessage(message, p->min());
+    insertInt32InMessage(message, p->max());
+  } else if (strcmp(typeid(*param).name(),
+                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
+    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+    message.push_back(TincServer::PARAMETER_STRING);
+    insertStringInMessage(message, p->getDefault());
+    insertStringInMessage(message, p->min());
+    insertStringInMessage(message, p->max());
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
+             0) { // al::ParameterPose
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    message.push_back(TincServer::PARAMETER_POSED);
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
+             0) { // al::ParameterMenu
+    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+    int32_t defaultValue = p->getDefault();
+    insertInt32InMessage(message, defaultValue);
+  } else if (strcmp(typeid(*param).name(),
+                    typeid(al::ParameterChoice).name()) ==
+             0) { // al::ParameterChoice
+    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+    message.push_back(TincServer::PARAMETER_CHOICE);
+    insertUint64InMessage(message, p->getDefault());
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
+             0) { // al::ParameterVec3
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    message.push_back(TincServer::PARAMETER_VEC3F);
+    al::Vec3f defaultValue = p->getDefault();
+    insertFloatInMessage(message, defaultValue.x);
+    insertFloatInMessage(message, defaultValue.y);
+    insertFloatInMessage(message, defaultValue.z);
+    al::Vec3f minValue = p->min();
+    insertFloatInMessage(message, minValue.x);
+    insertFloatInMessage(message, minValue.y);
+    insertFloatInMessage(message, minValue.z);
+    al::Vec3f maxValue = p->max();
+    insertFloatInMessage(message, maxValue.x);
+    insertFloatInMessage(message, maxValue.y);
+    insertFloatInMessage(message, maxValue.z);
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
+             0) { // al::ParameterVec4
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    message.push_back(TincServer::PARAMETER_VEC4F);
+    al::Vec4f defaultValue = p->getDefault();
+    insertFloatInMessage(message, defaultValue.x);
+    insertFloatInMessage(message, defaultValue.y);
+    insertFloatInMessage(message, defaultValue.z);
+    insertFloatInMessage(message, defaultValue.w);
+    al::Vec4f minValue = p->min();
+    insertFloatInMessage(message, minValue.x);
+    insertFloatInMessage(message, minValue.y);
+    insertFloatInMessage(message, minValue.z);
+    insertFloatInMessage(message, minValue.w);
+    al::Vec4f maxValue = p->max();
+    insertFloatInMessage(message, maxValue.x);
+    insertFloatInMessage(message, maxValue.y);
+    insertFloatInMessage(message, maxValue.z);
+    insertFloatInMessage(message, maxValue.w);
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
+             0) { // al::ParameterColor
+    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+    message.push_back(TincServer::PARAMETER_COLORF);
+    al::Color defaultValue = p->getDefault();
+    insertFloatInMessage(message, defaultValue.r);
+    insertFloatInMessage(message, defaultValue.g);
+    insertFloatInMessage(message, defaultValue.b);
+    insertFloatInMessage(message, defaultValue.a);
+    al::Color minValue = p->min();
+    insertFloatInMessage(message, minValue.r);
+    insertFloatInMessage(message, minValue.g);
+    insertFloatInMessage(message, minValue.b);
+    insertFloatInMessage(message, minValue.a);
+    al::Color maxValue = p->max();
+    insertFloatInMessage(message, maxValue.r);
+    insertFloatInMessage(message, maxValue.g);
+    insertFloatInMessage(message, maxValue.b);
+    insertFloatInMessage(message, maxValue.a);
+  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
+             0) { // Trigger
+    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    message.push_back(TincServer::PARAMETER_TRIGGER);
+  } else {
+  }
+}
+
 void insertVariantValue(std::vector<uint8_t> &message, VariantValue &v) {
   size_t start = message.size() + 1;
   switch (v.type) {
@@ -155,25 +236,155 @@ void insertProcessorConfiguration(std::vector<uint8_t> &message, Processor *p) {
 // ------------------------
 TincServer::TincServer() {}
 
-bool TincServer::processIncomingMessage(uint8_t *message, size_t length,
-                                        al::Socket *src) {
-  assert(length > 0);
-  if (message[0] == REQUEST_PARAMETERS) {
+void TincServer::registerParameterServer(al::ParameterServer &pserver) {
+  bool registered = false;
+  for (auto *p : mParameterServers) {
+    if (p == &pserver) {
+      registered = true;
+    }
+  }
+  if (!registered) {
+    mParameterServers.push_back(&pserver);
+  } else {
+    std::cout << "ParameterServer already registered.";
+  }
+}
+
+void TincServer::registerProcessor(Processor &processor) {
+  bool registered = false;
+  for (auto *p : mProcessors) {
+    if (p == &processor || p->getId() == processor.getId()) {
+      registered = true;
+    }
+  }
+  if (!registered) {
+    mProcessors.push_back(&processor);
+    // FIXME we should register parameters registered with processors.
+    //    for (auto *param: mParameters) {
+
+    //    }
+  } else {
+    std::cout << "Processor: " << processor.getId() << " already registered.";
+  }
+}
+
+void TincServer::registerParameterSpace(ParameterSpace &ps) {
+  bool registered = false;
+  for (auto *p : mParameterSpaces) {
+    if (p == &ps || p->getId() == ps.getId()) {
+      registered = true;
+    }
+  }
+  for (auto dim : ps.dimensions) {
+    registerParameterSpaceDimension(*dim);
+  }
+  if (!registered) {
+    mParameterSpaces.push_back(&ps);
+  } else {
+    std::cout << "Processor: " << ps.getId() << " already registered.";
+  }
+}
+
+void TincServer::registerParameterSpaceDimension(ParameterSpaceDimension &psd) {
+  bool registered = false;
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
+      registered = true;
+    }
+  }
+  if (!registered) {
+    mParameterSpaceDimensions.push_back(&psd);
+    psd.parameter().registerChangeCallback(
+        [&](float value, al::ValueSource *src) {
+          if (mServerConnections.size() == 0) {
+            return;
+          }
+          std::vector<uint8_t> message;
+          message.push_back(CONFIGURE_PARAMETER);
+          insertStringInMessage(message, psd.getFullAddress());
+          message.push_back(CONFIGURE_PARAMETER_VALUE);
+          insertFloatInMessage(message, value);
+          for (auto connection : mServerConnections) {
+            if (!src || (connection->address() != src->ipAddr &&
+                         connection->port() != src->port)) {
+              connection->send((char *)message.data(), message.size());
+            }
+          }
+        });
+  } else {
+    std::cout << "ParameterSpaceDimension: " << psd.getFullAddress()
+              << " already registered.";
+  }
+}
+
+void TincServer::registerDiskBuffer(AbstractDiskBuffer &db) {
+  bool registered = false;
+  for (auto *p : mDiskBuffers) {
+    if (p == &db || p->getId() == db.getId()) {
+      registered = true;
+    }
+  }
+  if (!registered) {
+    mDiskBuffers.push_back(&db);
+  } else {
+    std::cout << "DiskBuffer: " << db.getId() << " already registered.";
+  }
+}
+
+void TincServer::registerDataPool(DataPool &dp) {
+  bool registered = false;
+  for (auto *p : mDataPools) {
+    if (p == &dp || p->getId() == dp.getId()) {
+      registered = true;
+    }
+  }
+  registerParameterSpace(dp.getParameterSpace());
+  if (!registered) {
+    mDataPools.push_back(&dp);
+  } else {
+    std::cout << "DiskBuffer: " << dp.getId() << " already registered.";
+  }
+}
+
+TincServer &TincServer::operator<<(Processor &p) {
+  registerProcessor(p);
+  return *this;
+}
+
+TincServer &TincServer::operator<<(ParameterSpace &p) {
+  registerParameterSpace(p);
+  return *this;
+}
+
+TincServer &TincServer::operator<<(AbstractDiskBuffer &db) {
+  registerDiskBuffer(db);
+  return *this;
+}
+
+TincServer &TincServer::operator<<(DataPool &db) {
+  registerDataPool(db);
+  return *this;
+}
+
+bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
+  auto command = message.getByte();
+  if (command == REQUEST_PARAMETERS) {
     sendParameters();
     return true;
-  } else if (message[0] == REQUEST_PROCESSORS) {
+  } else if (command == REQUEST_PROCESSORS) {
     sendProcessors();
     return true;
-  } else if (message[0] == REQUEST_DISK_BUFFERS) {
-    assert(0 == 1);
+  } else if (command == REQUEST_DISK_BUFFERS) {
+    //    assert(0 == 1);
     //      sendDataPools();
     return false;
-  } else if (message[0] == REQUEST_DATA_POOLS) {
+  } else if (command == REQUEST_DATA_POOLS) {
     sendDataPools();
     return true;
-  } else if (message[0] == OBJECT_COMMAND) {
-    return processObjectCommand(&message[1], length - 1, src);
-    ;
+  } else if (command == OBJECT_COMMAND) {
+    return processObjectCommand(message, src);
+  } else if (command == CONFIGURE_PARAMETER) {
+    return processConfigureParameter(message, src);
   }
   return false;
 }
@@ -191,15 +402,6 @@ void TincServer::sendParameters() {
       auto group = param->getName();
       message.reserve(2 + name.size() + 1 + group.size() + 1);
       message.push_back(REGISTER_PARAMETER);
-      message.push_back(PARAMETER);
-      for (auto c : name) {
-        message.push_back(c);
-      }
-      message.push_back(0);
-      for (auto c : group) {
-        message.push_back(c);
-      }
-      message.push_back(0);
 
       sendMessage(message);
     }
@@ -282,15 +484,24 @@ void TincServer::sendRegisterParameterSpaceMessage(ParameterSpace *p) {
   message.reserve(1024);
   insertParameterSpaceDefinition(message, p);
   if (message.size() > 0) {
-
+    for (auto dim : p->dimensions) {
+      sendRegisterParameterSpaceDimensionMessage(dim.get());
+    }
     sendMessage(message);
   }
 }
 
-bool TincServer::processObjectCommand(uint8_t *message, size_t length,
-                                      al::Socket *src) {
+void TincServer::sendRegisterParameterSpaceDimensionMessage(
+    ParameterSpaceDimension *p) {
+  std::vector<uint8_t> message;
+  message.reserve(1024);
+  insertParameterSpaceDimensionDefinition(message, p);
+  if (message.size() > 0) {
+    sendMessage(message);
+  }
+}
 
-  auto m = Message(message, length);
+bool TincServer::processObjectCommand(al::Message &m, al::Socket *src) {
   uint32_t commandNumber = m.getUint32();
   uint8_t command = m.getByte();
   if (command == CREATE_DATA_SLICE) {
@@ -313,6 +524,47 @@ bool TincServer::processObjectCommand(uint8_t *message, size_t length,
     }
   }
   return false;
+}
+
+bool TincServer::processConfigureParameter(al::Message &m, al::Socket *src) {
+  auto addr = m.getString();
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (addr == dim->getFullAddress()) {
+      auto command = m.getByte();
+      if (command == CONFIGURE_PARAMETER_VALUE) {
+        auto value = m.get<float>();
+        al::ValueSource vs{src->address(), src->port()};
+        dim->parameter().set(value, &vs);
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool TincServer::processConfigureParameterSpace(al::Message &message,
+                                                al::Socket *src) {
+
+  return true;
+}
+
+bool TincServer::processConfigureProcessor(al::Message &message,
+                                           al::Socket *src) {
+
+  return true;
+}
+
+bool TincServer::processConfigureDataPool(al::Message &message,
+                                          al::Socket *src) {
+
+  return true;
+}
+
+bool TincServer::processConfigureDiskBuffer(al::Message &message,
+                                            al::Socket *src) {
+
+  return true;
 }
 
 // void TincServer::onMessage(al::osc::Message &m) {
