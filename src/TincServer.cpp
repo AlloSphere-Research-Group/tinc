@@ -12,8 +12,8 @@
 
 using namespace tinc;
 
-ConfigureParameter createParameterValueMessage(al::ParameterMeta *param) {
-  ConfigureParameter confMessage;
+void createParameterValueMessage(al::ParameterMeta *param,
+                                 ConfigureParameter &confMessage) {
   confMessage.set_id(param->getFullAddress());
 
   confMessage.set_configurekey(ParameterConfigureType::VALUE);
@@ -66,7 +66,6 @@ ConfigureParameter createParameterValueMessage(al::ParameterMeta *param) {
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
-  return confMessage;
 }
 
 ConfigureParameter
@@ -86,6 +85,31 @@ createParameterSpaceIdValuesMessage(ParameterSpaceDimension *dim) {
   confMessage.set_allocated_configurationvalue(confValue);
 
   return confMessage;
+}
+
+bool sendProtobufMessage(google::protobuf::Message &msg, al::Socket *dst) {
+
+  size_t size = msg.ByteSizeLong();
+  char *buffer = (char *)malloc(size + sizeof(size_t));
+  memcpy(buffer, &size, sizeof(size_t));
+  if (!msg.SerializeToArray(buffer + sizeof(size_t), size)) {
+    free(buffer);
+    std::cerr << "Error serializing message" << std::endl;
+  }
+  auto bytes = dst->send(buffer, size + sizeof(size_t));
+  if (bytes != size + sizeof(size_t)) {
+    buffer[size + 1] = '\0';
+    std::cerr << "Failed to send: " << buffer << std::endl;
+    free(buffer);
+
+#ifdef AL_WINDOWS
+    int error = WSAGetLastError();
+    std::cerr << "Winsock error: " << error << std::endl;
+#endif
+    return false;
+  }
+  free(buffer);
+  return true;
 }
 
 // ------------------------
@@ -161,7 +185,18 @@ void TincServer::registerParameterSpaceDimension(ParameterSpaceDimension &psd) {
             msg.set_messagetype(CONFIGURE);
             msg.set_objecttype(PARAMETER);
             google::protobuf::Any *details = msg.details().New();
-            details->PackFrom(createParameterValueMessage(&psd.parameter()));
+            ConfigureParameter confMessage;
+            confMessage.set_id(psd.parameter().getFullAddress());
+
+            confMessage.set_configurekey(ParameterConfigureType::VALUE);
+            ParameterValue val;
+            val.set_valuefloat(value);
+            google::protobuf::Any *valueAny =
+                confMessage.configurationvalue().New();
+            valueAny->PackFrom(val);
+            confMessage.set_allocated_configurationvalue(valueAny);
+
+            details->PackFrom(confMessage);
             msg.set_allocated_details(details);
             size_t size = msg.ByteSizeLong();
             char *buffer = (char *)malloc(size + sizeof(size_t));
@@ -172,7 +207,7 @@ void TincServer::registerParameterSpaceDimension(ParameterSpaceDimension &psd) {
             for (auto connection : mServerConnections) {
               if (!src || (connection->address() != src->ipAddr &&
                            connection->port() != src->port)) {
-                connection->send(buffer, size);
+                connection->send(buffer, size + sizeof(size_t));
               }
             }
             free(buffer);
@@ -259,54 +294,71 @@ void TincServer::runRequest(int objectType, std::string objectId,
 }
 
 bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
-  google::protobuf::io::ArrayInputStream ais(message.data(), message.size());
-  google::protobuf::io::CodedInputStream codedStream(&ais);
-  TincMessage *tincMessage = new TincMessage();
 
-  while (tincMessage->ParseFromCodedStream(&codedStream) && !message.empty()) {
-    auto type = tincMessage->messagetype();
-    auto objectType = tincMessage->objecttype();
-    auto details = tincMessage->details();
-
-    switch (type) {
-    case MessageType::REQUEST:
-      if (details.Is<ObjectId>()) {
-        ObjectId objectId;
-        details.UnpackTo(&objectId);
-        runRequest(objectType, objectId.id(), src);
-      } else {
-        std::cout << "Request command unexpected payload. Not ObjectId";
-      }
-      break;
-    case MessageType::REMOVE:
-      if (details.Is<ObjectId>()) {
-        ObjectId objectId;
-        details.UnpackTo(&objectId);
-        std::cout << "Remove command received, but not implemented"
-                  << std::endl;
-        //              runRequest(objectType, objectId.id(), src);
-      }
-      break;
-    case MessageType::REGISTER:
-      std::cout << "Register command received, but not implemented"
-                << std::endl;
-      break;
-    case MessageType::CONFIGURE:
-      runConfigure(objectType, (void *)&details, src);
-      break;
-    case MessageType::COMMAND:
-      std::cout << "Command command received, but not implemented" << std::endl;
-      break;
-    case MessageType::PING:
-      std::cout << "Ping command received, but not implemented" << std::endl;
-      break;
-    case MessageType::PONG:
-      std::cout << "Pong command received, but not implemented" << std::endl;
+  while (message.remainingBytes() > 8) {
+    size_t msgSize;
+    memcpy(&msgSize, message.data(), sizeof(size_t));
+    if (msgSize > message.remainingBytes()) {
       break;
     }
-    message.pushReadIndex(codedStream.CurrentPosition());
+    message.pushReadIndex(8);
+    std::cout << "Got " << msgSize << " of " << message.remainingBytes()
+              << std::endl;
+    google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
+    google::protobuf::io::CodedInputStream codedStream(&ais);
+    TincMessage tincMessage;
+    if (tincMessage.ParseFromCodedStream(&codedStream)) {
+      auto type = tincMessage.messagetype();
+      auto objectType = tincMessage.objecttype();
+      auto details = tincMessage.details();
+
+      switch (type) {
+      case MessageType::REQUEST:
+        if (details.Is<ObjectId>()) {
+          ObjectId objectId;
+          details.UnpackTo(&objectId);
+          runRequest(objectType, objectId.id(), src);
+        } else {
+          std::cout << "Request command unexpected payload. Not ObjectId";
+        }
+        break;
+      case MessageType::REMOVE:
+        if (details.Is<ObjectId>()) {
+          ObjectId objectId;
+          details.UnpackTo(&objectId);
+          std::cout << "Remove command received, but not implemented"
+                    << std::endl;
+          //              runRequest(objectType, objectId.id(), src);
+        }
+        break;
+      case MessageType::REGISTER:
+        std::cout << "Register command received, but not implemented"
+                  << std::endl;
+        break;
+      case MessageType::CONFIGURE:
+        if (!runConfigure(objectType, (void *)&details, src)) {
+          std::cerr << "Error processing configure command" << std::endl;
+        }
+        break;
+      case MessageType::COMMAND:
+        std::cout << "Command command received, but not implemented"
+                  << std::endl;
+        break;
+      case MessageType::PING:
+        std::cout << "Ping command received, but not implemented" << std::endl;
+        break;
+      case MessageType::PONG:
+        std::cout << "Pong command received, but not implemented" << std::endl;
+        break;
+      }
+
+    } else {
+      std::cerr << "Error parsing message" << std::endl;
+    }
+    message.pushReadIndex(msgSize);
   }
 
+  std::cout << "message buffer : " << message.remainingBytes() << std::endl;
   //      tincMsessage->
 
   //  //      CodedInputStream coded_input(&ais);
@@ -333,28 +385,12 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
 }
 
 void TincServer::sendParameters(al::Socket *dst) {
-
-  //    "/registerParameter", getName(), getGroup(), getDefault(),
-  //        mPrefix, min(), max()
   std::cout << __FUNCTION__ << std::endl;
   for (auto ps : mParameterSpaces) {
     for (auto psd : ps->dimensions) {
       sendRegisterParameterMessage(&psd->parameter(), dst);
     }
   }
-  //  for (auto pserver : mParameterServers) {
-  //    // TODO check if parameters have changed in parameter server
-  //    registerParameter()
-  //    for (al::ParameterMeta *param : pserver->parameters()) {
-  //      auto name = param->getName();
-  //      auto group = param->getName();
-  //      message.reserve(2 + name.size() + 1 + group.size() + 1);
-  //      message.push_back(REGISTER_PARAMETER);
-
-  //      sendMessage(message, dst);
-  //    }
-  //  }
-
   // TODO implement bundles
   //  for (auto bundleGroup : mParameterBundles) {
   //    for (auto bundle : bundleGroup.second) {
@@ -455,12 +491,9 @@ void TincServer::sendConfigureProcessorMessage(Processor *p, al::Socket *dst) {
     configValue->PackFrom(val);
     auto details = msg.details().New();
     details->PackFrom(confMessage);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+    msg.set_allocated_details(details);
+
+    sendProtobufMessage(msg, dst);
   }
   if (dynamic_cast<ComputationChain *>(p)) {
     for (auto childProcessor :
@@ -481,12 +514,8 @@ void TincServer::sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst) {
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
-  size_t size = msg.ByteSizeLong();
-  char *buffer = (char *)malloc(size + sizeof(size_t));
-  memcpy(buffer, &size, sizeof(size_t));
-  msg.SerializeToArray(buffer + sizeof(size_t), size);
-  dst->send(buffer, size + sizeof(size_t));
-  free(buffer);
+
+  sendProtobufMessage(msg, dst);
   sendRegisterParameterSpaceMessage(&p->getParameterSpace(), dst);
 }
 
@@ -504,12 +533,8 @@ void TincServer::sendRegisterParameterSpaceMessage(ParameterSpace *p,
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
-  size_t size = msg.ByteSizeLong();
-  char *buffer = (char *)malloc(size + sizeof(size_t));
-  memcpy(buffer, &size, sizeof(size_t));
-  msg.SerializeToArray(buffer + sizeof(size_t), size);
-  dst->send(buffer, size + sizeof(size_t));
-  free(buffer);
+
+  sendProtobufMessage(msg, dst);
   for (auto dim : p->dimensions) {
     sendRegisterParameterSpaceDimensionMessage(dim.get(), dst);
   }
@@ -529,12 +554,8 @@ void TincServer::sendRegisterParameterSpaceDimensionMessage(
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
 }
 
@@ -546,14 +567,12 @@ void TincServer::sendParameterFloatDetails(al::Parameter *param,
     msg.set_objecttype(PARAMETER);
 
     google::protobuf::Any *details = msg.details().New();
-    details->PackFrom(createParameterValueMessage(param));
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
 
   {
@@ -573,12 +592,8 @@ void TincServer::sendParameterFloatDetails(al::Parameter *param,
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
   {
     TincMessage msg;
@@ -597,12 +612,8 @@ void TincServer::sendParameterFloatDetails(al::Parameter *param,
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
 }
 
@@ -614,13 +625,12 @@ void TincServer::sendParameterIntDetails(al::ParameterInt *param,
     msg.set_objecttype(PARAMETER);
 
     google::protobuf::Any *details = msg.details().New();
-    details->PackFrom(createParameterValueMessage(param));
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
+
+    sendProtobufMessage(msg, dst);
   }
 
   {
@@ -638,12 +648,8 @@ void TincServer::sendParameterIntDetails(al::ParameterInt *param,
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
   {
     TincMessage msg;
@@ -660,12 +666,8 @@ void TincServer::sendParameterIntDetails(al::ParameterInt *param,
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
-    size_t size = msg.ByteSizeLong();
-    char *buffer = (char *)malloc(size + sizeof(size_t));
-    memcpy(buffer, &size, sizeof(size_t));
-    msg.SerializeToArray(buffer + sizeof(size_t), size);
-    dst->send(buffer, size + sizeof(size_t));
-    free(buffer);
+
+    sendProtobufMessage(msg, dst);
   }
 }
 
@@ -738,11 +740,7 @@ void TincServer::sendRegisterParameterMessage(al::ParameterMeta *param,
   details_any->PackFrom(details);
   msg.set_allocated_details(details_any);
 
-  size_t size = msg.ByteSizeLong();
-  char *buffer = (char *)malloc(size + sizeof(size_t));
-  memcpy(buffer, &size, sizeof(size_t));
-  msg.SerializeToArray(buffer + sizeof(size_t), size);
-  dst->send(buffer, size + sizeof(size_t));
+  sendProtobufMessage(msg, dst);
 
   // Now send current value, min and max
   if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
@@ -824,18 +822,16 @@ bool TincServer::runConfigure(int objectType, void *any, al::Socket *src) {
   case PARAMETER:
     return processConfigureParameter(any, src);
   case PROCESSOR:
-    sendProcessors(src);
-    break;
+  //    return sendProcessors(src);
   case DISK_BUFFER:
-    sendDiskBuffers(src);
-    break;
+  //    return sendDiskBuffers(src);
   case DATA_POOL:
-    sendDataPools(src);
-    break;
+  //    return sendDataPools(src);
   case PARAMETER_SPACE:
-    sendParameterSpace(src);
+    //    return sendParameterSpace(src);
     break;
   }
+  return false;
 }
 
 bool TincServer::processConfigureParameter(void *any, al::Socket *src) {
@@ -860,6 +856,9 @@ bool TincServer::processConfigureParameter(void *any, al::Socket *src) {
         }
       }
     }
+  } else {
+    std::cerr << "Unexpected payload in Configure Parameter command"
+              << std::endl;
   }
 
   return false;
