@@ -22,6 +22,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/ScriptProcessor.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincServer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
   )
 
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -60,6 +61,63 @@ set_target_properties(tinc PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_LIST_DIR}/bin
 )
+
+# Protobuf dependency
+set (TINC_ROOT ${CMAKE_CURRENT_LIST_DIR})
+
+include(ExternalProject)
+ExternalProject_Add(
+  protobuf
+  PREFIX external/protobuf
+  URL https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz
+  BINARY_DIR ${TINC_ROOT}/external/protobuf-build-${CMAKE_BUILD_TYPE}
+  SOURCE_DIR ${TINC_ROOT}/external/protobuf
+  CMAKE_CACHE_ARGS
+    "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
+    "-Dprotobuf_BUILD_TESTS:BOOL=OFF"
+    "-Dprotobuf_BUILD_EXAMPLES:BOOL=OFF"
+    "-Dprotobuf_WITH_ZLIB:BOOL=OFF"
+    "-Dprotobuf_BUILD_SHARED_LIBS:BOOL=OFF"
+    "-Dprotobuf_MSVC_STATIC_RUNTIME:BOOL=OFF"
+    "-DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}"
+    # other project specific parameters
+  SOURCE_SUBDIR cmake
+#  BUILD_COMMAND "@CMAKE_COMMAND@" .
+  BUILD_ALWAYS ON
+#  STEP_TARGETS build
+  INSTALL_COMMAND ""
+)
+
+ExternalProject_Get_Property(protobuf source_dir)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(protobuflib libprotobufd)
+else()
+    set(protobuflib libprotobufd)
+endif()
+
+message("Using protobuf at: ${source_dir}")
+target_include_directories(tinc PUBLIC ${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src)
+target_link_directories(tinc PUBLIC  ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE})
+target_link_libraries(tinc PUBLIC ${protobuflib})
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
+                   COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src  -I=${CMAKE_CURRENT_LIST_DIR}/src --cpp_out=${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+                   DEPENDS protobuf ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python/tinc_protocol_pb2.py
+                   COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src -I=${CMAKE_CURRENT_LIST_DIR}/src --python_out=${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+                   DEPENDS protobuf ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+)
+
+add_custom_target(create_protobuf_files ALL
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc ${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python/tinc_protocol_pb2.py)
+add_dependencies(tinc create_protobuf_files)
+
+
+execute_process(COMMAND ${CMAKE_CURRENT_BINARY_DIR}/protobuf/protoc -I=${CMAKE_CURRENT_LIST_DIR}/src --cpp_out=${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_CURRENT_LIST_DIR}/src/tinc.proto)
+
 
 ##### Binary dependencies
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/external/usr)

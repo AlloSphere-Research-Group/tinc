@@ -45,7 +45,7 @@ int main() {
   processor.processingFunction = [&]() {
     std::string text =
         processor.configuration["dim1"].valueStr + " -- " +
-        std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
+        std::to_string(processor.configuration["dim2"].valueInt64) + " -- " +
         std::to_string(processor.configuration["inner_param"].valueDouble);
 
     std::cout << "Writing value: "

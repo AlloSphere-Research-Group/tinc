@@ -1,0 +1,136 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package tinc;
+
+enum MessageType {
+  REQUEST = 0;
+  REMOVE = 1;
+  REGISTER = 2;
+  CONFIGURE = 3;
+  COMMAND = 4;
+  COMMAND_REPLY = 5;
+
+  PING = 98;
+  PONG = 99;
+}
+
+enum ObjectType {
+  PARAMETER = 0;
+  PROCESSOR = 1;
+  DISK_BUFFER = 2;
+  DATA_POOL = 3;
+  PARAMETER_SPACE = 4;
+}
+
+enum ProcessorType {
+  DATASCRIPT = 0;
+  CHAIN = 1;
+  CPP = 2;
+}
+
+enum ParameterDataType {
+    PARAMETER_FLOAT = 0;
+    PARAMETER_BOOL = 1;
+    PARAMETER_STRING = 2;
+    PARAMETER_INT32 = 3;
+    PARAMETER_VEC3F = 4;
+    PARAMETER_VEC4F = 5;
+    PARAMETER_COLORF = 6;
+    PARAMETER_POSED = 7;
+    PARAMETER_MENU = 8;
+    PARAMETER_CHOICE = 9;
+    PARAMETER_TRIGGER = 10;
+}
+
+enum ParameterConfigureType {
+    VALUE = 0;
+    MIN = 1;
+    MAX = 2;
+    SPACE = 3;
+}
+
+/// ################ TincMessage #####################
+message TincMessage {
+    MessageType messageType = 2;
+    ObjectType objectType = 3;
+    google.protobuf.Any details = 4;
+}
+
+message ObjectId {
+  string id = 1;
+}
+
+// Parameter data message
+message ParameterValue {
+// THis should be oneof, but 'repeated'is not allowed in oneof
+    float valueFloat = 1;
+    double valueDouble = 2;
+    int32 valueInt32 = 3;
+    int32 valueUint32 = 4;
+    uint64 valueInt64 = 5;
+    uint64 valueUint64 = 6;
+    uint64 valueInt8 = 7;
+    uint64 valueUint8 = 8;
+    repeated ParameterValue valueList = 20;
+    string valueString = 30;
+}
+
+// Registration Messages --------------------
+message RegisterProcessor {
+  string id = 2;
+  ProcessorType type = 1;
+  string inputDirectory = 3;
+  repeated string inputFiles = 4;
+  string outputDirectory = 5;
+  repeated string outputFiles = 6;
+  string runningDirectory = 7;
+}
+
+message RegisterDataPool {
+  string id = 2;
+  string parameterSpaceId = 3;
+  string cacheDirectory = 4;
+}
+
+message RegisterDiskBuffer {
+  string id = 2;
+}
+
+message RegisterParameterSpace {
+  string id = 2;
+}
+
+message RegisterParameter {
+  string id = 1;
+  string group = 2;
+  ParameterDataType dataType = 3;
+  ParameterValue defaultValue = 4;
+ }
+
+// Configuration Messages
+message ParameterSpaceValues {
+  repeated string ids = 1;
+  repeated ParameterValue values = 2;
+}
+
+message ConfigureParameter {
+  string id = 1;
+  ParameterConfigureType configureKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+message ConfigureProcessor {
+  string id = 1;
+  string configureKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+// Commands
+
+
+
+
+
+

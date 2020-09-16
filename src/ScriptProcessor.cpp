@@ -216,13 +216,13 @@ std::string ScriptProcessor::writeJsonConfig() {
   parametersToConfig(j);
 
   for (auto c : configuration) {
-    if (c.second.type == FLAG_STRING) {
+    if (c.second.type == VARIANT_STRING) {
       j[c.first] = c.second.valueStr;
 
-    } else if (c.second.type == FLAG_INT64) {
-      j[c.first] = c.second.valueInt;
+    } else if (c.second.type == VARIANT_INT64) {
+      j[c.first] = c.second.valueInt64;
 
-    } else if (c.second.type == FLAG_DOUBLE) {
+    } else if (c.second.type == VARIANT_DOUBLE) {
       j[c.first] = c.second.valueDouble;
     }
   }
@@ -274,15 +274,15 @@ std::string ScriptProcessor::makeCommandLine() {
   std::string commandLine = mScriptCommand + " ";
   for (auto &flag : configuration) {
     switch (flag.second.type) {
-    case FLAG_STRING:
+    case VARIANT_STRING:
       commandLine += flag.second.commandFlag + flag.second.valueStr + " ";
 
       break;
-    case FLAG_INT64:
-      commandLine +=
-          flag.second.commandFlag + std::to_string(flag.second.valueInt) + " ";
+    case VARIANT_INT64:
+      commandLine += flag.second.commandFlag +
+                     std::to_string(flag.second.valueInt64) + " ";
       break;
-    case FLAG_DOUBLE:
+    case VARIANT_DOUBLE:
       commandLine += flag.second.commandFlag +
                      std::to_string(flag.second.valueDouble) + " ";
 
@@ -348,13 +348,13 @@ bool ScriptProcessor::writeMeta() {
 
   for (auto option : configuration) {
     switch (option.second.type) {
-    case FLAG_STRING:
+    case VARIANT_STRING:
       j[option.first] = option.second.valueStr;
       break;
-    case FLAG_INT64:
-      j[option.first] = option.second.valueInt;
+    case VARIANT_INT64:
+      j[option.first] = option.second.valueInt64;
       break;
-    case FLAG_DOUBLE:
+    case VARIANT_DOUBLE:
       j[option.first] = option.second.valueDouble;
       break;
     }

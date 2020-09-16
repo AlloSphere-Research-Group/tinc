@@ -94,7 +94,7 @@ struct MyApp : public App {
     processor.prepareFunction = [&]() {
       std::string name =
           "out_" + processor.configuration["dim1"].valueStr + "_" +
-          std::to_string(processor.configuration["dim2"].valueInt) + "_" +
+          std::to_string(processor.configuration["dim2"].valueInt64) + "_" +
           std::to_string(processor.configuration["inner_param"].valueDouble) +
           ".txt";
       processor.setOutputFileNames({name});
@@ -105,7 +105,7 @@ struct MyApp : public App {
     processor.processingFunction = [&]() {
       std::string text =
           processor.configuration["dim1"].valueStr + " -- " +
-          std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
+          std::to_string(processor.configuration["dim2"].valueInt64) + " -- " +
           std::to_string(processor.configuration["inner_param"].valueDouble);
 
       std::ofstream f(processor.getOutputDirectory() +

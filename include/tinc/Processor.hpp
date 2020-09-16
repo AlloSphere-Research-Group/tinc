@@ -24,31 +24,31 @@ private:
   static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
 };
 
-enum FlagType {
-  FLAG_INT64 = 0,
-  FLAG_DOUBLE, // The script to be run
-  FLAG_STRING
+enum VariantType {
+  VARIANT_INT64 = 0,
+  VARIANT_DOUBLE, // The script to be run
+  VARIANT_STRING
 };
 
 struct VariantValue {
 
   VariantValue() {}
   VariantValue(std::string value) {
-    type = FLAG_STRING;
+    type = VARIANT_STRING;
     valueStr = value;
   }
   VariantValue(const char *value) {
-    type = FLAG_STRING;
+    type = VARIANT_STRING;
     valueStr = value;
   }
 
   VariantValue(int64_t value) {
-    type = FLAG_INT64;
-    valueInt = value;
+    type = VARIANT_INT64;
+    valueInt64 = value;
   }
 
   VariantValue(double value) {
-    type = FLAG_DOUBLE;
+    type = VARIANT_DOUBLE;
     valueDouble = value;
   }
 
@@ -78,9 +78,9 @@ struct VariantValue {
 
   std::string commandFlag; // A prefix to the flag (e.g. -o)
 
-  FlagType type;
+  VariantType type;
   std::string valueStr;
-  int64_t valueInt;
+  int64_t valueInt64;
   double valueDouble;
 };
 

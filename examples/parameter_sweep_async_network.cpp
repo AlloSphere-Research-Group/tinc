@@ -91,7 +91,7 @@ struct MyApp : public App {
     processor.prepareFunction = [&]() {
       std::string name =
           "out_" + processor.configuration["dim1"].valueStr + " -- " +
-          std::to_string(processor.configuration["dim2"].valueInt) + " -- " +
+          std::to_string(processor.configuration["dim2"].valueInt64) + " -- " +
           std::to_string(processor.configuration["inner_param"].valueDouble) +
           ".txt";
       processor.setOutputFileNames({name});
@@ -101,7 +101,7 @@ struct MyApp : public App {
     // processing function takes longer than one second
     processor.processingFunction = [&]() {
       std::string text =
-          std::to_string(processor.configuration["dim2"].valueInt +
+          std::to_string(processor.configuration["dim2"].valueInt64 +
                          processor.configuration["inner_param"].valueDouble);
 
       std::ofstream f(processor.getRunningDirectory() +
