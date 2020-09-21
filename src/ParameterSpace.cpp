@@ -55,6 +55,7 @@ void ParameterSpace::registerDimension(
 
       //      std::cout << "Clobbered dimension: " << dimension->getName() <<
       //      std::endl;
+      onDimensionRegister(dimension.get(), this);
       return;
     }
   }
@@ -72,6 +73,7 @@ void ParameterSpace::registerDimension(
     // later on inside the Parameter classes
   });
   dimensions.push_back(dimension);
+  onDimensionRegister(dimension.get(), this);
 }
 
 std::vector<std::string> ParameterSpace::runningPaths() {

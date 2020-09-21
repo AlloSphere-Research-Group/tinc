@@ -44,11 +44,12 @@ enum ParameterDataType {
     PARAMETER_TRIGGER = 10;
 }
 
-enum ParameterConfigureType {
-    VALUE = 0;
-    MIN = 1;
-    MAX = 2;
-    SPACE = 3;
+enum DiskBufferType {
+    BINARY = 0;
+    TEXT = 1;
+    NETCDF = 2;
+    JSON = 3;
+    IMAGE = 4;
 }
 
 /// ################ TincMessage #####################
@@ -79,8 +80,8 @@ message ParameterValue {
 
 // Registration Messages --------------------
 message RegisterProcessor {
-  string id = 2;
-  ProcessorType type = 1;
+  string id = 1;
+  ProcessorType type = 2;
   string inputDirectory = 3;
   repeated string inputFiles = 4;
   string outputDirectory = 5;
@@ -89,17 +90,20 @@ message RegisterProcessor {
 }
 
 message RegisterDataPool {
-  string id = 2;
-  string parameterSpaceId = 3;
-  string cacheDirectory = 4;
+  string id = 1;
+  string parameterSpaceId = 2;
+  string cacheDirectory = 3;
 }
 
 message RegisterDiskBuffer {
-  string id = 2;
+  string id = 1;
+  DiskBufferType type = 2;
+  string baseFilename = 3;
+  string path = 4;
 }
 
 message RegisterParameterSpace {
-  string id = 2;
+  string id = 1;
 }
 
 message RegisterParameter {
@@ -115,15 +119,32 @@ message ParameterSpaceValues {
   repeated ParameterValue values = 2;
 }
 
+enum ParameterConfigureType {
+    VALUE = 0;
+    MIN = 1;
+    MAX = 2;
+    SPACE = 3;
+}
+
 message ConfigureParameter {
   string id = 1;
-  ParameterConfigureType configureKey = 2;
+  ParameterConfigureType configurationKey = 2;
   google.protobuf.Any configurationValue = 3;
 }
 
 message ConfigureProcessor {
   string id = 1;
-  string configureKey = 2;
+  string configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+enum DiskBufferConfigureType {
+    CURRENT_FILE = 0;
+}
+
+message ConfigureDiskBuffer {
+  string id = 1;
+  DiskBufferConfigureType configurationKey = 2;
   google.protobuf.Any configurationValue = 3;
 }
 

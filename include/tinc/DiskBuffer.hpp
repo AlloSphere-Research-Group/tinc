@@ -23,6 +23,11 @@ public:
   virtual bool updateData(std::string filename) = 0;
   //  void exposeToNetwork(al::ParameterServer &p);
 
+  std::string getBaseFileName() { return m_fileName; }
+
+  void setPath(std::string path) { m_path = path; }
+  std::string getPath() { return m_path; }
+
 protected:
   std::string m_fileName;
   std::string m_path;

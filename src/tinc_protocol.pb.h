@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[11]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[12]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -57,6 +57,9 @@ struct TableStruct_tinc_5fprotocol_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto;
 namespace tinc {
+class ConfigureDiskBuffer;
+class ConfigureDiskBufferDefaultTypeInternal;
+extern ConfigureDiskBufferDefaultTypeInternal _ConfigureDiskBuffer_default_instance_;
 class ConfigureParameter;
 class ConfigureParameterDefaultTypeInternal;
 extern ConfigureParameterDefaultTypeInternal _ConfigureParameter_default_instance_;
@@ -92,6 +95,7 @@ class TincMessageDefaultTypeInternal;
 extern TincMessageDefaultTypeInternal _TincMessage_default_instance_;
 }  // namespace tinc
 PROTOBUF_NAMESPACE_OPEN
+template<> ::tinc::ConfigureDiskBuffer* Arena::CreateMaybeMessage<::tinc::ConfigureDiskBuffer>(Arena*);
 template<> ::tinc::ConfigureParameter* Arena::CreateMaybeMessage<::tinc::ConfigureParameter>(Arena*);
 template<> ::tinc::ConfigureProcessor* Arena::CreateMaybeMessage<::tinc::ConfigureProcessor>(Arena*);
 template<> ::tinc::ObjectId* Arena::CreateMaybeMessage<::tinc::ObjectId>(Arena*);
@@ -225,6 +229,34 @@ inline bool ParameterDataType_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ParameterDataType>(
     ParameterDataType_descriptor(), name, value);
 }
+enum DiskBufferType : int {
+  BINARY = 0,
+  TEXT = 1,
+  NETCDF = 2,
+  JSON = 3,
+  IMAGE = 4,
+  DiskBufferType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  DiskBufferType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool DiskBufferType_IsValid(int value);
+constexpr DiskBufferType DiskBufferType_MIN = BINARY;
+constexpr DiskBufferType DiskBufferType_MAX = IMAGE;
+constexpr int DiskBufferType_ARRAYSIZE = DiskBufferType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DiskBufferType_descriptor();
+template<typename T>
+inline const std::string& DiskBufferType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, DiskBufferType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function DiskBufferType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    DiskBufferType_descriptor(), enum_t_value);
+}
+inline bool DiskBufferType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DiskBufferType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DiskBufferType>(
+    DiskBufferType_descriptor(), name, value);
+}
 enum ParameterConfigureType : int {
   VALUE = 0,
   MIN = 1,
@@ -251,6 +283,30 @@ inline bool ParameterConfigureType_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, ParameterConfigureType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ParameterConfigureType>(
     ParameterConfigureType_descriptor(), name, value);
+}
+enum DiskBufferConfigureType : int {
+  CURRENT_FILE = 0,
+  DiskBufferConfigureType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  DiskBufferConfigureType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool DiskBufferConfigureType_IsValid(int value);
+constexpr DiskBufferConfigureType DiskBufferConfigureType_MIN = CURRENT_FILE;
+constexpr DiskBufferConfigureType DiskBufferConfigureType_MAX = CURRENT_FILE;
+constexpr int DiskBufferConfigureType_ARRAYSIZE = DiskBufferConfigureType_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DiskBufferConfigureType_descriptor();
+template<typename T>
+inline const std::string& DiskBufferConfigureType_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, DiskBufferConfigureType>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function DiskBufferConfigureType_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    DiskBufferConfigureType_descriptor(), enum_t_value);
+}
+inline bool DiskBufferConfigureType_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DiskBufferConfigureType* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DiskBufferConfigureType>(
+    DiskBufferConfigureType_descriptor(), name, value);
 }
 // ===================================================================
 
@@ -933,11 +989,11 @@ class RegisterProcessor PROTOBUF_FINAL :
   enum : int {
     kInputFilesFieldNumber = 4,
     kOutputFilesFieldNumber = 6,
-    kIdFieldNumber = 2,
+    kIdFieldNumber = 1,
     kInputDirectoryFieldNumber = 3,
     kOutputDirectoryFieldNumber = 5,
     kRunningDirectoryFieldNumber = 7,
-    kTypeFieldNumber = 1,
+    kTypeFieldNumber = 2,
   };
   // repeated string inputFiles = 4;
   int inputfiles_size() const;
@@ -987,7 +1043,7 @@ class RegisterProcessor PROTOBUF_FINAL :
   std::string* _internal_add_outputfiles();
   public:
 
-  // string id = 2;
+  // string id = 1;
   void clear_id();
   const std::string& id() const;
   void set_id(const std::string& value);
@@ -1051,7 +1107,7 @@ class RegisterProcessor PROTOBUF_FINAL :
   std::string* _internal_mutable_runningdirectory();
   public:
 
-  // .tinc.ProcessorType type = 1;
+  // .tinc.ProcessorType type = 2;
   void clear_type();
   ::tinc::ProcessorType type() const;
   void set_type(::tinc::ProcessorType value);
@@ -1192,11 +1248,11 @@ class RegisterDataPool PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 2,
-    kParameterSpaceIdFieldNumber = 3,
-    kCacheDirectoryFieldNumber = 4,
+    kIdFieldNumber = 1,
+    kParameterSpaceIdFieldNumber = 2,
+    kCacheDirectoryFieldNumber = 3,
   };
-  // string id = 2;
+  // string id = 1;
   void clear_id();
   const std::string& id() const;
   void set_id(const std::string& value);
@@ -1212,7 +1268,7 @@ class RegisterDataPool PROTOBUF_FINAL :
   std::string* _internal_mutable_id();
   public:
 
-  // string parameterSpaceId = 3;
+  // string parameterSpaceId = 2;
   void clear_parameterspaceid();
   const std::string& parameterspaceid() const;
   void set_parameterspaceid(const std::string& value);
@@ -1228,7 +1284,7 @@ class RegisterDataPool PROTOBUF_FINAL :
   std::string* _internal_mutable_parameterspaceid();
   public:
 
-  // string cacheDirectory = 4;
+  // string cacheDirectory = 3;
   void clear_cachedirectory();
   const std::string& cachedirectory() const;
   void set_cachedirectory(const std::string& value);
@@ -1372,9 +1428,12 @@ class RegisterDiskBuffer PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 2,
+    kIdFieldNumber = 1,
+    kBaseFilenameFieldNumber = 3,
+    kPathFieldNumber = 4,
+    kTypeFieldNumber = 2,
   };
-  // string id = 2;
+  // string id = 1;
   void clear_id();
   const std::string& id() const;
   void set_id(const std::string& value);
@@ -1390,6 +1449,47 @@ class RegisterDiskBuffer PROTOBUF_FINAL :
   std::string* _internal_mutable_id();
   public:
 
+  // string baseFilename = 3;
+  void clear_basefilename();
+  const std::string& basefilename() const;
+  void set_basefilename(const std::string& value);
+  void set_basefilename(std::string&& value);
+  void set_basefilename(const char* value);
+  void set_basefilename(const char* value, size_t size);
+  std::string* mutable_basefilename();
+  std::string* release_basefilename();
+  void set_allocated_basefilename(std::string* basefilename);
+  private:
+  const std::string& _internal_basefilename() const;
+  void _internal_set_basefilename(const std::string& value);
+  std::string* _internal_mutable_basefilename();
+  public:
+
+  // string path = 4;
+  void clear_path();
+  const std::string& path() const;
+  void set_path(const std::string& value);
+  void set_path(std::string&& value);
+  void set_path(const char* value);
+  void set_path(const char* value, size_t size);
+  std::string* mutable_path();
+  std::string* release_path();
+  void set_allocated_path(std::string* path);
+  private:
+  const std::string& _internal_path() const;
+  void _internal_set_path(const std::string& value);
+  std::string* _internal_mutable_path();
+  public:
+
+  // .tinc.DiskBufferType type = 2;
+  void clear_type();
+  ::tinc::DiskBufferType type() const;
+  void set_type(::tinc::DiskBufferType value);
+  private:
+  ::tinc::DiskBufferType _internal_type() const;
+  void _internal_set_type(::tinc::DiskBufferType value);
+  public:
+
   // @@protoc_insertion_point(class_scope:tinc.RegisterDiskBuffer)
  private:
   class _Internal;
@@ -1398,6 +1498,9 @@ class RegisterDiskBuffer PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr basefilename_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr path_;
+  int type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
@@ -1516,9 +1619,9 @@ class RegisterParameterSpace PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kIdFieldNumber = 2,
+    kIdFieldNumber = 1,
   };
-  // string id = 2;
+  // string id = 1;
   void clear_id();
   const std::string& id() const;
   void set_id(const std::string& value);
@@ -2027,7 +2130,7 @@ class ConfigureParameter PROTOBUF_FINAL :
   enum : int {
     kIdFieldNumber = 1,
     kConfigurationValueFieldNumber = 3,
-    kConfigureKeyFieldNumber = 2,
+    kConfigurationKeyFieldNumber = 2,
   };
   // string id = 1;
   void clear_id();
@@ -2063,13 +2166,13 @@ class ConfigureParameter PROTOBUF_FINAL :
       PROTOBUF_NAMESPACE_ID::Any* configurationvalue);
   PROTOBUF_NAMESPACE_ID::Any* unsafe_arena_release_configurationvalue();
 
-  // .tinc.ParameterConfigureType configureKey = 2;
-  void clear_configurekey();
-  ::tinc::ParameterConfigureType configurekey() const;
-  void set_configurekey(::tinc::ParameterConfigureType value);
+  // .tinc.ParameterConfigureType configurationKey = 2;
+  void clear_configurationkey();
+  ::tinc::ParameterConfigureType configurationkey() const;
+  void set_configurationkey(::tinc::ParameterConfigureType value);
   private:
-  ::tinc::ParameterConfigureType _internal_configurekey() const;
-  void _internal_set_configurekey(::tinc::ParameterConfigureType value);
+  ::tinc::ParameterConfigureType _internal_configurationkey() const;
+  void _internal_set_configurationkey(::tinc::ParameterConfigureType value);
   public:
 
   // @@protoc_insertion_point(class_scope:tinc.ConfigureParameter)
@@ -2081,7 +2184,7 @@ class ConfigureParameter PROTOBUF_FINAL :
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
   PROTOBUF_NAMESPACE_ID::Any* configurationvalue_;
-  int configurekey_;
+  int configurationkey_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
@@ -2201,7 +2304,7 @@ class ConfigureProcessor PROTOBUF_FINAL :
 
   enum : int {
     kIdFieldNumber = 1,
-    kConfigureKeyFieldNumber = 2,
+    kConfigurationKeyFieldNumber = 2,
     kConfigurationValueFieldNumber = 3,
   };
   // string id = 1;
@@ -2220,20 +2323,20 @@ class ConfigureProcessor PROTOBUF_FINAL :
   std::string* _internal_mutable_id();
   public:
 
-  // string configureKey = 2;
-  void clear_configurekey();
-  const std::string& configurekey() const;
-  void set_configurekey(const std::string& value);
-  void set_configurekey(std::string&& value);
-  void set_configurekey(const char* value);
-  void set_configurekey(const char* value, size_t size);
-  std::string* mutable_configurekey();
-  std::string* release_configurekey();
-  void set_allocated_configurekey(std::string* configurekey);
+  // string configurationKey = 2;
+  void clear_configurationkey();
+  const std::string& configurationkey() const;
+  void set_configurationkey(const std::string& value);
+  void set_configurationkey(std::string&& value);
+  void set_configurationkey(const char* value);
+  void set_configurationkey(const char* value, size_t size);
+  std::string* mutable_configurationkey();
+  std::string* release_configurationkey();
+  void set_allocated_configurationkey(std::string* configurationkey);
   private:
-  const std::string& _internal_configurekey() const;
-  void _internal_set_configurekey(const std::string& value);
-  std::string* _internal_mutable_configurekey();
+  const std::string& _internal_configurationkey() const;
+  void _internal_set_configurationkey(const std::string& value);
+  std::string* _internal_mutable_configurationkey();
   public:
 
   // .google.protobuf.Any configurationValue = 3;
@@ -2262,8 +2365,183 @@ class ConfigureProcessor PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr configurekey_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr configurationkey_;
   PROTOBUF_NAMESPACE_ID::Any* configurationvalue_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ConfigureDiskBuffer PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ConfigureDiskBuffer) */ {
+ public:
+  inline ConfigureDiskBuffer() : ConfigureDiskBuffer(nullptr) {}
+  virtual ~ConfigureDiskBuffer();
+
+  ConfigureDiskBuffer(const ConfigureDiskBuffer& from);
+  ConfigureDiskBuffer(ConfigureDiskBuffer&& from) noexcept
+    : ConfigureDiskBuffer() {
+    *this = ::std::move(from);
+  }
+
+  inline ConfigureDiskBuffer& operator=(const ConfigureDiskBuffer& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ConfigureDiskBuffer& operator=(ConfigureDiskBuffer&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ConfigureDiskBuffer& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ConfigureDiskBuffer* internal_default_instance() {
+    return reinterpret_cast<const ConfigureDiskBuffer*>(
+               &_ConfigureDiskBuffer_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    11;
+
+  friend void swap(ConfigureDiskBuffer& a, ConfigureDiskBuffer& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ConfigureDiskBuffer* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ConfigureDiskBuffer* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ConfigureDiskBuffer* New() const final {
+    return CreateMaybeMessage<ConfigureDiskBuffer>(nullptr);
+  }
+
+  ConfigureDiskBuffer* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ConfigureDiskBuffer>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ConfigureDiskBuffer& from);
+  void MergeFrom(const ConfigureDiskBuffer& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ConfigureDiskBuffer* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ConfigureDiskBuffer";
+  }
+  protected:
+  explicit ConfigureDiskBuffer(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIdFieldNumber = 1,
+    kConfigurationValueFieldNumber = 3,
+    kConfigurationKeyFieldNumber = 2,
+  };
+  // string id = 1;
+  void clear_id();
+  const std::string& id() const;
+  void set_id(const std::string& value);
+  void set_id(std::string&& value);
+  void set_id(const char* value);
+  void set_id(const char* value, size_t size);
+  std::string* mutable_id();
+  std::string* release_id();
+  void set_allocated_id(std::string* id);
+  private:
+  const std::string& _internal_id() const;
+  void _internal_set_id(const std::string& value);
+  std::string* _internal_mutable_id();
+  public:
+
+  // .google.protobuf.Any configurationValue = 3;
+  bool has_configurationvalue() const;
+  private:
+  bool _internal_has_configurationvalue() const;
+  public:
+  void clear_configurationvalue();
+  const PROTOBUF_NAMESPACE_ID::Any& configurationvalue() const;
+  PROTOBUF_NAMESPACE_ID::Any* release_configurationvalue();
+  PROTOBUF_NAMESPACE_ID::Any* mutable_configurationvalue();
+  void set_allocated_configurationvalue(PROTOBUF_NAMESPACE_ID::Any* configurationvalue);
+  private:
+  const PROTOBUF_NAMESPACE_ID::Any& _internal_configurationvalue() const;
+  PROTOBUF_NAMESPACE_ID::Any* _internal_mutable_configurationvalue();
+  public:
+  void unsafe_arena_set_allocated_configurationvalue(
+      PROTOBUF_NAMESPACE_ID::Any* configurationvalue);
+  PROTOBUF_NAMESPACE_ID::Any* unsafe_arena_release_configurationvalue();
+
+  // .tinc.DiskBufferConfigureType configurationKey = 2;
+  void clear_configurationkey();
+  ::tinc::DiskBufferConfigureType configurationkey() const;
+  void set_configurationkey(::tinc::DiskBufferConfigureType value);
+  private:
+  ::tinc::DiskBufferConfigureType _internal_configurationkey() const;
+  void _internal_set_configurationkey(::tinc::DiskBufferConfigureType value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.ConfigureDiskBuffer)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr id_;
+  PROTOBUF_NAMESPACE_ID::Any* configurationvalue_;
+  int configurationkey_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
@@ -2730,7 +3008,7 @@ inline void ParameterValue::set_allocated_valuestring(std::string* valuestring) 
 
 // RegisterProcessor
 
-// string id = 2;
+// string id = 1;
 inline void RegisterProcessor::clear_id() {
   id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -2792,7 +3070,7 @@ inline void RegisterProcessor::set_allocated_id(std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:tinc.RegisterProcessor.id)
 }
 
-// .tinc.ProcessorType type = 1;
+// .tinc.ProcessorType type = 2;
 inline void RegisterProcessor::clear_type() {
   type_ = 0;
 }
@@ -3150,7 +3428,7 @@ inline void RegisterProcessor::set_allocated_runningdirectory(std::string* runni
 
 // RegisterDataPool
 
-// string id = 2;
+// string id = 1;
 inline void RegisterDataPool::clear_id() {
   id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -3212,7 +3490,7 @@ inline void RegisterDataPool::set_allocated_id(std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:tinc.RegisterDataPool.id)
 }
 
-// string parameterSpaceId = 3;
+// string parameterSpaceId = 2;
 inline void RegisterDataPool::clear_parameterspaceid() {
   parameterspaceid_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -3274,7 +3552,7 @@ inline void RegisterDataPool::set_allocated_parameterspaceid(std::string* parame
   // @@protoc_insertion_point(field_set_allocated:tinc.RegisterDataPool.parameterSpaceId)
 }
 
-// string cacheDirectory = 4;
+// string cacheDirectory = 3;
 inline void RegisterDataPool::clear_cachedirectory() {
   cachedirectory_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -3340,7 +3618,7 @@ inline void RegisterDataPool::set_allocated_cachedirectory(std::string* cachedir
 
 // RegisterDiskBuffer
 
-// string id = 2;
+// string id = 1;
 inline void RegisterDiskBuffer::clear_id() {
   id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -3402,11 +3680,155 @@ inline void RegisterDiskBuffer::set_allocated_id(std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:tinc.RegisterDiskBuffer.id)
 }
 
+// .tinc.DiskBufferType type = 2;
+inline void RegisterDiskBuffer::clear_type() {
+  type_ = 0;
+}
+inline ::tinc::DiskBufferType RegisterDiskBuffer::_internal_type() const {
+  return static_cast< ::tinc::DiskBufferType >(type_);
+}
+inline ::tinc::DiskBufferType RegisterDiskBuffer::type() const {
+  // @@protoc_insertion_point(field_get:tinc.RegisterDiskBuffer.type)
+  return _internal_type();
+}
+inline void RegisterDiskBuffer::_internal_set_type(::tinc::DiskBufferType value) {
+  
+  type_ = value;
+}
+inline void RegisterDiskBuffer::set_type(::tinc::DiskBufferType value) {
+  _internal_set_type(value);
+  // @@protoc_insertion_point(field_set:tinc.RegisterDiskBuffer.type)
+}
+
+// string baseFilename = 3;
+inline void RegisterDiskBuffer::clear_basefilename() {
+  basefilename_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& RegisterDiskBuffer::basefilename() const {
+  // @@protoc_insertion_point(field_get:tinc.RegisterDiskBuffer.baseFilename)
+  return _internal_basefilename();
+}
+inline void RegisterDiskBuffer::set_basefilename(const std::string& value) {
+  _internal_set_basefilename(value);
+  // @@protoc_insertion_point(field_set:tinc.RegisterDiskBuffer.baseFilename)
+}
+inline std::string* RegisterDiskBuffer::mutable_basefilename() {
+  // @@protoc_insertion_point(field_mutable:tinc.RegisterDiskBuffer.baseFilename)
+  return _internal_mutable_basefilename();
+}
+inline const std::string& RegisterDiskBuffer::_internal_basefilename() const {
+  return basefilename_.Get();
+}
+inline void RegisterDiskBuffer::_internal_set_basefilename(const std::string& value) {
+  
+  basefilename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void RegisterDiskBuffer::set_basefilename(std::string&& value) {
+  
+  basefilename_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.RegisterDiskBuffer.baseFilename)
+}
+inline void RegisterDiskBuffer::set_basefilename(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  basefilename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.RegisterDiskBuffer.baseFilename)
+}
+inline void RegisterDiskBuffer::set_basefilename(const char* value,
+    size_t size) {
+  
+  basefilename_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.RegisterDiskBuffer.baseFilename)
+}
+inline std::string* RegisterDiskBuffer::_internal_mutable_basefilename() {
+  
+  return basefilename_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* RegisterDiskBuffer::release_basefilename() {
+  // @@protoc_insertion_point(field_release:tinc.RegisterDiskBuffer.baseFilename)
+  return basefilename_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void RegisterDiskBuffer::set_allocated_basefilename(std::string* basefilename) {
+  if (basefilename != nullptr) {
+    
+  } else {
+    
+  }
+  basefilename_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), basefilename,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.RegisterDiskBuffer.baseFilename)
+}
+
+// string path = 4;
+inline void RegisterDiskBuffer::clear_path() {
+  path_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& RegisterDiskBuffer::path() const {
+  // @@protoc_insertion_point(field_get:tinc.RegisterDiskBuffer.path)
+  return _internal_path();
+}
+inline void RegisterDiskBuffer::set_path(const std::string& value) {
+  _internal_set_path(value);
+  // @@protoc_insertion_point(field_set:tinc.RegisterDiskBuffer.path)
+}
+inline std::string* RegisterDiskBuffer::mutable_path() {
+  // @@protoc_insertion_point(field_mutable:tinc.RegisterDiskBuffer.path)
+  return _internal_mutable_path();
+}
+inline const std::string& RegisterDiskBuffer::_internal_path() const {
+  return path_.Get();
+}
+inline void RegisterDiskBuffer::_internal_set_path(const std::string& value) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void RegisterDiskBuffer::set_path(std::string&& value) {
+  
+  path_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.RegisterDiskBuffer.path)
+}
+inline void RegisterDiskBuffer::set_path(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.RegisterDiskBuffer.path)
+}
+inline void RegisterDiskBuffer::set_path(const char* value,
+    size_t size) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.RegisterDiskBuffer.path)
+}
+inline std::string* RegisterDiskBuffer::_internal_mutable_path() {
+  
+  return path_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* RegisterDiskBuffer::release_path() {
+  // @@protoc_insertion_point(field_release:tinc.RegisterDiskBuffer.path)
+  return path_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void RegisterDiskBuffer::set_allocated_path(std::string* path) {
+  if (path != nullptr) {
+    
+  } else {
+    
+  }
+  path_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), path,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.RegisterDiskBuffer.path)
+}
+
 // -------------------------------------------------------------------
 
 // RegisterParameterSpace
 
-// string id = 2;
+// string id = 1;
 inline void RegisterParameterSpace::clear_id() {
   id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
@@ -3882,24 +4304,24 @@ inline void ConfigureParameter::set_allocated_id(std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureParameter.id)
 }
 
-// .tinc.ParameterConfigureType configureKey = 2;
-inline void ConfigureParameter::clear_configurekey() {
-  configurekey_ = 0;
+// .tinc.ParameterConfigureType configurationKey = 2;
+inline void ConfigureParameter::clear_configurationkey() {
+  configurationkey_ = 0;
 }
-inline ::tinc::ParameterConfigureType ConfigureParameter::_internal_configurekey() const {
-  return static_cast< ::tinc::ParameterConfigureType >(configurekey_);
+inline ::tinc::ParameterConfigureType ConfigureParameter::_internal_configurationkey() const {
+  return static_cast< ::tinc::ParameterConfigureType >(configurationkey_);
 }
-inline ::tinc::ParameterConfigureType ConfigureParameter::configurekey() const {
-  // @@protoc_insertion_point(field_get:tinc.ConfigureParameter.configureKey)
-  return _internal_configurekey();
+inline ::tinc::ParameterConfigureType ConfigureParameter::configurationkey() const {
+  // @@protoc_insertion_point(field_get:tinc.ConfigureParameter.configurationKey)
+  return _internal_configurationkey();
 }
-inline void ConfigureParameter::_internal_set_configurekey(::tinc::ParameterConfigureType value) {
+inline void ConfigureParameter::_internal_set_configurationkey(::tinc::ParameterConfigureType value) {
   
-  configurekey_ = value;
+  configurationkey_ = value;
 }
-inline void ConfigureParameter::set_configurekey(::tinc::ParameterConfigureType value) {
-  _internal_set_configurekey(value);
-  // @@protoc_insertion_point(field_set:tinc.ConfigureParameter.configureKey)
+inline void ConfigureParameter::set_configurationkey(::tinc::ParameterConfigureType value) {
+  _internal_set_configurationkey(value);
+  // @@protoc_insertion_point(field_set:tinc.ConfigureParameter.configurationKey)
 }
 
 // .google.protobuf.Any configurationValue = 3;
@@ -4045,66 +4467,66 @@ inline void ConfigureProcessor::set_allocated_id(std::string* id) {
   // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureProcessor.id)
 }
 
-// string configureKey = 2;
-inline void ConfigureProcessor::clear_configurekey() {
-  configurekey_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+// string configurationKey = 2;
+inline void ConfigureProcessor::clear_configurationkey() {
+  configurationkey_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const std::string& ConfigureProcessor::configurekey() const {
-  // @@protoc_insertion_point(field_get:tinc.ConfigureProcessor.configureKey)
-  return _internal_configurekey();
+inline const std::string& ConfigureProcessor::configurationkey() const {
+  // @@protoc_insertion_point(field_get:tinc.ConfigureProcessor.configurationKey)
+  return _internal_configurationkey();
 }
-inline void ConfigureProcessor::set_configurekey(const std::string& value) {
-  _internal_set_configurekey(value);
-  // @@protoc_insertion_point(field_set:tinc.ConfigureProcessor.configureKey)
+inline void ConfigureProcessor::set_configurationkey(const std::string& value) {
+  _internal_set_configurationkey(value);
+  // @@protoc_insertion_point(field_set:tinc.ConfigureProcessor.configurationKey)
 }
-inline std::string* ConfigureProcessor::mutable_configurekey() {
-  // @@protoc_insertion_point(field_mutable:tinc.ConfigureProcessor.configureKey)
-  return _internal_mutable_configurekey();
+inline std::string* ConfigureProcessor::mutable_configurationkey() {
+  // @@protoc_insertion_point(field_mutable:tinc.ConfigureProcessor.configurationKey)
+  return _internal_mutable_configurationkey();
 }
-inline const std::string& ConfigureProcessor::_internal_configurekey() const {
-  return configurekey_.Get();
+inline const std::string& ConfigureProcessor::_internal_configurationkey() const {
+  return configurationkey_.Get();
 }
-inline void ConfigureProcessor::_internal_set_configurekey(const std::string& value) {
+inline void ConfigureProcessor::_internal_set_configurationkey(const std::string& value) {
   
-  configurekey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  configurationkey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
-inline void ConfigureProcessor::set_configurekey(std::string&& value) {
+inline void ConfigureProcessor::set_configurationkey(std::string&& value) {
   
-  configurekey_.Set(
+  configurationkey_.Set(
     &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:tinc.ConfigureProcessor.configureKey)
+  // @@protoc_insertion_point(field_set_rvalue:tinc.ConfigureProcessor.configurationKey)
 }
-inline void ConfigureProcessor::set_configurekey(const char* value) {
+inline void ConfigureProcessor::set_configurationkey(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  configurekey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+  configurationkey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
               GetArena());
-  // @@protoc_insertion_point(field_set_char:tinc.ConfigureProcessor.configureKey)
+  // @@protoc_insertion_point(field_set_char:tinc.ConfigureProcessor.configurationKey)
 }
-inline void ConfigureProcessor::set_configurekey(const char* value,
+inline void ConfigureProcessor::set_configurationkey(const char* value,
     size_t size) {
   
-  configurekey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  configurationkey_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:tinc.ConfigureProcessor.configureKey)
+  // @@protoc_insertion_point(field_set_pointer:tinc.ConfigureProcessor.configurationKey)
 }
-inline std::string* ConfigureProcessor::_internal_mutable_configurekey() {
+inline std::string* ConfigureProcessor::_internal_mutable_configurationkey() {
   
-  return configurekey_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return configurationkey_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline std::string* ConfigureProcessor::release_configurekey() {
-  // @@protoc_insertion_point(field_release:tinc.ConfigureProcessor.configureKey)
-  return configurekey_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+inline std::string* ConfigureProcessor::release_configurationkey() {
+  // @@protoc_insertion_point(field_release:tinc.ConfigureProcessor.configurationKey)
+  return configurationkey_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline void ConfigureProcessor::set_allocated_configurekey(std::string* configurekey) {
-  if (configurekey != nullptr) {
+inline void ConfigureProcessor::set_allocated_configurationkey(std::string* configurationkey) {
+  if (configurationkey != nullptr) {
     
   } else {
     
   }
-  configurekey_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), configurekey,
+  configurationkey_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), configurationkey,
       GetArena());
-  // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureProcessor.configureKey)
+  // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureProcessor.configurationKey)
 }
 
 // .google.protobuf.Any configurationValue = 3;
@@ -4184,9 +4606,174 @@ inline void ConfigureProcessor::set_allocated_configurationvalue(PROTOBUF_NAMESP
   // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureProcessor.configurationValue)
 }
 
+// -------------------------------------------------------------------
+
+// ConfigureDiskBuffer
+
+// string id = 1;
+inline void ConfigureDiskBuffer::clear_id() {
+  id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& ConfigureDiskBuffer::id() const {
+  // @@protoc_insertion_point(field_get:tinc.ConfigureDiskBuffer.id)
+  return _internal_id();
+}
+inline void ConfigureDiskBuffer::set_id(const std::string& value) {
+  _internal_set_id(value);
+  // @@protoc_insertion_point(field_set:tinc.ConfigureDiskBuffer.id)
+}
+inline std::string* ConfigureDiskBuffer::mutable_id() {
+  // @@protoc_insertion_point(field_mutable:tinc.ConfigureDiskBuffer.id)
+  return _internal_mutable_id();
+}
+inline const std::string& ConfigureDiskBuffer::_internal_id() const {
+  return id_.Get();
+}
+inline void ConfigureDiskBuffer::_internal_set_id(const std::string& value) {
+  
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void ConfigureDiskBuffer::set_id(std::string&& value) {
+  
+  id_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.ConfigureDiskBuffer.id)
+}
+inline void ConfigureDiskBuffer::set_id(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.ConfigureDiskBuffer.id)
+}
+inline void ConfigureDiskBuffer::set_id(const char* value,
+    size_t size) {
+  
+  id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.ConfigureDiskBuffer.id)
+}
+inline std::string* ConfigureDiskBuffer::_internal_mutable_id() {
+  
+  return id_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* ConfigureDiskBuffer::release_id() {
+  // @@protoc_insertion_point(field_release:tinc.ConfigureDiskBuffer.id)
+  return id_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void ConfigureDiskBuffer::set_allocated_id(std::string* id) {
+  if (id != nullptr) {
+    
+  } else {
+    
+  }
+  id_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), id,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureDiskBuffer.id)
+}
+
+// .tinc.DiskBufferConfigureType configurationKey = 2;
+inline void ConfigureDiskBuffer::clear_configurationkey() {
+  configurationkey_ = 0;
+}
+inline ::tinc::DiskBufferConfigureType ConfigureDiskBuffer::_internal_configurationkey() const {
+  return static_cast< ::tinc::DiskBufferConfigureType >(configurationkey_);
+}
+inline ::tinc::DiskBufferConfigureType ConfigureDiskBuffer::configurationkey() const {
+  // @@protoc_insertion_point(field_get:tinc.ConfigureDiskBuffer.configurationKey)
+  return _internal_configurationkey();
+}
+inline void ConfigureDiskBuffer::_internal_set_configurationkey(::tinc::DiskBufferConfigureType value) {
+  
+  configurationkey_ = value;
+}
+inline void ConfigureDiskBuffer::set_configurationkey(::tinc::DiskBufferConfigureType value) {
+  _internal_set_configurationkey(value);
+  // @@protoc_insertion_point(field_set:tinc.ConfigureDiskBuffer.configurationKey)
+}
+
+// .google.protobuf.Any configurationValue = 3;
+inline bool ConfigureDiskBuffer::_internal_has_configurationvalue() const {
+  return this != internal_default_instance() && configurationvalue_ != nullptr;
+}
+inline bool ConfigureDiskBuffer::has_configurationvalue() const {
+  return _internal_has_configurationvalue();
+}
+inline const PROTOBUF_NAMESPACE_ID::Any& ConfigureDiskBuffer::_internal_configurationvalue() const {
+  const PROTOBUF_NAMESPACE_ID::Any* p = configurationvalue_;
+  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::Any*>(
+      &PROTOBUF_NAMESPACE_ID::_Any_default_instance_);
+}
+inline const PROTOBUF_NAMESPACE_ID::Any& ConfigureDiskBuffer::configurationvalue() const {
+  // @@protoc_insertion_point(field_get:tinc.ConfigureDiskBuffer.configurationValue)
+  return _internal_configurationvalue();
+}
+inline void ConfigureDiskBuffer::unsafe_arena_set_allocated_configurationvalue(
+    PROTOBUF_NAMESPACE_ID::Any* configurationvalue) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(configurationvalue_);
+  }
+  configurationvalue_ = configurationvalue;
+  if (configurationvalue) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tinc.ConfigureDiskBuffer.configurationValue)
+}
+inline PROTOBUF_NAMESPACE_ID::Any* ConfigureDiskBuffer::release_configurationvalue() {
+  
+  PROTOBUF_NAMESPACE_ID::Any* temp = configurationvalue_;
+  configurationvalue_ = nullptr;
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline PROTOBUF_NAMESPACE_ID::Any* ConfigureDiskBuffer::unsafe_arena_release_configurationvalue() {
+  // @@protoc_insertion_point(field_release:tinc.ConfigureDiskBuffer.configurationValue)
+  
+  PROTOBUF_NAMESPACE_ID::Any* temp = configurationvalue_;
+  configurationvalue_ = nullptr;
+  return temp;
+}
+inline PROTOBUF_NAMESPACE_ID::Any* ConfigureDiskBuffer::_internal_mutable_configurationvalue() {
+  
+  if (configurationvalue_ == nullptr) {
+    auto* p = CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::Any>(GetArena());
+    configurationvalue_ = p;
+  }
+  return configurationvalue_;
+}
+inline PROTOBUF_NAMESPACE_ID::Any* ConfigureDiskBuffer::mutable_configurationvalue() {
+  // @@protoc_insertion_point(field_mutable:tinc.ConfigureDiskBuffer.configurationValue)
+  return _internal_mutable_configurationvalue();
+}
+inline void ConfigureDiskBuffer::set_allocated_configurationvalue(PROTOBUF_NAMESPACE_ID::Any* configurationvalue) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(configurationvalue_);
+  }
+  if (configurationvalue) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(configurationvalue)->GetArena();
+    if (message_arena != submessage_arena) {
+      configurationvalue = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, configurationvalue, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  configurationvalue_ = configurationvalue;
+  // @@protoc_insertion_point(field_set_allocated:tinc.ConfigureDiskBuffer.configurationValue)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -4234,10 +4821,20 @@ template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::tinc::ParameterDataType>() {
   return ::tinc::ParameterDataType_descriptor();
 }
+template <> struct is_proto_enum< ::tinc::DiskBufferType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tinc::DiskBufferType>() {
+  return ::tinc::DiskBufferType_descriptor();
+}
 template <> struct is_proto_enum< ::tinc::ParameterConfigureType> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::tinc::ParameterConfigureType>() {
   return ::tinc::ParameterConfigureType_descriptor();
+}
+template <> struct is_proto_enum< ::tinc::DiskBufferConfigureType> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tinc::DiskBufferConfigureType>() {
+  return ::tinc::DiskBufferConfigureType_descriptor();
 }
 
 PROTOBUF_NAMESPACE_CLOSE

@@ -2,6 +2,9 @@
 #include "tinc/ComputationChain.hpp"
 #include "tinc/CppProcessor.hpp"
 #include "tinc/ProcessorAsync.hpp"
+#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/ImageDiskBuffer.hpp"
+#include "tinc/JsonDiskBuffer.hpp"
 
 #include <iostream>
 #include <memory>
@@ -11,106 +14,6 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 using namespace tinc;
-
-void createParameterValueMessage(al::ParameterMeta *param,
-                                 ConfigureParameter &confMessage) {
-  confMessage.set_id(param->getFullAddress());
-
-  confMessage.set_configurekey(ParameterConfigureType::VALUE);
-  ParameterValue val;
-  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
-    val.set_valuefloat(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
-    val.set_valuefloat(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-    val.set_valueint32(p->get());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    val.set_valuestring(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    //    configValue->PackFrom(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) { // al::ParameterMenu
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-    val.set_valueint32(p->get());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) ==
-             0) { // al::ParameterChoice
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
-    val.set_valueuint64(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    //    configValue->PackFrom(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    //    configValue->PackFrom(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) { // al::ParameterColor
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    //    configValue->PackFrom(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-             0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-  } else {
-  }
-
-  google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
-  valueAny->PackFrom(val);
-  confMessage.set_allocated_configurationvalue(valueAny);
-}
-
-ConfigureParameter
-createParameterSpaceIdValuesMessage(ParameterSpaceDimension *dim) {
-  ConfigureParameter confMessage;
-  confMessage.set_id(dim->getFullAddress());
-  confMessage.set_configurekey(ParameterConfigureType::SPACE);
-  ParameterSpaceValues valuesMessage;
-  for (auto &id : dim->ids()) {
-    valuesMessage.add_ids(id);
-  }
-  for (auto &value : dim->values()) {
-    valuesMessage.add_values()->set_valuefloat(value);
-  }
-  auto confValue = confMessage.configurationvalue().New();
-  confValue->PackFrom(valuesMessage);
-  confMessage.set_allocated_configurationvalue(confValue);
-
-  return confMessage;
-}
-
-bool sendProtobufMessage(google::protobuf::Message &msg, al::Socket *dst) {
-
-  size_t size = msg.ByteSizeLong();
-  char *buffer = (char *)malloc(size + sizeof(size_t));
-  memcpy(buffer, &size, sizeof(size_t));
-  if (!msg.SerializeToArray(buffer + sizeof(size_t), size)) {
-    free(buffer);
-    std::cerr << "Error serializing message" << std::endl;
-  }
-  auto bytes = dst->send(buffer, size + sizeof(size_t));
-  if (bytes != size + sizeof(size_t)) {
-    buffer[size + 1] = '\0';
-    std::cerr << "Failed to send: " << buffer << std::endl;
-    free(buffer);
-
-#ifdef AL_WINDOWS
-    int error = WSAGetLastError();
-    std::cerr << "Winsock error: " << error << std::endl;
-#endif
-    return false;
-  }
-  free(buffer);
-  return true;
-}
 
 // ------------------------
 TincServer::TincServer() {}
@@ -159,12 +62,88 @@ void TincServer::registerParameterSpace(ParameterSpace &ps) {
   }
   if (!registered) {
     mParameterSpaces.push_back(&ps);
+    ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
+                                 ParameterSpace *ps) {
+
+      for (auto socket : mServerConnections) {
+        for (auto dim : ps->dimensions) {
+          if (dim->getName() == changedDimension->getName()) {
+            sendParameterSpaceMessage(dim.get(), socket.get());
+            if (dim.get() != changedDimension) {
+              registerParameterSpaceDimension(*changedDimension);
+            }
+          }
+        }
+        sendRegisterParameterSpaceMessage(ps, socket.get());
+      }
+    };
   } else {
-    std::cout << "Processor: " << ps.getId() << " already registered.";
+    if (mVerbose) {
+      std::cout << "Processor: " << ps.getId() << " already registered.";
+    }
   }
 }
 
-void TincServer::registerParameter(al::ParameterMeta &p) {}
+void TincServer::registerParameter(al::ParameterMeta &pmeta) {
+  mParameters.push_back(&pmeta);
+  al::ParameterMeta *param = &pmeta;
+  // TODO ensure parameter has not been registered (directly or through a
+  // parameter space)
+
+  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
+    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+    p->registerChangeCallback([&](float value, al::ValueSource *src) {
+      sendParameterFloatValue(value, p->getFullAddress(), src);
+    });
+
+  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
+    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+    p->registerChangeCallback([&](float value, al::ValueSource *src) {
+      sendParameterFloatValue(value, p->getFullAddress(), src);
+    });
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
+             0) {
+    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+    p->registerChangeCallback([&](int32_t value, al::ValueSource *src) {
+      sendParameterIntValue(value, p->getFullAddress(), src);
+    });
+  } else if (strcmp(typeid(*param).name(),
+                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
+    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
+             0) { // al::ParameterPose
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
+             0) { // al::ParameterMenu
+    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+  } else if (strcmp(typeid(*param).name(),
+                    typeid(al::ParameterChoice).name()) ==
+             0) { // al::ParameterChoice
+    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+    p->registerChangeCallback([&](uint64_t value, al::ValueSource *src) {
+      sendParameterUint64Value(value, p->getFullAddress(), src);
+    });
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
+             0) { // al::ParameterVec3
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
+             0) { // al::ParameterVec4
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
+             0) { // al::ParameterColor
+    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+    al::Color defaultValue = p->getDefault();
+    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
+             0) { // Trigger
+    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+  } else {
+  }
+}
 
 void TincServer::registerParameterSpaceDimension(ParameterSpaceDimension &psd) {
   bool registered = false;
@@ -177,45 +156,22 @@ void TincServer::registerParameterSpaceDimension(ParameterSpaceDimension &psd) {
     mParameterSpaceDimensions.push_back(&psd);
     psd.parameter().registerChangeCallback(
         [&](float value, al::ValueSource *src) {
-          if (mServerConnections.size() == 0) {
-            return;
-          }
-          { // Send current parameter value
-            TincMessage msg;
-            msg.set_messagetype(CONFIGURE);
-            msg.set_objecttype(PARAMETER);
-            google::protobuf::Any *details = msg.details().New();
-            ConfigureParameter confMessage;
-            confMessage.set_id(psd.parameter().getFullAddress());
-
-            confMessage.set_configurekey(ParameterConfigureType::VALUE);
-            ParameterValue val;
-            val.set_valuefloat(value);
-            google::protobuf::Any *valueAny =
-                confMessage.configurationvalue().New();
-            valueAny->PackFrom(val);
-            confMessage.set_allocated_configurationvalue(valueAny);
-
-            details->PackFrom(confMessage);
-            msg.set_allocated_details(details);
-            size_t size = msg.ByteSizeLong();
-            char *buffer = (char *)malloc(size + sizeof(size_t));
-            memcpy(buffer, &size, sizeof(size_t));
-            msg.SerializeToArray(buffer + sizeof(size_t), size);
-
-            // Send message to all connections
-            for (auto connection : mServerConnections) {
-              if (!src || (connection->address() != src->ipAddr &&
-                           connection->port() != src->port)) {
-                connection->send(buffer, size + sizeof(size_t));
-              }
-            }
-            free(buffer);
-          }
+          sendParameterFloatValue(value, psd.parameter().getFullAddress(), src);
         });
+
+    psd.onDimensionMetadataChange = [&](
+        ParameterSpaceDimension *changedDimension) {
+      registerParameterSpaceDimension(*changedDimension);
+      for (auto socket : mServerConnections) {
+        sendRegisterParameterSpaceDimensionMessage(changedDimension,
+                                                   socket.get());
+      }
+    };
   } else {
-    std::cout << "ParameterSpaceDimension: " << psd.getFullAddress()
-              << " already registered.";
+    if (mVerbose) {
+      std::cout << "ParameterSpaceDimension: " << psd.getFullAddress()
+                << " already registered.";
+    }
   }
 }
 
@@ -229,7 +185,10 @@ void TincServer::registerDiskBuffer(AbstractDiskBuffer &db) {
   if (!registered) {
     mDiskBuffers.push_back(&db);
   } else {
-    std::cout << "DiskBuffer: " << db.getId() << " already registered.";
+
+    if (mVerbose) {
+      std::cout << "DiskBuffer: " << db.getId() << " already registered.";
+    }
   }
 }
 
@@ -244,8 +203,16 @@ void TincServer::registerDataPool(DataPool &dp) {
   if (!registered) {
     mDataPools.push_back(&dp);
   } else {
-    std::cout << "DiskBuffer: " << dp.getId() << " already registered.";
+
+    if (mVerbose) {
+      std::cout << "DiskBuffer: " << dp.getId() << " already registered.";
+    }
   }
+}
+
+TincServer &TincServer::operator<<(al::ParameterMeta &p) {
+  registerParameter(p);
+  return *this;
 }
 
 TincServer &TincServer::operator<<(Processor &p) {
@@ -266,31 +233,6 @@ TincServer &TincServer::operator<<(AbstractDiskBuffer &db) {
 TincServer &TincServer::operator<<(DataPool &db) {
   registerDataPool(db);
   return *this;
-}
-
-void TincServer::runRequest(int objectType, std::string objectId,
-                            al::Socket *src) {
-  if (objectId.size() > 0) {
-    std::cout << "Ignoring object id. Sending all requested objects."
-              << std::endl;
-  }
-  switch (objectType) {
-  case PARAMETER:
-    sendParameters(src);
-    break;
-  case PROCESSOR:
-    sendProcessors(src);
-    break;
-  case DISK_BUFFER:
-    sendDiskBuffers(src);
-    break;
-  case DATA_POOL:
-    sendDataPools(src);
-    break;
-  case PARAMETER_SPACE:
-    sendParameterSpace(src);
-    break;
-  }
 }
 
 bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
@@ -384,506 +326,11 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
   return true;
 }
 
-void TincServer::sendParameters(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
-  for (auto ps : mParameterSpaces) {
-    for (auto psd : ps->dimensions) {
-      sendRegisterParameterMessage(&psd->parameter(), dst);
+void TincServer::sendTincMessage(void *msg, al::ValueSource *src) {
+  for (auto connection : mServerConnections) {
+    if (!src || (connection->address() != src->ipAddr &&
+                 connection->port() != src->port)) {
+      sendProtobufMessage(msg, connection.get());
     }
   }
-  // TODO implement bundles
-  //  for (auto bundleGroup : mParameterBundles) {
-  //    for (auto bundle : bundleGroup.second) {
-  //      for (ParameterMeta *param : bundle->parameters()) {
-  //        param->sendMeta(sender, bundle->name(),
-  //                        std::to_string(bundle->bundleIndex()));
-  //      }
-  //    }
-  //  }
-}
-
-void TincServer::sendParameterSpace(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
-  for (auto ps : mParameterSpaces) {
-    sendRegisterParameterSpaceMessage(ps, dst);
-  }
-}
-
-void TincServer::sendProcessors(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
-  for (auto *p : mProcessors) {
-    sendRegisterProcessorMessage(p, dst);
-  }
-}
-
-void TincServer::sendDataPools(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
-  for (auto *p : mDataPools) {
-    sendRegisterDataPoolMessage(p, dst);
-  }
-}
-
-void TincServer::sendDiskBuffers(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
-  for (auto *db : mDiskBuffers) {
-    //    sendRegisterDiskBufferMessage(db, dst);
-  }
-}
-
-void TincServer::sendRegisterProcessorMessage(Processor *p, al::Socket *dst) {
-
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
-  }
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(PROCESSOR);
-  RegisterProcessor registerProcMessage;
-  registerProcMessage.set_id(p->getId());
-  if (strcmp(typeid(*p).name(), typeid(ScriptProcessor).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::DATASCRIPT);
-  } else if (strcmp(typeid(*p).name(), typeid(ComputationChain).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::CHAIN);
-  } else if (strcmp(typeid(*p).name(), typeid(CppProcessor).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::CPP);
-  }
-
-  registerProcMessage.set_inputdirectory(p->getInputDirectory());
-  for (auto inFile : p->getInputFileNames()) {
-    registerProcMessage.add_inputfiles(inFile);
-  }
-  registerProcMessage.set_outputdirectory(p->getOutputDirectory());
-  for (auto outFile : p->getOutputFileNames()) {
-    registerProcMessage.add_outputfiles(outFile);
-  }
-
-  sendConfigureProcessorMessage(p, dst);
-  if (dynamic_cast<ComputationChain *>(p)) {
-    for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendRegisterProcessorMessage(childProcessor, dst);
-    }
-  }
-}
-
-void TincServer::sendConfigureProcessorMessage(Processor *p, al::Socket *dst) {
-
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
-  }
-
-  for (auto config : p->configuration) {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PROCESSOR);
-    ConfigureProcessor confMessage;
-    confMessage.set_id(p->getId());
-    confMessage.set_configurekey(config.first);
-    google::protobuf::Any *configValue = confMessage.configurationvalue().New();
-    ParameterValue val;
-    if (config.second.type == VARIANT_DOUBLE) {
-      val.set_valuedouble(config.second.valueDouble);
-    } else if (config.second.type == VARIANT_INT64) {
-      val.set_valueint64(config.second.valueInt64);
-    } else if (config.second.type == VARIANT_STRING) {
-      val.set_valuestring(config.second.valueStr);
-    }
-    configValue->PackFrom(val);
-    auto details = msg.details().New();
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-
-    sendProtobufMessage(msg, dst);
-  }
-  if (dynamic_cast<ComputationChain *>(p)) {
-    for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendConfigureProcessorMessage(childProcessor, dst);
-    }
-  }
-}
-
-void TincServer::sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(DATA_POOL);
-  RegisterDataPool details;
-  details.set_id(p->getId());
-  details.set_parameterspaceid(p->getParameterSpace().getId());
-  details.set_cachedirectory(p->getCacheDirectory());
-  google::protobuf::Any *detailsAny = msg.details().New();
-  detailsAny->PackFrom(details);
-  msg.set_allocated_details(detailsAny);
-
-  sendProtobufMessage(msg, dst);
-  sendRegisterParameterSpaceMessage(&p->getParameterSpace(), dst);
-}
-
-// void TincServer::sendRegisterDiskBufferMessage(DiskBuffer *p, al::Socket
-// *dst) {
-//}
-
-void TincServer::sendRegisterParameterSpaceMessage(ParameterSpace *p,
-                                                   al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(PARAMETER_SPACE);
-  RegisterParameterSpace details;
-  details.set_id(p->getId());
-  google::protobuf::Any *detailsAny = msg.details().New();
-  detailsAny->PackFrom(details);
-  msg.set_allocated_details(detailsAny);
-
-  sendProtobufMessage(msg, dst);
-  for (auto dim : p->dimensions) {
-    sendRegisterParameterSpaceDimensionMessage(dim.get(), dst);
-  }
-}
-
-void TincServer::sendRegisterParameterSpaceDimensionMessage(
-    ParameterSpaceDimension *dim, al::Socket *dst) {
-
-  sendRegisterParameterMessage(&dim->parameter(), dst);
-
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-    ConfigureParameter confMessage = createParameterSpaceIdValuesMessage(dim);
-
-    google::protobuf::Any *detailsAny = msg.details().New();
-    detailsAny->PackFrom(confMessage);
-    msg.set_allocated_details(detailsAny);
-
-    sendProtobufMessage(msg, dst);
-  }
-}
-
-void TincServer::sendParameterFloatDetails(al::Parameter *param,
-                                           al::Socket *dst) {
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    google::protobuf::Any *details = msg.details().New();
-    ConfigureParameter confMessage;
-    createParameterValueMessage(param, confMessage);
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-
-    sendProtobufMessage(msg, dst);
-  }
-
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    ConfigureParameter confMessage;
-    confMessage.set_id(param->getFullAddress());
-    confMessage.set_configurekey(ParameterConfigureType::MIN);
-    ParameterValue val;
-    val.set_valuefloat(param->min());
-    google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
-    valueAny->PackFrom(val);
-    confMessage.set_allocated_configurationvalue(valueAny);
-
-    google::protobuf::Any *detailsAny = msg.details().New();
-    detailsAny->PackFrom(confMessage);
-    msg.set_allocated_details(detailsAny);
-
-    sendProtobufMessage(msg, dst);
-  }
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    ConfigureParameter confMessage;
-    confMessage.set_id(param->getFullAddress());
-    confMessage.set_configurekey(ParameterConfigureType::MAX);
-    ParameterValue val;
-    val.set_valuefloat(param->max());
-    google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
-    valueAny->PackFrom(val);
-    confMessage.set_allocated_configurationvalue(valueAny);
-
-    google::protobuf::Any *detailsAny = msg.details().New();
-    detailsAny->PackFrom(confMessage);
-    msg.set_allocated_details(detailsAny);
-
-    sendProtobufMessage(msg, dst);
-  }
-}
-
-void TincServer::sendParameterIntDetails(al::ParameterInt *param,
-                                         al::Socket *dst) {
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    google::protobuf::Any *details = msg.details().New();
-    ConfigureParameter confMessage;
-    createParameterValueMessage(param, confMessage);
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-
-    sendProtobufMessage(msg, dst);
-  }
-
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    ConfigureParameter confMessage;
-    confMessage.set_id(param->getFullAddress());
-    confMessage.set_configurekey(ParameterConfigureType::MIN);
-    ParameterValue val;
-    val.set_valueint32(param->min());
-    confMessage.configurationvalue().New()->PackFrom(val);
-
-    google::protobuf::Any *detailsAny = msg.details().New();
-    detailsAny->PackFrom(confMessage);
-    msg.set_allocated_details(detailsAny);
-
-    sendProtobufMessage(msg, dst);
-  }
-  {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PARAMETER);
-
-    ConfigureParameter confMessage;
-    confMessage.set_id(param->getFullAddress());
-    confMessage.set_configurekey(ParameterConfigureType::MAX);
-    ParameterValue val;
-    val.set_valueint32(param->max());
-    confMessage.configurationvalue().New()->PackFrom(val);
-
-    google::protobuf::Any *detailsAny = msg.details().New();
-    detailsAny->PackFrom(confMessage);
-    msg.set_allocated_details(detailsAny);
-
-    sendProtobufMessage(msg, dst);
-  }
-}
-
-void TincServer::sendRegisterParameterMessage(al::ParameterMeta *param,
-                                              al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(PARAMETER);
-  RegisterParameter details;
-  details.set_id(param->getName());
-  details.set_group(param->getGroup());
-  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
-    details.set_datatype(PARAMETER_BOOL);
-    details.defaultvalue().New()->set_valuefloat(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
-    details.set_datatype(PARAMETER_FLOAT);
-    details.defaultvalue().New()->set_valuefloat(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-    details.set_datatype(PARAMETER_INT32);
-    details.defaultvalue().New()->set_valueint32(p->getDefault());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    details.set_datatype(PARAMETER_STRING);
-    details.defaultvalue().New()->set_valuestring(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    details.set_datatype(PARAMETER_POSED);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) { // al::ParameterMenu
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-    details.set_datatype(PARAMETER_MENU);
-    details.defaultvalue().New()->set_valueint32(p->getDefault());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) ==
-             0) { // al::ParameterChoice
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
-    details.set_datatype(PARAMETER_CHOICE);
-    details.defaultvalue().New()->set_valueuint32(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    details.set_datatype(PARAMETER_VEC3F);
-    al::Vec3f defaultValue = p->getDefault();
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    details.set_datatype(PARAMETER_VEC4F);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) { // al::ParameterColor
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    details.set_datatype(PARAMETER_COLORF);
-    al::Color defaultValue = p->getDefault();
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-             0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-    details.set_datatype(PARAMETER_TRIGGER);
-  } else {
-  }
-  auto details_any = msg.details().New();
-  details_any->PackFrom(details);
-  msg.set_allocated_details(details_any);
-
-  sendProtobufMessage(msg, dst);
-
-  // Now send current value, min and max
-  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
-    sendParameterFloatDetails(p, dst);
-  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
-    sendParameterFloatDetails(p, dst);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-    sendParameterIntDetails(p, dst);
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) { // al::ParameterMenu
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) ==
-             0) { // al::ParameterChoice
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) { // al::ParameterColor
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-             0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-  } else {
-  }
-
-  //
-}
-
-bool TincServer::processObjectCommand(al::Message &m, al::Socket *src) {
-  uint32_t commandNumber = m.getUint32();
-  uint8_t command = m.getByte();
-  if (command == CREATE_DATA_SLICE) {
-    auto datapoolId = m.getString();
-    auto field = m.getString();
-    auto dims = m.getVectorString();
-    for (auto dp : mDataPools) {
-      if (dp->getId() == datapoolId) {
-        auto sliceName = dp->createDataSlice(field, dims);
-        // Send slice name
-        std::cout << commandNumber << "::::: " << sliceName << std::endl;
-        TincMessage msg;
-        msg.set_messagetype(MessageType::COMMAND_REPLY);
-        assert(0 == 1);
-        // TODO implement
-        //        insertUint32InMessage(message, commandNumber);
-        //        insertStringInMessage(message, sliceName);
-        //        src->send((const char *)message.data(), message.size());
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool TincServer::runConfigure(int objectType, void *any, al::Socket *src) {
-  switch (objectType) {
-  case PARAMETER:
-    return processConfigureParameter(any, src);
-  case PROCESSOR:
-  //    return sendProcessors(src);
-  case DISK_BUFFER:
-  //    return sendDiskBuffers(src);
-  case DATA_POOL:
-  //    return sendDataPools(src);
-  case PARAMETER_SPACE:
-    //    return sendParameterSpace(src);
-    break;
-  }
-  return false;
-}
-
-bool TincServer::processConfigureParameter(void *any, al::Socket *src) {
-  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
-  if (details->Is<ConfigureParameter>()) {
-    ConfigureParameter conf;
-    details->UnpackTo(&conf);
-    auto addr = conf.id();
-    for (auto *dim : mParameterSpaceDimensions) {
-      if (addr == dim->getFullAddress()) {
-        ParameterConfigureType command = conf.configurekey();
-
-        if (command == ParameterConfigureType::VALUE) {
-          ParameterValue v;
-          if (conf.configurationvalue().Is<ParameterValue>()) {
-            conf.configurationvalue().UnpackTo(&v);
-            auto value = v.valuefloat();
-            al::ValueSource vs{src->address(), src->port()};
-            dim->parameter().set(value, &vs);
-            return true;
-          }
-        }
-      }
-    }
-  } else {
-    std::cerr << "Unexpected payload in Configure Parameter command"
-              << std::endl;
-  }
-
-  return false;
-}
-
-bool TincServer::processConfigureParameterSpace(al::Message &message,
-                                                al::Socket *src) {
-
-  return true;
-}
-
-bool TincServer::processConfigureProcessor(al::Message &message,
-                                           al::Socket *src) {
-
-  return true;
-}
-
-bool TincServer::processConfigureDataPool(al::Message &message,
-                                          al::Socket *src) {
-
-  return true;
-}
-
-bool TincServer::processConfigureDiskBuffer(al::Message &message,
-                                            al::Socket *src) {
-
-  return true;
 }

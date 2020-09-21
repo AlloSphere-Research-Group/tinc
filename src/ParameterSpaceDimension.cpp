@@ -30,6 +30,7 @@ void ParameterSpaceDimension::clear() {
   mValues.clear();
   mIds.clear();
   unlock();
+  onDimensionMetadataChange(this);
 }
 
 size_t ParameterSpaceDimension::getIndexForValue(float value) {
@@ -290,6 +291,8 @@ void ParameterSpaceDimension::push_back(float value, std::string id) {
   if (value < mParameterValue.min()) {
     mParameterValue.min(value);
   }
+
+  onDimensionMetadataChange(this);
 }
 
 void ParameterSpaceDimension::append(float *values, size_t count,
@@ -311,6 +314,7 @@ void ParameterSpaceDimension::append(float *values, size_t count,
     values++;
     valueIt++;
   }
+  onDimensionMetadataChange(this);
 }
 
 void ParameterSpaceDimension::append(int32_t *values, size_t count,
@@ -332,6 +336,7 @@ void ParameterSpaceDimension::append(int32_t *values, size_t count,
     values++;
     valueIt++;
   }
+  onDimensionMetadataChange(this);
 }
 
 void ParameterSpaceDimension::append(uint32_t *values, size_t count,
@@ -353,6 +358,7 @@ void ParameterSpaceDimension::append(uint32_t *values, size_t count,
     values++;
     valueIt++;
   }
+  onDimensionMetadataChange(this);
 }
 
 void ParameterSpaceDimension::append(uint8_t *values, size_t count,
@@ -375,6 +381,7 @@ void ParameterSpaceDimension::append(uint8_t *values, size_t count,
     values++;
     valueIt++;
   }
+  onDimensionMetadataChange(this);
 }
 
 void ParameterSpaceDimension::conform() {
@@ -454,6 +461,7 @@ void ParameterSpaceDimension::sort() {
   mValues = newValues;
   mIds = newIds;
   unlock();
+  onDimensionMetadataChange(this);
 }
 
 std::vector<float> ParameterSpaceDimension::values() { return mValues; }

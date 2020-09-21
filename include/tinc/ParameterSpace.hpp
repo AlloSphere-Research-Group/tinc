@@ -197,6 +197,12 @@ public:
       [](float oldValue, ParameterSpaceDimension *changedDimension,
          ParameterSpace *ps) {};
 
+  // When dimension metadata has changed or a new dimension is added
+  // Currently allows only one TincServer. Should we provision for more?
+  std::function<void(ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps)> onDimensionRegister =
+      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
+
 protected:
   /**
  * @brief update current position to value in dimension ps

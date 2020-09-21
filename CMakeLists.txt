@@ -20,6 +20,8 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/Processor.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorAsync.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ScriptProcessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/TincClient.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/TincProtocol.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincServer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
@@ -47,8 +49,11 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/Processor.hpp
     ${TINC_INCLUDE_PATH}/tinc/ProcessorAsync.hpp
     ${TINC_INCLUDE_PATH}/tinc/ScriptProcessor.hpp
+    ${TINC_INCLUDE_PATH}/tinc/TincClient.hpp
+    ${TINC_INCLUDE_PATH}/tinc/TincProtocol.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincServer.hpp
     ${TINC_INCLUDE_PATH}/tinc/VASPReader.hpp
+
 )
 
 add_library(tinc ${TINC_SRC} ${TINC_HEADERS})

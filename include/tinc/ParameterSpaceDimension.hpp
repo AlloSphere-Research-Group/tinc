@@ -102,6 +102,7 @@ public:
   void sort();
   void clear();
 
+  // This is very inefficient and should be avoided if possible
   void push_back(float value, std::string id = "");
 
   void append(float *values, size_t count, std::string idprefix = "");
@@ -119,10 +120,15 @@ public:
   void lock() { mLock.lock(); }
   void unlock() { mLock.unlock(); }
 
+  // TODO these should be made private and access functions added that call
+  // onDimensionMetadataChange()
   Datatype datatype{FLOAT};
   DimensionType type{INTERNAL};
 
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
+
+  std::function<void(ParameterSpaceDimension *)> onDimensionMetadataChange = [](
+      ParameterSpaceDimension *) {};
 
 private:
   // Data
