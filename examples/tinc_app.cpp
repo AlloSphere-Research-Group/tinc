@@ -2,10 +2,12 @@
 #include "tinc/CppProcessor.hpp"
 #include "tinc/TincServer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
+#include "al/graphics/al_Texture.hpp"
 
 #include <fstream>
 
@@ -27,9 +29,12 @@ struct MyApp : public al::App {
   tinc::CppProcessor processor;
   float computedValue{0};
 
-  tinc::JsonDiskBuffer diskBuffer{};
+  tinc::ImageDiskBuffer dataBuffer{"graph", "output.png"};
 
   tinc::TincServer tserv;
+
+  // Graphics memebers
+  al::Texture graphTex;
 
   void prepareParameterSpace() {
     auto dirDim =
@@ -77,8 +82,12 @@ struct MyApp : public al::App {
   // al::App callbacks
 
   void onCreate() override {
+    // Graphics initialization
     al::imguiInit(); // Initialize GUI toolkit
 
+    graphTex.create2D(512, 512);
+
+    // Initialize TINC objects
     prepareParameterSpace();
     prepareProcessor();
 
@@ -89,16 +98,42 @@ struct MyApp : public al::App {
     // Registering the DataPool will bring in the ParameterSpace and
     // ParameterSpaceDimensions associated with it
     tserv << dp;
-    //    tserv.verbose(true); // Show more information
+    // Register the image data buffer
+    tserv << dataBuffer;
+    tserv.verbose(true); // Show more information
 
     // Start TINC server with default parameters
     tserv.start();
   }
 
-  void onAnimate(double dt) override { prepareGui(); }
+  void onAnimate(double dt) override {
+    prepareGui();
+
+    // Update graphics texture if the buffer has been updated
+    if (dataBuffer.newDataAvailable()) {
+      if (dataBuffer.get()->array().size() == 0) {
+        std::cout << "failed to load image" << std::endl;
+      }
+      std::cout << "loaded image size: " << dataBuffer.get()->width() << ", "
+                << dataBuffer.get()->height() << std::endl;
+
+      graphTex.resize(dataBuffer.get()->width(), dataBuffer.get()->height());
+      graphTex.submit(dataBuffer.get()->array().data(), GL_RGBA,
+                      GL_UNSIGNED_BYTE);
+
+      graphTex.filter(al::Texture::LINEAR);
+    }
+  }
 
   void onDraw(al::Graphics &g) override {
     g.clear(0);
+    // Draw the texture
+    g.pushMatrix();
+    g.translate(0, 0, -4);
+    g.quad(graphTex, -1, 1, 2, -1.5);
+    g.popMatrix();
+
+    // Draw the GUI control panel
     al::imguiDraw();
   }
 

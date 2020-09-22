@@ -55,7 +55,7 @@ void ParameterSpace::registerDimension(
 
       //      std::cout << "Clobbered dimension: " << dimension->getName() <<
       //      std::endl;
-      onDimensionRegister(dimension.get(), this);
+      onDimensionRegister(dimensions[i].get(), this);
       return;
     }
   }

@@ -43,7 +43,7 @@ public:
                                al::ValueSource *src);
   void sendParameterIntValue(int32_t value, std::string fullAddress,
                              al::ValueSource *src);
-  void sendParameterUint64Value(int64_t value, std::string fullAddress,
+  void sendParameterUint64Value(uint64_t value, std::string fullAddress,
                                 al::ValueSource *src);
   void sendParameterStringValue(std::string value, std::string fullAddress,
                                 al::ValueSource *src);

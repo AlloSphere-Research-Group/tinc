@@ -20,6 +20,7 @@ void createParameterValueMessage(al::ParameterMeta *param,
   confMessage.set_id(param->getFullAddress());
 
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
+
   ParameterValue val;
   if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
     al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
@@ -508,7 +509,15 @@ void TincProtocol::sendRegisterParameterMessage(al::ParameterMeta *param,
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
     details.set_datatype(PARAMETER_COLORF);
     al::Color defaultValue = p->getDefault();
-    assert(1 == 0); // Implement!
+    auto any = details.defaultvalue().New();
+    auto val = any->add_valuelist();
+    val->set_valuefloat(defaultValue.r);
+    val = any->add_valuelist();
+    val->set_valuefloat(defaultValue.g);
+    val = any->add_valuelist();
+    val->set_valuefloat(defaultValue.b);
+    val = any->add_valuelist();
+    val->set_valuefloat(defaultValue.a);
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
@@ -560,7 +569,7 @@ void TincProtocol::sendRegisterParameterMessage(al::ParameterMeta *param,
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    assert(1 == 0); // Implement!
+    sendParameterColorDetails(p, dst);
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
@@ -648,6 +657,82 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
               dim->parameter().set(value, &vs);
               return true;
             }
+          }
+        }
+      }
+    }
+
+    for (auto *param : mParameters) {
+      if (addr == param->getFullAddress()) {
+        ParameterConfigureType command = conf.configurationkey();
+        if (command == ParameterConfigureType::VALUE) {
+          ParameterValue v;
+          if (conf.configurationvalue().Is<ParameterValue>()) {
+            conf.configurationvalue().UnpackTo(&v);
+            if (strcmp(typeid(*param).name(),
+                       typeid(al::ParameterBool).name()) == 0) {
+              al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+              p->set(v.valuefloat());
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::Parameter).name()) == 0) {
+              al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+              p->set(v.valuefloat());
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterInt).name()) == 0) {
+              al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+              p->set(v.valueint32());
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterString).name()) == 0) { //
+              al::ParameterString *p =
+                  dynamic_cast<al::ParameterString *>(param);
+              p->set(v.valuestring());
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterPose).name()) ==
+                       0) { // al::ParameterPose
+              al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+              assert(1 == 0); // Implement!
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterMenu).name()) ==
+                       0) { // al::ParameterMenu
+              al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+              assert(1 == 0); // Implement!
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterChoice).name()) ==
+                       0) { // al::ParameterChoice
+              al::ParameterChoice *p =
+                  dynamic_cast<al::ParameterChoice *>(param);
+              p->set(v.valueuint64());
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterVec3).name()) ==
+                       0) { // al::ParameterVec3
+              al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+              assert(1 == 0); // Implement!
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterVec4).name()) ==
+                       0) { // al::ParameterVec4
+              al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+              assert(1 == 0); // Implement!
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::ParameterColor).name()) ==
+                       0) { // al::ParameterColor
+              al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+              if (v.valuelist_size() != 4) {
+                std::cerr
+                    << "Unexpected number of components for ParameterColor"
+                    << std::endl;
+                return false;
+              }
+              al::Color value(
+                  v.valuelist(0).valuefloat(), v.valuelist(1).valuefloat(),
+                  v.valuelist(2).valuefloat(), v.valuelist(3).valuefloat());
+              p->set(value);
+
+            } else if (strcmp(typeid(*param).name(),
+                              typeid(al::Trigger).name()) == 0) { // Trigger
+              al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+            } else {
+            }
+            return true;
           }
         }
       }
@@ -824,7 +909,7 @@ void TincProtocol::sendParameterIntValue(int32_t value, std::string fullAddress,
     sendTincMessage(&msg, src);
   }
 }
-void TincProtocol::sendParameterUint64Value(int64_t value,
+void TincProtocol::sendParameterUint64Value(uint64_t value,
                                             std::string fullAddress,
                                             al::ValueSource *src) {
   { // Send current parameter value

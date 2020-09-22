@@ -92,19 +92,19 @@ void TincServer::registerParameter(al::ParameterMeta &pmeta) {
 
   if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
     al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
-    p->registerChangeCallback([&](float value, al::ValueSource *src) {
+    p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
       sendParameterFloatValue(value, p->getFullAddress(), src);
     });
 
   } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
     al::Parameter *p = dynamic_cast<al::Parameter *>(param);
-    p->registerChangeCallback([&](float value, al::ValueSource *src) {
+    p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
       sendParameterFloatValue(value, p->getFullAddress(), src);
     });
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
              0) {
     al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-    p->registerChangeCallback([&](int32_t value, al::ValueSource *src) {
+    p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
       sendParameterIntValue(value, p->getFullAddress(), src);
     });
   } else if (strcmp(typeid(*param).name(),
@@ -122,7 +122,8 @@ void TincServer::registerParameter(al::ParameterMeta &pmeta) {
                     typeid(al::ParameterChoice).name()) ==
              0) { // al::ParameterChoice
     al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
-    p->registerChangeCallback([&](uint64_t value, al::ValueSource *src) {
+    std::cout << p->getFullAddress() << std::endl;
+    p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
       sendParameterUint64Value(value, p->getFullAddress(), src);
     });
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
@@ -136,8 +137,10 @@ void TincServer::registerParameter(al::ParameterMeta &pmeta) {
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    al::Color defaultValue = p->getDefault();
-    assert(1 == 0); // Implement!
+    //    al::Color defaultValue = p->getDefault();
+    p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
+      sendParameterColorValue(value, p->getFullAddress(), src);
+    });
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
