@@ -98,7 +98,7 @@ ExternalProject_Get_Property(protobuf source_dir)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(protobuflib libprotobufd)
 else()
-    set(protobuflib libprotobufd)
+    set(protobuflib libprotobuf)
 endif()
 
 message("Using protobuf at: ${source_dir}")
