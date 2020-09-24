@@ -40,6 +40,14 @@ public:
 
   std::string getCacheDirectory() { return mSliceCacheDirectory; }
 
+  void setCacheDirectory(std::string cacheDirectory);
+
+  // Replace this function when the parameter space path function is not
+  // adequate
+  std::function<std::vector<std::string>()> getAllPaths = [&]() {
+    return mParameterSpace->runningPaths();
+  };
+
 protected:
   bool getFieldFromFile(std::string field, std::string file,
                         size_t dimensionInFileIndex, void *data);
@@ -47,7 +55,6 @@ protected:
                         size_t length);
 
 private:
-  std::string mId;
   ParameterSpace *mParameterSpace;
   std::string mSliceCacheDirectory;
   std::map<std::string, std::string> mDataFilenames;

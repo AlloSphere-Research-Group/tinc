@@ -14,20 +14,21 @@ using json = nlohmann::json;
 using namespace tinc;
 
 DataPool::DataPool(ParameterSpace &ps, std::string sliceCacheDir)
-    : mParameterSpace(&ps),
-      mSliceCacheDirectory(al::File::conformDirectory(sliceCacheDir)) {
+    : mParameterSpace(&ps) {
   if (sliceCacheDir.size() == 0) {
-    mSliceCacheDirectory = al::File::currentPath();
+    sliceCacheDir = al::File::currentPath();
   }
+  setCacheDirectory(sliceCacheDir);
 }
 
 DataPool::DataPool(std::string id, ParameterSpace &ps,
                    std::string sliceCacheDir)
-    : mId(id), mParameterSpace(&ps),
-      mSliceCacheDirectory(al::File::conformDirectory(sliceCacheDir)) {
+    : mParameterSpace(&ps) {
+  mId = id;
   if (sliceCacheDir.size() == 0) {
-    mSliceCacheDirectory = al::File::currentPath();
+    sliceCacheDir = al::File::currentPath();
   }
+  setCacheDirectory(sliceCacheDir);
 }
 
 std::string DataPool::createDataSlice(std::string field,
@@ -70,14 +71,15 @@ DataPool::createDataSlice(std::string field,
       // sliceDimension is a dimension that affects filesystem paths.
       size_t dimCount = dim->size();
       values.reserve(dimCount);
-      auto dataPaths = mParameterSpace->runningPaths();
+
+      auto dataPaths = getAllPaths();
       for (auto directory : dataPaths) {
         for (auto file : mDataFilenames) {
           float value;
           size_t index =
               mParameterSpace->getDimension(file.second)->getCurrentIndex();
-          if (getFieldFromFile(field,
-                               directory + AL_FILE_DELIMITER + file.first,
+          if (getFieldFromFile(field, al::File::conformDirectory(directory) +
+                                          file.first,
                                index, &value)) {
             values.push_back(value);
             break;
@@ -96,8 +98,9 @@ DataPool::createDataSlice(std::string field,
           al::File::conformPathToOS(mParameterSpace->generateRelativeRunPath(
               currentIndeces, mParameterSpace));
       for (auto file : mDataFilenames) {
-        if (getFieldFromFile(field, directory + file.first, values.data(),
-                             values.size())) {
+        if (getFieldFromFile(field,
+                             al::File::conformDirectory(directory) + file.first,
+                             values.data(), values.size())) {
           break;
         }
       }
@@ -115,7 +118,8 @@ DataPool::createDataSlice(std::string field,
   filename += ".nc";
 #ifdef TINC_HAS_NETCDF
   int retval, ncid;
-  if ((retval = nc_create(filename.c_str(), NC_NETCDF4 | NC_CLOBBER, &ncid))) {
+  if ((retval = nc_create((mSliceCacheDirectory + filename).c_str(),
+                          NC_NETCDF4 | NC_CLOBBER, &ncid))) {
     std::cerr << "Error opening file: " << filename << std::endl;
     filename.clear();
   }
@@ -183,6 +187,17 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
   } else {
     return 0;
   }
+}
+
+void DataPool::setCacheDirectory(std::string cacheDirectory) {
+  cacheDirectory = al::File::conformDirectory(cacheDirectory);
+  if (!al::File::exists(cacheDirectory)) {
+    if (!al::Dir::make(cacheDirectory)) {
+      std::cerr << "ERROR creating directory: " << cacheDirectory << std::endl;
+    }
+  }
+  mSliceCacheDirectory = cacheDirectory;
+  modified();
 }
 
 bool DataPool::getFieldFromFile(std::string field, std::string file,
