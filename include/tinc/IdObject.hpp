@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <functional>
 
 namespace tinc {
 
@@ -11,6 +12,8 @@ public:
   std::string getId();
 
   void setId(std::string id);
+
+  std::function<void()> modified = []() {};
 
 protected:
   std::string mId;
