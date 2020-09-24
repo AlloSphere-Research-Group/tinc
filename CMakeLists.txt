@@ -72,7 +72,7 @@ set (TINC_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 include(ExternalProject)
 ExternalProject_Add(
-  protobuf
+  protobufProject
   PREFIX external/protobuf
   URL https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz
   BINARY_DIR ${TINC_ROOT}/external/protobuf-build-${CMAKE_BUILD_TYPE}
@@ -93,12 +93,12 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
 )
 
-ExternalProject_Get_Property(protobuf source_dir)
+ExternalProject_Get_Property(protobufProject source_dir)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(protobuflib libprotobufd)
+    set(protobuflib protobufd)
 else()
-    set(protobuflib libprotobuf)
+    set(protobuflib protobuf)
 endif()
 
 message("Using protobuf at: ${source_dir}")
@@ -108,12 +108,12 @@ target_link_libraries(tinc PUBLIC ${protobuflib})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
                    COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src  -I=${CMAKE_CURRENT_LIST_DIR}/src --cpp_out=${CMAKE_CURRENT_LIST_DIR}/src ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
-                   DEPENDS protobuf ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+                   DEPENDS protobufProject ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python/tinc_protocol_pb2.py
                    COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src -I=${CMAKE_CURRENT_LIST_DIR}/src --python_out=${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
-                   DEPENDS protobuf ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+                   DEPENDS protobufProject ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
 )
 
 add_custom_target(create_protobuf_files ALL
