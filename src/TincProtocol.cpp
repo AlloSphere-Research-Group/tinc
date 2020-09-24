@@ -226,6 +226,24 @@ void TincProtocol::sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst) {
   sendRegisterParameterSpaceMessage(&p->getParameterSpace(), dst);
 }
 
+void TincProtocol::sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(CONFIGURE);
+  msg.set_objecttype(DATA_POOL);
+  ConfigureDataPool confMessage;
+  confMessage.set_id(p->getId());
+  confMessage.set_configurationkey(DataPoolConfigureType::SLICE_CACHE_DIR);
+  google::protobuf::Any *configValue = confMessage.configurationvalue().New();
+  ParameterValue val;
+  val.set_valuestring(p->getCacheDirectory());
+  configValue->PackFrom(val);
+  confMessage.set_allocated_configurationvalue(configValue);
+  auto details = msg.details().New();
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
 void TincProtocol::sendRegisterDiskBufferMessage(AbstractDiskBuffer *p,
                                                  al::Socket *dst) {
   TincMessage msg;
@@ -579,32 +597,6 @@ void TincProtocol::sendRegisterParameterMessage(al::ParameterMeta *param,
   //
 }
 
-bool TincProtocol::processObjectCommand(al::Message &m, al::Socket *src) {
-  uint32_t commandNumber = m.getUint32();
-  uint8_t command = m.getByte();
-  if (command == CREATE_DATA_SLICE) {
-    auto datapoolId = m.getString();
-    auto field = m.getString();
-    auto dims = m.getVectorString();
-    for (auto dp : mDataPools) {
-      if (dp->getId() == datapoolId) {
-        auto sliceName = dp->createDataSlice(field, dims);
-        // Send slice name
-        std::cout << commandNumber << "::::: " << sliceName << std::endl;
-        TincMessage msg;
-        msg.set_messagetype(MessageType::COMMAND_REPLY);
-        assert(0 == 1);
-        // TODO implement
-        //        insertUint32InMessage(message, commandNumber);
-        //        insertStringInMessage(message, sliceName);
-        //        src->send((const char *)message.data(), message.size());
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 bool TincProtocol::runConfigure(int objectType, void *any, al::Socket *src) {
   switch (objectType) {
   case PARAMETER:
@@ -794,6 +786,76 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
               << std::endl;
   }
 
+  return false;
+}
+
+bool TincProtocol::runCommand(int objectType, void *any, al::Socket *src) {
+  switch (objectType) {
+  case PARAMETER:
+  //          return processCommandParameter(any, src);
+  case PROCESSOR:
+  //    return sendProcessors(src);
+  case DISK_BUFFER:
+    //          return processConfigureDiskBuffer(any, src);
+    break;
+  case DATA_POOL:
+    return processCommandDataPool(any, src);
+  case PARAMETER_SPACE:
+    //    return sendParameterSpace(src);
+    break;
+  }
+  return false;
+}
+
+bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<Command>()) {
+    std::cerr << "Error: Invalid payload for Command" << std::endl;
+    return false;
+  }
+  Command command;
+  details->UnpackTo(&command);
+  uint32_t commandNumber = command.message_id();
+  if (command.details().Is<DataPoolCommandSlice>()) {
+    DataPoolCommandSlice commandSlice;
+    command.details().UnpackTo(&commandSlice);
+    auto datapoolId = command.id().id();
+    auto field = commandSlice.field();
+    std::vector<std::string> dims;
+    dims.reserve(commandSlice.dimension_size());
+    for (size_t i = 0; i < (size_t)commandSlice.dimension_size(); i++) {
+      dims.push_back(commandSlice.dimension(i));
+    }
+    for (auto dp : mDataPools) {
+      if (dp->getId() == datapoolId) {
+        auto sliceName = dp->createDataSlice(field, dims);
+        // Send slice name
+        std::cout << commandNumber << "::::: " << sliceName << std::endl;
+        TincMessage msg;
+        msg.set_messagetype(MessageType::COMMAND_REPLY);
+        msg.set_objecttype(ObjectType::DATA_POOL);
+        auto *msgDetails = msg.details().New();
+
+        Command command;
+        command.set_message_id(commandNumber);
+        auto commandId = command.id();
+        commandId.set_id(datapoolId);
+
+        auto *commandDetails = command.details().New();
+        DataPoolCommandSliceReply reply;
+        reply.set_filename(sliceName);
+
+        commandDetails->PackFrom(reply);
+        command.set_allocated_details(commandDetails);
+
+        msgDetails->PackFrom(command);
+        msg.set_allocated_details(msgDetails);
+
+        sendProtobufMessage(&msg, src);
+        return true;
+      }
+    }
+  }
   return false;
 }
 

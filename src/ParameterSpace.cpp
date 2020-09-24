@@ -88,7 +88,8 @@ std::vector<std::string> ParameterSpace::runningPaths() {
   while (!done) {
     done = true;
     auto path = al::File::conformPathToOS(rootPath) +
-                generateRelativeRunPath(currentIndeces, this);
+                al::File::conformPathToOS(
+                    generateRelativeRunPath(currentIndeces, this));
     if (path.size() > 0) {
       paths.push_back(path);
     }

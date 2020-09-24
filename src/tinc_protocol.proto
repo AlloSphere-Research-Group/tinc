@@ -148,10 +148,32 @@ message ConfigureDiskBuffer {
   google.protobuf.Any configurationValue = 3;
 }
 
+enum DataPoolConfigureType {
+    SLICE_CACHE_DIR = 0;
+}
+
+message ConfigureDataPool {
+  string id = 1;
+  DataPoolConfigureType configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
 // Commands
 
+message Command {
+    uint32 message_id = 1;
+    ObjectId id = 2;
+    google.protobuf.Any details = 3;
+}
 
+message DataPoolCommandSlice {
+    string field = 1;
+    repeated string dimension = 2;
+}
 
+message DataPoolCommandSliceReply {
+    string filename = 1;
+}
 
 
 

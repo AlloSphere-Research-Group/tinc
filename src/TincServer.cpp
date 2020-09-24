@@ -205,8 +205,14 @@ void TincServer::registerDataPool(DataPool &dp) {
   registerParameterSpace(dp.getParameterSpace());
   if (!registered) {
     mDataPools.push_back(&dp);
+    dp.modified = [&]() {
+      for (auto dst : mServerConnections) {
+        sendConfigureDataPoolMessage(&dp, dst.get());
+      }
+    };
   } else {
-
+    // FIXME replace entry in mDataPools wiht this one if it is not the same
+    // instance
     if (mVerbose) {
       std::cout << "DiskBuffer: " << dp.getId() << " already registered.";
     }
@@ -286,8 +292,9 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::COMMAND:
-        std::cout << "Command command received, but not implemented"
-                  << std::endl;
+        if (!runCommand(objectType, (void *)&details, src)) {
+          std::cerr << "Error processing configure command" << std::endl;
+        }
         break;
       case MessageType::PING:
         std::cout << "Ping command received, but not implemented" << std::endl;

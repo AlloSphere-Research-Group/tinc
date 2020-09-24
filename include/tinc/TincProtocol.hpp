@@ -19,18 +19,24 @@ public:
 
   void runRequest(int objectType, std::string objectId, al::Socket *src);
 
+  // Outgoing messages
   void sendParameters(al::Socket *dst);
   void sendParameterSpace(al::Socket *dst);
   void sendProcessors(al::Socket *dst);
   void sendDataPools(al::Socket *dst);
   void sendDiskBuffers(al::Socket *dst);
+
   void sendRegisterProcessorMessage(Processor *p, al::Socket *dst);
   void sendConfigureProcessorMessage(Processor *p, al::Socket *dst);
+
   void sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst);
+  void sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst);
+
   void sendRegisterDiskBufferMessage(AbstractDiskBuffer *p, al::Socket *dst);
   void sendRegisterParameterSpaceMessage(ParameterSpace *p, al::Socket *dst);
   void sendRegisterParameterSpaceDimensionMessage(ParameterSpaceDimension *dim,
                                                   al::Socket *dst);
+
   void sendParameterSpaceMessage(ParameterSpaceDimension *dim, al::Socket *dst);
   void sendParameterFloatDetails(al::Parameter *param, al::Socket *dst);
   void sendParameterIntDetails(al::ParameterInt *param, al::Socket *dst);
@@ -52,14 +58,16 @@ public:
 
   bool sendProtobufMessage(void *message, al::Socket *dst);
 
-  bool processObjectCommand(al::Message &message, al::Socket *src);
-
+  // Incoming
   bool runConfigure(int objectType, void *any, al::Socket *src);
   bool processConfigureParameter(void *any, al::Socket *src);
   bool processConfigureParameterSpace(al::Message &message, al::Socket *src);
   bool processConfigureProcessor(al::Message &message, al::Socket *src);
   bool processConfigureDataPool(al::Message &message, al::Socket *src);
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
+
+  bool runCommand(int objectType, void *any, al::Socket *src);
+  bool processCommandDataPool(void *any, al::Socket *src);
 
   virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;
 
