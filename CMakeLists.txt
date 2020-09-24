@@ -94,11 +94,18 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(protobufProject source_dir)
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(protobuflib protobufd)
+if(WIN32)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(protobuflib libprotobufd)
+    else()
+        set(protobuflib libprotobuf)
+    endif()
 else()
-    set(protobuflib protobuf)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(protobuflib protobufd)
+    else()
+        set(protobuflib protobuf)
+    endif()
 endif()
 
 message("Using protobuf at: ${source_dir}")
