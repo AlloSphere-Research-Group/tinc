@@ -792,7 +792,7 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
 bool TincProtocol::runCommand(int objectType, void *any, al::Socket *src) {
   switch (objectType) {
   case PARAMETER:
-  //          return processCommandParameter(any, src);
+    return processCommandParameter(any, src);
   case PROCESSOR:
   //    return sendProcessors(src);
   case DISK_BUFFER:
@@ -803,6 +803,79 @@ bool TincProtocol::runCommand(int objectType, void *any, al::Socket *src) {
   case PARAMETER_SPACE:
     //    return sendParameterSpace(src);
     break;
+  }
+  return false;
+}
+
+bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<Command>()) {
+    std::cerr << "Error: Invalid payload for Command" << std::endl;
+    return false;
+  }
+  Command command;
+  details->UnpackTo(&command);
+  uint32_t commandNumber = command.message_id();
+  if (command.details().Is<ParameterRequestChoiceElements>()) {
+
+    std::vector<std::string> elements;
+    auto id = command.id().id();
+    for (auto *param : mParameters) {
+      if (param->getFullAddress() == id) {
+        if (strcmp(typeid(*param).name(), typeid(al::ParameterChoice).name()) ==
+            0) {
+          elements = dynamic_cast<al::ParameterChoice *>(param)->getElements();
+          break;
+        }
+      }
+    }
+    for (auto *ps : mParameterSpaces) {
+      for (auto dim : ps->dimensions) {
+        if (dim->getFullAddress() == id) {
+          if (strcmp(typeid(dim->parameter()).name(),
+                     typeid(al::ParameterChoice).name()) == 0) {
+            elements = dynamic_cast<al::ParameterChoice *>(&dim->parameter())
+                           ->getElements();
+            break;
+          }
+        }
+      }
+    }
+    for (auto dim : mParameterSpaceDimensions) {
+      if (dim->getFullAddress() == id) {
+        if (strcmp(typeid(dim->parameter()).name(),
+                   typeid(al::ParameterChoice).name()) == 0) {
+          elements = dynamic_cast<al::ParameterChoice *>(&dim->parameter())
+                         ->getElements();
+          break;
+        }
+      }
+    }
+
+    TincMessage msg;
+    msg.set_messagetype(MessageType::COMMAND_REPLY);
+    msg.set_objecttype(ObjectType::PARAMETER);
+    auto *msgDetails = msg.details().New();
+
+    Command command;
+    command.set_message_id(commandNumber);
+    auto commandId = command.id();
+    commandId.set_id(id);
+
+    auto *commandDetails = command.details().New();
+    ParameterRequestChoiceElementsReply reply;
+    for (auto &elem : elements) {
+      reply.add_elements(elem);
+    }
+
+    commandDetails->PackFrom(reply);
+    command.set_allocated_details(commandDetails);
+
+    msgDetails->PackFrom(command);
+    msg.set_allocated_details(msgDetails);
+
+    sendProtobufMessage(&msg, src);
+    return true;
   }
   return false;
 }

@@ -67,6 +67,7 @@ public:
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
 
   bool runCommand(int objectType, void *any, al::Socket *src);
+  bool processCommandParameter(void *any, al::Socket *src);
   bool processCommandDataPool(void *any, al::Socket *src);
 
   virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;

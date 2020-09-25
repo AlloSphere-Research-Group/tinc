@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[16]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[18]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -81,6 +81,12 @@ extern DataPoolCommandSliceReplyDefaultTypeInternal _DataPoolCommandSliceReply_d
 class ObjectId;
 class ObjectIdDefaultTypeInternal;
 extern ObjectIdDefaultTypeInternal _ObjectId_default_instance_;
+class ParameterRequestChoiceElements;
+class ParameterRequestChoiceElementsDefaultTypeInternal;
+extern ParameterRequestChoiceElementsDefaultTypeInternal _ParameterRequestChoiceElements_default_instance_;
+class ParameterRequestChoiceElementsReply;
+class ParameterRequestChoiceElementsReplyDefaultTypeInternal;
+extern ParameterRequestChoiceElementsReplyDefaultTypeInternal _ParameterRequestChoiceElementsReply_default_instance_;
 class ParameterSpaceValues;
 class ParameterSpaceValuesDefaultTypeInternal;
 extern ParameterSpaceValuesDefaultTypeInternal _ParameterSpaceValues_default_instance_;
@@ -115,6 +121,8 @@ template<> ::tinc::ConfigureProcessor* Arena::CreateMaybeMessage<::tinc::Configu
 template<> ::tinc::DataPoolCommandSlice* Arena::CreateMaybeMessage<::tinc::DataPoolCommandSlice>(Arena*);
 template<> ::tinc::DataPoolCommandSliceReply* Arena::CreateMaybeMessage<::tinc::DataPoolCommandSliceReply>(Arena*);
 template<> ::tinc::ObjectId* Arena::CreateMaybeMessage<::tinc::ObjectId>(Arena*);
+template<> ::tinc::ParameterRequestChoiceElements* Arena::CreateMaybeMessage<::tinc::ParameterRequestChoiceElements>(Arena*);
+template<> ::tinc::ParameterRequestChoiceElementsReply* Arena::CreateMaybeMessage<::tinc::ParameterRequestChoiceElementsReply>(Arena*);
 template<> ::tinc::ParameterSpaceValues* Arena::CreateMaybeMessage<::tinc::ParameterSpaceValues>(Arena*);
 template<> ::tinc::ParameterValue* Arena::CreateMaybeMessage<::tinc::ParameterValue>(Arena*);
 template<> ::tinc::RegisterDataPool* Arena::CreateMaybeMessage<::tinc::RegisterDataPool>(Arena*);
@@ -2939,6 +2947,282 @@ class Command PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class ParameterRequestChoiceElements PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterRequestChoiceElements) */ {
+ public:
+  inline ParameterRequestChoiceElements() : ParameterRequestChoiceElements(nullptr) {}
+  virtual ~ParameterRequestChoiceElements();
+
+  ParameterRequestChoiceElements(const ParameterRequestChoiceElements& from);
+  ParameterRequestChoiceElements(ParameterRequestChoiceElements&& from) noexcept
+    : ParameterRequestChoiceElements() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterRequestChoiceElements& operator=(const ParameterRequestChoiceElements& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterRequestChoiceElements& operator=(ParameterRequestChoiceElements&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterRequestChoiceElements& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterRequestChoiceElements* internal_default_instance() {
+    return reinterpret_cast<const ParameterRequestChoiceElements*>(
+               &_ParameterRequestChoiceElements_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    14;
+
+  friend void swap(ParameterRequestChoiceElements& a, ParameterRequestChoiceElements& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterRequestChoiceElements* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterRequestChoiceElements* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterRequestChoiceElements* New() const final {
+    return CreateMaybeMessage<ParameterRequestChoiceElements>(nullptr);
+  }
+
+  ParameterRequestChoiceElements* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterRequestChoiceElements>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterRequestChoiceElements& from);
+  void MergeFrom(const ParameterRequestChoiceElements& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterRequestChoiceElements* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterRequestChoiceElements";
+  }
+  protected:
+  explicit ParameterRequestChoiceElements(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterRequestChoiceElements)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ParameterRequestChoiceElementsReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterRequestChoiceElementsReply) */ {
+ public:
+  inline ParameterRequestChoiceElementsReply() : ParameterRequestChoiceElementsReply(nullptr) {}
+  virtual ~ParameterRequestChoiceElementsReply();
+
+  ParameterRequestChoiceElementsReply(const ParameterRequestChoiceElementsReply& from);
+  ParameterRequestChoiceElementsReply(ParameterRequestChoiceElementsReply&& from) noexcept
+    : ParameterRequestChoiceElementsReply() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterRequestChoiceElementsReply& operator=(const ParameterRequestChoiceElementsReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterRequestChoiceElementsReply& operator=(ParameterRequestChoiceElementsReply&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterRequestChoiceElementsReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterRequestChoiceElementsReply* internal_default_instance() {
+    return reinterpret_cast<const ParameterRequestChoiceElementsReply*>(
+               &_ParameterRequestChoiceElementsReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(ParameterRequestChoiceElementsReply& a, ParameterRequestChoiceElementsReply& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterRequestChoiceElementsReply* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterRequestChoiceElementsReply* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterRequestChoiceElementsReply* New() const final {
+    return CreateMaybeMessage<ParameterRequestChoiceElementsReply>(nullptr);
+  }
+
+  ParameterRequestChoiceElementsReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterRequestChoiceElementsReply>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterRequestChoiceElementsReply& from);
+  void MergeFrom(const ParameterRequestChoiceElementsReply& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterRequestChoiceElementsReply* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterRequestChoiceElementsReply";
+  }
+  protected:
+  explicit ParameterRequestChoiceElementsReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kElementsFieldNumber = 1,
+  };
+  // repeated string elements = 1;
+  int elements_size() const;
+  private:
+  int _internal_elements_size() const;
+  public:
+  void clear_elements();
+  const std::string& elements(int index) const;
+  std::string* mutable_elements(int index);
+  void set_elements(int index, const std::string& value);
+  void set_elements(int index, std::string&& value);
+  void set_elements(int index, const char* value);
+  void set_elements(int index, const char* value, size_t size);
+  std::string* add_elements();
+  void add_elements(const std::string& value);
+  void add_elements(std::string&& value);
+  void add_elements(const char* value);
+  void add_elements(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& elements() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_elements();
+  private:
+  const std::string& _internal_elements(int index) const;
+  std::string* _internal_add_elements();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterRequestChoiceElementsReply)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> elements_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class DataPoolCommandSlice PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.DataPoolCommandSlice) */ {
  public:
@@ -2981,7 +3265,7 @@ class DataPoolCommandSlice PROTOBUF_FINAL :
                &_DataPoolCommandSlice_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    14;
+    16;
 
   friend void swap(DataPoolCommandSlice& a, DataPoolCommandSlice& b) {
     a.Swap(&b);
@@ -3151,7 +3435,7 @@ class DataPoolCommandSliceReply PROTOBUF_FINAL :
                &_DataPoolCommandSliceReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   friend void swap(DataPoolCommandSliceReply& a, DataPoolCommandSliceReply& b) {
     a.Swap(&b);
@@ -5824,6 +6108,88 @@ inline void Command::set_allocated_details(PROTOBUF_NAMESPACE_ID::Any* details) 
 
 // -------------------------------------------------------------------
 
+// ParameterRequestChoiceElements
+
+// -------------------------------------------------------------------
+
+// ParameterRequestChoiceElementsReply
+
+// repeated string elements = 1;
+inline int ParameterRequestChoiceElementsReply::_internal_elements_size() const {
+  return elements_.size();
+}
+inline int ParameterRequestChoiceElementsReply::elements_size() const {
+  return _internal_elements_size();
+}
+inline void ParameterRequestChoiceElementsReply::clear_elements() {
+  elements_.Clear();
+}
+inline std::string* ParameterRequestChoiceElementsReply::add_elements() {
+  // @@protoc_insertion_point(field_add_mutable:tinc.ParameterRequestChoiceElementsReply.elements)
+  return _internal_add_elements();
+}
+inline const std::string& ParameterRequestChoiceElementsReply::_internal_elements(int index) const {
+  return elements_.Get(index);
+}
+inline const std::string& ParameterRequestChoiceElementsReply::elements(int index) const {
+  // @@protoc_insertion_point(field_get:tinc.ParameterRequestChoiceElementsReply.elements)
+  return _internal_elements(index);
+}
+inline std::string* ParameterRequestChoiceElementsReply::mutable_elements(int index) {
+  // @@protoc_insertion_point(field_mutable:tinc.ParameterRequestChoiceElementsReply.elements)
+  return elements_.Mutable(index);
+}
+inline void ParameterRequestChoiceElementsReply::set_elements(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:tinc.ParameterRequestChoiceElementsReply.elements)
+  elements_.Mutable(index)->assign(value);
+}
+inline void ParameterRequestChoiceElementsReply::set_elements(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:tinc.ParameterRequestChoiceElementsReply.elements)
+  elements_.Mutable(index)->assign(std::move(value));
+}
+inline void ParameterRequestChoiceElementsReply::set_elements(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  elements_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline void ParameterRequestChoiceElementsReply::set_elements(int index, const char* value, size_t size) {
+  elements_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline std::string* ParameterRequestChoiceElementsReply::_internal_add_elements() {
+  return elements_.Add();
+}
+inline void ParameterRequestChoiceElementsReply::add_elements(const std::string& value) {
+  elements_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline void ParameterRequestChoiceElementsReply::add_elements(std::string&& value) {
+  elements_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline void ParameterRequestChoiceElementsReply::add_elements(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  elements_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline void ParameterRequestChoiceElementsReply::add_elements(const char* value, size_t size) {
+  elements_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:tinc.ParameterRequestChoiceElementsReply.elements)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+ParameterRequestChoiceElementsReply::elements() const {
+  // @@protoc_insertion_point(field_list:tinc.ParameterRequestChoiceElementsReply.elements)
+  return elements_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+ParameterRequestChoiceElementsReply::mutable_elements() {
+  // @@protoc_insertion_point(field_mutable_list:tinc.ParameterRequestChoiceElementsReply.elements)
+  return &elements_;
+}
+
+// -------------------------------------------------------------------
+
 // DataPoolCommandSlice
 
 // string field = 1;
@@ -6031,6 +6397,10 @@ inline void DataPoolCommandSliceReply::set_allocated_filename(std::string* filen
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

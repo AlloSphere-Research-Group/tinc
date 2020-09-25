@@ -166,6 +166,13 @@ message Command {
     google.protobuf.Any details = 3;
 }
 
+message ParameterRequestChoiceElements {
+}
+
+message ParameterRequestChoiceElementsReply {
+    repeated string elements = 1;
+}
+
 message DataPoolCommandSlice {
     string field = 1;
     repeated string dimension = 2;
@@ -174,6 +181,7 @@ message DataPoolCommandSlice {
 message DataPoolCommandSliceReply {
     string filename = 1;
 }
+
 
 
 
