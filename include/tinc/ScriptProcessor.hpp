@@ -43,7 +43,7 @@ public:
 
   // Copy constructor
   ScriptProcessor(ScriptProcessor &p)
-      : mScriptCommand(p.mScriptCommand), mScriptName(p.mScriptName) {}
+      : Processor(p), mScriptCommand(p.mScriptCommand), mScriptName(p.mScriptName) {}
 
   /**
    * @brief Set the script's main command (e.g. python)
