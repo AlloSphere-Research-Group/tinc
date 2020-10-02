@@ -12,9 +12,29 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 # Build test binary
-file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
+# file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
+set(TEST_SOURCES main.cpp 
+  scriptprocessor.cpp
+  tincprotocol.cpp
+  tincprotocol_datapools.cpp
+  tincprotocol_diskbuffers.cpp
+  tincprotocol_parameters.cpp
+  tincprotocol_parameterspaces.cpp
+  tincprotocol_processors.cpp
+)
 
 add_executable(tinc_tests ${TEST_SOURCES})
+
+set_target_properties(tinc_tests PROPERTIES
+  CXX_STANDARD 14
+  CXX_STANDARD_REQUIRED ON
+  # RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
+  # RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/bin
+  # RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_LIST_DIR}/bin
+)
+
+
+
 
 add_test(NAME tinc_tests COMMAND tinc_tests)
 

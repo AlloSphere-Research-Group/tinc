@@ -96,6 +96,9 @@ public:
   typedef std::map<std::string, VariantValue> Configuration;
 
   Processor(std::string id_ = "") { setId(id_); }
+  Processor(Processor &p)
+      : mInputDirectory(p.mInputDirectory), mOutputDirectory(p.mOutputDirectory), mRunningDirectory(p.mRunningDirectory) {}
+
   virtual ~Processor() {}
 
   /**
