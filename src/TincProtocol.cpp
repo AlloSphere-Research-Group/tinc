@@ -801,7 +801,7 @@ bool TincProtocol::runCommand(int objectType, void *any, al::Socket *src) {
   case DATA_POOL:
     return processCommandDataPool(any, src);
   case PARAMETER_SPACE:
-    //    return sendParameterSpace(src);
+    return processCommandParameterSpace(any, src);
     break;
   }
   return false;
@@ -917,6 +917,85 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         auto *commandDetails = command.details().New();
         DataPoolCommandSliceReply reply;
         reply.set_filename(sliceName);
+
+        commandDetails->PackFrom(reply);
+        command.set_allocated_details(commandDetails);
+
+        msgDetails->PackFrom(command);
+        msg.set_allocated_details(msgDetails);
+
+        sendProtobufMessage(&msg, src);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<Command>()) {
+    std::cerr << "Error: Invalid payload for Command" << std::endl;
+    return false;
+  }
+  Command command;
+  details->UnpackTo(&command);
+  uint32_t commandNumber = command.message_id();
+  if (command.details().Is<ParameterSpaceRequestCurrentPath>()) {
+    ParameterSpaceRequestCurrentPath request;
+    command.details().UnpackTo(&request);
+    auto psId = command.id().id();
+    for (auto ps : mParameterSpaces) {
+      if (ps->getId() == psId) {
+        auto curDir = ps->currentRunPath();
+        // Send slice name
+        std::cout << commandNumber << ":****: " << curDir << std::endl;
+        TincMessage msg;
+        msg.set_messagetype(MessageType::COMMAND_REPLY);
+        msg.set_objecttype(ObjectType::PARAMETER_SPACE);
+        auto *msgDetails = msg.details().New();
+
+        Command command;
+        command.set_message_id(commandNumber);
+        auto commandId = command.id();
+        commandId.set_id(psId);
+
+        auto *commandDetails = command.details().New();
+        ParameterSpaceRequestCurrentPathReply reply;
+        reply.set_path(curDir);
+
+        commandDetails->PackFrom(reply);
+        command.set_allocated_details(commandDetails);
+
+        msgDetails->PackFrom(command);
+        msg.set_allocated_details(msgDetails);
+
+        sendProtobufMessage(&msg, src);
+        return true;
+      }
+    }
+  } else if (command.details().Is<ParameterSpaceRequestRootPath>()) {
+    ParameterSpaceRequestRootPath request;
+    command.details().UnpackTo(&request);
+    auto psId = command.id().id();
+    for (auto ps : mParameterSpaces) {
+      if (ps->getId() == psId) {
+        auto rootPath = ps->rootPath;
+        // Send slice name
+        std::cout << commandNumber << ":****: " << rootPath << std::endl;
+        TincMessage msg;
+        msg.set_messagetype(MessageType::COMMAND_REPLY);
+        msg.set_objecttype(ObjectType::PARAMETER_SPACE);
+        auto *msgDetails = msg.details().New();
+
+        Command command;
+        command.set_message_id(commandNumber);
+        auto commandId = command.id();
+        commandId.set_id(psId);
+
+        auto *commandDetails = command.details().New();
+        ParameterSpaceRequestRootPathReply reply;
+        reply.set_path(rootPath);
 
         commandDetails->PackFrom(reply);
         command.set_allocated_details(commandDetails);

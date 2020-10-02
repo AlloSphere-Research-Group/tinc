@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[18]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[22]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -87,6 +87,18 @@ extern ParameterRequestChoiceElementsDefaultTypeInternal _ParameterRequestChoice
 class ParameterRequestChoiceElementsReply;
 class ParameterRequestChoiceElementsReplyDefaultTypeInternal;
 extern ParameterRequestChoiceElementsReplyDefaultTypeInternal _ParameterRequestChoiceElementsReply_default_instance_;
+class ParameterSpaceRequestCurrentPath;
+class ParameterSpaceRequestCurrentPathDefaultTypeInternal;
+extern ParameterSpaceRequestCurrentPathDefaultTypeInternal _ParameterSpaceRequestCurrentPath_default_instance_;
+class ParameterSpaceRequestCurrentPathReply;
+class ParameterSpaceRequestCurrentPathReplyDefaultTypeInternal;
+extern ParameterSpaceRequestCurrentPathReplyDefaultTypeInternal _ParameterSpaceRequestCurrentPathReply_default_instance_;
+class ParameterSpaceRequestRootPath;
+class ParameterSpaceRequestRootPathDefaultTypeInternal;
+extern ParameterSpaceRequestRootPathDefaultTypeInternal _ParameterSpaceRequestRootPath_default_instance_;
+class ParameterSpaceRequestRootPathReply;
+class ParameterSpaceRequestRootPathReplyDefaultTypeInternal;
+extern ParameterSpaceRequestRootPathReplyDefaultTypeInternal _ParameterSpaceRequestRootPathReply_default_instance_;
 class ParameterSpaceValues;
 class ParameterSpaceValuesDefaultTypeInternal;
 extern ParameterSpaceValuesDefaultTypeInternal _ParameterSpaceValues_default_instance_;
@@ -123,6 +135,10 @@ template<> ::tinc::DataPoolCommandSliceReply* Arena::CreateMaybeMessage<::tinc::
 template<> ::tinc::ObjectId* Arena::CreateMaybeMessage<::tinc::ObjectId>(Arena*);
 template<> ::tinc::ParameterRequestChoiceElements* Arena::CreateMaybeMessage<::tinc::ParameterRequestChoiceElements>(Arena*);
 template<> ::tinc::ParameterRequestChoiceElementsReply* Arena::CreateMaybeMessage<::tinc::ParameterRequestChoiceElementsReply>(Arena*);
+template<> ::tinc::ParameterSpaceRequestCurrentPath* Arena::CreateMaybeMessage<::tinc::ParameterSpaceRequestCurrentPath>(Arena*);
+template<> ::tinc::ParameterSpaceRequestCurrentPathReply* Arena::CreateMaybeMessage<::tinc::ParameterSpaceRequestCurrentPathReply>(Arena*);
+template<> ::tinc::ParameterSpaceRequestRootPath* Arena::CreateMaybeMessage<::tinc::ParameterSpaceRequestRootPath>(Arena*);
+template<> ::tinc::ParameterSpaceRequestRootPathReply* Arena::CreateMaybeMessage<::tinc::ParameterSpaceRequestRootPathReply>(Arena*);
 template<> ::tinc::ParameterSpaceValues* Arena::CreateMaybeMessage<::tinc::ParameterSpaceValues>(Arena*);
 template<> ::tinc::ParameterValue* Arena::CreateMaybeMessage<::tinc::ParameterValue>(Arena*);
 template<> ::tinc::RegisterDataPool* Arena::CreateMaybeMessage<::tinc::RegisterDataPool>(Arena*);
@@ -3223,6 +3239,542 @@ class ParameterRequestChoiceElementsReply PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class ParameterSpaceRequestCurrentPath PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterSpaceRequestCurrentPath) */ {
+ public:
+  inline ParameterSpaceRequestCurrentPath() : ParameterSpaceRequestCurrentPath(nullptr) {}
+  virtual ~ParameterSpaceRequestCurrentPath();
+
+  ParameterSpaceRequestCurrentPath(const ParameterSpaceRequestCurrentPath& from);
+  ParameterSpaceRequestCurrentPath(ParameterSpaceRequestCurrentPath&& from) noexcept
+    : ParameterSpaceRequestCurrentPath() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterSpaceRequestCurrentPath& operator=(const ParameterSpaceRequestCurrentPath& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterSpaceRequestCurrentPath& operator=(ParameterSpaceRequestCurrentPath&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterSpaceRequestCurrentPath& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterSpaceRequestCurrentPath* internal_default_instance() {
+    return reinterpret_cast<const ParameterSpaceRequestCurrentPath*>(
+               &_ParameterSpaceRequestCurrentPath_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(ParameterSpaceRequestCurrentPath& a, ParameterSpaceRequestCurrentPath& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterSpaceRequestCurrentPath* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterSpaceRequestCurrentPath* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterSpaceRequestCurrentPath* New() const final {
+    return CreateMaybeMessage<ParameterSpaceRequestCurrentPath>(nullptr);
+  }
+
+  ParameterSpaceRequestCurrentPath* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterSpaceRequestCurrentPath>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterSpaceRequestCurrentPath& from);
+  void MergeFrom(const ParameterSpaceRequestCurrentPath& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterSpaceRequestCurrentPath* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterSpaceRequestCurrentPath";
+  }
+  protected:
+  explicit ParameterSpaceRequestCurrentPath(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterSpaceRequestCurrentPath)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ParameterSpaceRequestCurrentPathReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterSpaceRequestCurrentPathReply) */ {
+ public:
+  inline ParameterSpaceRequestCurrentPathReply() : ParameterSpaceRequestCurrentPathReply(nullptr) {}
+  virtual ~ParameterSpaceRequestCurrentPathReply();
+
+  ParameterSpaceRequestCurrentPathReply(const ParameterSpaceRequestCurrentPathReply& from);
+  ParameterSpaceRequestCurrentPathReply(ParameterSpaceRequestCurrentPathReply&& from) noexcept
+    : ParameterSpaceRequestCurrentPathReply() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterSpaceRequestCurrentPathReply& operator=(const ParameterSpaceRequestCurrentPathReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterSpaceRequestCurrentPathReply& operator=(ParameterSpaceRequestCurrentPathReply&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterSpaceRequestCurrentPathReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterSpaceRequestCurrentPathReply* internal_default_instance() {
+    return reinterpret_cast<const ParameterSpaceRequestCurrentPathReply*>(
+               &_ParameterSpaceRequestCurrentPathReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    17;
+
+  friend void swap(ParameterSpaceRequestCurrentPathReply& a, ParameterSpaceRequestCurrentPathReply& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterSpaceRequestCurrentPathReply* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterSpaceRequestCurrentPathReply* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterSpaceRequestCurrentPathReply* New() const final {
+    return CreateMaybeMessage<ParameterSpaceRequestCurrentPathReply>(nullptr);
+  }
+
+  ParameterSpaceRequestCurrentPathReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterSpaceRequestCurrentPathReply>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterSpaceRequestCurrentPathReply& from);
+  void MergeFrom(const ParameterSpaceRequestCurrentPathReply& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterSpaceRequestCurrentPathReply* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterSpaceRequestCurrentPathReply";
+  }
+  protected:
+  explicit ParameterSpaceRequestCurrentPathReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPathFieldNumber = 1,
+  };
+  // string path = 1;
+  void clear_path();
+  const std::string& path() const;
+  void set_path(const std::string& value);
+  void set_path(std::string&& value);
+  void set_path(const char* value);
+  void set_path(const char* value, size_t size);
+  std::string* mutable_path();
+  std::string* release_path();
+  void set_allocated_path(std::string* path);
+  private:
+  const std::string& _internal_path() const;
+  void _internal_set_path(const std::string& value);
+  std::string* _internal_mutable_path();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterSpaceRequestCurrentPathReply)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr path_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ParameterSpaceRequestRootPath PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterSpaceRequestRootPath) */ {
+ public:
+  inline ParameterSpaceRequestRootPath() : ParameterSpaceRequestRootPath(nullptr) {}
+  virtual ~ParameterSpaceRequestRootPath();
+
+  ParameterSpaceRequestRootPath(const ParameterSpaceRequestRootPath& from);
+  ParameterSpaceRequestRootPath(ParameterSpaceRequestRootPath&& from) noexcept
+    : ParameterSpaceRequestRootPath() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterSpaceRequestRootPath& operator=(const ParameterSpaceRequestRootPath& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterSpaceRequestRootPath& operator=(ParameterSpaceRequestRootPath&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterSpaceRequestRootPath& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterSpaceRequestRootPath* internal_default_instance() {
+    return reinterpret_cast<const ParameterSpaceRequestRootPath*>(
+               &_ParameterSpaceRequestRootPath_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    18;
+
+  friend void swap(ParameterSpaceRequestRootPath& a, ParameterSpaceRequestRootPath& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterSpaceRequestRootPath* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterSpaceRequestRootPath* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterSpaceRequestRootPath* New() const final {
+    return CreateMaybeMessage<ParameterSpaceRequestRootPath>(nullptr);
+  }
+
+  ParameterSpaceRequestRootPath* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterSpaceRequestRootPath>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterSpaceRequestRootPath& from);
+  void MergeFrom(const ParameterSpaceRequestRootPath& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterSpaceRequestRootPath* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterSpaceRequestRootPath";
+  }
+  protected:
+  explicit ParameterSpaceRequestRootPath(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterSpaceRequestRootPath)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class ParameterSpaceRequestRootPathReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterSpaceRequestRootPathReply) */ {
+ public:
+  inline ParameterSpaceRequestRootPathReply() : ParameterSpaceRequestRootPathReply(nullptr) {}
+  virtual ~ParameterSpaceRequestRootPathReply();
+
+  ParameterSpaceRequestRootPathReply(const ParameterSpaceRequestRootPathReply& from);
+  ParameterSpaceRequestRootPathReply(ParameterSpaceRequestRootPathReply&& from) noexcept
+    : ParameterSpaceRequestRootPathReply() {
+    *this = ::std::move(from);
+  }
+
+  inline ParameterSpaceRequestRootPathReply& operator=(const ParameterSpaceRequestRootPathReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline ParameterSpaceRequestRootPathReply& operator=(ParameterSpaceRequestRootPathReply&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const ParameterSpaceRequestRootPathReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const ParameterSpaceRequestRootPathReply* internal_default_instance() {
+    return reinterpret_cast<const ParameterSpaceRequestRootPathReply*>(
+               &_ParameterSpaceRequestRootPathReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    19;
+
+  friend void swap(ParameterSpaceRequestRootPathReply& a, ParameterSpaceRequestRootPathReply& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(ParameterSpaceRequestRootPathReply* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(ParameterSpaceRequestRootPathReply* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ParameterSpaceRequestRootPathReply* New() const final {
+    return CreateMaybeMessage<ParameterSpaceRequestRootPathReply>(nullptr);
+  }
+
+  ParameterSpaceRequestRootPathReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<ParameterSpaceRequestRootPathReply>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ParameterSpaceRequestRootPathReply& from);
+  void MergeFrom(const ParameterSpaceRequestRootPathReply& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(ParameterSpaceRequestRootPathReply* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.ParameterSpaceRequestRootPathReply";
+  }
+  protected:
+  explicit ParameterSpaceRequestRootPathReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPathFieldNumber = 1,
+  };
+  // string path = 1;
+  void clear_path();
+  const std::string& path() const;
+  void set_path(const std::string& value);
+  void set_path(std::string&& value);
+  void set_path(const char* value);
+  void set_path(const char* value, size_t size);
+  std::string* mutable_path();
+  std::string* release_path();
+  void set_allocated_path(std::string* path);
+  private:
+  const std::string& _internal_path() const;
+  void _internal_set_path(const std::string& value);
+  std::string* _internal_mutable_path();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.ParameterSpaceRequestRootPathReply)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr path_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class DataPoolCommandSlice PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.DataPoolCommandSlice) */ {
  public:
@@ -3265,7 +3817,7 @@ class DataPoolCommandSlice PROTOBUF_FINAL :
                &_DataPoolCommandSlice_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    20;
 
   friend void swap(DataPoolCommandSlice& a, DataPoolCommandSlice& b) {
     a.Swap(&b);
@@ -3435,7 +3987,7 @@ class DataPoolCommandSliceReply PROTOBUF_FINAL :
                &_DataPoolCommandSliceReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    21;
 
   friend void swap(DataPoolCommandSliceReply& a, DataPoolCommandSliceReply& b) {
     a.Swap(&b);
@@ -6190,6 +6742,146 @@ ParameterRequestChoiceElementsReply::mutable_elements() {
 
 // -------------------------------------------------------------------
 
+// ParameterSpaceRequestCurrentPath
+
+// -------------------------------------------------------------------
+
+// ParameterSpaceRequestCurrentPathReply
+
+// string path = 1;
+inline void ParameterSpaceRequestCurrentPathReply::clear_path() {
+  path_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& ParameterSpaceRequestCurrentPathReply::path() const {
+  // @@protoc_insertion_point(field_get:tinc.ParameterSpaceRequestCurrentPathReply.path)
+  return _internal_path();
+}
+inline void ParameterSpaceRequestCurrentPathReply::set_path(const std::string& value) {
+  _internal_set_path(value);
+  // @@protoc_insertion_point(field_set:tinc.ParameterSpaceRequestCurrentPathReply.path)
+}
+inline std::string* ParameterSpaceRequestCurrentPathReply::mutable_path() {
+  // @@protoc_insertion_point(field_mutable:tinc.ParameterSpaceRequestCurrentPathReply.path)
+  return _internal_mutable_path();
+}
+inline const std::string& ParameterSpaceRequestCurrentPathReply::_internal_path() const {
+  return path_.Get();
+}
+inline void ParameterSpaceRequestCurrentPathReply::_internal_set_path(const std::string& value) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void ParameterSpaceRequestCurrentPathReply::set_path(std::string&& value) {
+  
+  path_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.ParameterSpaceRequestCurrentPathReply.path)
+}
+inline void ParameterSpaceRequestCurrentPathReply::set_path(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.ParameterSpaceRequestCurrentPathReply.path)
+}
+inline void ParameterSpaceRequestCurrentPathReply::set_path(const char* value,
+    size_t size) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.ParameterSpaceRequestCurrentPathReply.path)
+}
+inline std::string* ParameterSpaceRequestCurrentPathReply::_internal_mutable_path() {
+  
+  return path_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* ParameterSpaceRequestCurrentPathReply::release_path() {
+  // @@protoc_insertion_point(field_release:tinc.ParameterSpaceRequestCurrentPathReply.path)
+  return path_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void ParameterSpaceRequestCurrentPathReply::set_allocated_path(std::string* path) {
+  if (path != nullptr) {
+    
+  } else {
+    
+  }
+  path_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), path,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.ParameterSpaceRequestCurrentPathReply.path)
+}
+
+// -------------------------------------------------------------------
+
+// ParameterSpaceRequestRootPath
+
+// -------------------------------------------------------------------
+
+// ParameterSpaceRequestRootPathReply
+
+// string path = 1;
+inline void ParameterSpaceRequestRootPathReply::clear_path() {
+  path_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& ParameterSpaceRequestRootPathReply::path() const {
+  // @@protoc_insertion_point(field_get:tinc.ParameterSpaceRequestRootPathReply.path)
+  return _internal_path();
+}
+inline void ParameterSpaceRequestRootPathReply::set_path(const std::string& value) {
+  _internal_set_path(value);
+  // @@protoc_insertion_point(field_set:tinc.ParameterSpaceRequestRootPathReply.path)
+}
+inline std::string* ParameterSpaceRequestRootPathReply::mutable_path() {
+  // @@protoc_insertion_point(field_mutable:tinc.ParameterSpaceRequestRootPathReply.path)
+  return _internal_mutable_path();
+}
+inline const std::string& ParameterSpaceRequestRootPathReply::_internal_path() const {
+  return path_.Get();
+}
+inline void ParameterSpaceRequestRootPathReply::_internal_set_path(const std::string& value) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void ParameterSpaceRequestRootPathReply::set_path(std::string&& value) {
+  
+  path_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.ParameterSpaceRequestRootPathReply.path)
+}
+inline void ParameterSpaceRequestRootPathReply::set_path(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.ParameterSpaceRequestRootPathReply.path)
+}
+inline void ParameterSpaceRequestRootPathReply::set_path(const char* value,
+    size_t size) {
+  
+  path_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.ParameterSpaceRequestRootPathReply.path)
+}
+inline std::string* ParameterSpaceRequestRootPathReply::_internal_mutable_path() {
+  
+  return path_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* ParameterSpaceRequestRootPathReply::release_path() {
+  // @@protoc_insertion_point(field_release:tinc.ParameterSpaceRequestRootPathReply.path)
+  return path_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void ParameterSpaceRequestRootPathReply::set_allocated_path(std::string* path) {
+  if (path != nullptr) {
+    
+  } else {
+    
+  }
+  path_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), path,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.ParameterSpaceRequestRootPathReply.path)
+}
+
+// -------------------------------------------------------------------
+
 // DataPoolCommandSlice
 
 // string field = 1;
@@ -6397,6 +7089,14 @@ inline void DataPoolCommandSliceReply::set_allocated_filename(std::string* filen
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

@@ -173,6 +173,20 @@ message ParameterRequestChoiceElementsReply {
     repeated string elements = 1;
 }
 
+message ParameterSpaceRequestCurrentPath {
+}
+
+message ParameterSpaceRequestCurrentPathReply {
+    string path = 1;
+}
+
+message ParameterSpaceRequestRootPath {
+}
+
+message ParameterSpaceRequestRootPathReply {
+    string path = 1;
+}
+
 message DataPoolCommandSlice {
     string field = 1;
     repeated string dimension = 2;
