@@ -29,24 +29,17 @@ TEST(TincProtocol, MultiConnection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(1.0); // This should be removed
-  tserver.stop();
-  tclient.stop();
-
-  EXPECT_TRUE(false); // This test fails hanging.
-
-  return;
   al::al_sleep(0.3); // This should be removed
   TincClient tclient2;
-  EXPECT_TRUE(tclient.start());
+  EXPECT_TRUE(tclient2.start());
 
   al::al_sleep(0.3); // This should be removed
   TincClient tclient3;
-  EXPECT_TRUE(tclient.start());
+  EXPECT_TRUE(tclient3.start());
 
   al::al_sleep(0.3); // This should be removed
   TincClient tclient4;
-  EXPECT_TRUE(tclient.start());
+  EXPECT_TRUE(tclient4.start());
 
   al::al_sleep(1.0); // Give time to connect
   EXPECT_EQ(tserver.connectionCount(), 4);
