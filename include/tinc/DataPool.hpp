@@ -54,6 +54,8 @@ protected:
   bool getFieldFromFile(std::string field, std::string file, void *data,
                         size_t length);
 
+  std::string getFileType(std::string file);
+
 private:
   ParameterSpace *mParameterSpace;
   std::string mSliceCacheDirectory;
