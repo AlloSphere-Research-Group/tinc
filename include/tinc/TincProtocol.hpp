@@ -1,12 +1,12 @@
 #ifndef TINCPROTOCOL_HPP
 #define TINCPROTOCOL_HPP
 
-#include "al/protocol/al_CommandConnection.hpp"
 #include "al/io/al_Socket.hpp"
+#include "al/protocol/al_CommandConnection.hpp"
 #include "al/ui/al_ParameterServer.hpp"
 
-#include "tinc/DiskBuffer.hpp"
 #include "tinc/DataPool.hpp"
+#include "tinc/DiskBuffer.hpp"
 #include "tinc/ParameterSpace.hpp"
 #include "tinc/Processor.hpp"
 
@@ -93,11 +93,11 @@ public:
   virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;
 
   // Requests to server
-  void requestParameters(al::Socket *dst = nullptr);
-  void requestProcessors(al::Socket *dst = nullptr);
-  void requestDiskBuffers(al::Socket *dst = nullptr);
-  void requestDataPools(al::Socket *dst = nullptr);
-  void requestParameterSpaces(al::Socket *dst = nullptr);
+  void requestParameters(al::Socket *dst);
+  void requestProcessors(al::Socket *dst);
+  void requestDiskBuffers(al::Socket *dst);
+  void requestDataPools(al::Socket *dst);
+  void requestParameterSpaces(al::Socket *dst);
 
   al::ParameterMeta *getParameter(std::string name) {
     for (auto *param : mParameters) {

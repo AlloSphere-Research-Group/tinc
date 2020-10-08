@@ -13,7 +13,7 @@ TEST(TincProtocol, DataPools) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  // TODO create a data pool
+  ParameterSpace ps;
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
