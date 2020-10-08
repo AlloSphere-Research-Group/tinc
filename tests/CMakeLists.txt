@@ -21,6 +21,8 @@ set(TEST_SOURCES main.cpp
   tincprotocol_parameters.cpp
   tincprotocol_parameterspaces.cpp
   tincprotocol_processors.cpp
+
+  tincprotocol_remote_parameter.cpp
 )
 
 add_executable(tinc_tests ${TEST_SOURCES})

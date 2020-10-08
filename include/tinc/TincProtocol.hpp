@@ -17,7 +17,26 @@ public:
   // Data pool commands
   enum { CREATE_DATA_SLICE = 0x01 };
 
+  void registerParameterServer(al::ParameterServer &pserver);
+  void registerProcessor(Processor &processor);
+  void registerParameterSpace(ParameterSpace &ps);
+  void registerParameter(al::ParameterMeta &param);
+  void registerParameterSpaceDimension(ParameterSpaceDimension &psd);
+  void registerDiskBuffer(AbstractDiskBuffer &db);
+  void registerDataPool(DataPool &dp);
+
+  TincProtocol &operator<<(al::ParameterMeta &p);
+  TincProtocol &operator<<(Processor &p);
+  TincProtocol &operator<<(ParameterSpace &p);
+  TincProtocol &operator<<(AbstractDiskBuffer &db);
+  TincProtocol &operator<<(DataPool &db);
+
+  // ----------------------------
+
   void runRequest(int objectType, std::string objectId, al::Socket *src);
+
+  bool runRegister(int objectType, void *any, al::Socket *src);
+  bool registerParameterFromClient(void *any, al::Socket *src);
 
   // Outgoing messages
   void sendParameters(al::Socket *dst);
@@ -33,7 +52,7 @@ public:
   void sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst);
 
   void sendRegisterDiskBufferMessage(AbstractDiskBuffer *p, al::Socket *dst);
-  void sendRegisterParameterSpaceMessage(ParameterSpace *p, al::Socket *dst);
+  void sendRegisterParameterSpaceMessage(ParameterSpace *ps, al::Socket *dst);
   void sendRegisterParameterSpaceDimensionMessage(ParameterSpaceDimension *dim,
                                                   al::Socket *dst);
 
@@ -89,6 +108,13 @@ public:
     return nullptr;
   }
 
+  std::vector<ParameterSpaceDimension *> dimensions() {
+    // TODO protect possible race conditions.
+    return mParameterSpaceDimensions;
+  }
+
+  void setVerbose(bool v) { mVerbose = v; }
+
 protected:
   std::vector<al::ParameterMeta *> mParameters;
   std::vector<Processor *> mProcessors;
@@ -97,6 +123,8 @@ protected:
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
   std::vector<AbstractDiskBuffer *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
+
+  bool mVerbose{false};
 };
 
 } // namespace tinc

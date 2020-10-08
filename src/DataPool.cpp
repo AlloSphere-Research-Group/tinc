@@ -215,6 +215,8 @@ bool DataPool::getFieldFromFile(std::string field, std::string file,
 
 bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
                                 size_t length) {
+
+  auto fileType = getFileType(file);
   std::ifstream f(file);
   if (!f.good()) {
     std::cerr << "ERROR reading file: " << file << std::endl;
@@ -230,4 +232,9 @@ bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
     return false;
   }
   return true;
+}
+
+std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
+  std::string type;
+  return type;
 }
