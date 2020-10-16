@@ -544,7 +544,9 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterString).name()) == 0) { // al::Parameter
     al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    assert(1 == 0); // Implement!
+    p->registerChangeCallback([&, p](std::string value, al::ValueSource *src) {
+      sendParameterStringValue(value, p->getFullAddress(), src);
+    });
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
              0) { // al::ParameterPose
     al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
