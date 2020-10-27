@@ -2,7 +2,7 @@
 cd external
 CMAKE_BINARY=cmake
 mkdir hdf5_build
-git clone --depth 1 --branch hdf5-1_12_0 https://bitbucket.hdfgroup.org/scm/hdffv/hdf5.git
+git clone --depth 1 --branch hdf5-1_12_0 https://github.com/HDFGroup/hdf5.git
 $CMAKE_BINARY -S hdf5 -B hdf5_build -DBUILD_TESTING:BOOL=OFF -DHDF5_BUILD_EXAMPLES:BOOL=OFF -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON -DZLIB_USE_EXTERNAL:BOOL=OFF -DHDF5_BUILD_CPP_LIB:BOOL=OFF -DHDF5_BUILD_TOOLS:BOOL=OFF -DBUILD_STATIC:BOOL=ON
 $CMAKE_BINARY --build hdf5_build -- -j7
 $CMAKE_BINARY --install hdf5_build --prefix ./usr
