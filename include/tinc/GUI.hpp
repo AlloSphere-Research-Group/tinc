@@ -12,7 +12,7 @@ namespace tinc {
 // This Imgui panel can be created
 namespace gui {
 
-void drawControl(std::shared_ptr<ParameterSpaceDimension> dim);
+void drawControl(ParameterSpaceDimension *dim);
 
 void drawControls(ParameterSpace &ps);
 

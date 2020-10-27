@@ -6,8 +6,8 @@ namespace tinc {
 
 namespace gui {
 
-void drawControl(std::shared_ptr<tinc::ParameterSpaceDimension> dim) {
-  ImGui::PushID(dim.get());
+void drawControl(tinc::ParameterSpaceDimension *dim) {
+  ImGui::PushID(dim);
   if (dim->size() == 1) {
     std::string dimensionText = dim->getName() + ":" + dim->getCurrentId();
     ImGui::Text("%s", dimensionText.c_str());
@@ -44,12 +44,12 @@ void drawControl(std::shared_ptr<tinc::ParameterSpaceDimension> dim) {
 }
 
 void drawControls(ParameterSpace &ps) {
-    // This causes a crash because dim point to null. Not sure why...
-  //for (auto dim : ps.dimensions) {
+  // This causes a crash because dim point to null. Not sure why...
+  // for (auto dim : ps.dimensions) {
   //  drawControl(dim);
   //}
   for (size_t i = 0; i < ps.dimensions.size(); i++) {
-      drawControl(ps.dimensions[i]);
+    drawControl(ps.dimensions[i].get());
   }
 }
 
