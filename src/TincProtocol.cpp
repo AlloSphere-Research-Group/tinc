@@ -1,10 +1,10 @@
-#include "tinc/TincClient.hpp"
 #include "tinc/ComputationChain.hpp"
 #include "tinc/CppProcessor.hpp"
-#include "tinc/ProcessorAsync.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
 #include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/ProcessorAsync.hpp"
+#include "tinc/TincClient.hpp"
 
 #include <iostream>
 #include <memory>
@@ -196,7 +196,9 @@ createParameterIntInfoMessage(al::ParameterInt *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MIN);
     ParameterValue val;
     val.set_valueint32(param->min());
-    confMessage.configurationvalue().New()->PackFrom(val);
+    google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
+    valueAny->PackFrom(val);
+    confMessage.set_allocated_configurationvalue(valueAny);
 
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
@@ -214,7 +216,9 @@ createParameterIntInfoMessage(al::ParameterInt *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MAX);
     ParameterValue val;
     val.set_valueint32(param->max());
-    confMessage.configurationvalue().New()->PackFrom(val);
+    google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
+    valueAny->PackFrom(val);
+    confMessage.set_allocated_configurationvalue(valueAny);
 
     google::protobuf::Any *detailsAny = msg.details().New();
     detailsAny->PackFrom(confMessage);
@@ -485,7 +489,6 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
     mParameterSpaces.push_back(&ps);
     ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
                                  ParameterSpace *ps) {
-
       for (auto dim : ps->dimensions) {
         if (dim->getName() == changedDimension->getName()) {
           auto msg = createConfigureParameterFromDim(changedDimension);
@@ -599,23 +602,22 @@ void TincProtocol::registerParameterSpaceDimension(
           sendParameterFloatValue(value, psd.parameter().getFullAddress(), src);
         });
 
-    psd.onDimensionMetadataChange = [&](
-        ParameterSpaceDimension *changedDimension) {
-      registerParameterSpaceDimension(*changedDimension);
+    psd.onDimensionMetadataChange =
+        [&](ParameterSpaceDimension *changedDimension) {
+          registerParameterSpaceDimension(*changedDimension);
 
-      TincMessage msg =
-          createRegisterParameterMessage(&changedDimension->parameter());
-      sendTincMessage(&msg);
+          TincMessage msg =
+              createRegisterParameterMessage(&changedDimension->parameter());
+          sendTincMessage(&msg);
 
-      auto infoMessages =
-          createParameterInfoMessage(&changedDimension->parameter());
-      for (auto &msg : infoMessages) {
-        sendTincMessage(&msg);
-      }
-      msg = createConfigureParameterFromDim(changedDimension);
-      sendTincMessage(&msg);
-
-    };
+          auto infoMessages =
+              createParameterInfoMessage(&changedDimension->parameter());
+          for (auto &msg : infoMessages) {
+            sendTincMessage(&msg);
+          }
+          msg = createConfigureParameterFromDim(changedDimension);
+          sendTincMessage(&msg);
+        };
   } else {
     if (mVerbose) {
       std::cout << "ParameterSpaceDimension: " << psd.getFullAddress()
@@ -887,6 +889,114 @@ void TincProtocol::sendRegisterParameterMessage(al::ParameterMeta *param,
   }
 }
 
+bool TincProtocol::runRegister(int objectType, void *any, al::Socket *src) {
+  switch (objectType) {
+  case PARAMETER:
+    return processRegisterParameter(any, src);
+  case PROCESSOR:
+  //    return sendProcessors(src);
+  case DISK_BUFFER:
+    return processRegisterDiskBuffer(any, src);
+  case DATA_POOL:
+  //    return sendDataPools(src);
+  case PARAMETER_SPACE:
+    //    return sendParameterSpace(src);
+    break;
+  }
+  return false;
+}
+
+bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterParameter>()) {
+    std::cerr << "Error: Invalid payload for RegisterParameter" << std::endl;
+    return false;
+  }
+  RegisterParameter command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+  auto group = command.group();
+  auto def = command.defaultvalue();
+  auto datatype = command.datatype();
+  for (auto *param : mParameters) {
+    if (param->getName() == id && param->getGroup() == group) {
+      // TODO should we replace the existing parameter?
+      std::cout << "Parameter " << id << " already registered" << std::endl;
+      return true;
+    }
+  }
+  // ParameterSpaceDimension *param = nullptr;
+  al::ParameterInt *param = nullptr;
+  switch (datatype) {
+  case ParameterDataType::PARAMETER_FLOAT:
+    // param = new ParameterSpaceDimension(id, group);
+    // param->parameter().setDefault(def.valuefloat());
+    // registerParameterSpaceDimension(*param);
+    // sendRegisterParameterSpaceDimensionMessage(param, src);
+    break;
+  case ParameterDataType::PARAMETER_STRING:
+    // FIXME implement
+    //    param = new al::ParameterString(id, group, def.valuestring());
+    //    registerParameter(*param);
+    //    sendRegisterParameterMessage(param, src);
+    break;
+  case ParameterDataType::PARAMETER_INT32:
+    param = new al::ParameterInt(id, group, def.valueint32());
+    std::cout << " Parameter: " << id << std::endl;
+    registerParameter(*param);
+    std::cout << "between register ftn" << std::endl;
+    if (shouldSendMessage(src)) {
+      std::cout << "should send message" << std::endl;
+      sendRegisterParameterMessage(param, src);
+    } else {
+      std::cout << "should NOT send message" << std::endl;
+    }
+    break;
+  case ParameterDataType::PARAMETER_CHOICE:
+    // FIXME implement
+    //    param = new al::ParameterChoice(id, group, def.valueuint64());
+    //    registerParameter(*param);
+    //    sendRegisterParameterMessage(param, src);
+    break;
+  case ParameterDataType::PARAMETER_BOOL:
+    // FIXME implement
+    //    param = new al::ParameterBool(id, group, def.valuefloat());
+    //    registerParameter(*param);
+    //    sendRegisterParameterMessage(param, src);
+    break;
+  case ParameterDataType::PARAMETER_VEC3F:
+  case ParameterDataType::PARAMETER_VEC4F:
+  case ParameterDataType::PARAMETER_COLORF:
+  case ParameterDataType::PARAMETER_POSED:
+  case ParameterDataType::PARAMETER_MENU:
+  case ParameterDataType::PARAMETER_TRIGGER:
+    break;
+  }
+  if (param) {
+    return true;
+  }
+  return false;
+}
+
+bool TincProtocol::processRegisterParameterSpace(al::Message &message,
+                                                 al::Socket *src) {
+  return true;
+}
+
+bool TincProtocol::processRegisterProcessor(al::Message &message,
+                                            al::Socket *src) {
+  return true;
+}
+
+bool TincProtocol::processRegisterDataPool(al::Message &message,
+                                           al::Socket *src) {
+  return true;
+}
+
+bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
+  return true;
+}
+
 bool TincProtocol::runConfigure(int objectType, void *any, al::Socket *src) {
   switch (objectType) {
   case PARAMETER:
@@ -922,7 +1032,10 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterInt).name()) == 0) {
         al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-        p->set(v.valueint32());
+        std::cout << " value change from " << src->valueSource()->port
+                  << std::endl;
+        std::cout << " value: " << v.valueint32() << std::endl;
+        p->set(v.valueint32(), src->valueSource());
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterString).name()) == 0) { //
         al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
@@ -987,6 +1100,8 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterInt).name()) == 0) {
         al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+        std::cout << " min change from " << src->valueSource()->port
+                  << std::endl;
         p->min(v.valueint32());
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterString).name()) == 0) { //
@@ -1050,6 +1165,8 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterInt).name()) == 0) {
         al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+        std::cout << " max change from " << src->valueSource()->port
+                  << std::endl;
         p->max(v.valueint32());
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterString).name()) == 0) { //
@@ -1445,7 +1562,7 @@ void TincProtocol::requestParameters(al::Socket *dst) {
 
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
-  sendTincMessage(&msg);
+  sendProtobufMessage(&msg, dst);
 }
 
 void TincProtocol::requestProcessors(al::Socket *dst) {
@@ -1651,92 +1768,6 @@ void TincProtocol::runRequest(int objectType, std::string objectId,
   }
 }
 
-bool TincProtocol::runRegister(int objectType, void *any, al::Socket *src) {
-  switch (objectType) {
-  case PARAMETER:
-    return registerParameterFromClient(any, src);
-    break;
-  case PROCESSOR:
-    //        sendProcessors(src);
-    break;
-  case DISK_BUFFER:
-    //        sendDiskBuffers(src);
-    break;
-  case DATA_POOL:
-    //        sendDataPools(src);
-    break;
-  case PARAMETER_SPACE:
-    //        sendParameterSpace(src);
-    break;
-  }
-  return false;
-}
-
-bool TincProtocol::registerParameterFromClient(void *any, al::Socket *src) {
-  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
-  if (!details->Is<RegisterParameter>()) {
-    std::cerr << "Error: Invalid payload for RegisterParameter" << std::endl;
-    return false;
-  }
-  RegisterParameter command;
-  details->UnpackTo(&command);
-  auto id = command.id();
-  auto group = command.group();
-  auto def = command.defaultvalue();
-  auto datatype = command.datatype();
-  for (auto *param : mParameters) {
-    if (param->getName() == id && param->getGroup() == group) {
-      // TODO should we replace the existing parameter?
-      std::cout << "Parameter " << id << " already registered" << std::endl;
-      return true;
-    }
-  }
-  ParameterSpaceDimension *param = nullptr;
-  switch (datatype) {
-  case ParameterDataType::PARAMETER_FLOAT:
-    param = new ParameterSpaceDimension(id, group);
-    param->parameter().setDefault(def.valuefloat());
-    registerParameterSpaceDimension(*param);
-    sendRegisterParameterSpaceDimensionMessage(param, src);
-    break;
-  case ParameterDataType::PARAMETER_STRING:
-    // FIXME implement
-    //    param = new al::ParameterString(id, group, def.valuestring());
-    //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
-    break;
-  case ParameterDataType::PARAMETER_INT32:
-    // FIXME implement
-    //    param = new al::ParameterInt(id, group, def.valueint32());
-    //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
-    break;
-  case ParameterDataType::PARAMETER_CHOICE:
-    // FIXME implement
-    //    param = new al::ParameterChoice(id, group, def.valueuint64());
-    //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
-    break;
-  case ParameterDataType::PARAMETER_BOOL:
-    // FIXME implement
-    //    param = new al::ParameterBool(id, group, def.valuefloat());
-    //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
-    break;
-  case ParameterDataType::PARAMETER_VEC3F:
-  case ParameterDataType::PARAMETER_VEC4F:
-  case ParameterDataType::PARAMETER_COLORF:
-  case ParameterDataType::PARAMETER_POSED:
-  case ParameterDataType::PARAMETER_MENU:
-  case ParameterDataType::PARAMETER_TRIGGER:
-    break;
-  }
-  if (param) {
-    return true;
-  }
-  return false;
-}
-
 bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
 
   google::protobuf::Message &msg =
@@ -1751,7 +1782,8 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   auto bytes = dst->send(buffer, size + sizeof(size_t));
   if (bytes != size + sizeof(size_t)) {
     buffer[size + 1] = '\0';
-    std::cerr << "Failed to send: " << buffer << std::endl;
+    std::cerr << "Failed to send: " << buffer << "(" << strerror(errno) << ")"
+              << std::endl;
     free(buffer);
 
 #ifdef AL_WINDOWS

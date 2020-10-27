@@ -1,10 +1,10 @@
 #include "tinc/TincClient.hpp"
 #include "tinc/ComputationChain.hpp"
 #include "tinc/CppProcessor.hpp"
-#include "tinc/ProcessorAsync.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
 #include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/ProcessorAsync.hpp"
 
 #include <iostream>
 #include <memory>
@@ -27,8 +27,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
       break;
     }
     message.pushReadIndex(8);
-    std::cout << "Got " << msgSize << " of " << message.remainingBytes()
-              << std::endl;
+    if (verbose()) {
+      std::cout << "Client got " << msgSize << " of "
+                << message.remainingBytes() << std::endl;
+    }
     google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
     google::protobuf::io::CodedInputStream codedStream(&ais);
     TincMessage tincMessage;
@@ -57,10 +59,13 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REGISTER:
-        std::cout << "Register command received, but not implemented"
-                  << std::endl;
+        std::cout << "client register" << std::endl;
+        if (!runRegister(objectType, (void *)&details, src)) {
+          std::cerr << "Error processing register command" << std::endl;
+        }
         break;
       case MessageType::CONFIGURE:
+        std::cout << "client configure" << std::endl;
         if (!runConfigure(objectType, (void *)&details, src)) {
           std::cerr << "Error processing configure command" << std::endl;
         }
@@ -83,7 +88,9 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
     message.pushReadIndex(msgSize);
   }
 
-  std::cout << "message buffer : " << message.remainingBytes() << std::endl;
+  if (verbose()) {
+    std::cout << "message buffer : " << message.remainingBytes() << std::endl;
+  }
   //      tincMsessage->
 
   //  //      CodedInputStream coded_input(&ais);
@@ -109,8 +116,18 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
   return true;
 }
 
+bool TincClient::shouldSendMessage(al::Socket *dst) {
+  return !dst || mSocket.address() != dst->address() ||
+         mSocket.port() != dst->port();
+}
+
+void TincClient::setVerbose(bool verbose) {
+  CommandConnection::mVerbose = verbose;
+  TincProtocol::mVerbose = verbose;
+}
+
 void TincClient::sendTincMessage(void *msg, al::ValueSource *src) {
-  // No need to check src on client
-  if (!sendProtobufMessage(msg, &mSocket)) {
+  if (!src || mSocket.address() != src->ipAddr || mSocket.port() != src->port) {
+    sendProtobufMessage(msg, &mSocket);
   }
 }

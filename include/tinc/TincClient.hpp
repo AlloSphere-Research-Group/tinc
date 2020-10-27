@@ -21,13 +21,23 @@ public:
 
   void sendTincMessage(void *msg, al::ValueSource *src = nullptr) override;
 
-  void requestParameters() { TincProtocol::requestParameters(&mSocket); }
-  void requestProcessors() { TincProtocol::requestProcessors(&mSocket); }
-  void requestDiskBuffers() { TincProtocol::requestDiskBuffers(&mSocket); }
-  void requestDataPools() { TincProtocol::requestDataPools(&mSocket); }
-  void requestParameterSpaces() {
+  inline void sendParameters() { TincProtocol::sendParameters(&mSocket); }
+
+  inline void requestParameters() { TincProtocol::requestParameters(&mSocket); }
+  inline void requestProcessors() { TincProtocol::requestProcessors(&mSocket); }
+  inline void requestDiskBuffers() {
+    TincProtocol::requestDiskBuffers(&mSocket);
+  }
+  inline void requestDataPools() { TincProtocol::requestDataPools(&mSocket); }
+  inline void requestParameterSpaces() {
     TincProtocol::requestParameterSpaces(&mSocket);
   }
+
+  // determine if message needs to be propagated
+  bool shouldSendMessage(al::Socket *dst) override;
+
+  void setVerbose(bool verbose);
+  bool verbose() { return TincProtocol::mVerbose; }
 
 private:
 };

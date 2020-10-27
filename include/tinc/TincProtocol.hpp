@@ -31,13 +31,6 @@ public:
   TincProtocol &operator<<(AbstractDiskBuffer &db);
   TincProtocol &operator<<(DataPool &db);
 
-  // ----------------------------
-
-  void runRequest(int objectType, std::string objectId, al::Socket *src);
-
-  bool runRegister(int objectType, void *any, al::Socket *src);
-  bool registerParameterFromClient(void *any, al::Socket *src);
-
   // Outgoing messages
   void sendParameters(al::Socket *dst);
   void sendParameterSpace(al::Socket *dst);
@@ -78,6 +71,13 @@ public:
   bool sendProtobufMessage(void *message, al::Socket *dst);
 
   // Incoming
+  bool runRegister(int objectType, void *any, al::Socket *src);
+  bool processRegisterParameter(void *any, al::Socket *src);
+  bool processRegisterParameterSpace(al::Message &message, al::Socket *src);
+  bool processRegisterProcessor(al::Message &message, al::Socket *src);
+  bool processRegisterDataPool(al::Message &message, al::Socket *src);
+  bool processRegisterDiskBuffer(void *any, al::Socket *src);
+
   bool runConfigure(int objectType, void *any, al::Socket *src);
   bool processConfigureParameter(void *any, al::Socket *src);
   bool processConfigureParameterSpace(al::Message &message, al::Socket *src);
@@ -90,14 +90,20 @@ public:
   bool processCommandDataPool(void *any, al::Socket *src);
   bool processCommandParameterSpace(void *any, al::Socket *src);
 
-  virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;
+  void runRequest(int objectType, std::string objectId, al::Socket *src);
 
-  // Requests to server
+  // Send requests for data
   void requestParameters(al::Socket *dst);
   void requestProcessors(al::Socket *dst);
   void requestDiskBuffers(al::Socket *dst);
   void requestDataPools(al::Socket *dst);
   void requestParameterSpaces(al::Socket *dst);
+
+  // determine if message needs to be propagated
+  virtual bool shouldSendMessage(al::Socket *dst) { return true; }
+
+  // Send tinc message. Overriden on TincServer or TincClient
+  virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;
 
   al::ParameterMeta *getParameter(std::string name) {
     for (auto *param : mParameters) {

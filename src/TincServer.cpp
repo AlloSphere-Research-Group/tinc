@@ -1,10 +1,10 @@
 #include "tinc/TincServer.hpp"
 #include "tinc/ComputationChain.hpp"
 #include "tinc/CppProcessor.hpp"
-#include "tinc/ProcessorAsync.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
 #include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/ProcessorAsync.hpp"
 
 #include <iostream>
 #include <memory>
@@ -27,8 +27,10 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
       break;
     }
     message.pushReadIndex(8);
-    std::cout << "Got " << msgSize << " of " << message.remainingBytes()
-              << std::endl;
+    if (verbose()) {
+      std::cout << "Server got " << msgSize << " of "
+                << message.remainingBytes() << std::endl;
+    }
     google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
     google::protobuf::io::CodedInputStream codedStream(&ais);
     TincMessage tincMessage;
@@ -57,11 +59,13 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REGISTER:
+        std::cout << "server register" << std::endl;
         if (!runRegister(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing configure command" << std::endl;
+          std::cerr << "Error processing register command" << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
+        std::cout << "server configure" << std::endl;
         if (!runConfigure(objectType, (void *)&details, src)) {
           std::cerr << "Error processing configure command" << std::endl;
         }
@@ -85,7 +89,9 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
     message.pushReadIndex(msgSize);
   }
 
-  std::cout << "message buffer : " << message.remainingBytes() << std::endl;
+  if (verbose()) {
+    std::cout << "message buffer : " << message.remainingBytes() << std::endl;
+  }
   //      tincMsessage->
 
   //  //      CodedInputStream coded_input(&ais);
@@ -111,10 +117,26 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
   return true;
 }
 
+// bool TincServer::shouldSendMessage(al::Socket *dst) {
+//   // bool shouldSend = false;
+//   // for (auto connection : mServerConnections) {
+//   //   if (!src || connection->address() != src->ipAddr ||
+//   //       connection->port() != src->port) {
+//   //     sendProtobufMessage(msg, connection.get());
+//   //   }
+//   // }
+//   return true;
+// }
+
+void TincServer::setVerbose(bool verbose) {
+  CommandConnection::mVerbose = verbose;
+  TincProtocol::mVerbose = verbose;
+}
+
 void TincServer::sendTincMessage(void *msg, al::ValueSource *src) {
   for (auto connection : mServerConnections) {
-    if (!src || (connection->address() != src->ipAddr &&
-                 connection->port() != src->port)) {
+    if (!src || connection->address() != src->ipAddr ||
+        connection->port() != src->port) {
       sendProtobufMessage(msg, connection.get());
     }
   }
