@@ -714,11 +714,11 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMETER_TRI"
   "GGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY\020\000\022\010\n\004"
   "TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*"
-  "@\n\026ParameterConfigureType\022\t\n\005VALUE\020\000\022\007\n\003"
-  "MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003*+\n\027DiskBufferC"
-  "onfigureType\022\020\n\014CURRENT_FILE\020\000*,\n\025DataPo"
-  "olConfigureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006pr"
-  "oto3"
+  "P\n\026ParameterConfigureType\022\t\n\005VALUE\020\000\022\007\n\003"
+  "MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020"
+  "\004*+\n\027DiskBufferConfigureType\022\020\n\014CURRENT_"
+  "FILE\020\000*,\n\025DataPoolConfigureType\022\023\n\017SLICE"
+  "_CACHE_DIR\020\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
@@ -749,7 +749,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 2844,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 2860,
   &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 22, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
   file_level_metadata_tinc_5fprotocol_2eproto, 22, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
@@ -860,6 +860,7 @@ bool ParameterConfigureType_IsValid(int value) {
     case 1:
     case 2:
     case 3:
+    case 4:
       return true;
     default:
       return false;

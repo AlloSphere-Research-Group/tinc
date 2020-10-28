@@ -16,21 +16,21 @@ int main() {
   dimension1->push_back(0.3, "C");
   dimension1->push_back(0.4, "D");
   dimension1->push_back(0.5, "E");
-  dimension1->type = tinc::ParameterSpaceDimension::MAPPED;
+  dimension1->setSpaceType(tinc::ParameterSpaceDimension::ID);
 
   dimension2->push_back(10.1);
   dimension2->push_back(10.2);
   dimension2->push_back(10.3);
   dimension2->push_back(10.4);
   dimension2->push_back(10.5);
-  dimension2->type = tinc::ParameterSpaceDimension::INDEX;
+  dimension2->setSpaceType(tinc::ParameterSpaceDimension::INDEX);
 
   inner_param->push_back(1);
   inner_param->push_back(2);
   inner_param->push_back(3);
   inner_param->push_back(4);
   inner_param->push_back(5);
-  inner_param->type = tinc::ParameterSpaceDimension::INTERNAL;
+  inner_param->setSpaceType(tinc::ParameterSpaceDimension::VALUE);
 
   tinc::ParameterSpace ps;
 

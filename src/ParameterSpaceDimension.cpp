@@ -413,7 +413,7 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {
   auto dimCopy =
       std::make_shared<ParameterSpaceDimension>(getName(), getGroup());
   dimCopy->datatype = datatype;
-  dimCopy->type = type;
+  dimCopy->mType = mType;
   dimCopy->mIds = mIds;
   dimCopy->mValues = mValues;
   dimCopy->setCurrentIndex(getCurrentIndex());

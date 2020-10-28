@@ -13,7 +13,7 @@ int main() {
   tinc::ParameterSpace ps;
 
   auto dirDim =
-      ps.newDimension("dirDim", tinc::ParameterSpaceDimension::MAPPED);
+      ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
   uint8_t values[] = {0, 2, 4, 6, 8};
   dirDim->append(values, 5, "datapool_directory_");
 

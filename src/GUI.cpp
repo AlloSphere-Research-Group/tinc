@@ -12,22 +12,36 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
     std::string dimensionText = dim->getName() + ":" + dim->getCurrentId();
     ImGui::Text("%s", dimensionText.c_str());
   } else if (dim->size() > 1) {
-    if (dim->type == ParameterSpaceDimension::MAPPED) {
+    if (dim->getSpaceType() == ParameterSpaceDimension::ID) {
       int v = dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
-    } else if (dim->type == ParameterSpaceDimension::INDEX) {
+    } else if (dim->getSpaceType() == ParameterSpaceDimension::INDEX) {
       int v = dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
-    } else if (dim->type == ParameterSpaceDimension::INTERNAL) {
-      al::ParameterGUI::drawParameter(&dim->parameter());
+    } else if (dim->getSpaceType() == ParameterSpaceDimension::VALUE) {
+      float value = dim->getCurrentValue();
+      size_t previousIndex = dim->getCurrentIndex();
+      bool changed =
+          ImGui::SliderFloat(dim->getName().c_str(), &value,
+                             dim->parameter().min(), dim->parameter().max());
+      size_t newIndex = dim->getIndexForValue(value);
+      if (changed) {
+        if (dim->size() > 0) {
+          if (previousIndex != newIndex) {
+            dim->setCurrentIndex(newIndex);
+          }
+        } else {
+          dim->parameter().set(value);
+        }
+      }
     }
     ImGui::SameLine();
     if (ImGui::Button("-")) {
@@ -44,12 +58,8 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
 }
 
 void drawControls(ParameterSpace &ps) {
-  // This causes a crash because dim point to null. Not sure why...
-  // for (auto dim : ps.dimensions) {
-  //  drawControl(dim);
-  //}
-  for (size_t i = 0; i < ps.dimensions.size(); i++) {
-    drawControl(ps.dimensions[i].get());
+  for (auto dim : ps.getDimensions()) {
+    drawControl(dim.get());
   }
 }
 
