@@ -99,11 +99,12 @@ public:
   void requestDataPools(al::Socket *dst);
   void requestParameterSpaces(al::Socket *dst);
 
-  // determine if message needs to be propagated
-  virtual bool shouldSendMessage(al::Socket *dst) { return true; }
-
   // Send tinc message. Overriden on TincServer or TincClient
-  virtual void sendTincMessage(void *msg, al::ValueSource *src = nullptr) = 0;
+  virtual bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                               al::ValueSource *src = nullptr) {
+    std::cerr << "Using unimplemented virtual function" << std::endl;
+    return true;
+  }
 
   al::ParameterMeta *getParameter(std::string name) {
     for (auto *param : mParameters) {

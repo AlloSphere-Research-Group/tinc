@@ -22,10 +22,8 @@ public:
 
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
-  void sendTincMessage(void *msg, al::ValueSource *src = nullptr) override;
-
-  // determine if message needs to be propagated
-  // bool shouldSendMessage(al::Socket *dst) override;
+  bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                       al::ValueSource *src = nullptr) override;
 
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }

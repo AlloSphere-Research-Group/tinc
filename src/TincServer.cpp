@@ -117,27 +117,38 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
   return true;
 }
 
-// bool TincServer::shouldSendMessage(al::Socket *dst) {
-//   // bool shouldSend = false;
-//   // for (auto connection : mServerConnections) {
-//   //   if (!src || connection->address() != src->ipAddr ||
-//   //       connection->port() != src->port) {
-//   //     sendProtobufMessage(msg, connection.get());
-//   //   }
-//   // }
-//   return true;
-// }
-
 void TincServer::setVerbose(bool verbose) {
   CommandConnection::mVerbose = verbose;
   TincProtocol::mVerbose = verbose;
 }
 
-void TincServer::sendTincMessage(void *msg, al::ValueSource *src) {
-  for (auto connection : mServerConnections) {
-    if (!src || connection->address() != src->ipAddr ||
-        connection->port() != src->port) {
-      sendProtobufMessage(msg, connection.get());
+bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
+                                 al::ValueSource *src) {
+  bool ret = true;
+
+  if (!dst) {
+    for (auto connection : mServerConnections) {
+      if (!src || connection->address() != src->ipAddr ||
+          connection->port() != src->port) {
+        if (verbose()) {
+          std::cout << "Server sending message to " << connection->address()
+                    << ":" << connection->port() << std::endl;
+        }
+        ret &= sendProtobufMessage(msg, connection.get());
+      }
+    }
+  } else {
+    for (auto connection : mServerConnections) {
+      if (connection->address() != dst->address() ||
+          connection->port() != dst->port()) {
+        if (verbose()) {
+          std::cout << "Server sending message to " << connection->address()
+                    << ":" << connection->port() << std::endl;
+        }
+        ret &= sendProtobufMessage(msg, connection.get());
+      }
     }
   }
+
+  return ret;
 }

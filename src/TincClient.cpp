@@ -116,18 +116,34 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
   return true;
 }
 
-bool TincClient::shouldSendMessage(al::Socket *dst) {
-  return !dst || mSocket.address() != dst->address() ||
-         mSocket.port() != dst->port();
-}
-
 void TincClient::setVerbose(bool verbose) {
   CommandConnection::mVerbose = verbose;
   TincProtocol::mVerbose = verbose;
 }
 
-void TincClient::sendTincMessage(void *msg, al::ValueSource *src) {
-  if (!src || mSocket.address() != src->ipAddr || mSocket.port() != src->port) {
-    sendProtobufMessage(msg, &mSocket);
+bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
+                                 al::ValueSource *src) {
+  if (!dst) {
+    if (!src || mSocket.address() != src->ipAddr ||
+        mSocket.port() != src->port) {
+      if (verbose()) {
+        std::cout << "Client sending message to " << mSocket.address() << ":"
+                  << mSocket.port() << std::endl;
+      }
+      return sendProtobufMessage(msg, &mSocket);
+    }
+  } else {
+    if (mSocket.address() != dst->address() || mSocket.port() != dst->port()) {
+      if (verbose()) {
+        std::cout << "Client sending message to " << mSocket.address() << ":"
+                  << mSocket.port() << std::endl;
+      }
+      return sendProtobufMessage(msg, &mSocket);
+    }
   }
+
+  if (verbose()) {
+    std::cout << "Client not sending message back to server" << std::endl;
+  }
+  return true;
 }

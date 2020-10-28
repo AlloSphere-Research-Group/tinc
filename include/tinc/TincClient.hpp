@@ -19,7 +19,8 @@ public:
 
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
-  void sendTincMessage(void *msg, al::ValueSource *src = nullptr) override;
+  bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                       al::ValueSource *src = nullptr) override;
 
   inline void sendParameters() { TincProtocol::sendParameters(&mSocket); }
 
@@ -32,9 +33,6 @@ public:
   inline void requestParameterSpaces() {
     TincProtocol::requestParameterSpaces(&mSocket);
   }
-
-  // determine if message needs to be propagated
-  bool shouldSendMessage(al::Socket *dst) override;
 
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }

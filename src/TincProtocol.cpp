@@ -547,9 +547,7 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterString).name()) == 0) { // al::Parameter
     al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    p->registerChangeCallback([&, p](std::string value, al::ValueSource *src) {
-      sendParameterStringValue(value, p->getFullAddress(), src);
-    });
+    assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
              0) { // al::ParameterPose
     al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
@@ -945,12 +943,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     std::cout << " Parameter: " << id << std::endl;
     registerParameter(*param);
     std::cout << "between register ftn" << std::endl;
-    if (shouldSendMessage(src)) {
-      std::cout << "should send message" << std::endl;
-      sendRegisterParameterMessage(param, src);
-    } else {
-      std::cout << "should NOT send message" << std::endl;
-    }
+    sendRegisterParameterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_CHOICE:
     // FIXME implement
@@ -1219,33 +1212,6 @@ bool processParameterConfigure(ConfigureParameter &conf,
   return true;
 }
 
-bool processParameterSpaceConfigure(ConfigureParameter &conf,
-                                    ParameterSpaceDimension *dim,
-                                    al::Socket *src) {
-  bool ret = true;
-  ParameterConfigureType command = conf.configurationkey();
-  if (command == ParameterConfigureType::SPACE) {
-    ParameterSpaceValues sv;
-    if (conf.configurationvalue().Is<ParameterSpaceValues>()) {
-      conf.configurationvalue().UnpackTo(&sv);
-      dim->clear();
-      auto &values = sv.values();
-      auto idsIt = sv.ids().begin();
-      dim->reserve(values.size());
-      for (auto &v : values) {
-        if (idsIt != sv.ids().end()) {
-          dim->push_back(v.valuefloat(), *idsIt);
-          idsIt++;
-        } else {
-          dim->push_back(v.valuefloat());
-        }
-      }
-    }
-  }
-  ret &= processParameterConfigure(conf, &dim->parameter(), src);
-  return ret;
-}
-
 bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   bool ret = true;
@@ -1255,7 +1221,7 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
     auto addr = conf.id();
     for (auto *dim : mParameterSpaceDimensions) {
       if (addr == dim->getFullAddress()) {
-        ret &= processParameterSpaceConfigure(conf, dim, src);
+        ret &= processParameterConfigure(conf, &dim->parameter(), src);
       }
     }
 
@@ -1637,7 +1603,7 @@ void TincProtocol::sendParameterFloatValue(float value, std::string fullAddress,
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
 
-    sendTincMessage(&msg, src);
+    sendTincMessage(&msg, nullptr, src);
   }
 }
 
@@ -1661,7 +1627,7 @@ void TincProtocol::sendParameterIntValue(int32_t value, std::string fullAddress,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, src);
+    sendTincMessage(&msg, nullptr, src);
   }
 }
 void TincProtocol::sendParameterUint64Value(uint64_t value,
@@ -1684,7 +1650,7 @@ void TincProtocol::sendParameterUint64Value(uint64_t value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, src);
+    sendTincMessage(&msg, nullptr, src);
   }
 }
 
@@ -1708,7 +1674,7 @@ void TincProtocol::sendParameterStringValue(std::string value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, src);
+    sendTincMessage(&msg, nullptr, src);
   }
 }
 
@@ -1739,7 +1705,7 @@ void TincProtocol::sendParameterColorValue(al::Color value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, src);
+    sendTincMessage(&msg, nullptr, src);
   }
 }
 
