@@ -478,7 +478,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
       registered = true;
     }
   }
-  for (auto dim : ps.dimensions) {
+  for (auto dim : ps.getDimensions()) {
     registerParameterSpaceDimension(*dim);
   }
   if (!registered) {
@@ -486,7 +486,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
     ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
                                  ParameterSpace *ps) {
 
-      for (auto dim : ps->dimensions) {
+      for (auto dim : ps->getDimensions()) {
         if (dim->getName() == changedDimension->getName()) {
           auto msg = createConfigureParameterFromDim(changedDimension);
           sendTincMessage(&msg);
@@ -497,7 +497,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
         auto msg = createRegisterParameterSpaceMessage(ps);
         sendTincMessage(&msg);
 
-        for (auto dim : ps->dimensions) {
+        for (auto dim : ps->getDimensions()) {
           //            create
           TincMessage msg = createRegisterParameterMessage(&dim->parameter());
           sendTincMessage(&msg);
@@ -857,7 +857,7 @@ void TincProtocol::sendRegisterParameterSpaceMessage(ParameterSpace *ps,
   auto msg = createRegisterParameterSpaceMessage(ps);
 
   sendProtobufMessage(&msg, dst);
-  for (auto dim : ps->dimensions) {
+  for (auto dim : ps->getDimensions()) {
     sendRegisterParameterSpaceDimensionMessage(dim.get(), dst);
   }
 }
@@ -907,6 +907,7 @@ bool TincProtocol::runConfigure(int objectType, void *any, al::Socket *src) {
 bool processParameterConfigure(ConfigureParameter &conf,
                                al::ParameterMeta *param, al::Socket *src) {
   ParameterConfigureType command = conf.configurationkey();
+  // FIXME ensure forwarding to clients except src.
   if (command == ParameterConfigureType::VALUE) {
     ParameterValue v;
     if (conf.configurationvalue().Is<ParameterValue>()) {
@@ -1123,6 +1124,22 @@ bool processParameterSpaceConfigure(ConfigureParameter &conf,
           dim->push_back(v.valuefloat());
         }
       }
+      // TODO ensure correct forwarding to connections
+      return true;
+    } else {
+      return false;
+    }
+  } else if (command == ParameterConfigureType::SPACE_TYPE) {
+
+    if (conf.configurationvalue().Is<ParameterValue>()) {
+      ParameterValue v;
+      conf.configurationvalue().UnpackTo(&v);
+      dim->setSpaceType((ParameterSpaceDimension::DimensionType)v.valueint32());
+      // TODO ensure correct forwarding to connections
+      return true;
+
+    } else {
+      return false;
     }
   }
   ret &= processParameterConfigure(conf, &dim->parameter(), src);
@@ -1143,7 +1160,7 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
     }
 
     for (auto *ps : mParameterSpaces) {
-      for (auto dim : ps->dimensions) {
+      for (auto dim : ps->getDimensions()) {
         if (addr == dim->getFullAddress()) {
           ret &= processParameterConfigure(conf, &dim->parameter(), src);
         }
@@ -1254,7 +1271,7 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
       }
     }
     for (auto *ps : mParameterSpaces) {
-      for (auto dim : ps->dimensions) {
+      for (auto dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
           if (strcmp(typeid(dim->parameter()).name(),
                      typeid(al::ParameterChoice).name()) == 0) {

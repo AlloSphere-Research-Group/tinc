@@ -302,12 +302,13 @@ enum ParameterConfigureType : int {
   MIN = 1,
   MAX = 2,
   SPACE = 3,
+  SPACE_TYPE = 4,
   ParameterConfigureType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   ParameterConfigureType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool ParameterConfigureType_IsValid(int value);
 constexpr ParameterConfigureType ParameterConfigureType_MIN = VALUE;
-constexpr ParameterConfigureType ParameterConfigureType_MAX = SPACE;
+constexpr ParameterConfigureType ParameterConfigureType_MAX = SPACE_TYPE;
 constexpr int ParameterConfigureType_ARRAYSIZE = ParameterConfigureType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ParameterConfigureType_descriptor();

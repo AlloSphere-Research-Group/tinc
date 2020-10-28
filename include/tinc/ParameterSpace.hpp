@@ -27,9 +27,14 @@ public:
    */
   std::shared_ptr<ParameterSpaceDimension>
   newDimension(std::string name, ParameterSpaceDimension::DimensionType type =
-                                     ParameterSpaceDimension::INTERNAL);
+                                     ParameterSpaceDimension::VALUE);
 
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
+
+  /**
+   * @brief get list of currently registered dimensions
+   */
+  std::vector<std::shared_ptr<ParameterSpaceDimension>> getDimensions();
 
   /**
    * @brief Returns all the paths that are used by the whole parameter space
@@ -50,14 +55,12 @@ public:
   std::vector<std::string> dimensionNames();
 
   /**
-   * @brief Returns the names of all dimensions that affect filesystem
-   * directories
-   * @return
-   *
-   * Only mappedParameters and conditions are considered. Regular parameters
-   * are considered not to affect filesystem location
+   * @brief Determines if dimensionName is a dimension that affeects the
+   * filesystem
+   * @param dimensionName
+   * @return true if changes in dimension affect the filesystem paths
    */
-  std::vector<std::string> dimensionsForFilesystem();
+  bool isFilesystemDimension(std::string dimensionName);
 
   /**
    * @brief removes all dimensions from parameter space
@@ -138,9 +141,6 @@ public:
    */
   std::string rootPath;
 
-  // These should not be modifed by the user (perhaps make private?)
-  std::vector<std::shared_ptr<ParameterSpaceDimension>> dimensions;
-
   // To map names provided to getDimension() to internal data names
   // You can also use this map to display user friendly names when displaying
   // parameters
@@ -156,7 +156,7 @@ public:
         for (auto dimensionSample : indeces) {
           std::shared_ptr<ParameterSpaceDimension> dimension;
 
-          for (auto ps : dimensions) {
+          for (auto ps : getDimensions()) {
             if (ps->parameter().getName() == dimensionSample.first) {
               dimension = ps;
               break;
@@ -213,6 +213,8 @@ protected:
  * parameter_space.nc and processes the parameter space changes
  */
   void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
+
+  std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
 
   std::unique_ptr<std::thread> mAsyncProcessingThread;
   std::shared_ptr<ParameterSpace> mAsyncPSCopy;

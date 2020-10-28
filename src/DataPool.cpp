@@ -39,12 +39,18 @@ std::string DataPool::createDataSlice(std::string field,
 std::string
 DataPool::createDataSlice(std::string field,
                           std::vector<std::string> sliceDimensions) {
-  auto filesystemDims = mParameterSpace->dimensionsForFilesystem();
-  // TODO implement slicing along more than one dimension.
+
+  std::vector<std::string> filesystemDims;
+  for (auto dim : mParameterSpace->getDimensions()) {
+    if (mParameterSpace->isFilesystemDimension(dim->getName())) {
+      filesystemDims.push_back(dim->getName());
+    }
+  }
+  // FIXME implement slicing along more than one dimension.
   std::vector<float> values;
   std::string filename = "slice_";
 
-  size_t fieldSize = 1; // TODO get actual field size
+  size_t fieldSize = 1; // FIXME get actual field size
   size_t dimCount = fieldSize;
   for (auto sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
@@ -91,7 +97,7 @@ DataPool::createDataSlice(std::string field,
     } else { // We can slice the data from a single file
       values.resize(dim->size());
       std::map<std::string, size_t> currentIndeces;
-      for (auto dimension : mParameterSpace->dimensions) {
+      for (auto dimension : mParameterSpace->getDimensions()) {
         currentIndeces[dimension->getName()] = dimension->getCurrentIndex();
       }
       auto directory =
@@ -109,7 +115,7 @@ DataPool::createDataSlice(std::string field,
                 mParameterSpace->getDimension(sliceDimension)->getCurrentId();
   }
 
-  for (auto dim : mParameterSpace->dimensions) {
+  for (auto dim : mParameterSpace->getDimensions()) {
     if (std::find(sliceDimensions.begin(), sliceDimensions.end(),
                   dim->getName()) == sliceDimensions.end()) {
       filename += "_" + dim->getName();

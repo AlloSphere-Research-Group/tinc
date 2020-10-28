@@ -25,7 +25,7 @@ ParameterSpace::getDimension(std::string name) {
   if (parameterNameMap.find(name) != parameterNameMap.end()) {
     name = parameterNameMap[name];
   }
-  for (auto ps : dimensions) {
+  for (auto ps : getDimensions()) {
     if (ps->parameter().getName() == name) {
       return ps;
     }
@@ -38,7 +38,7 @@ ParameterSpace::newDimension(std::string name,
                              ParameterSpaceDimension::DimensionType type) {
   auto newDim = std::make_shared<ParameterSpaceDimension>(name);
 
-  newDim->type = type;
+  newDim->mType = type;
   registerDimension(newDim);
   return newDim;
 }
@@ -46,16 +46,17 @@ ParameterSpace::newDimension(std::string name,
 void ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> dimension) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
-  for (size_t i = 0; i < dimensions.size(); i++) {
-    if (dimensions[i]->getName() == dimension->getName()) {
-      dimensions[i]->mValues = dimension->values();
-      dimensions[i]->mIds = dimension->ids();
-      dimensions[i]->mConnectedSpaces = dimension->mConnectedSpaces;
-      dimensions[i]->datatype = dimension->datatype;
+  for (auto dim : getDimensions()) {
+    if (dim->getName() == dimension->getName()) {
+      dim->mValues = dimension->values();
+      dim->mIds = dimension->ids();
+      dim->mConnectedSpaces = dimension->mConnectedSpaces;
+      dim->datatype = dimension->datatype;
+      dim->mType = dimension->getSpaceType();
 
-      //      std::cout << "Clobbered dimension: " << dimension->getName() <<
+      //      std::cout << "Updated dimension: " << dimension->getName() <<
       //      std::endl;
-      onDimensionRegister(dimensions[i].get(), this);
+      onDimensionRegister(dim.get(), this);
       return;
     }
   }
@@ -72,17 +73,21 @@ void ParameterSpace::registerDimension(
     // The internal parameter will get set internally to the new value
     // later on inside the Parameter classes
   });
-  dimensions.push_back(dimension);
+  mDimensions.push_back(dimension);
   onDimensionRegister(dimension.get(), this);
+}
+
+std::vector<std::shared_ptr<ParameterSpaceDimension>>
+ParameterSpace::getDimensions() {
+  return mDimensions;
 }
 
 std::vector<std::string> ParameterSpace::runningPaths() {
   std::vector<std::string> paths;
-  auto dimensionNames = dimensionsForFilesystem();
 
   std::map<std::string, size_t> currentIndeces;
-  for (auto dimension : dimensionNames) {
-    currentIndeces[dimension] = 0;
+  for (auto dimension : mDimensions) {
+    currentIndeces[dimension->getName()] = 0;
   }
   bool done = false;
   while (!done) {
@@ -90,7 +95,11 @@ std::vector<std::string> ParameterSpace::runningPaths() {
     auto path = al::File::conformPathToOS(rootPath) +
                 al::File::conformPathToOS(
                     generateRelativeRunPath(currentIndeces, this));
-    if (path.size() > 0) {
+    // TODO write more efficient way to determine if a dimension affects the
+    // filesystem. Perhaps analyze before running this loop to prune dimensions
+    // that don't affect the filesystem
+    if (path.size() > 0 &&
+        std::find(paths.begin(), paths.end(), path) == paths.end()) {
       paths.push_back(path);
     }
     done = incrementIndeces(currentIndeces);
@@ -102,9 +111,8 @@ std::string ParameterSpace::currentRunPath() {
   std::map<std::string, size_t> indeces;
   {
     std::unique_lock<std::mutex> lk(mSpaceLock);
-    for (auto ps : dimensions) {
-      if (ps->type == ParameterSpaceDimension::MAPPED ||
-          ps->type == ParameterSpaceDimension::INDEX) {
+    for (auto ps : mDimensions) {
+      if (ps->isFilesystemDimension()) {
         indeces[ps->getName()] = ps->getCurrentIndex();
       }
     }
@@ -115,27 +123,32 @@ std::string ParameterSpace::currentRunPath() {
 std::vector<std::string> ParameterSpace::dimensionNames() {
   std::unique_lock<std::mutex> lk(mSpaceLock);
   std::vector<std::string> dimensionNames;
-  for (auto ps : dimensions) {
+  for (auto ps : mDimensions) {
     dimensionNames.push_back(ps->parameter().getName());
   }
   return dimensionNames;
 }
 
-std::vector<std::string> ParameterSpace::dimensionsForFilesystem() {
-  std::unique_lock<std::mutex> lk(mSpaceLock);
-  std::vector<std::string> dimensionNames;
-  for (auto ps : dimensions) {
-    if (ps->type == ParameterSpaceDimension::MAPPED ||
-        ps->type == ParameterSpaceDimension::INDEX) {
-      dimensionNames.push_back(ps->parameter().getName());
+bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
+  auto dim = getDimension(dimensionName);
+  if (dim) {
+    // This should be enough of a check, or should we check all possible
+    // values?
+    std::map<std::string, size_t> indeces;
+    indeces[dim->getName()] = {0};
+    auto path0 = generateRelativeRunPath(indeces, this);
+    indeces[dim->getName()] = {1};
+    auto path1 = generateRelativeRunPath(indeces, this);
+    if (path0 != path1) {
+      return true;
     }
   }
-  return dimensionNames;
+  return false;
 }
 
 void ParameterSpace::clear() {
   std::unique_lock<std::mutex> lk(mSpaceLock);
-  dimensions.clear();
+  mDimensions.clear();
   mSpecialDirs.clear();
 }
 
@@ -186,12 +199,12 @@ void ParameterSpace::sweep(Processor &processor,
   while (mSweepRunning) {
     {
       std::unique_lock<std::mutex> lk(mSpaceLock);
-      for (auto dim : dimensions) {
-        if (dim->type == ParameterSpaceDimension::INTERNAL) {
+      for (auto dim : mDimensions) {
+        if (dim->mType == ParameterSpaceDimension::VALUE) {
           processor.configuration[dim->getName()] = dim->getCurrentValue();
-        } else if (dim->type == ParameterSpaceDimension::MAPPED) {
+        } else if (dim->mType == ParameterSpaceDimension::ID) {
           processor.configuration[dim->getName()] = dim->getCurrentId();
-        } else if (dim->type == ParameterSpaceDimension::INDEX) {
+        } else if (dim->mType == ParameterSpaceDimension::INDEX) {
           assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
           processor.configuration[dim->getName()] =
               (int64_t)dim->getCurrentIndex();
@@ -245,7 +258,7 @@ void ParameterSpace::sweepAsync(Processor &processor,
   mAsyncPSCopy = std::make_shared<ParameterSpace>();
   {
     std::unique_lock<std::mutex> lk(mSpaceLock);
-    for (auto dim : ParameterSpace::dimensions) {
+    for (auto dim : ParameterSpace::mDimensions) {
       auto dimCopy = dim->deepCopy();
       mAsyncPSCopy->registerDimension(dimCopy);
     }
@@ -396,7 +409,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
       pdim->conform();
-      pdim->type = ParameterSpaceDimension::INTERNAL;
+      pdim->mType = ParameterSpaceDimension::VALUE;
       newDimensions.push_back(pdim);
       //    std::cout << "internal state " << i << ":" << groupName
       //              << " length: " << lenp << std::endl;
@@ -463,7 +476,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
 
       pdim->conform();
-      pdim->type = ParameterSpaceDimension::MAPPED;
+      pdim->mType = ParameterSpaceDimension::ID;
       newDimensions.push_back(pdim);
 
       //      std::cout << "mapped parameter " << i << ":" << parameterName
@@ -493,7 +506,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
 
       pdim->conform();
-      pdim->type = ParameterSpaceDimension::INDEX;
+      pdim->mType = ParameterSpaceDimension::INDEX;
       newDimensions.push_back(pdim);
     }
   } else {
@@ -689,8 +702,8 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
     return false;
   }
 
-  for (auto ps : dimensions) {
-    if (ps->type == ParameterSpaceDimension::INTERNAL) {
+  for (auto ps : mDimensions) {
+    if (ps->mType == ParameterSpaceDimension::VALUE) {
       int datagrpid;
       if ((retval = nc_def_grp(grpid, ps->getName().c_str(), &datagrpid))) {
         std::cerr << nc_strerror(retval) << std::endl;
@@ -706,8 +719,8 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
     std::cerr << nc_strerror(retval) << std::endl;
     return false;
   }
-  for (auto ps : dimensions) {
-    if (ps->type == ParameterSpaceDimension::INDEX) {
+  for (auto ps : mDimensions) {
+    if (ps->mType == ParameterSpaceDimension::INDEX) {
       int datagrpid;
       if ((retval = nc_def_grp(grpid, ps->getName().c_str(), &datagrpid))) {
         std::cerr << nc_strerror(retval) << std::endl;
@@ -723,8 +736,8 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
     std::cerr << nc_strerror(retval) << std::endl;
     return false;
   }
-  for (auto ps : dimensions) {
-    if (ps->type == ParameterSpaceDimension::MAPPED) {
+  for (auto ps : mDimensions) {
+    if (ps->mType == ParameterSpaceDimension::ID) {
       int shuffle = 1;
       int deflate = 9;
       int datagrpid;
@@ -821,20 +834,14 @@ void ParameterSpace::updateParameterSpace(float oldValue,
   if (mSpecialDirs.size() == 0) {
     return; // No need to check
   }
-  bool isFileSystemParam = false;
-  std::map<std::string, size_t> indeces;
-  for (auto dimension : dimensions) {
-    if (dimension->type == ParameterSpaceDimension::INDEX ||
-        dimension->type == ParameterSpaceDimension::MAPPED) {
-      indeces[dimension->getName()] = dimension->getCurrentIndex();
-      if (dimension.get() == ps) {
-        isFileSystemParam = true;
-        indeces[dimension->getName()] = dimension->getIndexForValue(oldValue);
+
+  if (ps->isFilesystemDimension()) {
+    std::map<std::string, size_t> indeces;
+    for (auto dimension : mDimensions) {
+      if (dimension->isFilesystemDimension()) {
+        indeces[dimension->getName()] = dimension->getCurrentIndex();
       }
     }
-  }
-
-  if (isFileSystemParam) {
     std::string oldPath = generateRelativeRunPath(indeces, this);
     std::stringstream ss(oldPath);
     std::string item;

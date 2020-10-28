@@ -73,21 +73,21 @@ struct MyApp : public App {
       eci1_dim->push_back(val, "_" + clean_double_to_string(val));
     }
     eci1_dim->conform();
-    eci1_dim->type = ParameterSpaceDimension::MAPPED;
+    eci1_dim->setSpaceType(ParameterSpaceDimension::ID);
     for (const auto &val : eci2_values) {
       eci2_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci2_dim->type = ParameterSpaceDimension::MAPPED;
+    eci2_dim->setSpaceType(ParameterSpaceDimension::ID);
     eci2_dim->conform();
     for (const auto &val : eci3_values) {
       eci3_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci3_dim->type = ParameterSpaceDimension::MAPPED;
+    eci3_dim->setSpaceType(ParameterSpaceDimension::ID);
     eci3_dim->conform();
     for (const auto &val : eci4_values) {
       eci4_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci4_dim->type = ParameterSpaceDimension::MAPPED;
+    eci4_dim->setSpaceType(ParameterSpaceDimension::ID);
     eci4_dim->conform();
 
     ps.registerDimension(eci1_dim);
@@ -100,7 +100,7 @@ struct MyApp : public App {
     ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
                                      ParameterSpace *ps) {
       std::string path = "AMX2_spinel_diffusion_0.0_0.0";
-      for (const auto &mapped_param : ps->dimensions) {
+      for (const auto &mapped_param : ps->getDimensions()) {
         path +=
             mapped_param->idAt(indeces[mapped_param->parameter().getName()]);
       }

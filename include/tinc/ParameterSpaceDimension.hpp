@@ -33,7 +33,7 @@ public:
   // TODO implement more data types (in particular DOUBLE, INT64, STRING)
   typedef enum { FLOAT, UINT8, INT32, UINT32 } Datatype;
 
-  typedef enum { INTERNAL, INDEX, MAPPED } DimensionType;
+  typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } DimensionType;
 
   ParameterSpaceDimension(std::string name, std::string group = "")
       : mParameterValue(name, group) {}
@@ -48,6 +48,22 @@ public:
   size_t getCurrentIndex();
   void setCurrentIndex(size_t index);
   std::string getCurrentId();
+
+  void setSpaceType(DimensionType type) {
+    mType = type;
+    onDimensionMetadataChange(this);
+  }
+
+  DimensionType getSpaceType() { return mType; }
+
+  // This dimension affects the filesystem. All filesystem dimension in a
+  // parameter space must have the smae size
+  bool isFilesystemDimension() { return mFilesystemDimension; }
+
+  void setFilesystemDimension(bool set = true) {
+    mFilesystemDimension = set;
+    onDimensionMetadataChange(this);
+  }
 
   // Multidimensional parameter spaces will result in single values having
   // multiple ids. This can be resolved externally using this function
@@ -123,7 +139,6 @@ public:
   // TODO these should be made private and access functions added that call
   // onDimensionMetadataChange()
   Datatype datatype{FLOAT};
-  DimensionType type{INTERNAL};
 
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
@@ -134,6 +149,9 @@ private:
   // Data
   std::vector<float> mValues;
   std::vector<std::string> mIds;
+
+  DimensionType mType{VALUE};
+  bool mFilesystemDimension{false};
 
   std::mutex mLock;
 

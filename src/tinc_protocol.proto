@@ -124,7 +124,15 @@ enum ParameterConfigureType {
     MIN = 1;
     MAX = 2;
     SPACE = 3;
+    SPACE_TYPE = 4;
 }
+
+// These values must conform to the values in the C++ and python libs
+//enum ParameterSpaceConfigureType {
+//    FLOAT_VALUE = 0;
+//    ID = 1;
+//    INDEX = 2;
+//}
 
 message ConfigureParameter {
   string id = 1;

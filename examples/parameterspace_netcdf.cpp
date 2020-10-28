@@ -6,22 +6,23 @@ int main() {
       "/Users/lt01/code/casm_viewer/vdv_data/NaCoO2_diffusion/monte_with_com/"
       "cached_output/_parameter_space.nc");
 
-  for (auto dimension : ps.dimensions) {
-    if (dimension->type == tinc::ParameterSpaceDimension::INTERNAL) {
+  for (auto dimension : ps.getDimensions()) {
+    if (dimension->getSpaceType() == tinc::ParameterSpaceDimension::VALUE) {
       std::cout << " ***** Internal Parameter: " << dimension->getName()
                 << " size: " << dimension->size() << std::endl;
       for (auto value : dimension->values()) {
         std::cout << value << " ";
       }
       std::cout << std::endl;
-    } else if (dimension->type == tinc::ParameterSpaceDimension::INDEX) {
+    } else if (dimension->getSpaceType() ==
+               tinc::ParameterSpaceDimension::INDEX) {
       std::cout << " ***** Index Parameter: " << dimension->getName()
                 << " size: " << dimension->size() << std::endl;
       for (auto value : dimension->values()) {
         std::cout << value << " ";
       }
       std::cout << std::endl;
-    } else if (dimension->type == tinc::ParameterSpaceDimension::MAPPED) {
+    } else if (dimension->getSpaceType() == tinc::ParameterSpaceDimension::ID) {
       std::cout << " ***** Mapped Parameter: " << dimension->getName()
                 << " size: " << dimension->size() << std::endl;
       for (auto value : dimension->values()) {
