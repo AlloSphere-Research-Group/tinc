@@ -38,6 +38,8 @@ public:
   void sendDataPools(al::Socket *dst);
   void sendDiskBuffers(al::Socket *dst);
 
+  void sendRequestResponse(al::ParameterMeta *param, al::Socket *dst);
+
   void sendRegisterProcessorMessage(Processor *p, al::Socket *dst);
   void sendConfigureProcessorMessage(Processor *p, al::Socket *dst);
 
