@@ -20,3 +20,6 @@ If you use a binary installation, make sure you download a netCDF version that i
 Or you can use the *./build_deps.sh script on *nix platforms.
 
 
+## Acknowledgements
+
+TINC is funded by NSF grant # OAC 2004693: "Elements: Cyber-infrastructure for Interactive Computation and Display of Materials Datasets."
