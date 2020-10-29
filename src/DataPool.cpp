@@ -84,9 +84,9 @@ DataPool::createDataSlice(std::string field,
           float value;
           size_t index =
               mParameterSpace->getDimension(file.second)->getCurrentIndex();
-          if (getFieldFromFile(field, al::File::conformDirectory(directory) +
-                                          file.first,
-                               index, &value)) {
+          if (getFieldFromFile(
+                  field, al::File::conformDirectory(directory) + file.first,
+                  index, &value)) {
             values.push_back(value);
             break;
           }
@@ -189,7 +189,7 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
       return lenp;
     }
 #endif
-
+    return 0; // FIXME finish the edge case
   } else {
     return 0;
   }

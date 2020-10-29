@@ -97,7 +97,9 @@ public:
 
   Processor(std::string id_ = "") { setId(id_); }
   Processor(Processor &p)
-      : mInputDirectory(p.mInputDirectory), mOutputDirectory(p.mOutputDirectory), mRunningDirectory(p.mRunningDirectory) {}
+      : mInputDirectory(p.mInputDirectory),
+        mOutputDirectory(p.mOutputDirectory),
+        mRunningDirectory(p.mRunningDirectory) {}
 
   virtual ~Processor() {}
 
@@ -224,9 +226,9 @@ public:
   Configuration configuration;
 
 protected:
-  std::string mRunningDirectory;
-  std::string mOutputDirectory;
   std::string mInputDirectory;
+  std::string mOutputDirectory;
+  std::string mRunningDirectory;
   std::vector<std::string> mOutputFileNames;
   std::vector<std::string> mInputFileNames;
   bool mVerbose;

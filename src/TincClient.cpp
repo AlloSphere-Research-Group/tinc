@@ -80,6 +80,9 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
       case MessageType::PONG:
         std::cout << "Pong command received, but not implemented" << std::endl;
         break;
+      default:
+        std::cout << "Unused message type" << std::endl;
+        break;
       }
 
     } else {

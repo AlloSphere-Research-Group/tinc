@@ -39,8 +39,9 @@ void createParameterValueMessage(al::ParameterMeta *param,
     val.set_valuestring(p->get());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
              0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
     //    configValue->PackFrom(p->get());
+    assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
     al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
@@ -52,12 +53,14 @@ void createParameterValueMessage(al::ParameterMeta *param,
     val.set_valueuint64(p->get());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
              0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
     //    configValue->PackFrom(p->get());
+    assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
     //    configValue->PackFrom(p->get());
+    assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -72,8 +75,10 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(c.a);
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    assert(1 == 0); // Implement!
   } else {
+    assert(1 == 0); // Implement!
   }
 
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
@@ -312,8 +317,8 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     details.defaultvalue().New()->set_valuestring(p->getDefault());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
              0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    details.set_datatype(PARAMETER_POSED);
+    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    // details.set_datatype(PARAMETER_POSED);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
@@ -328,14 +333,14 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     details.defaultvalue().New()->set_valueuint32(p->getDefault());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
              0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    details.set_datatype(PARAMETER_VEC3F);
-    al::Vec3f defaultValue = p->getDefault();
+    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    // details.set_datatype(PARAMETER_VEC3F);
+    // al::Vec3f defaultValue = p->getDefault();
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    details.set_datatype(PARAMETER_VEC4F);
+    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    // details.set_datatype(PARAMETER_VEC4F);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
@@ -353,9 +358,11 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuefloat(defaultValue.a);
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-    details.set_datatype(PARAMETER_TRIGGER);
+    // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    // details.set_datatype(PARAMETER_TRIGGER);
+    assert(1 == 0); // Implement!
   } else {
+    assert(1 == 0); // Implement!
   }
   auto details_any = msg.details().New();
   details_any->PackFrom(details);
@@ -380,11 +387,11 @@ std::vector<TincMessage> createParameterInfoMessage(al::ParameterMeta *param) {
     return createParameterStringInfoMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
              0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+    // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterChoice).name()) ==
@@ -393,11 +400,11 @@ std::vector<TincMessage> createParameterInfoMessage(al::ParameterMeta *param) {
     return createParameterChoiceInfoMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
              0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
     assert(1 == 0); // Implement!
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
@@ -405,8 +412,10 @@ std::vector<TincMessage> createParameterInfoMessage(al::ParameterMeta *param) {
     return createParameterColorInfoMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
              0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+    assert(1 == 0); // Implement!
   } else {
+    assert(1 == 0); // Implement!
   }
   return {};
 }
@@ -442,36 +451,92 @@ TincMessage createConfigureDataPoolMessage(DataPool *p) {
 }
 
 //// ------------------------------------------------------
-
-void TincProtocol::registerParameterServer(al::ParameterServer &pserver) {
+void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
   bool registered = false;
-  for (auto *p : mParameterServers) {
-    if (p == &pserver) {
+  for (auto *p : mParameters) {
+    // FIXME reevaluate if name/group string comparison is needed
+    if (p == &pmeta || (p->getName() == pmeta.getName() &&
+                        p->getGroup() == pmeta.getGroup())) {
       registered = true;
+      break;
     }
   }
   if (!registered) {
-    mParameterServers.push_back(&pserver);
-  } else {
-    std::cout << "ParameterServer already registered.";
-  }
-}
+    mParameters.push_back(&pmeta);
+    al::ParameterMeta *param = &pmeta;
+    // TODO ensure parameter has not been registered (directly or through a
+    // parameter space)
 
-void TincProtocol::registerProcessor(Processor &processor) {
-  bool registered = false;
-  for (auto *p : mProcessors) {
-    if (p == &processor || p->getId() == processor.getId()) {
-      registered = true;
+    // FIXME is strcmp really necessary?
+    if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
+      al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+      p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
+        sendParameterFloatValue(value, p->getFullAddress(), src);
+      });
+    } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) ==
+               0) {
+      al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+      p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
+        sendParameterFloatValue(value, p->getFullAddress(), src);
+      });
+    } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
+               0) {
+      al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+      p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
+        sendParameterIntValue(value, p->getFullAddress(), src);
+      });
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterString).name()) ==
+               0) { // al::Parameter
+      // al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+      assert(1 == 0); // Implement!
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterPose).name()) ==
+               0) { // al::ParameterPose
+      // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+      assert(1 == 0); // Implement!
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterMenu).name()) ==
+               0) { // al::ParameterMenu
+      // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+      assert(1 == 0); // IMplement!
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterChoice).name()) ==
+               0) { // al::ParameterChoice
+      al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+      p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
+        sendParameterUint64Value(value, p->getFullAddress(), src);
+      });
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterVec3).name()) ==
+               0) { // al::ParameterVec3
+      // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+      assert(1 == 0); // Implement!
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterVec4).name()) ==
+               0) { // al::ParameterVec4
+      // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+      assert(1 == 0); // Implement!
+    } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterColor).name()) ==
+               0) { // al::ParameterColor
+      al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+      p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
+        sendParameterColorValue(value, p->getFullAddress(), src);
+      });
+    } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
+               0) { // Trigger
+      // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+      assert(1 == 0); // Implement!
+    } else {
+      assert(1 == 0); // Implement!
     }
-  }
-  if (!registered) {
-    mProcessors.push_back(&processor);
-    // FIXME we should register parameters registered with processors.
-    //    for (auto *param: mParameters) {
-
-    //    }
   } else {
-    std::cout << "Processor: " << processor.getId() << " already registered.";
+    if (mVerbose) {
+      std::cout << "Parameter: " << pmeta.getName()
+                << " (Group: " << pmeta.getGroup() << ") already registered."
+                << std::endl;
+    }
   }
 }
 
@@ -480,6 +545,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
   for (auto *p : mParameterSpaces) {
     if (p == &ps || p->getId() == ps.getId()) {
       registered = true;
+      break;
     }
   }
   for (auto dim : ps.getDimensions()) {
@@ -487,6 +553,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
   }
   if (!registered) {
     mParameterSpaces.push_back(&ps);
+    // FIXME re-check callback function. something doesn't look right
     ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
                                  ParameterSpace *ps) {
       for (auto dim : ps->getDimensions()) {
@@ -516,72 +583,9 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
     };
   } else {
     if (mVerbose) {
-      std::cout << "Processor: " << ps.getId() << " already registered.";
+      std::cout << "Processor: " << ps.getId() << " already registered."
+                << std::endl;
     }
-  }
-}
-
-void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
-  mParameters.push_back(&pmeta);
-  al::ParameterMeta *param = &pmeta;
-  // TODO ensure parameter has not been registered (directly or through a
-  // parameter space)
-
-  if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) == 0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
-    p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
-      sendParameterFloatValue(value, p->getFullAddress(), src);
-    });
-
-  } else if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
-    p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
-      sendParameterFloatValue(value, p->getFullAddress(), src);
-    });
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
-    p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
-      sendParameterIntValue(value, p->getFullAddress(), src);
-    });
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) { // al::ParameterMenu
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) ==
-             0) { // al::ParameterChoice
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
-    std::cout << p->getFullAddress() << std::endl;
-    p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
-      sendParameterUint64Value(value, p->getFullAddress(), src);
-    });
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    assert(1 == 0); // Implement!
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) { // al::ParameterColor
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    //    al::Color defaultValue = p->getDefault();
-    p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
-      sendParameterColorValue(value, p->getFullAddress(), src);
-    });
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-             0) { // Trigger
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-  } else {
   }
 }
 
@@ -619,7 +623,28 @@ void TincProtocol::registerParameterSpaceDimension(
   } else {
     if (mVerbose) {
       std::cout << "ParameterSpaceDimension: " << psd.getFullAddress()
-                << " already registered.";
+                << " already registered." << std::endl;
+    }
+  }
+}
+
+void TincProtocol::registerProcessor(Processor &processor) {
+  bool registered = false;
+  for (auto *p : mProcessors) {
+    if (p == &processor || p->getId() == processor.getId()) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered) {
+    mProcessors.push_back(&processor);
+    // FIXME we should register parameters registered with processors.
+    //    for (auto *param: processor.parameters()) {
+    //    }
+  } else {
+    if (mVerbose) {
+      std::cout << "Processor: " << processor.getId() << " already registered."
+                << std::endl;
     }
   }
 }
@@ -634,9 +659,9 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db) {
   if (!registered) {
     mDiskBuffers.push_back(&db);
   } else {
-
     if (mVerbose) {
-      std::cout << "DiskBuffer: " << db.getId() << " already registered.";
+      std::cout << "DiskBuffer: " << db.getId() << " already registered."
+                << std::endl;
     }
   }
 }
@@ -648,8 +673,8 @@ void TincProtocol::registerDataPool(DataPool &dp) {
       registered = true;
     }
   }
-  registerParameterSpace(dp.getParameterSpace());
   if (!registered) {
+    registerParameterSpace(dp.getParameterSpace());
     mDataPools.push_back(&dp);
     dp.modified = [&]() {
       auto msg = createConfigureDataPoolMessage(&dp);
@@ -659,7 +684,25 @@ void TincProtocol::registerDataPool(DataPool &dp) {
     // FIXME replace entry in mDataPools wiht this one if it is not the same
     // instance
     if (mVerbose) {
-      std::cout << "DiskBuffer: " << dp.getId() << " already registered.";
+      std::cout << "DiskBuffer: " << dp.getId() << " already registered."
+                << std::endl;
+    }
+  }
+}
+
+void TincProtocol::registerParameterServer(al::ParameterServer &pserver) {
+  bool registered = false;
+  for (auto *p : mParameterServers) {
+    if (p == &pserver) {
+      registered = true;
+      break;
+    }
+  }
+  if (!registered) {
+    mParameterServers.push_back(&pserver);
+  } else {
+    if (mVerbose) {
+      std::cout << "ParameterServer already registered." << std::endl;
     }
   }
 }
@@ -669,13 +712,18 @@ TincProtocol &TincProtocol::operator<<(al::ParameterMeta &p) {
   return *this;
 }
 
-TincProtocol &TincProtocol::operator<<(Processor &p) {
-  registerProcessor(p);
+TincProtocol &TincProtocol::operator<<(ParameterSpace &ps) {
+  registerParameterSpace(ps);
   return *this;
 }
 
-TincProtocol &TincProtocol::operator<<(ParameterSpace &p) {
-  registerParameterSpace(p);
+TincProtocol &TincProtocol::operator<<(ParameterSpaceDimension &psd) {
+  registerParameterSpaceDimension(psd);
+  return *this;
+}
+
+TincProtocol &TincProtocol::operator<<(Processor &p) {
+  registerProcessor(p);
   return *this;
 }
 
@@ -684,12 +732,80 @@ TincProtocol &TincProtocol::operator<<(AbstractDiskBuffer &db) {
   return *this;
 }
 
-TincProtocol &TincProtocol::operator<<(DataPool &db) {
-  registerDataPool(db);
+TincProtocol &TincProtocol::operator<<(DataPool &dp) {
+  registerDataPool(dp);
   return *this;
 }
 
-// ---------------------------------------------------
+TincProtocol &TincProtocol::operator<<(al::ParameterServer &pserver) {
+  registerParameterServer(pserver);
+  return *this;
+}
+
+void TincProtocol::requestParameters(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::PARAMETER);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
+void TincProtocol::requestProcessors(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::PROCESSOR);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
+void TincProtocol::requestDiskBuffers(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::DISK_BUFFER);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
+void TincProtocol::requestDataPools(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::DATA_POOL);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
+void TincProtocol::requestParameterSpaces(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::PARAMETER_SPACE);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
 
 void TincProtocol::sendParameters(al::Socket *dst) {
   std::cout << __FUNCTION__ << std::endl;
@@ -974,6 +1090,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   case ParameterDataType::PARAMETER_POSED:
   case ParameterDataType::PARAMETER_MENU:
   case ParameterDataType::PARAMETER_TRIGGER:
+  default: // ParameterDataType_INT_MIN_SENTINEL_DO_NOT_USE_ &
+           // ParameterDataType_INT_MAX_SENTINEL_DO_NOT_USE_
     break;
   }
   if (param) {
@@ -1047,12 +1165,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterPose).name()) ==
                  0) { // al::ParameterPose
-        al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+        // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterMenu).name()) ==
                  0) { // al::ParameterMenu
-        al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+        // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterChoice).name()) ==
@@ -1062,12 +1180,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec3).name()) ==
                  0) { // al::ParameterVec3
-        al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+        // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec4).name()) ==
                  0) { // al::ParameterVec4
-        al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+        // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterColor).name()) ==
@@ -1085,8 +1203,10 @@ bool processParameterConfigure(ConfigureParameter &conf,
 
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::Trigger).name()) == 0) { // Trigger
-        al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        assert(1 == 0); // Implement!
       } else {
+        assert(1 == 0); // Implement!
       }
     }
   } else if (command == ParameterConfigureType::MIN) {
@@ -1118,12 +1238,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterPose).name()) ==
                  0) { // al::ParameterPose
-        al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+        // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterMenu).name()) ==
                  0) { // al::ParameterMenu
-        al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+        // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterChoice).name()) ==
@@ -1134,12 +1254,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec3).name()) ==
                  0) { // al::ParameterVec3
-        al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+        // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec4).name()) ==
                  0) { // al::ParameterVec4
-        al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+        // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterColor).name()) ==
@@ -1150,8 +1270,10 @@ bool processParameterConfigure(ConfigureParameter &conf,
 
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::Trigger).name()) == 0) { // Trigger
-        al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        assert(1 == 0); // Implement!
       } else {
+        assert(1 == 0); // Implement!
       }
     }
   } else if (command == ParameterConfigureType::MAX) {
@@ -1183,12 +1305,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterPose).name()) ==
                  0) { // al::ParameterPose
-        al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+        // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterMenu).name()) ==
                  0) { // al::ParameterMenu
-        al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+        // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterChoice).name()) ==
@@ -1199,12 +1321,12 @@ bool processParameterConfigure(ConfigureParameter &conf,
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec3).name()) ==
                  0) { // al::ParameterVec3
-        al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+        // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterVec4).name()) ==
                  0) { // al::ParameterVec4
-        al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+        // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
         assert(1 == 0); // Implement!
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::ParameterColor).name()) ==
@@ -1215,8 +1337,10 @@ bool processParameterConfigure(ConfigureParameter &conf,
 
       } else if (strcmp(typeid(*param).name(),
                         typeid(al::Trigger).name()) == 0) { // Trigger
-        al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+        assert(1 == 0); // Implement!
       } else {
+        assert(1 == 0); // Implement!
       }
     }
   }
@@ -1527,71 +1651,6 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
     }
   }
   return false;
-}
-
-void TincProtocol::requestParameters(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::PARAMETER);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::requestProcessors(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::PROCESSOR);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::requestDiskBuffers(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::DISK_BUFFER);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::requestDataPools(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::DATA_POOL);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::requestParameterSpaces(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::PARAMETER_SPACE);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
 }
 
 void TincProtocol::sendParameterFloatValue(float value, std::string fullAddress,
