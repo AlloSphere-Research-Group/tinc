@@ -9,9 +9,9 @@ namespace tinc {
 
 class JsonDiskBuffer : public DiskBuffer<nlohmann::json> {
 public:
-  JsonDiskBuffer(std::string name, std::string fileName = "",
+  JsonDiskBuffer(std::string id = "", std::string fileName = "",
                  std::string path = "", uint16_t size = 2)
-      : DiskBuffer<nlohmann::json>(name, fileName, path, size) {}
+      : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
 protected:
   virtual bool parseFile(std::ifstream &file,

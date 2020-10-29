@@ -1,48 +1,74 @@
 #ifndef DISKBUFFER_HPP
 #define DISKBUFFER_HPP
 
+#include <fstream>
 #include <string>
+#include <errno.h>
 
 #include "al/io/al_File.hpp"
 #include "al/ui/al_Parameter.hpp"
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/BufferManager.hpp"
+#include "tinc/IdObject.hpp"
 
 namespace tinc {
 
-template <class DataType> class DiskBuffer : public BufferManager<DataType> {
+class AbstractDiskBuffer : public IdObject {
 public:
-  DiskBuffer(std::string name, std::string fileName = "", std::string path = "",
-             uint16_t size = 2);
-
-  virtual bool updateData(std::string filename = "");
-
   // Careful, this is not thread safe. Needs to be called synchronously to any
   // process functions
   std::string getCurrentFileName() { return m_fileName; }
 
-  void exposeToNetwork(al::ParameterServer &p);
+  virtual bool updateData(std::string filename) = 0;
+  //  void exposeToNetwork(al::ParameterServer &p);
+
+  std::string getBaseFileName() { return m_fileName; }
+
+  void setPath(std::string path) { m_path = path; }
+  std::string getPath() { return m_path; }
 
 protected:
-  virtual bool parseFile(std::ifstream &file,
-                         std::shared_ptr<DataType> newData) = 0;
-
-  // Make this function private as users should not have a way to make the
-  // buffer writable. Data writing should be done by writing to the file.
-  using BufferManager<DataType>::getWritable;
-
   std::string m_fileName;
-  std::string m_name;
   std::string m_path;
   std::shared_ptr<al::ParameterString> m_trigger;
 };
 
 template <class DataType>
-DiskBuffer<DataType>::DiskBuffer(std::string name, std::string fileName,
+class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
+public:
+  DiskBuffer(std::string id = "", std::string fileName = "",
+             std::string path = "", uint16_t size = 2);
+  /**
+   * @brief updateData
+   * @param filename
+   * @return
+   *
+   * Whenever overriding this function, you must make sure you call the
+   * update callbacks in mUpdateCallbacks
+   */
+  bool updateData(std::string filename = "") override;
+
+  void registerUpdateCallback(std::function<void(bool)> cb) {
+    mUpdateCallbacks.push_back(cb);
+  }
+
+protected:
+  virtual bool parseFile(std::ifstream &file,
+                         std::shared_ptr<DataType> newData) = 0;
+
+  std::vector<std::function<void(bool)>> mUpdateCallbacks;
+
+  // Make this function private as users should not have a way to make the
+  // buffer writable. Data writing should be done by writing to the file.
+  using BufferManager<DataType>::getWritable;
+};
+
+template <class DataType>
+DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
                                  std::string path, uint16_t size)
     : BufferManager<DataType>(size) {
-  m_name = name;
+  mId = id;
   // TODO there should be a check through a singleton to make sure names are
   // unique
   m_fileName = fileName;
@@ -59,33 +85,18 @@ bool DiskBuffer<DataType>::updateData(std::string filename) {
     m_fileName = filename;
   }
   std::ifstream file(m_path + m_fileName);
+  bool ret = false;
   if (file.good()) {
     auto buffer = getWritable();
-    bool ret = parseFile(file, buffer);
+    ret = parseFile(file, buffer);
     BufferManager<DataType>::doneWriting(buffer);
-    return ret;
   } else {
     std::cerr << "Error code: " << strerror(errno);
-    return false;
   }
-}
-
-template <class DataType>
-void DiskBuffer<DataType>::exposeToNetwork(al::ParameterServer &p) {
-  if (m_trigger) {
-    std::cerr << "ERROR: already registered. Aborting." << std::endl;
-    return;
+  for (auto cb : mUpdateCallbacks) {
+    cb(ret);
   }
-  std::string pathPrefix = "/__DiskBuffer/";
-  //    if (m_fileName[0] != '/') {
-  //      pathPrefix += "/";
-  //    }
-  m_trigger = std::make_shared<al::ParameterString>(pathPrefix + m_name);
-  p.registerParameter(*m_trigger);
-  m_trigger->registerChangeCallback(
-      [this](std::string value) { this->updateData(value); });
-  // There will be problems if this object is destroyed before the parameter
-  // server Should this be a concern?
+  return ret;
 }
 
 } // namespace tinc

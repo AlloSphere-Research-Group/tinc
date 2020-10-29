@@ -48,8 +48,8 @@ void InstancingMesh::draw() {
 
 void AtomRenderer::init() {
   // Define mesh for instance drawing
-  addSphere(instancing_mesh0.mesh, 1, 12, 6);
-  instancing_mesh0.mesh.update();
+  addSphere(instancingMesh.mesh, 1, 12, 6);
+  instancingMesh.mesh.update();
 
   std::string funcMarker = "//[[FUNCTION:is_highlighted(vec3 point)]]";
 
@@ -57,10 +57,10 @@ void AtomRenderer::init() {
   if (pos != std::string::npos) {
     instancing_vert.replace(pos, funcMarker.length(), is_highlighted_func());
   }
-  instancing_mesh0.init(instancing_vert, instancing_frag,
-                        1,         // location
-                        4,         // num elements
-                        GL_FLOAT); // type
+  instancingMesh.init(instancing_vert, instancing_frag,
+                      1,         // location
+                      4,         // num elements
+                      GL_FLOAT); // type
 
   instancing_shader.compile(instancing_vert, instancing_frag);
 
@@ -72,11 +72,11 @@ void AtomRenderer::setDataBoundaries(al::BoundingBoxData &b) {
 }
 
 void AtomRenderer::draw(al::Graphics &g, float scale,
-                        std::vector<AtomData> &mAtomData,
+                        std::map<std::string, AtomData> &mAtomData,
                         std::vector<float> &mAligned4fData) {
-  gl::polygonFill();
+  g.polygonFill();
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
-  g.shader(instancing_mesh0.shader);
+  g.shader(instancingMesh.shader);
   g.shader().uniform("layerSeparation", mLayerSeparation);
   g.shader().uniform("is_omni", 1.0f);
   g.shader().uniform("eye_sep", scale * g.lens().eyeSep() * g.eye() / 2.0f);
@@ -89,33 +89,33 @@ void AtomRenderer::draw(al::Graphics &g, float scale,
 }
 
 void AtomRenderer::renderInstances(Graphics &g, float scale,
-                                   std::vector<AtomData> &mAtomData,
+                                   std::map<std::string, AtomData> &mAtomData,
                                    std::vector<float> &mAligned4fData) {
 
   int cumulativeCount = 0;
   for (auto data : mAtomData) {
     if (mShowRadius == 1.0f) {
-      g.shader().uniform("markerScale",
-                         data.radius * mAtomMarkerSize * mMarkerScale / scale);
+      g.shader().uniform("markerScale", data.second.radius * mAtomMarkerSize *
+                                            mMarkerScale / scale);
       //                std::cout << data.radius << std::endl;
     } else {
       g.shader().uniform("markerScale", mAtomMarkerSize * mMarkerScale / scale);
     }
-    int count = data.counts;
+    int count = data.second.counts;
     assert((int)mAligned4fData.size() >= (cumulativeCount + count) * 4);
-    instancing_mesh0.attrib_data(count * 4 * sizeof(float),
-                                 mAligned4fData.data() + (cumulativeCount * 4),
-                                 count);
+    instancingMesh.attrib_data(count * 4 * sizeof(float),
+                               mAligned4fData.data() + (cumulativeCount * 4),
+                               count);
     cumulativeCount += count;
 
-    gl::polygonFill();
+    g.polygonFill();
     g.shader().uniform("is_line", 0.0f);
-    instancing_mesh0.draw();
+    instancingMesh.draw();
 
-    //            g.shader().uniform("is_line", 1.0f);
-    //            g.polygonMode(Graphics::LINE);
-    //            instancing_mesh0.draw();
-    //            g.polygonMode(Graphics::FILL);
+    g.shader().uniform("is_line", 1.0f);
+    g.polygonLine();
+    instancingMesh.draw();
+    g.polygonFill();
   }
 }
 
@@ -158,12 +158,12 @@ void SlicingAtomRenderer::setDataBoundaries(BoundingBoxData &b) {
 }
 
 void SlicingAtomRenderer::draw(Graphics &g, float scale,
-                               std::vector<AtomData> &mAtomData,
+                               std::map<std::string, AtomData> &mAtomData,
                                std::vector<float> &mAligned4fData) {
-  gl::polygonFill();
+
   //  int cumulativeCount = 0;
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
-  g.shader(instancing_mesh0.shader);
+  g.shader(instancingMesh.shader);
   g.shader().uniform("is_omni", 1.0f);
   g.shader().uniform("eye_sep", scale * g.lens().eyeSep() * g.eye() / 2.0f);
   // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);

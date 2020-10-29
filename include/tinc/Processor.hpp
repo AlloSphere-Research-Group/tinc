@@ -1,6 +1,8 @@
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
+#include "tinc/IdObject.hpp"
+
 #include "al/scene/al_PolySynth.hpp"
 
 #include <string>
@@ -8,53 +10,67 @@
 
 namespace tinc {
 
-enum FlagType {
-  FLAG_INT = 0,
-  FLAG_DOUBLE, // The script to be run
-  FLAG_STRING
+// TODO move PushDirectory to allolib? Or its own file?
+class PushDirectory {
+public:
+  PushDirectory(std::string directory, bool verbose = false);
+
+  ~PushDirectory();
+
+private:
+  char previousDirectory[4096];
+  bool mVerbose;
+
+  static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
 };
 
-struct Flag {
+enum VariantType {
+  VARIANT_INT64 = 0,
+  VARIANT_DOUBLE, // The script to be run
+  VARIANT_STRING
+};
 
-  Flag() {}
-  Flag(std::string value) {
-    type = FLAG_STRING;
-    flagValueStr = value;
-  }
-  Flag(const char *value) {
-    type = FLAG_STRING;
-    flagValueStr = value;
-  }
+struct VariantValue {
 
-  Flag(int64_t value) {
-    type = FLAG_INT;
-    flagValueInt = value;
+  VariantValue() {}
+  VariantValue(std::string value) {
+    type = VARIANT_STRING;
+    valueStr = value;
   }
-
-  Flag(double value) {
-    type = FLAG_DOUBLE;
-    flagValueDouble = value;
+  VariantValue(const char *value) {
+    type = VARIANT_STRING;
+    valueStr = value;
   }
 
-  //  ~Flag()
+  VariantValue(int64_t value) {
+    type = VARIANT_INT64;
+    valueInt64 = value;
+  }
+
+  VariantValue(double value) {
+    type = VARIANT_DOUBLE;
+    valueDouble = value;
+  }
+
+  //  ~VariantValue()
   //  {
   //      delete[] cstring;  // deallocate
   //  }
 
-  //  Flag(const Flag& other) // copy constructor
-  //      : Flag(other.cstring)
+  //  VariantValue(const VariantValue& other) // copy constructor
+  //      : VariantValue(other.cstring)
   //  {}
 
-  //  Flag(Flag&& other) noexcept // move constructor
+  //  VariantValue(VariantValue&& other) noexcept // move constructor
   //      : cstring(std::exchange(other.cstring, nullptr))
   //  {}
 
-  //  Flag& operator=(const Flag& other) // copy assignment
+  //  VariantValue& operator=(const VariantValue& other) // copy assignment
   //  {
-  //      return *this = Flag(other);
+  //      return *this = VariantValue(other);
   //  }
 
-  //  Flag& operator=(Flag&& other) noexcept // move assignment
+  //  VariantValue& operator=(VariantValue&& other) noexcept // move assignment
   //  {
   //      std::swap(cstring, other.cstring);
   //      return *this;
@@ -62,34 +78,66 @@ struct Flag {
 
   std::string commandFlag; // A prefix to the flag (e.g. -o)
 
-  FlagType type;
-  std::string flagValueStr;
-  int64_t flagValueInt;
-  double flagValueDouble;
+  VariantType type;
+  std::string valueStr;
+  int64_t valueInt64;
+  double valueDouble;
 };
 
-// You must call callDoneCallbacks() and test for 'enabled' within the process()
-// function of all child classes. ( Should we wrap this to avoid user error
-// here? )
-class Processor {
+/**
+ * @brief The Processor class presents an abstraction to filesystem based
+ * computation
+ *
+ * An instance of Processor can only run a single instance of its process()
+ * function.
+ */
+class Processor : public IdObject {
 public:
-  Processor(std::string id_ = "") : id(id_) {
-    if (id_.size() == 0) {
-      id = al::demangle(typeid(*this).name()) + "@" +
-           std::to_string((uint64_t)this);
-    }
-  }
+  typedef std::map<std::string, VariantValue> Configuration;
+
+  Processor(std::string id_ = "") { setId(id_); }
+  Processor(Processor &p)
+      : mInputDirectory(p.mInputDirectory), mOutputDirectory(p.mOutputDirectory), mRunningDirectory(p.mRunningDirectory) {}
+
   virtual ~Processor() {}
+
+  /**
+   * @brief override this function to determine how subclasses should process
+   *
+   * You must call prepareFunction(), callDoneCallbacks() and test for 'enabled'
+   * within the process() function of all child classes.
+   */
   virtual bool process(bool forceRecompute = false) = 0;
+
+  /**
+   * @brief returns true is the process() function is currently running
+   */
+  bool isRunning();
+
+  /**
+   * @brief Convenience function to set input and output directory
+   */
+  void setDataDirectory(std::string directory);
+
   /**
    * @brief Set the directory for output files
    */
   void setOutputDirectory(std::string outputDirectory);
 
   /**
+   * @brief Get the directory for output files
+   */
+  std::string getOutputDirectory() { return mOutputDirectory; }
+
+  /**
    * @brief Set the directory for input files
    */
   void setInputDirectory(std::string inputDirectory);
+
+  /**
+   * @brief Get the directory for input files
+   */
+  std::string getInputDirectory() { return mInputDirectory; }
 
   /**
    * @brief Set the names of output files
@@ -121,30 +169,38 @@ public:
    */
   void setRunningDirectory(std::string directory);
 
-  std::string inputDirectory() { return mInputDirectory; }
-  std::string outputDirectory() { return mOutputDirectory; }
-  std::string runningDirectory() { return mRunningDirectory; }
+  /**
+   * @brief Get the directory for input files
+   */
+  std::string getRunningDirectory() { return mRunningDirectory; }
 
   void registerDoneCallback(std::function<void(bool)> func) {
     mDoneCallbacks.push_back(func);
   }
 
+  void verbose(bool verbose = true) { mVerbose = verbose; }
+
   std::string id;
+  bool ignoreFail{false}; ///< If set to true, processor chains will continue
+                          ///< even if this processor fails. Has no effect if
+                          ///< running asychronously
   bool enabled{true};
 
   /**
-   * @brief Add configuration key value pairs here
+   * @brief Set a function to be called before computing to prepare data
+   *
+   * When writing the prepare function you should access values and ids through
+   * Processor::configuration. If you access values directly from dimensions,
+   * you will likely break ParameterSpace::sweep used with this Processor as
+   * sweep() does not change the internal values of the parameter space and its
+   * dimensions.
    */
-  std::map<std::string, Flag> configuration;
-
-  //  /**
-  //     * @brief Set a function to be called
-  //     */
-  //    std::function<bool(void)> prepareFunction;
+  std::function<bool(void)> prepareFunction;
 
   template <class ParameterType>
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
+    configuration[param.getName()] = param.get();
     param.registerChangeCallback([&](ParameterType value) {
       configuration[param.getName()] = value;
       process();
@@ -157,12 +213,23 @@ public:
     return registerParameter(newParam);
   }
 
+  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
+
+  /**
+   * @brief Current internal configuration key value pairs
+   *
+   * Reflects the most recently used configuration (whether successful or
+   * failed) or the configuration for the currently running process.
+   */
+  Configuration configuration;
+
 protected:
   std::string mRunningDirectory;
-  std::string mOutputDirectory{"cached_output/"};
+  std::string mOutputDirectory;
   std::string mInputDirectory;
   std::vector<std::string> mOutputFileNames;
   std::vector<std::string> mInputFileNames;
+  bool mVerbose;
 
   std::vector<al::ParameterMeta *> mParameters;
 
@@ -171,6 +238,7 @@ protected:
       cb(result);
     }
   }
+  std::mutex mProcessLock;
 
 private:
   std::vector<std::function<void(bool)>> mDoneCallbacks;

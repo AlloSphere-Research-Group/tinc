@@ -21,11 +21,11 @@ public:
   // FIXME we need to take over the other process if we tunr it async.
   ProcessorAsync(const ProcessorAsync &other) // copy constructor
       : ProcessorAsync(other.mProcessor) {
-    id = other.id;
+    mId = other.mId;
   }
   ProcessorAsync(ProcessorAsync &&other) noexcept // move constructor
       : mThread(std::exchange(other.mThread, nullptr)) {
-    id = other.id;
+    mId = other.mId;
   }
   ProcessorAsync &operator=(const ProcessorAsync &other) // copy assignment
   {
@@ -34,7 +34,7 @@ public:
   }
   ProcessorAsync &operator=(ProcessorAsync &&other) noexcept // move assignment
   {
-    id = other.id;
+    mId = other.mId;
     std::swap(mThread, other.mThread);
     return *this;
   }

@@ -36,39 +36,36 @@ using namespace tinc;
 
 struct MyApp : public App {
 
-  ComputationChain mainChain{};
+  ComputationChain mainChain;
   ComputationChain joinChain{ComputationChain::PROCESS_ASYNC};
   ComputationChain chain1_3;
-  CppProcessor process1;
-  CppProcessor process2;
-  CppProcessor process3;
-  CppProcessor process4;
+  CppProcessor process1{"1"};
+  CppProcessor process2{"2"};
+  CppProcessor process3{"3"};
+  CppProcessor process4{"4"};
 
   Parameter value{"value", "", 0.0, "", 0.0, 1.0};
   ControlGUI gui;
 
-  float sourceValue;
-  float data1;
-  float data2;
+  double data1;
+  double data2;
 
   void onInit() override {
 
     // Define processing functions
     process1.processingFunction = [&]() {
-      data1 = sourceValue + 1.0;
+      data1 = mainChain.configuration["value"].valueDouble + 1.0;
       al_sleep(0.5);
       std::cout << "Done processing 1" << std::endl;
       return true;
     };
-    process1.id = "1";
 
     process2.processingFunction = [&]() {
       data2 = -1.0;
-      al_sleep(sourceValue);
+      al_sleep(mainChain.configuration["value"].valueDouble);
       std::cout << "Done processing 2" << std::endl;
       return true;
     };
-    process2.id = "2";
 
     process3.processingFunction = [&]() {
       data1 += 1.0;
@@ -76,7 +73,6 @@ struct MyApp : public App {
       std::cout << "Done processing 3" << std::endl;
       return true;
     };
-    process3.id = "3";
 
     process4.processingFunction = [&]() {
       data1 = data1 + data2;
@@ -84,18 +80,30 @@ struct MyApp : public App {
       std::cout << "Done processing 4" << std::endl;
       return true;
     };
-    process4.id = "4";
 
+    // Organize processing chains
     chain1_3 << process1 << process3;
     joinChain << chain1_3 << process2;
     mainChain << joinChain << process4;
 
-    value.registerChangeCallback([&](float value) {
-      sourceValue = value;
-      mainChain.process();
-      std::cout << "value: " << value << " produces: " << data1 << std::endl;
+    // Register value Parameter with each of the processors.
+    // This results in the process() function for mainChain being called on
+    // every change of value. The value can be accessed by all Processors
+    // through mainChain.parameterValues["value"]
+    // When registering parameters with processors in this way, the
+    // Processor::process function is called synchronously within the
+    // Parameter change callbacks, so this blocks until the process is done
+    // and the done callbacks have been called.
+    mainChain << value;
+
+    // Whenever the chain processes, this function will print out the current
+    // values.
+    mainChain.registerDoneCallback([&](bool ok) {
+      std::cout << (ok ? "OK " : "NOTOK ") << " data1=" << data1
+                << " data2=" << data2 << std::endl;
     });
 
+    // Put the value Parameter in the GUI
     gui << value;
     gui.init();
   }

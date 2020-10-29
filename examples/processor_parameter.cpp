@@ -25,8 +25,7 @@ struct MyApp : public App {
     // the configuration member and the old value is available from the
     // parameter as the new value has not been applied at this point
     process.processingFunction = [&]() {
-      std::cout << "new value: "
-                << process.configuration["value"].flagValueDouble
+      std::cout << "new value: " << process.configuration["value"].valueDouble
                 << " previous value " << value.get() << std::endl;
       return true;
     };

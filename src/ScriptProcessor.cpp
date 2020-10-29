@@ -1,5 +1,5 @@
 
-#include "tinc/DataScript.hpp"
+#include "tinc/ScriptProcessor.hpp"
 
 #include "nlohmann/json.hpp"
 
@@ -33,66 +33,47 @@ using namespace tinc;
 
 constexpr auto DATASCRIPT_META_FORMAT_VERSION = 0;
 
-std::mutex PushDirectory::mDirectoryLock;
+std::string ScriptProcessor::scriptFile(bool fullPath) { return mScriptName; }
 
-PushDirectory::PushDirectory(std::string directory, bool verbose)
-    : mVerbose(verbose) {
-  mDirectoryLock.lock();
-  getcwd(previousDirectory, 512);
-  chdir(directory.c_str());
-  if (mVerbose) {
-    std::cout << "Pushing directory: " << directory << std::endl;
-  }
-}
-
-PushDirectory::~PushDirectory() {
-  chdir(previousDirectory);
-  if (mVerbose) {
-    std::cout << "Setting directory back to: " << previousDirectory
-              << std::endl;
-  }
-  mDirectoryLock.unlock();
-}
-
-// --------------------------------------------------
-
-std::string DataScript::scriptFile(bool fullPath) { return mScriptName; }
-
-std::string DataScript::inputFile(bool fullPath, int index) {
+std::string ScriptProcessor::inputFile(bool fullPath, int index) {
   std::string inputName;
   if (mInputFileNames.size() > index) {
     inputName = mInputFileNames[index];
   }
 
   if (fullPath) {
-    return runningDirectory() + inputName;
+    return getRunningDirectory() + inputName;
   } else {
     return inputName;
   }
 }
 
-std::string DataScript::outputFile(bool fullPath, int index) {
+std::string ScriptProcessor::outputFile(bool fullPath, int index) {
   std::string outputName;
   if (mOutputFileNames.size() > index) {
     outputName = mOutputFileNames[index];
   }
   if (fullPath) {
-    return outputDirectory() + outputName;
+    return getOutputDirectory() + outputName;
   } else {
     return outputName;
   }
 }
 
-bool DataScript::process(bool forceRecompute) {
+bool ScriptProcessor::process(bool forceRecompute) {
   if (!enabled) {
     return true;
   }
-  std::unique_lock<std::mutex> lk(mProcessingLock);
+  if (prepareFunction && !prepareFunction()) {
+    std::cerr << "ERROR preparing processor: " << getId() << std::endl;
+    return false;
+  }
   if (mScriptName == "" || mScriptCommand == "") {
-    std::cout << "ERROR: process() for '" << id
+    std::cout << "ERROR: process() for '" << getId()
               << "' missing script name or script command." << std::endl;
     return false;
   }
+  std::unique_lock<std::mutex> lk(mProcessingLock);
 
   auto jsonFilename = writeJsonConfig();
   if (jsonFilename.size() == 0) {
@@ -116,7 +97,7 @@ bool DataScript::process(bool forceRecompute) {
   return ok;
 }
 
-std::string DataScript::sanitizeName(std::string output_name) {
+std::string ScriptProcessor::sanitizeName(std::string output_name) {
   std::replace(output_name.begin(), output_name.end(), '/', '_');
   std::replace(output_name.begin(), output_name.end(), '.', '_');
   std::replace(output_name.begin(), output_name.end(), ':', '_');
@@ -124,122 +105,125 @@ std::string DataScript::sanitizeName(std::string output_name) {
   return output_name;
 }
 
-bool DataScript::processAsync(bool noWait,
-                              std::function<void(bool)> doneCallback) {
-  std::lock_guard<std::mutex> lk(mProcessingLock);
+// bool ScriptProcessor::processAsync(bool noWait,
+//                                   std::function<void(bool)> doneCallback) {
+//  std::lock_guard<std::mutex> lk(mProcessingLock);
 
-  if (needsRecompute()) {
-    std::string command = makeCommandLine();
-    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
-      mNumAsyncProcesses--;
-      if (noWait) {
-        return false; // Async process not started
-      }
-      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
-      std::cout << "Async waiting 2 " << mNumAsyncProcesses << std::endl;
-      mAsyncDoneTrigger.wait(lk2);
-      std::cout << "Async done waiting 2 " << mNumAsyncProcesses << std::endl;
-    }
-    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
-    mAsyncThreads.emplace_back(std::thread([this, command, doneCallback]() {
-      bool ok = runCommand(command);
+//  if (needsRecompute()) {
+//    std::string command = makeCommandLine();
+//    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
+//      mNumAsyncProcesses--;
+//      if (noWait) {
+//        return false; // Async process not started
+//      }
+//      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
+//      std::cout << "Async waiting 2 " << mNumAsyncProcesses << std::endl;
+//      mAsyncDoneTrigger.wait(lk2);
+//      std::cout << "Async done waiting 2 " << mNumAsyncProcesses << std::endl;
+//    }
+//    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
+//    mAsyncThreads.emplace_back(std::thread([this, command, doneCallback]() {
+//      bool ok = runCommand(command);
 
-      if (doneCallback) {
-        doneCallback(ok);
-      }
-      mNumAsyncProcesses--;
-      mAsyncDoneTrigger.notify_all();
-      //                std::cout << "Async runner done" << mNumAsyncProcesses
-      //                << std::endl;
-    }));
+//      if (doneCallback) {
+//        doneCallback(ok);
+//      }
+//      mNumAsyncProcesses--;
+//      mAsyncDoneTrigger.notify_all();
+//      //                std::cout << "Async runner done" << mNumAsyncProcesses
+//      //                << std::endl;
+//    }));
 
-    PushDirectory p(mRunningDirectory, mVerbose);
-    writeMeta();
-  } else {
-    if (doneCallback) {
-      doneCallback(true);
-    }
-  }
-  return true;
-}
+//    PushDirectory p(mRunningDirectory, mVerbose);
+//    writeMeta();
+//  } else {
+//    if (doneCallback) {
+//      doneCallback(true);
+//    }
+//  }
+//  return true;
+//}
 
-bool DataScript::processAsync(std::map<std::string, std::string> options,
-                              bool noWait,
-                              std::function<void(bool)> doneCallback) {
-  std::unique_lock<std::mutex> lk(mProcessingLock);
+// bool ScriptProcessor::processAsync(std::map<std::string, std::string>
+// options,
+//                                   bool noWait,
+//                                   std::function<void(bool)> doneCallback) {
+//  std::unique_lock<std::mutex> lk(mProcessingLock);
 
-  if (needsRecompute()) {
-    lk.unlock();
-    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
-      mNumAsyncProcesses--;
-      if (noWait) {
-        return false; // Async process not started
-      }
-      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
-      std::cout << "Async waiting " << mNumAsyncProcesses << std::endl;
-      mAsyncDoneTrigger.wait(lk2);
-      std::cout << "Async done waiting " << mNumAsyncProcesses << std::endl;
-    }
-    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
+//  if (needsRecompute()) {
+//    lk.unlock();
+//    while (mNumAsyncProcesses.fetch_add(1) > mMaxAsyncProcesses) {
+//      mNumAsyncProcesses--;
+//      if (noWait) {
+//        return false; // Async process not started
+//      }
+//      std::unique_lock<std::mutex> lk2(mAsyncDoneTriggerLock);
+//      std::cout << "Async waiting " << mNumAsyncProcesses << std::endl;
+//      mAsyncDoneTrigger.wait(lk2);
+//      std::cout << "Async done waiting " << mNumAsyncProcesses << std::endl;
+//    }
+//    //            std::cout << "Async " << mNumAsyncProcesses << std::endl;
 
-    if (mVerbose) {
-      std::cout << "Starting asyc thread" << std::endl;
-    }
-    mAsyncThreads.emplace_back(std::thread([this, doneCallback]() {
-      bool ok = process(true);
+//    if (mVerbose) {
+//      std::cout << "Starting asyc thread" << std::endl;
+//    }
+//    mAsyncThreads.emplace_back(std::thread([this, doneCallback]() {
+//      bool ok = process(true);
 
-      PushDirectory p(mRunningDirectory, mVerbose);
-      writeMeta();
+//      PushDirectory p(mRunningDirectory, mVerbose);
+//      writeMeta();
 
-      if (doneCallback) {
-        doneCallback(ok);
-      }
-      mNumAsyncProcesses--;
-      mAsyncDoneTrigger.notify_all();
-      //                std::cout << "Async runner done" <<
-      //                mNumAsyncProcesses << std::endl;
-    }));
-  } else {
-    doneCallback(true);
-  }
-  return true;
-}
+//      if (doneCallback) {
+//        doneCallback(ok);
+//      }
+//      mNumAsyncProcesses--;
+//      mAsyncDoneTrigger.notify_all();
+//      //                std::cout << "Async runner done" <<
+//      //                mNumAsyncProcesses << std::endl;
+//    }));
+//  } else {
+//    doneCallback(true);
+//  }
+//  return true;
+//}
 
-bool DataScript::runningAsync() {
-  if (mNumAsyncProcesses > 0) {
-    return true;
-  } else {
-    return false;
-  }
-}
+// bool ScriptProcessor::runningAsync() {
+//  if (mNumAsyncProcesses > 0) {
+//    return true;
+//  } else {
+//    return false;
+//  }
+//}
 
-bool DataScript::waitForAsyncDone() {
-  bool ok = true;
-  for (auto &t : mAsyncThreads) {
-    t.join();
-  }
-  return ok;
-}
+// bool ScriptProcessor::waitForAsyncDone() {
+//  bool ok = true;
+//  for (auto &t : mAsyncThreads) {
+//    t.join();
+//  }
+//  return ok;
+//}
 
-std::string DataScript::writeJsonConfig() {
+std::string ScriptProcessor::writeJsonConfig() {
   using json = nlohmann::json;
   json j;
-  j["__output_dir"] = outputDirectory();
+
+  j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
+  j["__output_dir"] = getOutputDirectory();
   j["__output_name"] = outputFile(false);
-  j["__input_dir"] = inputDirectory();
+  j["__input_dir"] = getInputDirectory();
   j["__input_name"] = inputFile(false);
 
   parametersToConfig(j);
 
   for (auto c : configuration) {
-    if (c.second.type == FLAG_STRING) {
-      j[c.first] = c.second.flagValueStr;
+    if (c.second.type == VARIANT_STRING) {
+      j[c.first] = c.second.valueStr;
 
-    } else if (c.second.type == FLAG_INT) {
-      j[c.first] = c.second.flagValueInt;
+    } else if (c.second.type == VARIANT_INT64) {
+      j[c.first] = c.second.valueInt64;
 
-    } else if (c.second.type == FLAG_DOUBLE) {
-      j[c.first] = c.second.flagValueDouble;
+    } else if (c.second.type == VARIANT_DOUBLE) {
+      j[c.first] = c.second.valueDouble;
     }
   }
 
@@ -266,7 +250,7 @@ std::string DataScript::writeJsonConfig() {
   return jsonFilename;
 }
 
-void DataScript::parametersToConfig(nlohmann::json &j) {
+void ScriptProcessor::parametersToConfig(nlohmann::json &j) {
 
   for (al::ParameterMeta *param : mParameters) {
     // TODO should we use full address or group + name?
@@ -286,21 +270,21 @@ void DataScript::parametersToConfig(nlohmann::json &j) {
   }
 }
 
-std::string DataScript::makeCommandLine() {
+std::string ScriptProcessor::makeCommandLine() {
   std::string commandLine = mScriptCommand + " ";
   for (auto &flag : configuration) {
     switch (flag.second.type) {
-    case FLAG_STRING:
-      commandLine += flag.second.commandFlag + flag.second.flagValueStr + " ";
+    case VARIANT_STRING:
+      commandLine += flag.second.commandFlag + flag.second.valueStr + " ";
 
       break;
-    case FLAG_INT:
+    case VARIANT_INT64:
       commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.flagValueInt) + " ";
+                     std::to_string(flag.second.valueInt64) + " ";
       break;
-    case FLAG_DOUBLE:
+    case VARIANT_DOUBLE:
       commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.flagValueDouble) + " ";
+                     std::to_string(flag.second.valueDouble) + " ";
 
       break;
     }
@@ -308,14 +292,15 @@ std::string DataScript::makeCommandLine() {
   return commandLine;
 }
 
-bool DataScript::runCommand(const std::string &command) {
+bool ScriptProcessor::runCommand(const std::string &command) {
   PushDirectory p(mRunningDirectory, mVerbose);
 
   if (mVerbose) {
-    std::cout << "DataScript command: " << command << std::endl;
+    std::cout << "ScriptProcessor command: " << command << std::endl;
   }
   std::array<char, 128> buffer{0};
   std::string output;
+  // FIXME fork if running async
   FILE *pipe = popen(command.c_str(), "r");
   if (!pipe)
     throw std::runtime_error("popen() failed!");
@@ -344,18 +329,18 @@ bool DataScript::runCommand(const std::string &command) {
   return returnValue == 0;
 }
 
-bool DataScript::writeMeta() {
+bool ScriptProcessor::writeMeta() {
 
   nlohmann::json j;
 
-  j["__metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
+  j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
   j["__script"] = scriptFile(false);
   j["__script_modified"] = modified(scriptFile().c_str());
-  j["__running_directory"] = runningDirectory();
+  j["__running_directory"] = getRunningDirectory();
   // TODO add support for multiple input and output files.
-  j["__output_dir"] = outputDirectory();
+  j["__output_dir"] = getOutputDirectory();
   j["__output_name"] = outputFile(false);
-  j["__input_dir"] = inputDirectory();
+  j["__input_dir"] = getInputDirectory();
   j["__input_modified"] = modified(inputFile().c_str());
   j["__input_name"] = inputFile(false);
 
@@ -363,14 +348,14 @@ bool DataScript::writeMeta() {
 
   for (auto option : configuration) {
     switch (option.second.type) {
-    case FLAG_STRING:
-      j[option.first] = option.second.flagValueStr;
+    case VARIANT_STRING:
+      j[option.first] = option.second.valueStr;
       break;
-    case FLAG_INT:
-      j[option.first] = option.second.flagValueInt;
+    case VARIANT_INT64:
+      j[option.first] = option.second.valueInt64;
       break;
-    case FLAG_DOUBLE:
-      j[option.first] = option.second.flagValueDouble;
+    case VARIANT_DOUBLE:
+      j[option.first] = option.second.valueDouble;
       break;
     }
   }
@@ -396,7 +381,7 @@ bool DataScript::writeMeta() {
   return true;
 }
 
-al_sec DataScript::modified(const char *path) const {
+al_sec ScriptProcessor::modified(const char *path) const {
   struct stat s;
   if (::stat(path, &s) == 0) {
     // const auto& t = s.st_mtim;
@@ -406,8 +391,7 @@ al_sec DataScript::modified(const char *path) const {
   return 0.;
 }
 
-bool DataScript::needsRecompute() {
-
+bool ScriptProcessor::needsRecompute() {
   std::ifstream metaFileStream;
   metaFileStream.open(metaFilename(), std::ofstream::in);
 
@@ -431,7 +415,7 @@ bool DataScript::needsRecompute() {
     return true;
   }
 
-  if (metaData["__metadata_version"] != DATASCRIPT_META_FORMAT_VERSION) {
+  if (metaData["__tinc_metadata_version"] != DATASCRIPT_META_FORMAT_VERSION) {
     if (mVerbose) {
       std::cout << "Metadata format mismatch. Forcing recompute" << std::endl;
     }
@@ -445,12 +429,15 @@ bool DataScript::needsRecompute() {
       return true;
     }
   }
+  if (!al::File::exists(outputFile())) {
+    return true;
+  }
 
   return false;
 }
 
-std::string DataScript::metaFilename() {
-  std::string outPath = outputDirectory();
+std::string ScriptProcessor::metaFilename() {
+  std::string outPath = getOutputDirectory();
   std::string outName = outputFile(false);
   std::string metafilename =
       al::File::conformPathToOS(outPath) + outName + ".meta";

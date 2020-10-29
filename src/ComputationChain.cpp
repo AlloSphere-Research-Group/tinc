@@ -20,24 +20,52 @@ void ComputationChain::addProcessor(Processor &chain) {
 }
 
 bool ComputationChain::process(bool forceRecompute) {
+  mResults.clear();
   if (!enabled) {
     // TODO should callbacks be called if disabled?
     //    callDoneCallbacks(true);
     return true;
   }
+
+  std::unique_lock<std::mutex> lk(mProcessLock);
+  std::unique_lock<std::mutex> lk2(mChainLock);
+  if (prepareFunction && !prepareFunction()) {
+    std::cerr << "ERROR preparing processor: " << mId << std::endl;
+    return false;
+  }
   bool ret = true;
+  bool thisRet = true;
   switch (mType) {
   case PROCESS_ASYNC:
     for (auto chain : mProcessors) {
-      chain->process(forceRecompute);
+      for (auto configEntry : configuration) {
+        chain->configuration[configEntry.first] = configEntry.second;
+      }
+      mResults[chain->getId()] = chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
-      ret &= ((ProcessorAsync *)chain)->waitUntilDone();
+      thisRet = ((ProcessorAsync *)chain)->waitUntilDone();
+      mResults[chain->getId()] = thisRet;
+      if (!chain->ignoreFail) {
+        if (!chain->ignoreFail) {
+          ret &= thisRet;
+        }
+      }
     }
     break;
   case PROCESS_SERIAL:
     for (auto chain : mProcessors) {
-      ret &= chain->process(forceRecompute);
+      for (auto configEntry : configuration) {
+        chain->configuration[configEntry.first] = configEntry.second;
+      }
+      thisRet = chain->process(forceRecompute);
+      mResults[chain->getId()] = thisRet;
+      if (!chain->ignoreFail) {
+        ret &= thisRet;
+        if (!thisRet) {
+          break;
+        }
+      }
     }
     break;
   }

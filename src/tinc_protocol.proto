@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+import "google/protobuf/any.proto";
+
+package tinc;
+
+enum MessageType {
+  REQUEST = 0;
+  REMOVE = 1;
+  REGISTER = 2;
+  CONFIGURE = 3;
+  COMMAND = 4;
+  COMMAND_REPLY = 5;
+
+  PING = 98;
+  PONG = 99;
+}
+
+enum ObjectType {
+  PARAMETER = 0;
+  PROCESSOR = 1;
+  DISK_BUFFER = 2;
+  DATA_POOL = 3;
+  PARAMETER_SPACE = 4;
+}
+
+enum ProcessorType {
+  DATASCRIPT = 0;
+  CHAIN = 1;
+  CPP = 2;
+}
+
+enum ParameterDataType {
+    PARAMETER_FLOAT = 0;
+    PARAMETER_BOOL = 1;
+    PARAMETER_STRING = 2;
+    PARAMETER_INT32 = 3;
+    PARAMETER_VEC3F = 4;
+    PARAMETER_VEC4F = 5;
+    PARAMETER_COLORF = 6;
+    PARAMETER_POSED = 7;
+    PARAMETER_MENU = 8;
+    PARAMETER_CHOICE = 9;
+    PARAMETER_TRIGGER = 10;
+}
+
+enum DiskBufferType {
+    BINARY = 0;
+    TEXT = 1;
+    NETCDF = 2;
+    JSON = 3;
+    IMAGE = 4;
+}
+
+/// ################ TincMessage #####################
+message TincMessage {
+    MessageType messageType = 2;
+    ObjectType objectType = 3;
+    google.protobuf.Any details = 4;
+}
+
+message ObjectId {
+  string id = 1;
+}
+
+// Parameter data message
+message ParameterValue {
+// THis should be oneof, but 'repeated'is not allowed in oneof
+    float valueFloat = 1;
+    double valueDouble = 2;
+    int32 valueInt32 = 3;
+    int32 valueUint32 = 4;
+    uint64 valueInt64 = 5;
+    uint64 valueUint64 = 6;
+    uint64 valueInt8 = 7;
+    uint64 valueUint8 = 8;
+    repeated ParameterValue valueList = 20;
+    string valueString = 30;
+}
+
+// Registration Messages --------------------
+message RegisterProcessor {
+  string id = 1;
+  ProcessorType type = 2;
+  string inputDirectory = 3;
+  repeated string inputFiles = 4;
+  string outputDirectory = 5;
+  repeated string outputFiles = 6;
+  string runningDirectory = 7;
+}
+
+message RegisterDataPool {
+  string id = 1;
+  string parameterSpaceId = 2;
+  string cacheDirectory = 3;
+}
+
+message RegisterDiskBuffer {
+  string id = 1;
+  DiskBufferType type = 2;
+  string baseFilename = 3;
+  string path = 4;
+}
+
+message RegisterParameterSpace {
+  string id = 1;
+}
+
+message RegisterParameter {
+  string id = 1;
+  string group = 2;
+  ParameterDataType dataType = 3;
+  ParameterValue defaultValue = 4;
+ }
+
+// Configuration Messages
+message ParameterSpaceValues {
+  repeated string ids = 1;
+  repeated ParameterValue values = 2;
+}
+
+enum ParameterConfigureType {
+    VALUE = 0;
+    MIN = 1;
+    MAX = 2;
+    SPACE = 3;
+    SPACE_TYPE = 4;
+}
+
+// These values must conform to the values in the C++ and python libs
+//enum ParameterSpaceConfigureType {
+//    FLOAT_VALUE = 0;
+//    ID = 1;
+//    INDEX = 2;
+//}
+
+message ConfigureParameter {
+  string id = 1;
+  ParameterConfigureType configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+message ConfigureProcessor {
+  string id = 1;
+  string configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+enum DiskBufferConfigureType {
+    CURRENT_FILE = 0;
+}
+
+message ConfigureDiskBuffer {
+  string id = 1;
+  DiskBufferConfigureType configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+enum DataPoolConfigureType {
+    SLICE_CACHE_DIR = 0;
+}
+
+message ConfigureDataPool {
+  string id = 1;
+  DataPoolConfigureType configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
+// Commands
+
+message Command {
+    uint32 message_id = 1;
+    ObjectId id = 2;
+    google.protobuf.Any details = 3;
+}
+
+message ParameterRequestChoiceElements {
+}
+
+message ParameterRequestChoiceElementsReply {
+    repeated string elements = 1;
+}
+
+message ParameterSpaceRequestCurrentPath {
+}
+
+message ParameterSpaceRequestCurrentPathReply {
+    string path = 1;
+}
+
+message ParameterSpaceRequestRootPath {
+}
+
+message ParameterSpaceRequestRootPathReply {
+    string path = 1;
+}
+
+message DataPoolCommandSlice {
+    string field = 1;
+    repeated string dimension = 2;
+}
+
+message DataPoolCommandSliceReply {
+    string filename = 1;
+}
+
+
+
+
