@@ -44,7 +44,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          runRequest(objectType, objectId.id(), src);
+          readRequestMessage(objectType, objectId.id(), src);
         } else {
           std::cout << "Request command unexpected payload. Not ObjectId";
         }
@@ -60,7 +60,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         std::cout << "server register" << std::endl;
-        if (!runRegister(objectType, (void *)&details, src)) {
+        if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << "Error processing register command" << std::endl;
         }
         break;
@@ -124,7 +124,7 @@ void TincServer::setVerbose(bool verbose) {
   TincProtocol::mVerbose = verbose;
 }
 
-bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
+bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
                                  al::ValueSource *src) {
   bool ret = true;
 
@@ -139,15 +139,36 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
         ret &= sendProtobufMessage(msg, connection.get());
       }
     }
+    if (isResponse) {
+      std::cerr << "Response requested but no socket given" << std::endl;
+    }
   } else {
-    for (auto connection : mServerConnections) {
-      if (connection->address() != dst->address() ||
-          connection->port() != dst->port()) {
-        if (verbose()) {
-          std::cout << "Server sending message to " << connection->address()
-                    << ":" << connection->port() << std::endl;
+    if (!isResponse) {
+      for (auto connection : mServerConnections) {
+        if (connection->address() != dst->address() ||
+            connection->port() != dst->port()) {
+          if (verbose()) {
+            std::cout << "Server sending message to " << connection->address()
+                      << ":" << connection->port() << std::endl;
+          }
+          ret &= sendProtobufMessage(msg, connection.get());
         }
-        ret &= sendProtobufMessage(msg, connection.get());
+      }
+    } else {
+      for (auto connection : mServerConnections) {
+        if (connection->address() == dst->address() &&
+            connection->port() == dst->port()) {
+          if (verbose()) {
+            std::cout << "Server responding to " << connection->address() << ":"
+                      << connection->port() << std::endl;
+          }
+          ret = sendProtobufMessage(msg, connection.get());
+          break;
+        }
+      }
+      if (!ret) {
+        std::cerr << "Response requested but unable to send to "
+                  << dst->address() << ":" << dst->port() << std::endl;
       }
     }
   }

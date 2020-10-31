@@ -20,9 +20,10 @@ public:
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
   bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                       bool isResponse = false,
                        al::ValueSource *src = nullptr) override;
 
-  inline void sendParameters() { TincProtocol::sendParameters(&mSocket); }
+  // inline void sendParameters() { TincProtocol::sendParameters(&mSocket); }
 
   inline void requestParameters() { TincProtocol::requestParameters(&mSocket); }
   inline void requestProcessors() { TincProtocol::requestProcessors(&mSocket); }

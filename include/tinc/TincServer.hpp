@@ -23,6 +23,7 @@ public:
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
   bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                       bool isResponse = false,
                        al::ValueSource *src = nullptr) override;
 
   void setVerbose(bool verbose);

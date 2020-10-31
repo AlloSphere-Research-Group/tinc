@@ -18,7 +18,7 @@ using namespace tinc;
 using json = nlohmann::json;
 
 class MyApp : public al::App {
- public:
+public:
   TincServer tincServer;
   ImageDiskBuffer imageBuffer{"image", "image.png"};
   JsonDiskBuffer jsonBuffer{"json", "file.json"};

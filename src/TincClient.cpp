@@ -44,7 +44,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          runRequest(objectType, objectId.id(), src);
+          readRequestMessage(objectType, objectId.id(), src);
         } else {
           std::cout << "Request command unexpected payload. Not ObjectId";
         }
@@ -60,7 +60,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         std::cout << "client register" << std::endl;
-        if (!runRegister(objectType, (void *)&details, src)) {
+        if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << "Error processing register command" << std::endl;
         }
         break;
@@ -124,10 +124,10 @@ void TincClient::setVerbose(bool verbose) {
   TincProtocol::mVerbose = verbose;
 }
 
-bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
+bool TincClient::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
                                  al::ValueSource *src) {
   if (!dst) {
-    if (!src || mSocket.address() != src->ipAddr ||
+    if (!src || isResponse || mSocket.address() != src->ipAddr ||
         mSocket.port() != src->port) {
       if (verbose()) {
         std::cout << "Client sending message to " << mSocket.address() << ":"
@@ -136,7 +136,8 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
       return sendProtobufMessage(msg, &mSocket);
     }
   } else {
-    if (mSocket.address() != dst->address() || mSocket.port() != dst->port()) {
+    if (isResponse || mSocket.address() != dst->address() ||
+        mSocket.port() != dst->port()) {
       if (verbose()) {
         std::cout << "Client sending message to " << mSocket.address() << ":"
                   << mSocket.port() << std::endl;

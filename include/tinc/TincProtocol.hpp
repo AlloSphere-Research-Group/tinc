@@ -59,19 +59,16 @@ public:
 
 protected:
   // Incoming request message
-  void runRequest(int objectType, std::string objectId, al::Socket *src);
-  // Outgoing messages
-  void sendParameters(al::Socket *dst);
-  void sendParameterSpace(al::Socket *dst);
-  void sendProcessors(al::Socket *dst);
-  void sendDataPools(al::Socket *dst);
-  void sendDiskBuffers(al::Socket *dst);
-
-  // Outgoing response message to requests
-  void sendRequestResponse(al::ParameterMeta *param, al::Socket *dst);
+  void readRequestMessage(int objectType, std::string objectId,
+                          al::Socket *src);
+  void processRequestParameters(al::Socket *dst);
+  void processRequestParameterSpaces(al::Socket *dst);
+  void processRequestProcessors(al::Socket *dst);
+  void processRequestDataPools(al::Socket *dst);
+  void processRequestDiskBuffers(al::Socket *dst);
 
   // Incoming register message
-  bool runRegister(int objectType, void *any, al::Socket *src);
+  bool readRegisterMessage(int objectType, void *any, al::Socket *src);
   bool processRegisterParameter(void *any, al::Socket *src);
   bool processRegisterParameterSpace(al::Message &message, al::Socket *src);
   bool processRegisterProcessor(al::Message &message, al::Socket *src);
@@ -79,13 +76,18 @@ protected:
   bool processRegisterDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing register message
-  void sendRegisterParameterMessage(al::ParameterMeta *param, al::Socket *dst);
-  void sendRegisterParameterSpaceMessage(ParameterSpace *ps, al::Socket *dst);
-  void sendRegisterParameterSpaceDimensionMessage(ParameterSpaceDimension *dim,
-                                                  al::Socket *dst);
-  void sendRegisterProcessorMessage(Processor *p, al::Socket *dst);
-  void sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst);
-  void sendRegisterDiskBufferMessage(AbstractDiskBuffer *p, al::Socket *dst);
+  void sendRegisterMessage(al::ParameterMeta *param, al::Socket *dst,
+                           bool isResponse = false);
+  void sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
+                           bool isResponse = false);
+  void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                           bool isResponse = false);
+  void sendRegisterMessage(Processor *p, al::Socket *dst,
+                           bool isResponse = false);
+  void sendRegisterMessage(DataPool *p, al::Socket *dst,
+                           bool isResponse = false);
+  void sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
+                           bool isResponse = false);
 
   // Incoming configure message
   bool runConfigure(int objectType, void *any, al::Socket *src);
@@ -101,8 +103,10 @@ protected:
   void sendParameterStringDetails(al::ParameterString *param, al::Socket *dst);
   void sendParameterChoiceDetails(al::ParameterChoice *param, al::Socket *dst);
   void sendParameterColorDetails(al::ParameterColor *param, al::Socket *dst);
-  void sendParameterSpaceMessage(ParameterSpaceDimension *dim, al::Socket *dst);
-  void sendConfigureProcessorMessage(Processor *p, al::Socket *dst);
+  void sendParameterSpaceMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                                 bool isResponse = false);
+  void sendConfigureProcessorMessage(Processor *p, al::Socket *dst,
+                                     bool isResponse = false);
   void sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst);
 
   // Outgoing configure message (only value) for callback functions
@@ -128,8 +132,10 @@ protected:
 
   // Send tinc message. Overriden on TincServer or TincClient
   virtual bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                               bool isResponse = false,
                                al::ValueSource *src = nullptr) {
-    std::cerr << "Using unimplemented virtual function" << std::endl;
+    std::cerr << "Using unimplemented virtual function of sendTincMessage"
+              << std::endl;
     return true;
   }
 

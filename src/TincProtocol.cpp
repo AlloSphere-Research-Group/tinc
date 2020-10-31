@@ -755,6 +755,19 @@ void TincProtocol::requestParameters(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
+void TincProtocol::requestParameterSpaces(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REQUEST);
+  msg.set_objecttype(ObjectType::PARAMETER_SPACE);
+  google::protobuf::Any *details = msg.details().New();
+  ObjectId confMessage;
+  confMessage.set_id(""); // Requests all
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  sendProtobufMessage(&msg, dst);
+}
+
 void TincProtocol::requestProcessors(al::Socket *dst) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REQUEST);
@@ -794,232 +807,84 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
-void TincProtocol::requestParameterSpaces(al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REQUEST);
-  msg.set_objecttype(ObjectType::PARAMETER_SPACE);
-  google::protobuf::Any *details = msg.details().New();
-  ObjectId confMessage;
-  confMessage.set_id(""); // Requests all
-
-  details->PackFrom(confMessage);
-  msg.set_allocated_details(details);
-  sendProtobufMessage(&msg, dst);
+void TincProtocol::readRequestMessage(int objectType, std::string objectId,
+                                      al::Socket *src) {
+  if (objectId.size() > 0) {
+    std::cout << "Ignoring object id. Sending all requested objects."
+              << std::endl;
+  }
+  switch (objectType) {
+  case PARAMETER:
+    processRequestParameters(src);
+    break;
+  case PROCESSOR:
+    processRequestProcessors(src);
+    break;
+  case DISK_BUFFER:
+    processRequestDiskBuffers(src);
+    break;
+  case DATA_POOL:
+    processRequestDataPools(src);
+    break;
+  case PARAMETER_SPACE:
+    processRequestParameterSpaces(src);
+    break;
+  }
 }
 
-void TincProtocol::sendParameters(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
+void TincProtocol::processRequestParameters(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << std::endl;
+  }
   for (auto *p : mParameters) {
-    sendRequestResponse(p, dst);
+    sendRegisterMessage(p, dst, true);
   }
 }
 
-void TincProtocol::sendParameterSpace(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
+void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << std::endl;
+  }
   for (auto ps : mParameterSpaces) {
-    sendRegisterParameterSpaceMessage(ps, dst);
+    sendRegisterMessage(ps, dst, true);
   }
 }
 
-void TincProtocol::sendProcessors(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
+void TincProtocol::processRequestProcessors(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << std::endl;
+  }
   for (auto *p : mProcessors) {
-    sendRegisterProcessorMessage(p, dst);
+    sendRegisterMessage(p, dst, true);
   }
 }
 
-void TincProtocol::sendDataPools(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
+void TincProtocol::processRequestDataPools(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << std::endl;
+  }
   for (auto *p : mDataPools) {
-    sendRegisterDataPoolMessage(p, dst);
+    sendRegisterMessage(p, dst, true);
   }
 }
 
-void TincProtocol::sendDiskBuffers(al::Socket *dst) {
-  std::cout << __FUNCTION__ << std::endl;
+void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << std::endl;
+  }
   for (auto *db : mDiskBuffers) {
-    sendRegisterDiskBufferMessage(db, dst);
+    sendRegisterMessage(db, dst, true);
   }
 }
 
-void TincProtocol::sendRegisterProcessorMessage(Processor *p, al::Socket *dst) {
-
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
-  }
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(PROCESSOR);
-  RegisterProcessor registerProcMessage;
-  registerProcMessage.set_id(p->getId());
-  if (strcmp(typeid(*p).name(), typeid(ScriptProcessor).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::DATASCRIPT);
-  } else if (strcmp(typeid(*p).name(), typeid(ComputationChain).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::CHAIN);
-  } else if (strcmp(typeid(*p).name(), typeid(CppProcessor).name()) == 0) {
-    registerProcMessage.set_type(ProcessorType::CPP);
-  }
-
-  registerProcMessage.set_inputdirectory(p->getInputDirectory());
-  for (auto inFile : p->getInputFileNames()) {
-    registerProcMessage.add_inputfiles(inFile);
-  }
-  registerProcMessage.set_outputdirectory(p->getOutputDirectory());
-  for (auto outFile : p->getOutputFileNames()) {
-    registerProcMessage.add_outputfiles(outFile);
-  }
-
-  sendConfigureProcessorMessage(p, dst);
-  if (dynamic_cast<ComputationChain *>(p)) {
-    for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendRegisterProcessorMessage(childProcessor, dst);
-    }
-  }
-}
-
-void TincProtocol::sendConfigureProcessorMessage(Processor *p,
-                                                 al::Socket *dst) {
-
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
-  }
-
-  for (auto config : p->configuration) {
-    TincMessage msg;
-    msg.set_messagetype(CONFIGURE);
-    msg.set_objecttype(PROCESSOR);
-    ConfigureProcessor confMessage;
-    confMessage.set_id(p->getId());
-    confMessage.set_configurationkey(config.first);
-    google::protobuf::Any *configValue = confMessage.configurationvalue().New();
-    ParameterValue val;
-    if (config.second.type == VARIANT_DOUBLE) {
-      val.set_valuedouble(config.second.valueDouble);
-    } else if (config.second.type == VARIANT_INT64) {
-      val.set_valueint64(config.second.valueInt64);
-    } else if (config.second.type == VARIANT_STRING) {
-      val.set_valuestring(config.second.valueStr);
-    }
-    configValue->PackFrom(val);
-    auto details = msg.details().New();
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-
-    sendProtobufMessage(&msg, dst);
-  }
-  if (dynamic_cast<ComputationChain *>(p)) {
-    for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendConfigureProcessorMessage(childProcessor, dst);
-    }
-  }
-}
-
-void TincProtocol::sendRegisterDataPoolMessage(DataPool *p, al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(DATA_POOL);
-  RegisterDataPool details;
-  details.set_id(p->getId());
-  details.set_parameterspaceid(p->getParameterSpace().getId());
-  details.set_cachedirectory(p->getCacheDirectory());
-  google::protobuf::Any *detailsAny = msg.details().New();
-  detailsAny->PackFrom(details);
-  msg.set_allocated_details(detailsAny);
-
-  sendProtobufMessage(&msg, dst);
-  sendRegisterParameterSpaceMessage(&p->getParameterSpace(), dst);
-}
-
-void TincProtocol::sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst) {
-  auto msg = createConfigureDataPoolMessage(p);
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::sendRegisterDiskBufferMessage(AbstractDiskBuffer *p,
-                                                 al::Socket *dst) {
-  TincMessage msg;
-  msg.set_messagetype(REGISTER);
-  msg.set_objecttype(DISK_BUFFER);
-  RegisterDiskBuffer details;
-  details.set_id(p->getId());
-
-  DiskBufferType type = DiskBufferType::BINARY;
-
-  if (strcmp(typeid(p).name(), typeid(NetCDFDiskBufferDouble).name()) == 0) {
-    type = DiskBufferType::NETCDF;
-  } else if (strcmp(typeid(p).name(), typeid(ImageDiskBuffer).name()) == 0) {
-    type = DiskBufferType::IMAGE;
-  } else if (strcmp(typeid(p).name(), typeid(JsonDiskBuffer).name()) == 0) {
-    type = DiskBufferType::JSON;
-  }
-  details.set_type(type);
-  details.set_basefilename(p->getBaseFileName());
-  // TODO prepend node's root directory
-  std::string path = al::File::currentPath() + p->getPath();
-  details.set_path(path);
-
-  google::protobuf::Any *detailsAny = msg.details().New();
-  detailsAny->PackFrom(details);
-  msg.set_allocated_details(detailsAny);
-
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::sendRegisterParameterSpaceMessage(ParameterSpace *ps,
-                                                     al::Socket *dst) {
-
-  auto msg = createRegisterParameterSpaceMessage(ps);
-
-  sendProtobufMessage(&msg, dst);
-  for (auto dim : ps->getDimensions()) {
-    sendRegisterParameterSpaceDimensionMessage(dim.get(), dst);
-  }
-}
-
-void TincProtocol::sendRegisterParameterSpaceDimensionMessage(
-    ParameterSpaceDimension *dim, al::Socket *dst) {
-
-  sendRegisterParameterMessage(&dim->parameter(), dst);
-  sendParameterSpaceMessage(dim, dst);
-}
-
-void TincProtocol::sendParameterSpaceMessage(ParameterSpaceDimension *dim,
-                                             al::Socket *dst) {
-  TincMessage msg = createConfigureParameterFromDim(dim);
-
-  sendProtobufMessage(&msg, dst);
-}
-
-void TincProtocol::sendRegisterParameterMessage(al::ParameterMeta *param,
-                                                al::Socket *dst) {
-  TincMessage msg = createRegisterParameterMessage(param);
-  sendTincMessage(&msg, dst);
-
-  auto infoMessages = createParameterInfoMessage(param);
-  for (auto &msg : infoMessages) {
-    sendTincMessage(&msg, dst);
-  }
-}
-
-void TincProtocol::sendRequestResponse(al::ParameterMeta *param,
-                                       al::Socket *dst) {
-  TincMessage msg = createRegisterParameterMessage(param);
-  sendProtobufMessage(&msg, dst);
-
-  auto infoMessages = createParameterInfoMessage(param);
-  for (auto &msg : infoMessages) {
-    sendProtobufMessage(&msg, dst);
-  }
-}
-
-bool TincProtocol::runRegister(int objectType, void *any, al::Socket *src) {
+bool TincProtocol::readRegisterMessage(int objectType, void *any,
+                                       al::Socket *src) {
   switch (objectType) {
   case PARAMETER:
     return processRegisterParameter(any, src);
   case PROCESSOR:
-  //    return sendProcessors(src);
+    //    return sendProcessors(src);
+    break;
   case DISK_BUFFER:
     return processRegisterDiskBuffer(any, src);
   case DATA_POOL:
@@ -1037,6 +902,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     std::cerr << "Error: Invalid payload for RegisterParameter" << std::endl;
     return false;
   }
+
   RegisterParameter command;
   details->UnpackTo(&command);
   auto id = command.id();
@@ -1057,32 +923,32 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     // param = new ParameterSpaceDimension(id, group);
     // param->parameter().setDefault(def.valuefloat());
     // registerParameterSpaceDimension(*param);
-    // sendRegisterParameterSpaceDimensionMessage(param, src);
+    // sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_STRING:
     // FIXME implement
     //    param = new al::ParameterString(id, group, def.valuestring());
     //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
+    //    sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_INT32:
     param = new al::ParameterInt(id, group, def.valueint32());
     std::cout << " Parameter: " << id << std::endl;
     registerParameter(*param);
     std::cout << "between register ftn" << std::endl;
-    sendRegisterParameterMessage(param, src);
+    sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_CHOICE:
     // FIXME implement
     //    param = new al::ParameterChoice(id, group, def.valueuint64());
     //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
+    //    sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_BOOL:
     // FIXME implement
     //    param = new al::ParameterBool(id, group, def.valuefloat());
     //    registerParameter(*param);
-    //    sendRegisterParameterMessage(param, src);
+    //    sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_VEC3F:
   case ParameterDataType::PARAMETER_VEC4F:
@@ -1117,6 +983,130 @@ bool TincProtocol::processRegisterDataPool(al::Message &message,
 
 bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
   return true;
+}
+
+void TincProtocol::sendRegisterMessage(al::ParameterMeta *param,
+                                       al::Socket *dst, bool isResponse) {
+  TincMessage msg = createRegisterParameterMessage(param);
+  sendTincMessage(&msg, dst, isResponse);
+
+  auto infoMessages = createParameterInfoMessage(param);
+  for (auto &msg : infoMessages) {
+    sendTincMessage(&msg, dst, isResponse);
+  }
+}
+
+void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
+                                       bool isResponse) {
+  auto msg = createRegisterParameterSpaceMessage(ps);
+  sendTincMessage(&msg, dst, isResponse);
+
+  for (auto dim : ps->getDimensions()) {
+    sendRegisterMessage(dim.get(), dst, isResponse);
+  }
+}
+
+void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
+                                       al::Socket *dst, bool isResponse) {
+
+  sendRegisterMessage(&dim->parameter(), dst, isResponse);
+  sendParameterSpaceMessage(dim, dst, isResponse);
+}
+
+void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
+                                       bool isResponse) {
+  // Handle Asynchronous Processors
+  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
+    p = dynamic_cast<ProcessorAsync *>(p)->processor();
+  }
+
+  TincMessage msg;
+  msg.set_messagetype(REGISTER);
+  msg.set_objecttype(PROCESSOR);
+
+  RegisterProcessor registerProcMessage;
+  registerProcMessage.set_id(p->getId());
+  if (strcmp(typeid(*p).name(), typeid(ScriptProcessor).name()) == 0) {
+    registerProcMessage.set_type(ProcessorType::DATASCRIPT);
+  } else if (strcmp(typeid(*p).name(), typeid(ComputationChain).name()) == 0) {
+    registerProcMessage.set_type(ProcessorType::CHAIN);
+  } else if (strcmp(typeid(*p).name(), typeid(CppProcessor).name()) == 0) {
+    registerProcMessage.set_type(ProcessorType::CPP);
+  }
+
+  registerProcMessage.set_inputdirectory(p->getInputDirectory());
+  for (auto inFile : p->getInputFileNames()) {
+    registerProcMessage.add_inputfiles(inFile);
+  }
+  registerProcMessage.set_outputdirectory(p->getOutputDirectory());
+  for (auto outFile : p->getOutputFileNames()) {
+    registerProcMessage.add_outputfiles(outFile);
+  }
+
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(registerProcMessage);
+  msg.set_allocated_details(detailsAny);
+
+  sendTincMessage(&msg, dst, isResponse);
+
+  sendConfigureProcessorMessage(p, dst, isResponse);
+
+  if (dynamic_cast<ComputationChain *>(p)) {
+    for (auto childProcessor :
+         dynamic_cast<ComputationChain *>(p)->processors()) {
+      sendRegisterMessage(childProcessor, dst, isResponse);
+    }
+  }
+}
+
+void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
+                                       bool isResponse) {
+  TincMessage msg;
+  msg.set_messagetype(REGISTER);
+  msg.set_objecttype(DATA_POOL);
+
+  RegisterDataPool details;
+  details.set_id(p->getId());
+  details.set_parameterspaceid(p->getParameterSpace().getId());
+  details.set_cachedirectory(p->getCacheDirectory());
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+
+  sendTincMessage(&msg, dst, isResponse);
+
+  sendRegisterMessage(&p->getParameterSpace(), dst, isResponse);
+}
+
+void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
+                                       bool isResponse) {
+  TincMessage msg;
+  msg.set_messagetype(REGISTER);
+  msg.set_objecttype(DISK_BUFFER);
+
+  RegisterDiskBuffer details;
+  details.set_id(p->getId());
+
+  DiskBufferType type = DiskBufferType::BINARY;
+
+  if (strcmp(typeid(p).name(), typeid(NetCDFDiskBufferDouble).name()) == 0) {
+    type = DiskBufferType::NETCDF;
+  } else if (strcmp(typeid(p).name(), typeid(ImageDiskBuffer).name()) == 0) {
+    type = DiskBufferType::IMAGE;
+  } else if (strcmp(typeid(p).name(), typeid(JsonDiskBuffer).name()) == 0) {
+    type = DiskBufferType::JSON;
+  }
+  details.set_type(type);
+  details.set_basefilename(p->getBaseFileName());
+  // TODO prepend node's root directory
+  std::string path = al::File::currentPath() + p->getPath();
+  details.set_path(path);
+
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+
+  sendTincMessage(&msg, dst, isResponse);
 }
 
 bool TincProtocol::runConfigure(int objectType, void *any, al::Socket *src) {
@@ -1431,6 +1421,56 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   return false;
 }
 
+void TincProtocol::sendParameterSpaceMessage(ParameterSpaceDimension *dim,
+                                             al::Socket *dst, bool isResponse) {
+  TincMessage msg = createConfigureParameterFromDim(dim);
+
+  sendTincMessage(&msg, dst, isResponse);
+}
+
+void TincProtocol::sendConfigureProcessorMessage(Processor *p, al::Socket *dst,
+                                                 bool isResponse) {
+
+  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
+    p = dynamic_cast<ProcessorAsync *>(p)->processor();
+  }
+
+  for (auto config : p->configuration) {
+    TincMessage msg;
+    msg.set_messagetype(CONFIGURE);
+    msg.set_objecttype(PROCESSOR);
+    ConfigureProcessor confMessage;
+    confMessage.set_id(p->getId());
+    confMessage.set_configurationkey(config.first);
+    google::protobuf::Any *configValue = confMessage.configurationvalue().New();
+    ParameterValue val;
+    if (config.second.type == VARIANT_DOUBLE) {
+      val.set_valuedouble(config.second.valueDouble);
+    } else if (config.second.type == VARIANT_INT64) {
+      val.set_valueint64(config.second.valueInt64);
+    } else if (config.second.type == VARIANT_STRING) {
+      val.set_valuestring(config.second.valueStr);
+    }
+    configValue->PackFrom(val);
+    auto details = msg.details().New();
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
+
+    sendTincMessage(&msg, dst, isResponse);
+  }
+  if (dynamic_cast<ComputationChain *>(p)) {
+    for (auto childProcessor :
+         dynamic_cast<ComputationChain *>(p)->processors()) {
+      sendConfigureProcessorMessage(childProcessor, dst, isResponse);
+    }
+  }
+}
+
+void TincProtocol::sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst) {
+  auto msg = createConfigureDataPoolMessage(p);
+  sendProtobufMessage(&msg, dst);
+}
+
 bool TincProtocol::runCommand(int objectType, void *any, al::Socket *src) {
   switch (objectType) {
   case PARAMETER:
@@ -1673,7 +1713,7 @@ void TincProtocol::sendParameterFloatValue(float value, std::string fullAddress,
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
 
-    sendTincMessage(&msg, nullptr, src);
+    sendTincMessage(&msg, nullptr, false, src);
   }
 }
 
@@ -1697,7 +1737,7 @@ void TincProtocol::sendParameterIntValue(int32_t value, std::string fullAddress,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, nullptr, src);
+    sendTincMessage(&msg, nullptr, false, src);
   }
 }
 void TincProtocol::sendParameterUint64Value(uint64_t value,
@@ -1720,7 +1760,7 @@ void TincProtocol::sendParameterUint64Value(uint64_t value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, nullptr, src);
+    sendTincMessage(&msg, nullptr, false, src);
   }
 }
 
@@ -1744,7 +1784,7 @@ void TincProtocol::sendParameterStringValue(std::string value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, nullptr, src);
+    sendTincMessage(&msg, nullptr, false, src);
   }
 }
 
@@ -1775,32 +1815,7 @@ void TincProtocol::sendParameterColorValue(al::Color value,
 
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
-    sendTincMessage(&msg, nullptr, src);
-  }
-}
-
-void TincProtocol::runRequest(int objectType, std::string objectId,
-                              al::Socket *src) {
-  if (objectId.size() > 0) {
-    std::cout << "Ignoring object id. Sending all requested objects."
-              << std::endl;
-  }
-  switch (objectType) {
-  case PARAMETER:
-    sendParameters(src);
-    break;
-  case PROCESSOR:
-    sendProcessors(src);
-    break;
-  case DISK_BUFFER:
-    sendDiskBuffers(src);
-    break;
-  case DATA_POOL:
-    sendDataPools(src);
-    break;
-  case PARAMETER_SPACE:
-    sendParameterSpace(src);
-    break;
+    sendTincMessage(&msg, nullptr, false, src);
   }
 }
 
