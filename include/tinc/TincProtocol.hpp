@@ -90,7 +90,7 @@ protected:
                            bool isResponse = false);
 
   // Incoming configure message
-  bool runConfigure(int objectType, void *any, al::Socket *src);
+  bool readConfigureMessage(int objectType, void *any, al::Socket *src);
   bool processConfigureParameter(void *any, al::Socket *src);
   bool processConfigureParameterSpace(al::Message &message, al::Socket *src);
   bool processConfigureProcessor(al::Message &message, al::Socket *src);
@@ -98,31 +98,31 @@ protected:
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing configure message (value + details)
-  void sendParameterFloatDetails(al::Parameter *param, al::Socket *dst);
-  void sendParameterIntDetails(al::ParameterInt *param, al::Socket *dst);
-  void sendParameterStringDetails(al::ParameterString *param, al::Socket *dst);
-  void sendParameterChoiceDetails(al::ParameterChoice *param, al::Socket *dst);
-  void sendParameterColorDetails(al::ParameterColor *param, al::Socket *dst);
-  void sendParameterSpaceMessage(ParameterSpaceDimension *dim, al::Socket *dst,
-                                 bool isResponse = false);
-  void sendConfigureProcessorMessage(Processor *p, al::Socket *dst,
-                                     bool isResponse = false);
-  void sendConfigureDataPoolMessage(DataPool *p, al::Socket *dst);
+  void sendConfigureMessage(al::ParameterMeta *param, al::Socket *dst,
+                            bool isResponse = false);
+  void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                            bool isResponse = false);
+  void sendConfigureMessage(Processor *p, al::Socket *dst,
+                            bool isResponse = false);
+  void sendConfigureMessage(DataPool *p, al::Socket *dst,
+                            bool isResponse = false);
+  void sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
+                            bool isResponse = false);
 
   // Outgoing configure message (only value) for callback functions
-  void sendParameterFloatValue(float value, std::string fullAddress,
-                               al::ValueSource *src);
-  void sendParameterIntValue(int32_t value, std::string fullAddress,
-                             al::ValueSource *src);
-  void sendParameterUint64Value(uint64_t value, std::string fullAddress,
-                                al::ValueSource *src);
-  void sendParameterStringValue(std::string value, std::string fullAddress,
-                                al::ValueSource *src);
-  void sendParameterColorValue(al::Color value, std::string fullAddress,
-                               al::ValueSource *src);
+  void sendValueMessage(float value, std::string fullAddress,
+                        al::ValueSource *src);
+  void sendValueMessage(int32_t value, std::string fullAddress,
+                        al::ValueSource *src);
+  void sendValueMessage(uint64_t value, std::string fullAddress,
+                        al::ValueSource *src);
+  void sendValueMessage(std::string value, std::string fullAddress,
+                        al::ValueSource *src);
+  void sendValueMessage(al::Color value, std::string fullAddress,
+                        al::ValueSource *src);
 
   // Incoming command message
-  bool runCommand(int objectType, void *any, al::Socket *src);
+  bool readCommandMessage(int objectType, void *any, al::Socket *src);
   bool processCommandParameter(void *any, al::Socket *src);
   bool processCommandParameterSpace(void *any, al::Socket *src);
   bool processCommandDataPool(void *any, al::Socket *src);

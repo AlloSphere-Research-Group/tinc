@@ -46,76 +46,54 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
           details.UnpackTo(&objectId);
           readRequestMessage(objectType, objectId.id(), src);
         } else {
-          std::cout << "Request command unexpected payload. Not ObjectId";
+          std::cout << "Request message has unexpected payload. Not ObjectId";
         }
         break;
       case MessageType::REMOVE:
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          std::cout << "Remove command received, but not implemented"
+          std::cout << "Remove message received, but not implemented"
                     << std::endl;
-          //              runRequest(objectType, objectId.id(), src);
         }
         break;
       case MessageType::REGISTER:
         std::cout << "server register" << std::endl;
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing register command" << std::endl;
+          std::cerr << "Error processing register message" << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
         std::cout << "server configure" << std::endl;
-        if (!runConfigure(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing configure command" << std::endl;
+        if (!readConfigureMessage(objectType, (void *)&details, src)) {
+          std::cerr << "Error processing configure message" << std::endl;
         }
         break;
       case MessageType::COMMAND:
-        if (!runCommand(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing configure command" << std::endl;
+        if (!readCommandMessage(objectType, (void *)&details, src)) {
+          std::cerr << "Error processing command message" << std::endl;
         }
         break;
       case MessageType::PING:
-        std::cout << "Ping command received, but not implemented" << std::endl;
+        std::cout << "Ping message received, but not implemented" << std::endl;
         break;
       case MessageType::PONG:
-        std::cout << "Pong command received, but not implemented" << std::endl;
+        std::cout << "Pong message received, but not implemented" << std::endl;
         break;
       default:
         std::cout << "Unused message type" << std::endl;
       }
-
     } else {
       std::cerr << "Error parsing message" << std::endl;
     }
+
     message.pushReadIndex(msgSize);
   }
 
   if (verbose()) {
     std::cout << "message buffer : " << message.remainingBytes() << std::endl;
   }
-  //      tincMsessage->
 
-  //  //      CodedInputStream coded_input(&ais);
-  //  auto command = message.getByte();
-  //  if (command == REQUEST_PARAMETERS) {
-  //    sendParameters(src);
-  //    return true;
-  //  } else if (command == REQUEST_PROCESSORS) {
-  //    sendProcessors(src);
-  //    return true;
-  //  } else if (command == REQUEST_DISK_BUFFERS) {
-  //    //            sendDiskBuffers();
-  //    //    assert(0 == 1);
-  //    return false;
-  //  } else if (command == REQUEST_DATA_POOLS) {
-  //    sendDataPools(src);
-  //    return true;
-  //  } else if (command == OBJECT_COMMAND) {
-  //    return processObjectCommand(message, src);
-  //  } else if (command == CONFIGURE_PARAMETER) {
-  //    return processConfigureParameter(message, src);
-  //  }
   return true;
 }
 
