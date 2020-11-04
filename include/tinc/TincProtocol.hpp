@@ -18,12 +18,14 @@ public:
   enum { CREATE_DATA_SLICE = 0x01 };
 
   // register parameter to tinc
-  void registerParameter(al::ParameterMeta &param);
-  void registerParameterSpace(ParameterSpace &ps);
-  void registerParameterSpaceDimension(ParameterSpaceDimension &psd);
-  void registerProcessor(Processor &processor);
-  void registerDiskBuffer(AbstractDiskBuffer &db);
-  void registerDataPool(DataPool &dp);
+  void registerParameter(al::ParameterMeta &param, al::Socket *dst = nullptr);
+  void registerParameterSpace(ParameterSpace &ps, al::Socket *dst = nullptr);
+  void registerParameterSpaceDimension(ParameterSpaceDimension &psd,
+                                       al::Socket *dst = nullptr);
+  void registerProcessor(Processor &processor, al::Socket *dst = nullptr);
+  void registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *dst = nullptr);
+  void registerDataPool(DataPool &dp, al::Socket *dst = nullptr);
+  // FIXME are parameterservers meant to be sent over network?
   void registerParameterServer(al::ParameterServer &pserver);
 
   TincProtocol &operator<<(al::ParameterMeta &p);

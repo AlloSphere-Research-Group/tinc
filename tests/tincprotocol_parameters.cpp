@@ -52,6 +52,7 @@ TEST(TincProtocol, ParameterInt) {
   tclient.setVerbose(false);
   EXPECT_TRUE(tclient.start());
 
+  // TODO make request automatic with start
   tclient.requestParameters();
 
   al::al_sleep(0.5);
@@ -70,16 +71,29 @@ TEST(TincProtocol, ParameterInt) {
 
   EXPECT_EQ(paramInt->get(), 4);
 
-  // al::ParameterInt q{"param2", "group", 6, -8, 10};
-  // tclient << q;
-  // q.set(7);
+  paramInt->set(5);
 
-  // tclient.sendParameters();
+  al::al_sleep(0.5);
 
-  // al::al_sleep(0.5);
+  EXPECT_EQ(p.get(), 5);
 
-  // auto *param2 = tserver.getParameter("param2");
-  // EXPECT_NE(param2, nullptr);
+  al::ParameterInt q{"param2", "group", 6, -8, 10};
+  tclient << q;
+
+  al::al_sleep(0.5);
+
+  auto *param2 = tserver.getParameter("param2");
+  EXPECT_NE(param2, nullptr);
+
+  auto *paramInt2 = static_cast<al::ParameterInt *>(param2);
+  EXPECT_EQ(paramInt2->min(), -8);
+  EXPECT_EQ(paramInt2->max(), 10);
+  EXPECT_EQ(paramInt2->get(), 6);
+
+  q.set(7);
+  al::al_sleep(0.5);
+
+  EXPECT_EQ(paramInt2->get(), 7);
 
   tclient.stop();
   tserver.stop();

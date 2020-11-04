@@ -560,7 +560,8 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
 }
 
 //// ------------------------------------------------------
-void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
+void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
+                                     al::Socket *dst) {
   bool registered = false;
   for (auto *p : mParameters) {
     // FIXME reevaluate if name/group string comparison is needed
@@ -640,6 +641,9 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
     } else {
       assert(1 == 0); // Implement!
     }
+
+    // Broadcast registered Parameter
+    sendRegisterMessage(&pmeta, dst);
   } else {
     std::cerr << "Parameter: " << pmeta.getName()
               << " (Group: " << pmeta.getGroup() << ") already registered."
@@ -647,7 +651,7 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta) {
   }
 }
 
-void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
+void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *dst) {
   bool registered = false;
   for (auto *p : mParameterSpaces) {
     if (p == &ps || p->getId() == ps.getId()) {
@@ -655,11 +659,14 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
       break;
     }
   }
-  for (auto dim : ps.getDimensions()) {
-    registerParameterSpaceDimension(*dim);
-  }
   if (!registered) {
     mParameterSpaces.push_back(&ps);
+
+    // FIXME re-check when member dimensions should be registered
+    for (auto dim : ps.getDimensions()) {
+      registerParameterSpaceDimension(*dim);
+    }
+
     // FIXME re-check callback function. something doesn't look right
     ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
                                  ParameterSpace *ps) {
@@ -688,14 +695,17 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps) {
         }
       }
     };
+
+    // Broadcast registered ParameterSpace
+    sendRegisterMessage(&ps, dst);
   } else {
     std::cerr << "Processor: " << ps.getId() << " already registered."
               << std::endl;
   }
 }
 
-void TincProtocol::registerParameterSpaceDimension(
-    ParameterSpaceDimension &psd) {
+void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
+                                                   al::Socket *dst) {
   bool registered = false;
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
@@ -705,6 +715,7 @@ void TincProtocol::registerParameterSpaceDimension(
   }
   if (!registered) {
     mParameterSpaceDimensions.push_back(&psd);
+
     psd.parameter().registerChangeCallback(
         [&](float value, al::ValueSource *src) {
           sendValueMessage(value, psd.parameter().getFullAddress(), src);
@@ -726,13 +737,16 @@ void TincProtocol::registerParameterSpaceDimension(
           msg = createConfigureParameterFromDim(changedDimension);
           sendTincMessage(&msg);
         };
+
+    // Broadcast registered ParameterSpaceDimension
+    sendRegisterMessage(&psd, dst);
   } else {
     std::cerr << "ParameterSpaceDimension: " << psd.getFullAddress()
               << " already registered." << std::endl;
   }
 }
 
-void TincProtocol::registerProcessor(Processor &processor) {
+void TincProtocol::registerProcessor(Processor &processor, al::Socket *dst) {
   bool registered = false;
   for (auto *p : mProcessors) {
     if (p == &processor || p->getId() == processor.getId()) {
@@ -745,13 +759,16 @@ void TincProtocol::registerProcessor(Processor &processor) {
     // FIXME we should register parameters registered with processors.
     //    for (auto *param: processor.parameters()) {
     //    }
+
+    // Broadcast registered processor
+    sendRegisterMessage(&processor, dst);
   } else {
     std::cerr << "Processor: " << processor.getId() << " already registered."
               << std::endl;
   }
 }
 
-void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db) {
+void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *dst) {
   bool registered = false;
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
@@ -761,13 +778,16 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db) {
   }
   if (!registered) {
     mDiskBuffers.push_back(&db);
+
+    // Broadcast registered DiskBuffer
+    sendRegisterMessage(&db, dst);
   } else {
     std::cerr << "DiskBuffer: " << db.getId() << " already registered."
               << std::endl;
   }
 }
 
-void TincProtocol::registerDataPool(DataPool &dp) {
+void TincProtocol::registerDataPool(DataPool &dp, al::Socket *dst) {
   bool registered = false;
   for (auto *p : mDataPools) {
     if (p == &dp || p->getId() == dp.getId()) {
@@ -776,12 +796,17 @@ void TincProtocol::registerDataPool(DataPool &dp) {
     }
   }
   if (!registered) {
-    registerParameterSpace(dp.getParameterSpace());
     mDataPools.push_back(&dp);
+    // FIXME check register order datapool -> ps
+    registerParameterSpace(dp.getParameterSpace());
+
     dp.modified = [&]() {
       auto msg = createConfigureDataPoolMessage(&dp);
       sendTincMessage(&msg);
     };
+
+    // Broadcast registered DataPool
+    sendRegisterMessage(&dp, dst);
   } else {
     // FIXME replace entry in mDataPools wiht this one if it is not the same
     // instance
@@ -800,6 +825,8 @@ void TincProtocol::registerParameterServer(al::ParameterServer &pserver) {
   }
   if (!registered) {
     mParameterServers.push_back(&pserver);
+    // FIXME are servers meant to be broadcasted?
+    // sendRegisterMessage(pserver, dst);
   } else {
     std::cerr << "ParameterServer already registered." << std::endl;
   }
@@ -1011,8 +1038,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     break;
   case ParameterDataType::PARAMETER_INT32:
     param = new al::ParameterInt(id, group, def.valueint32());
-    registerParameter(*param);
-    sendRegisterMessage(param, src);
+    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_CHOICE:
     // FIXME implement
@@ -1082,7 +1108,7 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
 
 void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
                                        al::Socket *dst, bool isResponse) {
-
+  // FIXME check if registering psd as parameter is right
   sendRegisterMessage(&dim->parameter(), dst, isResponse);
   sendConfigureMessage(dim, dst, isResponse);
 }
