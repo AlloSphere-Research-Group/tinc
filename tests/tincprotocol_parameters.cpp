@@ -47,7 +47,6 @@ TEST(TincProtocol, ParameterInt) {
 
   al::ParameterInt p{"param", "group", 3, -10, 11};
   tserver << p;
-  // p.set(4);
 
   TincClient tclient;
   tclient.setVerbose(false);
@@ -63,13 +62,13 @@ TEST(TincProtocol, ParameterInt) {
   auto *paramInt = static_cast<al::ParameterInt *>(param);
   EXPECT_EQ(paramInt->min(), -10);
   EXPECT_EQ(paramInt->max(), 11);
-  // EXPECT_EQ(paramInt->get(), 4);
+  EXPECT_EQ(paramInt->get(), 3);
 
-  // paramInt->set(5);
+  p.set(4);
 
-  // al::al_sleep(0.5);
+  al::al_sleep(0.5);
 
-  // EXPECT_EQ(p.get(), 5);
+  EXPECT_EQ(paramInt->get(), 4);
 
   // al::ParameterInt q{"param2", "group", 6, -8, 10};
   // tclient << q;

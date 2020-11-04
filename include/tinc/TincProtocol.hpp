@@ -41,6 +41,7 @@ public:
   void requestDiskBuffers(al::Socket *dst);
   void requestDataPools(al::Socket *dst);
 
+  // TODO what if same name but different group?
   al::ParameterMeta *getParameter(std::string name) {
     for (auto *param : mParameters) {
       if (param->getName() == name) {
@@ -99,6 +100,8 @@ protected:
 
   // Outgoing configure message (value + details)
   void sendConfigureMessage(al::ParameterMeta *param, al::Socket *dst,
+                            bool isResponse = false);
+  void sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                             bool isResponse = false);
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
                             bool isResponse = false);

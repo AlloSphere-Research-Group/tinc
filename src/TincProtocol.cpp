@@ -458,7 +458,6 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
   }
 
   ParameterConfigureType command = conf.configurationkey();
-
   ParameterValue v;
   conf.configurationvalue().UnpackTo(&v);
 
@@ -701,6 +700,7 @@ void TincProtocol::registerParameterSpaceDimension(
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
       registered = true;
+      break;
     }
   }
   if (!registered) {
@@ -756,6 +756,7 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db) {
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
       registered = true;
+      break;
     }
   }
   if (!registered) {
@@ -771,6 +772,7 @@ void TincProtocol::registerDataPool(DataPool &dp) {
   for (auto *p : mDataPools) {
     if (p == &dp || p->getId() == dp.getId()) {
       registered = true;
+      break;
     }
   }
   if (!registered) {
@@ -929,45 +931,30 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 }
 
 void TincProtocol::processRequestParameters(al::Socket *dst) {
-  if (mVerbose) {
-    std::cout << __FUNCTION__ << std::endl;
-  }
   for (auto *p : mParameters) {
     sendRegisterMessage(p, dst, true);
   }
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
-  if (mVerbose) {
-    std::cout << __FUNCTION__ << std::endl;
-  }
   for (auto ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst, true);
   }
 }
 
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
-  if (mVerbose) {
-    std::cout << __FUNCTION__ << std::endl;
-  }
   for (auto *p : mProcessors) {
     sendRegisterMessage(p, dst, true);
   }
 }
 
 void TincProtocol::processRequestDataPools(al::Socket *dst) {
-  if (mVerbose) {
-    std::cout << __FUNCTION__ << std::endl;
-  }
   for (auto *p : mDataPools) {
     sendRegisterMessage(p, dst, true);
   }
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
-  if (mVerbose) {
-    std::cout << __FUNCTION__ << std::endl;
-  }
   for (auto *db : mDiskBuffers) {
     sendRegisterMessage(db, dst, true);
   }
@@ -1087,6 +1074,7 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
   auto msg = createRegisterParameterSpaceMessage(ps);
   sendTincMessage(&msg, dst, isResponse);
 
+  // FIXME no configure settings to send for parameterspace?
   for (auto dim : ps->getDimensions()) {
     sendRegisterMessage(dim.get(), dst, isResponse);
   }
@@ -1220,38 +1208,39 @@ bool TincProtocol::readConfigureMessage(int objectType, void *any,
 }
 
 bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
-  bool ret = true;
-
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
-  if (details->Is<ConfigureParameter>()) {
-    ConfigureParameter conf;
-    details->UnpackTo(&conf);
-    auto addr = conf.id();
-
-    for (auto *dim : mParameterSpaceDimensions) {
-      if (addr == dim->getFullAddress()) {
-        ret &= processConfigureParameterValue(conf, &dim->parameter(), src);
-      }
-    }
-
-    for (auto *ps : mParameterSpaces) {
-      for (auto dim : ps->getDimensions()) {
-        if (addr == dim->getFullAddress()) {
-          ret &= processConfigureParameterValue(conf, &dim->parameter(), src);
-        }
-      }
-    }
-
-    for (auto *param : mParameters) {
-      if (addr == param->getFullAddress()) {
-        ret &= processConfigureParameterValue(conf, param, src);
-      }
-    }
-  } else {
+  if (!details->Is<ConfigureParameter>()) {
     std::cerr << "Unexpected payload in Configure Parameter command"
               << std::endl;
+    return false;
   }
-  return ret;
+
+  ConfigureParameter conf;
+  details->UnpackTo(&conf);
+  auto addr = conf.id();
+
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (addr == dim->getFullAddress()) {
+      return processConfigureParameterValue(conf, &dim->parameter(), src);
+    }
+  }
+
+  for (auto *ps : mParameterSpaces) {
+    for (auto dim : ps->getDimensions()) {
+      if (addr == dim->getFullAddress()) {
+        return processConfigureParameterValue(conf, &dim->parameter(), src);
+      }
+    }
+  }
+
+  for (auto *param : mParameters) {
+    if (addr == param->getFullAddress()) {
+      return processConfigureParameterValue(conf, param, src);
+    }
+  }
+
+  std::cerr << "Unable to find parameter: " << addr << std::endl;
+  return false;
 }
 
 bool TincProtocol::processConfigureParameterSpace(al::Message &message,
@@ -1271,34 +1260,40 @@ bool TincProtocol::processConfigureDataPool(al::Message &message,
 
 bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
-  if (details->Is<ConfigureDiskBuffer>()) {
-    ConfigureDiskBuffer conf;
-    details->UnpackTo(&conf);
-    auto id = conf.id();
-    for (auto *db : mDiskBuffers) {
-      if (id == db->getId()) {
-        DiskBufferConfigureType command = conf.configurationkey();
-
-        if (command == DiskBufferConfigureType::CURRENT_FILE) {
-          if (conf.configurationvalue().Is<ParameterValue>()) {
-            ParameterValue file;
-            conf.configurationvalue().UnpackTo(&file);
-            if (!db->updateData(file.valuestring())) {
-              std::cerr << "ERROR updating buffer from file:"
-                        << file.valuestring() << std::endl;
-              return false;
-            }
-            std::cout << "loaded " << file.valuestring() << std::endl;
-            return true;
-          }
-        }
-      }
-    }
-  } else {
+  if (!details->Is<ConfigureDiskBuffer>()) {
     std::cerr << "Unexpected payload in Configure Parameter command"
               << std::endl;
+    return false;
   }
 
+  ConfigureDiskBuffer conf;
+  details->UnpackTo(&conf);
+  auto id = conf.id();
+  for (auto *db : mDiskBuffers) {
+    if (id == db->getId()) {
+      DiskBufferConfigureType command = conf.configurationkey();
+
+      if (command == DiskBufferConfigureType::CURRENT_FILE) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue file;
+          conf.configurationvalue().UnpackTo(&file);
+          if (!db->updateData(file.valuestring())) {
+            std::cerr << "ERROR updating buffer from file:"
+                      << file.valuestring() << std::endl;
+            return false;
+          }
+          std::cout << "loaded " << file.valuestring() << std::endl;
+          return true;
+        }
+      }
+
+      std::cerr << "Invalid configuration message for Diskbuffer: " << id
+                << std::endl;
+      return false;
+    }
+  }
+
+  std::cerr << "Unable to find Diskbuffer: " << id << std::endl;
   return false;
 }
 
@@ -1308,6 +1303,11 @@ void TincProtocol::sendConfigureMessage(al::ParameterMeta *param,
   for (auto &msg : infoMessages) {
     sendTincMessage(&msg, dst, isResponse);
   }
+}
+
+void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
+                                        bool isResponse) {
+  assert(1 == 0); // Implement!
 }
 
 void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
