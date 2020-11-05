@@ -37,6 +37,7 @@ public:
   TincProtocol &operator<<(al::ParameterServer &pserver);
 
   // Send requests for data
+  // FIXME make request automatic with start, or make a requestall?
   void requestParameters(al::Socket *dst);
   void requestParameterSpaces(al::Socket *dst);
   void requestProcessors(al::Socket *dst);

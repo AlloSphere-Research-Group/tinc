@@ -38,6 +38,8 @@ using namespace tinc;
 //   tserver.stop();
 // }
 
+// TEST(TincProtocol, ParameterBool) { EXPECT_TRUE(false); }
+
 // TEST(TincProtocol, ParameterString) { EXPECT_TRUE(false); }
 
 TEST(TincProtocol, ParameterInt) {
@@ -46,14 +48,18 @@ TEST(TincProtocol, ParameterInt) {
   EXPECT_TRUE(tserver.start());
 
   al::ParameterInt p{"param", "group", 3, -10, 11};
-  tserver << p;
+
+  // tserver << p;
 
   TincClient tclient;
   tclient.setVerbose(false);
   EXPECT_TRUE(tclient.start());
 
-  // TODO make request automatic with start
-  tclient.requestParameters();
+  // if p is registered before client has done handshake with server,
+  // need to requestParameter manually
+  tserver << p;
+
+  // tclient.requestParameters();
 
   al::al_sleep(0.5);
 
@@ -77,23 +83,23 @@ TEST(TincProtocol, ParameterInt) {
 
   EXPECT_EQ(p.get(), 5);
 
-  al::ParameterInt q{"param2", "group", 6, -8, 10};
-  tclient << q;
+  // al::ParameterInt q{"param2", "group", 6, -8, 10};
+  // tclient << q;
 
-  al::al_sleep(0.5);
+  // al::al_sleep(0.5);
 
-  auto *param2 = tserver.getParameter("param2");
-  EXPECT_NE(param2, nullptr);
+  // auto *param2 = tserver.getParameter("param2");
+  // EXPECT_NE(param2, nullptr);
 
-  auto *paramInt2 = static_cast<al::ParameterInt *>(param2);
-  EXPECT_EQ(paramInt2->min(), -8);
-  EXPECT_EQ(paramInt2->max(), 10);
-  EXPECT_EQ(paramInt2->get(), 6);
+  // auto *paramInt2 = static_cast<al::ParameterInt *>(param2);
+  // EXPECT_EQ(paramInt2->min(), -8);
+  // EXPECT_EQ(paramInt2->max(), 10);
+  // EXPECT_EQ(paramInt2->get(), 6);
 
-  q.set(7);
-  al::al_sleep(0.5);
+  // q.set(7);
+  // al::al_sleep(0.5);
 
-  EXPECT_EQ(paramInt2->get(), 7);
+  // EXPECT_EQ(paramInt2->get(), 7);
 
   tclient.stop();
   tserver.stop();
@@ -105,6 +111,10 @@ TEST(TincProtocol, ParameterInt) {
 
 // TEST(TincProtocol, ParameterColor) { EXPECT_TRUE(false); }
 
+// TEST(TincProtocol, ParameterPose) { EXPECT_TRUE(false); }
+
 // TEST(TincProtocol, ParameterMenu) { EXPECT_TRUE(false); }
 
 // TEST(TincProtocol, ParameterChoice) { EXPECT_TRUE(false); }
+
+// TEST(TincProtocol, ParameterTrigger) { EXPECT_TRUE(false); }

@@ -16,13 +16,12 @@ FetchContent_MakeAvailable(googletest)
 set(TEST_SOURCES main.cpp 
   # scriptprocessor.cpp
   # tincprotocol.cpp
-  # tincprotocol_datapools.cpp
-  # tincprotocol_diskbuffers.cpp
   tincprotocol_parameters.cpp
+  # tincprotocol_remote_parameter.cpp
   # tincprotocol_parameterspaces.cpp
   # tincprotocol_processors.cpp
-
-  # tincprotocol_remote_parameter.cpp
+  # tincprotocol_diskbuffers.cpp
+  # tincprotocol_datapools.cpp
 )
 
 add_executable(tinc_tests ${TEST_SOURCES})

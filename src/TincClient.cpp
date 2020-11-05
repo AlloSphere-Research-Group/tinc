@@ -15,7 +15,6 @@
 
 using namespace tinc;
 
-//// ------------------------
 TincClient::TincClient() {}
 
 bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {

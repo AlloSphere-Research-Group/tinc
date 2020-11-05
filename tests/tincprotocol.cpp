@@ -22,7 +22,6 @@ TEST(TincProtocol, Connection) {
 
 TEST(TincProtocol, MultiConnection) {
   TincServer tserver;
-  tserver.verbose(true);
   EXPECT_TRUE(tserver.start());
 
   TincClient tclient;
