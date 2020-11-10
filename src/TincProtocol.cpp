@@ -616,6 +616,17 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
       // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
       assert(1 == 0); // Implement!
     } else if (strcmp(typeid(*param).name(),
+                      typeid(al::ParameterString).name()) ==
+               0) { // al::Parameter
+
+      al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+      p->registerChangeCallback(
+          [&, p](std::string value, al::ValueSource *src) {
+            sendValueMessage(value, p->getFullAddress(), src);
+          });
+      // al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+      //      assert(1 == 0); // Implement!
+    } else if (strcmp(typeid(*param).name(),
                       typeid(al::ParameterColor).name()) ==
                0) { // al::ParameterColor
       al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -739,9 +750,9 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
           // FIXME register necessary here?
           registerParameterSpaceDimension(*changedDimension);
 
-          TincMessage msg =
-              createRegisterParameterMessage(&changedDimension->parameter());
-          sendTincMessage(&msg);
+      TincMessage msg =
+          createRegisterParameterMessage(&changedDimension->parameter());
+      sendTincMessage(&msg);
 
           auto confMessages =
               createConfigureParameterMessage(&changedDimension->parameter());

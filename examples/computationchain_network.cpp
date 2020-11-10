@@ -60,7 +60,7 @@ struct MyApp : public App {
     tserver << mainChain;
 
     // Start TINC server
-    tserver.verbose(true);
+    tserver.setVerbose(true);
     tserver.start(34450, "localhost");
 
     // Whenever the chain processes, this function will print out the current
