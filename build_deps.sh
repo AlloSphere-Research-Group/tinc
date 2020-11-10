@@ -6,7 +6,7 @@ git clone --depth 1 --branch hdf5-1_12_0 https://github.com/HDFGroup/hdf5.git
 $CMAKE_BINARY -S hdf5 -B hdf5_build -DBUILD_TESTING:BOOL=OFF -DHDF5_BUILD_EXAMPLES:BOOL=OFF -DHDF5_BUILD_HL_LIB:BOOL=ON -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON -DZLIB_USE_EXTERNAL:BOOL=OFF -DHDF5_BUILD_CPP_LIB:BOOL=OFF -DHDF5_BUILD_TOOLS:BOOL=OFF -DBUILD_STATIC:BOOL=ON
 $CMAKE_BINARY --build hdf5_build -- -j7
 mkdir usr
-$CMAKE_BINARY --install hdf5_build --prefix ./usr
+$CMAKE_BINARY --install hdf5_build --prefix usr
 
 git clone --depth 1 --branch v4.7.4 https://github.com/Unidata/netcdf-c.git
 cd netcdf-c
