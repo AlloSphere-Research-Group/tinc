@@ -91,7 +91,7 @@ bool DiskBuffer<DataType>::updateData(std::string filename) {
     ret = parseFile(file, buffer);
     BufferManager<DataType>::doneWriting(buffer);
   } else {
-    std::cerr << "Error code: " << strerror(errno);
+    std::cerr << "Error code: " << std::strerror(errno);
   }
   for (auto cb : mUpdateCallbacks) {
     cb(ret);
