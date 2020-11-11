@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <errno.h>
 
 #include "al/io/al_File.hpp"
