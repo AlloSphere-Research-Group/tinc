@@ -17,18 +17,15 @@ jobs:
   build:
     # executor: exec1
     docker:
-      - image: debian:stable-slim
+      - image: debian:bullseye-slim
     steps:
       - run:
           name: Installing dependencies
           command: |
             apt-get update
-            apt-get install -y sudo gcc g++ zlib1g-dev libcurl4-openssl-dev m4 cmake git
+            apt-get install -y sudo build-essential cmake git ninja-build libnetcdf-dev libglew-dev libglu1-mesa-dev xorg-dev libasound2-dev python3
             rm -rf /var/lib/apt/lists/*
       - checkout
-      - run:
-          name: run build_deps.sh
-          command: ./build_deps.sh
       - run:
           name: Cmake config
           command: |
@@ -38,5 +35,7 @@ jobs:
 
       - run:
           name: Cmake build
-          command: cmake -build .
+          command: |
+            cd build
+            cmake --build . -j7
 
