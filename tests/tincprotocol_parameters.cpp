@@ -168,7 +168,7 @@ using namespace tinc;
 //   auto *paramVec3 = static_cast<al::ParameterVec3 *>(param);
 //   EXPECT_EQ(paramVec3->get(), al::Vec3f(1, 2, 3));
 
-//   // // change value on the serverside
+//   // change value on the serverside
 //   p.set(al::Vec3f(4, 5, 6));
 //   al::al_sleep(0.5); // wait for new value
 
@@ -184,11 +184,47 @@ using namespace tinc;
 //   tserver.stop();
 // }
 
-TEST(TincProtocol, ParameterVec4) {
+// TEST(TincProtocol, ParameterVec4) {
+//   TincServer tserver;
+//   EXPECT_TRUE(tserver.start());
+
+//   al::ParameterVec4 p{"param", "group", al::Vec4f(1, 2, 3, 4)};
+//   tserver << p;
+
+//   TincClient tclient;
+//   EXPECT_TRUE(tclient.start());
+
+//   // if p was registered after client does handshake, this isn't needed
+//   tclient.requestParameters();
+//   al::al_sleep(0.5); // wait for parameters to get sent
+
+//   auto *param = tclient.getParameter("param");
+//   EXPECT_NE(param, nullptr);
+
+//   auto *paramVec4 = static_cast<al::ParameterVec4 *>(param);
+//   EXPECT_EQ(paramVec4->get(), al::Vec4f(1, 2, 3, 4));
+
+//   // change value on the serverside
+//   p.set(al::Vec4f(4, 5, 6, 7));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(paramVec4->get(), al::Vec4f(4, 5, 6, 7));
+
+//   // change value on the clientside
+//   paramVec4->set(al::Vec4f(7, 8, 9, 10));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(p.get(), al::Vec4f(7, 8, 9, 10));
+
+//   tclient.stop();
+//   tserver.stop();
+// }
+
+TEST(TincProtocol, ParameterColor) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  al::ParameterVec4 p{"param", "group", al::Vec4f(1, 2, 3, 4)};
+  al::ParameterColor p{"param", "group", al::Color(0.1f, 0.2f, 0.3f, 0.4f)};
   tserver << p;
 
   TincClient tclient;
@@ -201,26 +237,24 @@ TEST(TincProtocol, ParameterVec4) {
   auto *param = tclient.getParameter("param");
   EXPECT_NE(param, nullptr);
 
-  auto *paramVec4 = static_cast<al::ParameterVec4 *>(param);
-  EXPECT_EQ(paramVec4->get(), al::Vec4f(1, 2, 3, 4));
+  auto *paramColor = static_cast<al::ParameterColor *>(param);
+  EXPECT_EQ(paramColor->get(), al::Color(0.1f, 0.2f, 0.3f, 0.4f));
 
   // // change value on the serverside
-  p.set(al::Vec4f(4, 5, 6, 7));
+  p.set(al::Color(0.4f, 0.5f, 0.6f, 0.7f));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(paramVec4->get(), al::Vec4f(4, 5, 6, 7));
+  EXPECT_EQ(paramColor->get(), al::Color(0.4f, 0.5f, 0.6f, 0.7f));
 
   // change value on the clientside
-  paramVec4->set(al::Vec4f(7, 8, 9, 10));
+  paramColor->set(al::Color(0.7f, 0.8f, 0.9f, 1.f));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(p.get(), al::Vec4f(7, 8, 9, 10));
+  EXPECT_EQ(p.get(), al::Color(0.7f, 0.8f, 0.9f, 1.f));
 
   tclient.stop();
   tserver.stop();
 }
-
-// TEST(TincProtocol, ParameterColor) { EXPECT_TRUE(false); }
 
 // TEST(TincProtocol, ParameterPose) { EXPECT_TRUE(false); }
 
@@ -231,3 +265,4 @@ TEST(TincProtocol, ParameterVec4) {
 // TEST(TincProtocol, ParameterTrigger) { EXPECT_TRUE(false); }
 
 // FIXME simplify the createconfigureparameterXXXmessage
+// FIXME review default
