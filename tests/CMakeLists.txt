@@ -17,7 +17,7 @@ set(TEST_SOURCES main.cpp
   # scriptprocessor.cpp
   # tincprotocol.cpp
   tincprotocol_parameters.cpp
-  # tincprotocol_remote_parameter.cpp
+  tincprotocol_remote_parameter.cpp
   # tincprotocol_parameterspaces.cpp
   # tincprotocol_processors.cpp
   # tincprotocol_diskbuffers.cpp

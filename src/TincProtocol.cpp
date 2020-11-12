@@ -43,11 +43,17 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     details.set_datatype(PARAMETER_INT32);
     details.defaultvalue().New()->set_valueint32(p->getDefault());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    // details.set_datatype(PARAMETER_VEC3F);
-    // al::Vec3f defaultValue = p->getDefault();
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    details.set_datatype(PARAMETER_VEC3F);
+    al::Vec3f defaultValue = p->getDefault();
+    auto *list = details.mutable_defaultvalue();
+    auto *val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[0]);
+    val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[1]);
+    val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[2]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
     // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
@@ -58,8 +64,8 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
     details.set_datatype(PARAMETER_COLORF);
     al::Color defaultValue = p->getDefault();
-    auto any = details.defaultvalue().New();
-    auto val = any->add_valuelist();
+    auto *any = details.defaultvalue().New();
+    auto *val = any->add_valuelist();
     val->set_valuefloat(defaultValue.r);
     val = any->add_valuelist();
     val->set_valuefloat(defaultValue.g);
@@ -109,8 +115,8 @@ TincMessage createRegisterParameterSpaceMessage(ParameterSpace *ps) {
   return msg;
 }
 
-// FIXME consider folding into individual createConfigMessage functions to avoid
-// multiple strcmp calls
+// FIXME consider folding into individual createConfigXXXMessage functions to
+// avoid multiple strcmp calls
 void createParameterValueMessage(al::ParameterMeta *param,
                                  ConfigureParameter &confMessage) {
   confMessage.set_id(param->getFullAddress());
@@ -134,10 +140,15 @@ void createParameterValueMessage(al::ParameterMeta *param,
     al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
     val.set_valueint32(p->get());
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    //    configValue->PackFrom(p->get());
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    al::Vec3f v = p->get();
+    auto *member = val.add_valuelist();
+    member->set_valuefloat(v[0]);
+    member = val.add_valuelist();
+    member->set_valuefloat(v[1]);
+    member = val.add_valuelist();
+    member->set_valuefloat(v[2]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
     // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
@@ -274,7 +285,6 @@ createConfigureParameterIntMessage(al::ParameterInt *param) {
     msg.set_allocated_details(details);
     messages.push_back(msg);
   }
-
   {
     TincMessage msg;
     msg.set_messagetype(MessageType::CONFIGURE);
@@ -313,6 +323,24 @@ createConfigureParameterIntMessage(al::ParameterInt *param) {
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
 
+    messages.push_back(msg);
+  }
+  return messages;
+}
+
+std::vector<TincMessage>
+createConfigureParameterVec3Message(al::ParameterVec3 *param) {
+  std::vector<TincMessage> messages;
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::CONFIGURE);
+    msg.set_objecttype(ObjectType::PARAMETER);
+
+    google::protobuf::Any *details = msg.details().New();
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
     messages.push_back(msg);
   }
   return messages;
@@ -373,9 +401,9 @@ createConfigureParameterMessage(al::ParameterMeta *param) {
     al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
     return createConfigureParameterIntMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    return createConfigureParameterVec3Message(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
     // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
@@ -466,7 +494,7 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
   if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
     al::Parameter *p = dynamic_cast<al::Parameter *>(param);
     if (command == ParameterConfigureType::VALUE) {
-      p->set(v.valuefloat());
+      p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
       p->min(v.valuefloat());
     } else if (command == ParameterConfigureType::MAX) {
@@ -476,7 +504,7 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
              0) {
     al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
     if (command == ParameterConfigureType::VALUE) {
-      p->set(v.valuefloat());
+      p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
       p->min(v.valuefloat());
     } else if (command == ParameterConfigureType::MAX) {
@@ -486,7 +514,7 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
                     typeid(al::ParameterString).name()) == 0) { //
     al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
     if (command == ParameterConfigureType::VALUE) {
-      p->set(v.valuestring());
+      p->set(v.valuestring(), src->valueSource());
     } else {
       std::cerr << "Unexpected min/max configure for ParameterString"
                 << std::endl;
@@ -502,11 +530,23 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
     } else if (command == ParameterConfigureType::MAX) {
       p->max(v.valueint32());
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterVec3).name()) ==
-             0) { // al::ParameterVec3
-    // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
+             0) {
+    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+    if (command == ParameterConfigureType::VALUE) {
+      if (v.valuelist_size() != 3) {
+        std::cerr << "Unexpected number of components for ParameterVec3"
+                  << std::endl;
+        return false;
+      }
+      al::Vec3f value(v.valuelist(0).valuefloat(), v.valuelist(1).valuefloat(),
+                      v.valuelist(2).valuefloat());
+      p->set(value, src->valueSource());
+    } else {
+      std::cerr << "Unexpected min/max configure for ParameterVec3"
+                << std::endl;
+      return false;
+    }
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterVec4).name()) ==
              0) { // al::ParameterVec4
@@ -524,7 +564,7 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
       }
       al::Color value(v.valuelist(0).valuefloat(), v.valuelist(1).valuefloat(),
                       v.valuelist(2).valuefloat(), v.valuelist(3).valuefloat());
-      p->set(value);
+      p->set(value, src->valueSource());
     } else {
       std::cerr << "Unexpected min/max configure for ParameterColor"
                 << std::endl;
@@ -545,7 +585,7 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
              0) { // al::ParameterChoice
     al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
     if (command == ParameterConfigureType::VALUE) {
-      p->set(v.valueuint64());
+      p->set(v.valueuint64(), src->valueSource());
     } else {
       std::cerr << "Unexpected min/max configure for ParameterChoice"
                 << std::endl;
@@ -595,10 +635,12 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
         sendValueMessage(value, p->getFullAddress(), src);
       });
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterString).name()) ==
-               0) { // al::Parameter
-      // al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
-      assert(1 == 0); // Implement!
+                      typeid(al::ParameterString).name()) == 0) {
+      al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+      p->registerChangeCallback(
+          [&, p](std::string value, al::ValueSource *src) {
+            sendValueMessage(value, p->getFullAddress(), src);
+          });
     } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
                0) {
       al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
@@ -606,41 +648,36 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
         sendValueMessage(value, p->getFullAddress(), src);
       });
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterVec3).name()) ==
-               0) { // al::ParameterVec3
-      // al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-      assert(1 == 0); // Implement!
+                      typeid(al::ParameterVec3).name()) == 0) {
+      al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+      p->registerChangeCallback([&, p](al::Vec3f value, al::ValueSource *src) {
+        sendValueMessage(value, p->getFullAddress(), src);
+      });
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterVec4).name()) ==
-               0) { // al::ParameterVec4
+                      typeid(al::ParameterVec4).name()) == 0) {
       // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
       assert(1 == 0); // Implement!
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterColor).name()) ==
-               0) { // al::ParameterColor
+                      typeid(al::ParameterColor).name()) == 0) {
       al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
       p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
         sendValueMessage(value, p->getFullAddress(), src);
       });
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterPose).name()) ==
-               0) { // al::ParameterPose
+                      typeid(al::ParameterPose).name()) == 0) {
       // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
       assert(1 == 0); // Implement!
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterMenu).name()) ==
-               0) { // al::ParameterMenu
+                      typeid(al::ParameterMenu).name()) == 0) {
       // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
       assert(1 == 0); // IMplement!
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterChoice).name()) ==
-               0) { // al::ParameterChoice
+                      typeid(al::ParameterChoice).name()) == 0) {
       al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
       p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
         sendValueMessage(value, p->getFullAddress(), src);
       });
-    } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-               0) { // Trigger
+    } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
       // al::Trigger *p = dynamic_cast<al::Trigger *>(param);
       assert(1 == 0); // Implement!
     } else {
@@ -1052,33 +1089,34 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     // sendRegisterMessage(param, src);
     break;
   case ParameterDataType::PARAMETER_BOOL:
-    // FIXME implement
-    //    param = new al::ParameterBool(id, group, def.valuefloat());
-    //    registerParameter(*param);
-    //    sendRegisterMessage(param, src);
+    param = new al::ParameterBool(id, group, def.valuefloat());
+    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_STRING:
-    // FIXME implement
-    //    param = new al::ParameterString(id, group, def.valuestring());
-    //    registerParameter(*param);
-    //    sendRegisterMessage(param, src);
+    param = new al::ParameterString(id, group, def.valuestring());
+    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_INT32:
     param = new al::ParameterInt(id, group, def.valueint32());
     registerParameter(*param, src);
     break;
-  case ParameterDataType::PARAMETER_VEC3F:
+  case ParameterDataType::PARAMETER_VEC3F: {
+    al::Vec3f value(def.valuelist(0).valuefloat(),
+                    def.valuelist(1).valuefloat(),
+                    def.valuelist(2).valuefloat());
+    param = new al::ParameterVec3(id, group, value);
+    registerParameter(*param, src);
+    break;
+  }
   case ParameterDataType::PARAMETER_VEC4F:
   case ParameterDataType::PARAMETER_COLORF:
   case ParameterDataType::PARAMETER_POSED:
   case ParameterDataType::PARAMETER_MENU:
-    break;
   case ParameterDataType::PARAMETER_CHOICE:
     // FIXME implement
     //    param = new al::ParameterChoice(id, group, def.valueuint64());
     //    registerParameter(*param);
     //    sendRegisterMessage(param, src);
-    break;
   case ParameterDataType::PARAMETER_TRIGGER:
   default: // ParameterDataType_INT_MIN_SENTINEL_DO_NOT_USE_ &
            // ParameterDataType_INT_MAX_SENTINEL_DO_NOT_USE_
@@ -1504,6 +1542,34 @@ void TincProtocol::sendValueMessage(std::string value, std::string fullAddress,
   sendTincMessage(&msg, nullptr, false, src);
 }
 
+void TincProtocol::sendValueMessage(al::Vec3f value, std::string fullAddress,
+                                    al::ValueSource *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CONFIGURE);
+  msg.set_objecttype(ObjectType::PARAMETER);
+  google::protobuf::Any *details = msg.details().New();
+  ConfigureParameter confMessage;
+  confMessage.set_id(fullAddress);
+  confMessage.set_configurationkey(ParameterConfigureType::VALUE);
+
+  ParameterValue val;
+  ParameterValue *member = val.add_valuelist();
+  member->set_valuefloat(value[0]);
+  member = val.add_valuelist();
+  member->set_valuefloat(value[1]);
+  member = val.add_valuelist();
+  member->set_valuefloat(value[2]);
+
+  google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
+  valueAny->PackFrom(val);
+  confMessage.set_allocated_configurationvalue(valueAny);
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+
+  sendTincMessage(&msg, nullptr, false, src);
+}
+
 void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
                                     al::ValueSource *src) {
   TincMessage msg;
@@ -1512,8 +1578,8 @@ void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
   google::protobuf::Any *details = msg.details().New();
   ConfigureParameter confMessage;
   confMessage.set_id(fullAddress);
-
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
+
   ParameterValue val;
   ParameterValue *r = val.add_valuelist();
   r->set_valuefloat(value.r);
@@ -1523,6 +1589,7 @@ void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
   b->set_valuefloat(value.b);
   ParameterValue *a = val.add_valuelist();
   a->set_valuefloat(value.a);
+
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
