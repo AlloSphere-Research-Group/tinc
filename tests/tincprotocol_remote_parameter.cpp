@@ -131,14 +131,49 @@ using namespace tinc;
 //   tserver.stop();
 // }
 
-TEST(TincProtocol, RemoteParameterVec3) {
+// TEST(TincProtocol, RemoteParameterVec3) {
+//   TincServer tserver;
+//   EXPECT_TRUE(tserver.start());
+
+//   TincClient tclient;
+//   EXPECT_TRUE(tclient.start());
+
+//   al::ParameterVec3 p{"param", "group", al::Vec3f(1, 2, 3)};
+
+//   // register automatically gets propagated to server
+//   tclient << p;
+//   al::al_sleep(0.5); // wait for parameters to get sent
+
+//   auto *param = tserver.getParameter("param");
+//   EXPECT_NE(param, nullptr);
+
+//   auto *paramVec3 = static_cast<al::ParameterVec3 *>(param);
+//   EXPECT_EQ(paramVec3->get(), al::Vec3f(1, 2, 3));
+
+//   // // change value on the clientside
+//   p.set(al::Vec3f(4, 5, 6));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(paramVec3->get(), al::Vec3f(4, 5, 6));
+
+//   // change value on the serverside
+//   paramVec3->set(al::Vec3f(7, 8, 9));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(p.get(), al::Vec3f(7, 8, 9));
+
+//   tclient.stop();
+//   tserver.stop();
+// }
+
+TEST(TincProtocol, RemoteParameterVec4) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::ParameterVec3 p{"param", "group", al::Vec3f(1, 2, 3)};
+  al::ParameterVec4 p{"param", "group", al::Vec4f(1, 2, 3, 4)};
 
   // register automatically gets propagated to server
   tclient << p;
@@ -147,26 +182,24 @@ TEST(TincProtocol, RemoteParameterVec3) {
   auto *param = tserver.getParameter("param");
   EXPECT_NE(param, nullptr);
 
-  auto *paramVec3 = static_cast<al::ParameterVec3 *>(param);
-  EXPECT_EQ(paramVec3->get(), al::Vec3f(1, 2, 3));
+  auto *paramVec4 = static_cast<al::ParameterVec4 *>(param);
+  EXPECT_EQ(paramVec4->get(), al::Vec4f(1, 2, 3, 4));
 
   // // change value on the clientside
-  p.set(al::Vec3f(4, 5, 6));
+  p.set(al::Vec4f(4, 5, 6, 7));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(paramVec3->get(), al::Vec3f(4, 5, 6));
+  EXPECT_EQ(paramVec4->get(), al::Vec4f(4, 5, 6, 7));
 
   // change value on the serverside
-  paramVec3->set(al::Vec3f(7, 8, 9));
+  paramVec4->set(al::Vec4f(7, 8, 9, 10));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(p.get(), al::Vec3f(7, 8, 9));
+  EXPECT_EQ(p.get(), al::Vec4f(7, 8, 9, 10));
 
   tclient.stop();
   tserver.stop();
 }
-
-// TEST(TincProtocol, RemoteParameterVec4) { EXPECT_TRUE(false); }
 
 // TEST(TincProtocol, RemoteParameterColor) { EXPECT_TRUE(false); }
 

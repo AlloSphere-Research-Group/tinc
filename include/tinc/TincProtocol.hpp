@@ -126,6 +126,8 @@ protected:
                         al::ValueSource *src);
   void sendValueMessage(al::Vec3f value, std::string fullAddress,
                         al::ValueSource *src);
+  void sendValueMessage(al::Vec4f value, std::string fullAddress,
+                        al::ValueSource *src);
   void sendValueMessage(al::Color value, std::string fullAddress,
                         al::ValueSource *src);
 

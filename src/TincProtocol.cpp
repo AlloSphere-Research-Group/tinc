@@ -55,10 +55,19 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val = list->add_valuelist();
     val->set_valuefloat(defaultValue[2]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    // details.set_datatype(PARAMETER_VEC4F);
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    details.set_datatype(PARAMETER_VEC4F);
+    al::Vec4f defaultValue = p->getDefault();
+    auto *list = details.mutable_defaultvalue();
+    auto *val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[0]);
+    val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[1]);
+    val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[2]);
+    val = list->add_valuelist();
+    val->set_valuefloat(defaultValue[3]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -150,10 +159,17 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member = val.add_valuelist();
     member->set_valuefloat(v[2]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    //    configValue->PackFrom(p->get());
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    al::Vec4f v = p->get();
+    auto *member = val.add_valuelist();
+    member->set_valuefloat(v[0]);
+    member = val.add_valuelist();
+    member->set_valuefloat(v[1]);
+    member = val.add_valuelist();
+    member->set_valuefloat(v[2]);
+    member = val.add_valuelist();
+    member->set_valuefloat(v[3]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -347,6 +363,24 @@ createConfigureParameterVec3Message(al::ParameterVec3 *param) {
 }
 
 std::vector<TincMessage>
+createConfigureParameterVec4Message(al::ParameterVec4 *param) {
+  std::vector<TincMessage> messages;
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::CONFIGURE);
+    msg.set_objecttype(ObjectType::PARAMETER);
+
+    google::protobuf::Any *details = msg.details().New();
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
+    messages.push_back(msg);
+  }
+  return messages;
+}
+
+std::vector<TincMessage>
 createConfigureParameterColorMessage(al::ParameterColor *param) {
   std::vector<TincMessage> messages;
   {
@@ -405,9 +439,9 @@ createConfigureParameterMessage(al::ParameterMeta *param) {
     al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
     return createConfigureParameterVec3Message(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    return createConfigureParameterVec4Message(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -547,11 +581,23 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
                 << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterVec4).name()) ==
-             0) { // al::ParameterVec4
-    // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
+             0) {
+    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+    if (command == ParameterConfigureType::VALUE) {
+      if (v.valuelist_size() != 4) {
+        std::cerr << "Unexpected number of components for ParameterVec4"
+                  << std::endl;
+        return false;
+      }
+      al::Vec4f value(v.valuelist(0).valuefloat(), v.valuelist(1).valuefloat(),
+                      v.valuelist(2).valuefloat(), v.valuelist(3).valuefloat());
+      p->set(value, src->valueSource());
+    } else {
+      std::cerr << "Unexpected min/max configure for ParameterVec4"
+                << std::endl;
+      return false;
+    }
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterColor).name()) ==
              0) { // al::ParameterColor
@@ -655,8 +701,10 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
       });
     } else if (strcmp(typeid(*param).name(),
                       typeid(al::ParameterVec4).name()) == 0) {
-      // al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-      assert(1 == 0); // Implement!
+      al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+      p->registerChangeCallback([&, p](al::Vec4f value, al::ValueSource *src) {
+        sendValueMessage(value, p->getFullAddress(), src);
+      });
     } else if (strcmp(typeid(*param).name(),
                       typeid(al::ParameterColor).name()) == 0) {
       al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
@@ -1108,7 +1156,14 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     registerParameter(*param, src);
     break;
   }
-  case ParameterDataType::PARAMETER_VEC4F:
+  case ParameterDataType::PARAMETER_VEC4F: {
+    al::Vec4f value(def.valuelist(0).valuefloat(),
+                    def.valuelist(1).valuefloat(),
+                    def.valuelist(2).valuefloat());
+    param = new al::ParameterVec4(id, group, value);
+    registerParameter(*param, src);
+    break;
+  }
   case ParameterDataType::PARAMETER_COLORF:
   case ParameterDataType::PARAMETER_POSED:
   case ParameterDataType::PARAMETER_MENU:
@@ -1559,6 +1614,36 @@ void TincProtocol::sendValueMessage(al::Vec3f value, std::string fullAddress,
   member->set_valuefloat(value[1]);
   member = val.add_valuelist();
   member->set_valuefloat(value[2]);
+
+  google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
+  valueAny->PackFrom(val);
+  confMessage.set_allocated_configurationvalue(valueAny);
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+
+  sendTincMessage(&msg, nullptr, false, src);
+}
+
+void TincProtocol::sendValueMessage(al::Vec4f value, std::string fullAddress,
+                                    al::ValueSource *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CONFIGURE);
+  msg.set_objecttype(ObjectType::PARAMETER);
+  google::protobuf::Any *details = msg.details().New();
+  ConfigureParameter confMessage;
+  confMessage.set_id(fullAddress);
+  confMessage.set_configurationkey(ParameterConfigureType::VALUE);
+
+  ParameterValue val;
+  ParameterValue *member = val.add_valuelist();
+  member->set_valuefloat(value[0]);
+  member = val.add_valuelist();
+  member->set_valuefloat(value[1]);
+  member = val.add_valuelist();
+  member->set_valuefloat(value[2]);
+  member = val.add_valuelist();
+  member->set_valuefloat(value[3]);
 
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
