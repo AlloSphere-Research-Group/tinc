@@ -12,8 +12,7 @@ int main() {
   // and another that affects data within a file.
   tinc::ParameterSpace ps;
 
-  auto dirDim =
-      ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
+  auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
   uint8_t values[] = {0, 2, 4, 6, 8};
   dirDim->append(values, 5, "datapool_directory_");
 
@@ -76,10 +75,13 @@ int main() {
 
   // You can write slices disk (with automatic caching)
   internalValuesDim->setCurrentIndex(0);
+  std::cout << "Current file: " << dp.getCurrentFiles()[0] << std::endl;
+
   auto dataSliceFile = dp.createDataSlice("value", "internalValuesDim");
   std::cout << "Slice written to " << dataSliceFile << std::endl;
 
   internalValuesDim->setCurrentIndex(1);
+  std::cout << "Current file: " << dp.getCurrentFiles()[0] << std::endl;
   dataSliceFile = dp.createDataSlice("value", "internalValuesDim");
   std::cout << "Slice written to " << dataSliceFile << std::endl;
 
@@ -89,18 +91,21 @@ int main() {
 
   float slice[5];
   internalValuesDim->setCurrentIndex(0);
+  std::cout << "Current file: " << dp.getCurrentFiles()[0] << std::endl;
   dp.readDataSlice("value", "internalValuesDim", slice, 5);
   for (size_t i = 0; i < 5; i++) {
     std::cout << slice[i] << " ";
   }
   std::cout << std::endl;
   internalValuesDim->setCurrentIndex(1);
+  std::cout << "Current file: " << dp.getCurrentFiles()[0] << std::endl;
   dp.readDataSlice("value", "internalValuesDim", slice, 5);
   for (size_t i = 0; i < 5; i++) {
     std::cout << slice[i] << " ";
   }
   std::cout << std::endl;
   internalValuesDim->setCurrentIndex(2);
+  std::cout << "Current file: " << dp.getCurrentFiles()[0] << std::endl;
   dp.readDataSlice("value", "internalValuesDim", slice, 5);
   for (size_t i = 0; i < 5; i++) {
     std::cout << slice[i] << " ";
@@ -108,4 +113,14 @@ int main() {
   std::cout << std::endl;
 
   return 0;
+}
+
+std::vector<std::string> tinc::DataPool::getCurrentFiles() {
+  std::vector<std::string> files;
+  std::string path = al::File::conformPathToOS(mParameterSpace->rootPath) +
+                     mParameterSpace->currentRunPath();
+  for (auto f : mDataFilenames) {
+    files.push_back(path + f.first);
+  }
+  return files;
 }

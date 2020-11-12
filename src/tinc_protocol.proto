@@ -204,6 +204,9 @@ message DataPoolCommandSliceReply {
     string filename = 1;
 }
 
+message DataPoolCommandCurrentFiles {
+}
 
-
-
+message DataPoolCommandCurrentFilesReply {
+    repeated string filenames = 1;
+}
