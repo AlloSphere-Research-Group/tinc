@@ -83,10 +83,25 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val = list->add_valuelist();
     val->set_valuefloat(defaultValue.a);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    // details.set_datatype(PARAMETER_POSED);
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    details.set_datatype(PARAMETER_POSED);
+    al::Pose defaultValue = p->getDefault();
+    auto *list = details.mutable_defaultvalue();
+    auto *val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.pos()[0]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.pos()[1]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.pos()[2]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.quat()[0]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.quat()[1]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.quat()[2]);
+    val = list->add_valuelist();
+    val->set_valuedouble(defaultValue.quat()[3]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
     al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
@@ -183,10 +198,23 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member = val.add_valuelist();
     member->set_valuefloat(c.a);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    //    configValue->PackFrom(p->get());
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    al::Pose pose = p->get();
+    auto *member = val.add_valuelist();
+    member->set_valuedouble(pose.pos()[0]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.pos()[1]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.pos()[2]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.quat()[0]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.quat()[1]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.quat()[2]);
+    member = val.add_valuelist();
+    member->set_valuedouble(pose.quat()[3]);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
     al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
@@ -399,6 +427,24 @@ createConfigureParameterColorMessage(al::ParameterColor *param) {
 }
 
 std::vector<TincMessage>
+createConfigureParameterPoseMessage(al::ParameterPose *param) {
+  std::vector<TincMessage> messages;
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::CONFIGURE);
+    msg.set_objecttype(ObjectType::PARAMETER);
+
+    google::protobuf::Any *details = msg.details().New();
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
+    messages.push_back(msg);
+  }
+  return messages;
+}
+
+std::vector<TincMessage>
 createConfigureParameterChoiceMessage(al::ParameterChoice *param) {
   std::vector<TincMessage> messages;
   {
@@ -447,9 +493,9 @@ createConfigureParameterMessage(al::ParameterMeta *param) {
     al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
     return createConfigureParameterColorMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    assert(1 == 0); // Implement!
+             0) {
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    return createConfigureParameterPoseMessage(p);
   } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
     // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
@@ -615,11 +661,26 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
                 << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterPose).name()) ==
-             0) { // al::ParameterPose
-    // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    assert(1 == 0); // Implement!
+  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
+             0) {
+    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+    if (command == ParameterConfigureType::VALUE) {
+      if (v.valuelist_size() != 7) {
+        std::cerr << "Unexpected number of components for ParameterPose"
+                  << std::endl;
+        return false;
+      }
+      al::Pose value(
+          {v.valuelist(0).valuedouble(), v.valuelist(1).valuedouble(),
+           v.valuelist(2).valuedouble()},
+          {v.valuelist(3).valuedouble(), v.valuelist(4).valuedouble(),
+           v.valuelist(5).valuedouble(), v.valuelist(6).valuedouble()});
+      p->set(value, src->valueSource());
+    } else {
+      std::cerr << "Unexpected min/max configure for ParameterPose"
+                << std::endl;
+      return false;
+    }
   } else if (strcmp(typeid(*param).name(),
                     typeid(al::ParameterMenu).name()) ==
              0) { // al::ParameterMenu
@@ -712,8 +773,10 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
       });
     } else if (strcmp(typeid(*param).name(),
                       typeid(al::ParameterPose).name()) == 0) {
-      // al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-      assert(1 == 0); // Implement!
+      al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+      p->registerChangeCallback([&, p](al::Pose value, al::ValueSource *src) {
+        sendValueMessage(value, p->getFullAddress(), src);
+      });
     } else if (strcmp(typeid(*param).name(),
                       typeid(al::ParameterMenu).name()) == 0) {
       // al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
@@ -1171,7 +1234,16 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
     registerParameter(*param, src);
     break;
   }
-  case ParameterDataType::PARAMETER_POSED:
+  case ParameterDataType::PARAMETER_POSED: {
+    al::Pose value(
+        {def.valuelist(0).valuedouble(), def.valuelist(1).valuedouble(),
+         def.valuelist(2).valuedouble()},
+        {def.valuelist(3).valuedouble(), def.valuelist(4).valuedouble(),
+         def.valuelist(5).valuedouble(), def.valuelist(6).valuedouble()});
+    param = new al::ParameterPose(id, group, value);
+    registerParameter(*param, src);
+    break;
+  }
   case ParameterDataType::PARAMETER_MENU:
   case ParameterDataType::PARAMETER_CHOICE:
     // FIXME implement
@@ -1680,6 +1752,42 @@ void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
   member->set_valuefloat(value.b);
   member = val.add_valuelist();
   member->set_valuefloat(value.a);
+
+  google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
+  valueAny->PackFrom(val);
+  confMessage.set_allocated_configurationvalue(valueAny);
+
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+
+  sendTincMessage(&msg, nullptr, false, src);
+}
+
+void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
+                                    al::ValueSource *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CONFIGURE);
+  msg.set_objecttype(ObjectType::PARAMETER);
+  google::protobuf::Any *details = msg.details().New();
+  ConfigureParameter confMessage;
+  confMessage.set_id(fullAddress);
+  confMessage.set_configurationkey(ParameterConfigureType::VALUE);
+
+  ParameterValue val;
+  ParameterValue *member = val.add_valuelist();
+  member->set_valuedouble(value.pos()[0]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.pos()[1]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.pos()[2]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.quat()[0]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.quat()[1]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.quat()[2]);
+  member = val.add_valuelist();
+  member->set_valuedouble(value.quat()[3]);
 
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);

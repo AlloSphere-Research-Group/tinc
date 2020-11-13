@@ -220,11 +220,51 @@ using namespace tinc;
 //   tserver.stop();
 // }
 
-TEST(TincProtocol, ParameterColor) {
+// TEST(TincProtocol, ParameterColor) {
+//   TincServer tserver;
+//   EXPECT_TRUE(tserver.start());
+
+//   al::ParameterColor p{"param", "group", al::Color(0.1f, 0.2f, 0.3f, 0.4f)};
+//   tserver << p;
+
+//   TincClient tclient;
+//   EXPECT_TRUE(tclient.start());
+
+//   // if p was registered after client does handshake, this isn't needed
+//   tclient.requestParameters();
+//   al::al_sleep(0.5); // wait for parameters to get sent
+
+//   auto *param = tclient.getParameter("param");
+//   EXPECT_NE(param, nullptr);
+
+//   auto *paramColor = static_cast<al::ParameterColor *>(param);
+//   EXPECT_EQ(paramColor->get(), al::Color(0.1f, 0.2f, 0.3f, 0.4f));
+
+//   // change value on the serverside
+//   p.set(al::Color(0.4f, 0.5f, 0.6f, 0.7f));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(paramColor->get(), al::Color(0.4f, 0.5f, 0.6f, 0.7f));
+
+//   // change value on the clientside
+//   paramColor->set(al::Color(0.7f, 0.8f, 0.9f, 1.f));
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(p.get(), al::Color(0.7f, 0.8f, 0.9f, 1.f));
+
+//   tclient.stop();
+//   tserver.stop();
+// }
+
+TEST(TincProtocol, ParameterPose) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  al::ParameterColor p{"param", "group", al::Color(0.1f, 0.2f, 0.3f, 0.4f)};
+  // FIXME why are ftns like quat::getRotationTo declared static?
+
+  // in actual use values quat should be normalized
+  al::ParameterPose p{"param", "group",
+                      al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6, 0.7})};
   tserver << p;
 
   TincClient tclient;
@@ -237,26 +277,25 @@ TEST(TincProtocol, ParameterColor) {
   auto *param = tclient.getParameter("param");
   EXPECT_NE(param, nullptr);
 
-  auto *paramColor = static_cast<al::ParameterColor *>(param);
-  EXPECT_EQ(paramColor->get(), al::Color(0.1f, 0.2f, 0.3f, 0.4f));
+  auto *paramPose = static_cast<al::ParameterPose *>(param);
+  EXPECT_EQ(paramPose->get(), al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6, 0.7}));
 
-  // // change value on the serverside
-  p.set(al::Color(0.4f, 0.5f, 0.6f, 0.7f));
+  // change value on the serverside
+  p.set(al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(paramColor->get(), al::Color(0.4f, 0.5f, 0.6f, 0.7f));
+  EXPECT_EQ(paramPose->get(),
+            al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
 
   // change value on the clientside
-  paramColor->set(al::Color(0.7f, 0.8f, 0.9f, 1.f));
+  paramPose->set(al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(p.get(), al::Color(0.7f, 0.8f, 0.9f, 1.f));
+  EXPECT_EQ(p.get(), al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
 
   tclient.stop();
   tserver.stop();
 }
-
-// TEST(TincProtocol, ParameterPose) { EXPECT_TRUE(false); }
 
 // TEST(TincProtocol, ParameterMenu) { EXPECT_TRUE(false); }
 

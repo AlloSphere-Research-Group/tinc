@@ -130,6 +130,8 @@ protected:
                         al::ValueSource *src);
   void sendValueMessage(al::Color value, std::string fullAddress,
                         al::ValueSource *src);
+  void sendValueMessage(al::Pose value, std::string fullAddress,
+                        al::ValueSource *src);
 
   // Incoming command message
   bool readCommandMessage(int objectType, void *any, al::Socket *src);
