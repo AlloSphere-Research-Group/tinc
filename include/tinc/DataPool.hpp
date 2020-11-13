@@ -28,6 +28,14 @@ public:
                               std::vector<std::string> sliceDimensions);
 
   /**
+   * @brief get list of full path to current files in datapool
+   * @return list of files
+   *
+   * Both root path and current run path are prepended to the file names.
+   */
+  std::vector<std::string> getCurrentFiles();
+
+  /**
    * @brief readDataSlice
    * @param field
    * @param sliceDimension
@@ -42,8 +50,9 @@ public:
 
   void setCacheDirectory(std::string cacheDirectory);
 
-  // Replace this function when the parameter space path function is not
-  // adequate
+  /** Replace this function when the parameter space path function is not
+  * adequate.
+  */
   std::function<std::vector<std::string>()> getAllPaths = [&]() {
     return mParameterSpace->runningPaths();
   };

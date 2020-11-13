@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[22]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[24]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -72,6 +72,12 @@ extern ConfigureParameterDefaultTypeInternal _ConfigureParameter_default_instanc
 class ConfigureProcessor;
 class ConfigureProcessorDefaultTypeInternal;
 extern ConfigureProcessorDefaultTypeInternal _ConfigureProcessor_default_instance_;
+class DataPoolCommandCurrentFiles;
+class DataPoolCommandCurrentFilesDefaultTypeInternal;
+extern DataPoolCommandCurrentFilesDefaultTypeInternal _DataPoolCommandCurrentFiles_default_instance_;
+class DataPoolCommandCurrentFilesReply;
+class DataPoolCommandCurrentFilesReplyDefaultTypeInternal;
+extern DataPoolCommandCurrentFilesReplyDefaultTypeInternal _DataPoolCommandCurrentFilesReply_default_instance_;
 class DataPoolCommandSlice;
 class DataPoolCommandSliceDefaultTypeInternal;
 extern DataPoolCommandSliceDefaultTypeInternal _DataPoolCommandSlice_default_instance_;
@@ -130,6 +136,8 @@ template<> ::tinc::ConfigureDataPool* Arena::CreateMaybeMessage<::tinc::Configur
 template<> ::tinc::ConfigureDiskBuffer* Arena::CreateMaybeMessage<::tinc::ConfigureDiskBuffer>(Arena*);
 template<> ::tinc::ConfigureParameter* Arena::CreateMaybeMessage<::tinc::ConfigureParameter>(Arena*);
 template<> ::tinc::ConfigureProcessor* Arena::CreateMaybeMessage<::tinc::ConfigureProcessor>(Arena*);
+template<> ::tinc::DataPoolCommandCurrentFiles* Arena::CreateMaybeMessage<::tinc::DataPoolCommandCurrentFiles>(Arena*);
+template<> ::tinc::DataPoolCommandCurrentFilesReply* Arena::CreateMaybeMessage<::tinc::DataPoolCommandCurrentFilesReply>(Arena*);
 template<> ::tinc::DataPoolCommandSlice* Arena::CreateMaybeMessage<::tinc::DataPoolCommandSlice>(Arena*);
 template<> ::tinc::DataPoolCommandSliceReply* Arena::CreateMaybeMessage<::tinc::DataPoolCommandSliceReply>(Arena*);
 template<> ::tinc::ObjectId* Arena::CreateMaybeMessage<::tinc::ObjectId>(Arena*);
@@ -4088,6 +4096,282 @@ class DataPoolCommandSliceReply PROTOBUF_FINAL :
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
+// -------------------------------------------------------------------
+
+class DataPoolCommandCurrentFiles PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.DataPoolCommandCurrentFiles) */ {
+ public:
+  inline DataPoolCommandCurrentFiles() : DataPoolCommandCurrentFiles(nullptr) {}
+  virtual ~DataPoolCommandCurrentFiles();
+
+  DataPoolCommandCurrentFiles(const DataPoolCommandCurrentFiles& from);
+  DataPoolCommandCurrentFiles(DataPoolCommandCurrentFiles&& from) noexcept
+    : DataPoolCommandCurrentFiles() {
+    *this = ::std::move(from);
+  }
+
+  inline DataPoolCommandCurrentFiles& operator=(const DataPoolCommandCurrentFiles& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline DataPoolCommandCurrentFiles& operator=(DataPoolCommandCurrentFiles&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const DataPoolCommandCurrentFiles& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const DataPoolCommandCurrentFiles* internal_default_instance() {
+    return reinterpret_cast<const DataPoolCommandCurrentFiles*>(
+               &_DataPoolCommandCurrentFiles_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    22;
+
+  friend void swap(DataPoolCommandCurrentFiles& a, DataPoolCommandCurrentFiles& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(DataPoolCommandCurrentFiles* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(DataPoolCommandCurrentFiles* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DataPoolCommandCurrentFiles* New() const final {
+    return CreateMaybeMessage<DataPoolCommandCurrentFiles>(nullptr);
+  }
+
+  DataPoolCommandCurrentFiles* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DataPoolCommandCurrentFiles>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const DataPoolCommandCurrentFiles& from);
+  void MergeFrom(const DataPoolCommandCurrentFiles& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DataPoolCommandCurrentFiles* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.DataPoolCommandCurrentFiles";
+  }
+  protected:
+  explicit DataPoolCommandCurrentFiles(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tinc.DataPoolCommandCurrentFiles)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class DataPoolCommandCurrentFilesReply PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.DataPoolCommandCurrentFilesReply) */ {
+ public:
+  inline DataPoolCommandCurrentFilesReply() : DataPoolCommandCurrentFilesReply(nullptr) {}
+  virtual ~DataPoolCommandCurrentFilesReply();
+
+  DataPoolCommandCurrentFilesReply(const DataPoolCommandCurrentFilesReply& from);
+  DataPoolCommandCurrentFilesReply(DataPoolCommandCurrentFilesReply&& from) noexcept
+    : DataPoolCommandCurrentFilesReply() {
+    *this = ::std::move(from);
+  }
+
+  inline DataPoolCommandCurrentFilesReply& operator=(const DataPoolCommandCurrentFilesReply& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline DataPoolCommandCurrentFilesReply& operator=(DataPoolCommandCurrentFilesReply&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const DataPoolCommandCurrentFilesReply& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const DataPoolCommandCurrentFilesReply* internal_default_instance() {
+    return reinterpret_cast<const DataPoolCommandCurrentFilesReply*>(
+               &_DataPoolCommandCurrentFilesReply_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    23;
+
+  friend void swap(DataPoolCommandCurrentFilesReply& a, DataPoolCommandCurrentFilesReply& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(DataPoolCommandCurrentFilesReply* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(DataPoolCommandCurrentFilesReply* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DataPoolCommandCurrentFilesReply* New() const final {
+    return CreateMaybeMessage<DataPoolCommandCurrentFilesReply>(nullptr);
+  }
+
+  DataPoolCommandCurrentFilesReply* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DataPoolCommandCurrentFilesReply>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const DataPoolCommandCurrentFilesReply& from);
+  void MergeFrom(const DataPoolCommandCurrentFilesReply& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DataPoolCommandCurrentFilesReply* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.DataPoolCommandCurrentFilesReply";
+  }
+  protected:
+  explicit DataPoolCommandCurrentFilesReply(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kFilenamesFieldNumber = 1,
+  };
+  // repeated string filenames = 1;
+  int filenames_size() const;
+  private:
+  int _internal_filenames_size() const;
+  public:
+  void clear_filenames();
+  const std::string& filenames(int index) const;
+  std::string* mutable_filenames(int index);
+  void set_filenames(int index, const std::string& value);
+  void set_filenames(int index, std::string&& value);
+  void set_filenames(int index, const char* value);
+  void set_filenames(int index, const char* value, size_t size);
+  std::string* add_filenames();
+  void add_filenames(const std::string& value);
+  void add_filenames(std::string&& value);
+  void add_filenames(const char* value);
+  void add_filenames(const char* value, size_t size);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& filenames() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_filenames();
+  private:
+  const std::string& _internal_filenames(int index) const;
+  std::string* _internal_add_filenames();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.DataPoolCommandCurrentFilesReply)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> filenames_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
 // ===================================================================
 
 
@@ -7087,9 +7371,95 @@ inline void DataPoolCommandSliceReply::set_allocated_filename(std::string* filen
   // @@protoc_insertion_point(field_set_allocated:tinc.DataPoolCommandSliceReply.filename)
 }
 
+// -------------------------------------------------------------------
+
+// DataPoolCommandCurrentFiles
+
+// -------------------------------------------------------------------
+
+// DataPoolCommandCurrentFilesReply
+
+// repeated string filenames = 1;
+inline int DataPoolCommandCurrentFilesReply::_internal_filenames_size() const {
+  return filenames_.size();
+}
+inline int DataPoolCommandCurrentFilesReply::filenames_size() const {
+  return _internal_filenames_size();
+}
+inline void DataPoolCommandCurrentFilesReply::clear_filenames() {
+  filenames_.Clear();
+}
+inline std::string* DataPoolCommandCurrentFilesReply::add_filenames() {
+  // @@protoc_insertion_point(field_add_mutable:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  return _internal_add_filenames();
+}
+inline const std::string& DataPoolCommandCurrentFilesReply::_internal_filenames(int index) const {
+  return filenames_.Get(index);
+}
+inline const std::string& DataPoolCommandCurrentFilesReply::filenames(int index) const {
+  // @@protoc_insertion_point(field_get:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  return _internal_filenames(index);
+}
+inline std::string* DataPoolCommandCurrentFilesReply::mutable_filenames(int index) {
+  // @@protoc_insertion_point(field_mutable:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  return filenames_.Mutable(index);
+}
+inline void DataPoolCommandCurrentFilesReply::set_filenames(int index, const std::string& value) {
+  // @@protoc_insertion_point(field_set:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  filenames_.Mutable(index)->assign(value);
+}
+inline void DataPoolCommandCurrentFilesReply::set_filenames(int index, std::string&& value) {
+  // @@protoc_insertion_point(field_set:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  filenames_.Mutable(index)->assign(std::move(value));
+}
+inline void DataPoolCommandCurrentFilesReply::set_filenames(int index, const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  filenames_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline void DataPoolCommandCurrentFilesReply::set_filenames(int index, const char* value, size_t size) {
+  filenames_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline std::string* DataPoolCommandCurrentFilesReply::_internal_add_filenames() {
+  return filenames_.Add();
+}
+inline void DataPoolCommandCurrentFilesReply::add_filenames(const std::string& value) {
+  filenames_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline void DataPoolCommandCurrentFilesReply::add_filenames(std::string&& value) {
+  filenames_.Add(std::move(value));
+  // @@protoc_insertion_point(field_add:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline void DataPoolCommandCurrentFilesReply::add_filenames(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  filenames_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline void DataPoolCommandCurrentFilesReply::add_filenames(const char* value, size_t size) {
+  filenames_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:tinc.DataPoolCommandCurrentFilesReply.filenames)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>&
+DataPoolCommandCurrentFilesReply::filenames() const {
+  // @@protoc_insertion_point(field_list:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  return filenames_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>*
+DataPoolCommandCurrentFilesReply::mutable_filenames() {
+  // @@protoc_insertion_point(field_mutable_list:tinc.DataPoolCommandCurrentFilesReply.filenames)
+  return &filenames_;
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

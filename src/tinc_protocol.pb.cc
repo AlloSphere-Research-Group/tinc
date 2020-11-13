@@ -106,6 +106,14 @@ class DataPoolCommandSliceReplyDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DataPoolCommandSliceReply> _instance;
 } _DataPoolCommandSliceReply_default_instance_;
+class DataPoolCommandCurrentFilesDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DataPoolCommandCurrentFiles> _instance;
+} _DataPoolCommandCurrentFiles_default_instance_;
+class DataPoolCommandCurrentFilesReplyDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DataPoolCommandCurrentFilesReply> _instance;
+} _DataPoolCommandCurrentFilesReply_default_instance_;
 }  // namespace tinc
 static void InitDefaultsscc_info_Command_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -182,6 +190,34 @@ static void InitDefaultsscc_info_ConfigureProcessor_tinc_5fprotocol_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ConfigureProcessor_tinc_5fprotocol_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_ConfigureProcessor_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
+
+static void InitDefaultsscc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_DataPoolCommandCurrentFiles_default_instance_;
+    new (ptr) ::tinc::DataPoolCommandCurrentFiles();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::DataPoolCommandCurrentFiles::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_DataPoolCommandCurrentFilesReply_default_instance_;
+    new (ptr) ::tinc::DataPoolCommandCurrentFilesReply();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::DataPoolCommandCurrentFilesReply::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto}, {}};
 
 static void InitDefaultsscc_info_DataPoolCommandSlice_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -424,7 +460,7 @@ static void InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[22];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[24];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[8];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_tinc_5fprotocol_2eproto = nullptr;
 
@@ -595,6 +631,17 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::tinc::DataPoolCommandSliceReply, filename_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::DataPoolCommandCurrentFiles, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::DataPoolCommandCurrentFilesReply, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::tinc::DataPoolCommandCurrentFilesReply, filenames_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::tinc::TincMessage)},
@@ -619,6 +666,8 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 147, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
   { 153, -1, sizeof(::tinc::DataPoolCommandSlice)},
   { 160, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
+  { 166, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
+  { 171, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -644,6 +693,8 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterSpaceRequestRootPathReply_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandSlice_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandSliceReply_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandCurrentFiles_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandCurrentFilesReply_default_instance_),
 };
 
 const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -698,37 +749,41 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "th\"2\n\"ParameterSpaceRequestRootPathReply"
   "\022\014\n\004path\030\001 \001(\t\"8\n\024DataPoolCommandSlice\022\r"
   "\n\005field\030\001 \001(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031Data"
-  "PoolCommandSliceReply\022\020\n\010filename\030\001 \001(\t*"
-  "w\n\013MessageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022"
-  "\014\n\010REGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020"
-  "\004\022\021\n\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004PONG\020c"
-  "*_\n\nObjectType\022\r\n\tPARAMETER\020\000\022\r\n\tPROCESS"
-  "OR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL\020\003\022\023\n\017"
-  "PARAMETER_SPACE\020\004*3\n\rProcessorType\022\016\n\nDA"
-  "TASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021Param"
-  "eterDataType\022\023\n\017PARAMETER_FLOAT\020\000\022\022\n\016PAR"
-  "AMETER_BOOL\020\001\022\024\n\020PARAMETER_STRING\020\002\022\023\n\017P"
-  "ARAMETER_INT32\020\003\022\023\n\017PARAMETER_VEC3F\020\004\022\023\n"
-  "\017PARAMETER_VEC4F\020\005\022\024\n\020PARAMETER_COLORF\020\006"
-  "\022\023\n\017PARAMETER_POSED\020\007\022\022\n\016PARAMETER_MENU\020"
-  "\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMETER_TRI"
-  "GGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY\020\000\022\010\n\004"
-  "TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*"
-  "P\n\026ParameterConfigureType\022\t\n\005VALUE\020\000\022\007\n\003"
-  "MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020"
-  "\004*+\n\027DiskBufferConfigureType\022\020\n\014CURRENT_"
-  "FILE\020\000*,\n\025DataPoolConfigureType\022\023\n\017SLICE"
-  "_CACHE_DIR\020\000b\006proto3"
+  "PoolCommandSliceReply\022\020\n\010filename\030\001 \001(\t\""
+  "\035\n\033DataPoolCommandCurrentFiles\"5\n DataPo"
+  "olCommandCurrentFilesReply\022\021\n\tfilenames\030"
+  "\001 \003(\t*w\n\013MessageType\022\013\n\007REQUEST\020\000\022\n\n\006REM"
+  "OVE\020\001\022\014\n\010REGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007CO"
+  "MMAND\020\004\022\021\n\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004"
+  "PONG\020c*_\n\nObjectType\022\r\n\tPARAMETER\020\000\022\r\n\tP"
+  "ROCESSOR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL"
+  "\020\003\022\023\n\017PARAMETER_SPACE\020\004*3\n\rProcessorType"
+  "\022\016\n\nDATASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n"
+  "\021ParameterDataType\022\023\n\017PARAMETER_FLOAT\020\000\022"
+  "\022\n\016PARAMETER_BOOL\020\001\022\024\n\020PARAMETER_STRING\020"
+  "\002\022\023\n\017PARAMETER_INT32\020\003\022\023\n\017PARAMETER_VEC3"
+  "F\020\004\022\023\n\017PARAMETER_VEC4F\020\005\022\024\n\020PARAMETER_CO"
+  "LORF\020\006\022\023\n\017PARAMETER_POSED\020\007\022\022\n\016PARAMETER"
+  "_MENU\020\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMET"
+  "ER_TRIGGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY"
+  "\020\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IM"
+  "AGE\020\004*P\n\026ParameterConfigureType\022\t\n\005VALUE"
+  "\020\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE"
+  "_TYPE\020\004*+\n\027DiskBufferConfigureType\022\020\n\014CU"
+  "RRENT_FILE\020\000*,\n\025DataPoolConfigureType\022\023\n"
+  "\017SLICE_CACHE_DIR\020\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[22] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[24] = {
   &scc_info_Command_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDataPool_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDiskBuffer_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureParameter_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureProcessor_tinc_5fprotocol_2eproto.base,
+  &scc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto.base,
+  &scc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto.base,
   &scc_info_DataPoolCommandSlice_tinc_5fprotocol_2eproto.base,
   &scc_info_DataPoolCommandSliceReply_tinc_5fprotocol_2eproto.base,
   &scc_info_ObjectId_tinc_5fprotocol_2eproto.base,
@@ -749,10 +804,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 2860,
-  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 22, 1,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 2946,
+  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 24, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
-  file_level_metadata_tinc_5fprotocol_2eproto, 22, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
+  file_level_metadata_tinc_5fprotocol_2eproto, 24, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -6661,6 +6716,379 @@ void DataPoolCommandSliceReply::InternalSwap(DataPoolCommandSliceReply* other) {
 }
 
 
+// ===================================================================
+
+void DataPoolCommandCurrentFiles::InitAsDefaultInstance() {
+}
+class DataPoolCommandCurrentFiles::_Internal {
+ public:
+};
+
+DataPoolCommandCurrentFiles::DataPoolCommandCurrentFiles(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.DataPoolCommandCurrentFiles)
+}
+DataPoolCommandCurrentFiles::DataPoolCommandCurrentFiles(const DataPoolCommandCurrentFiles& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:tinc.DataPoolCommandCurrentFiles)
+}
+
+void DataPoolCommandCurrentFiles::SharedCtor() {
+}
+
+DataPoolCommandCurrentFiles::~DataPoolCommandCurrentFiles() {
+  // @@protoc_insertion_point(destructor:tinc.DataPoolCommandCurrentFiles)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void DataPoolCommandCurrentFiles::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void DataPoolCommandCurrentFiles::ArenaDtor(void* object) {
+  DataPoolCommandCurrentFiles* _this = reinterpret_cast< DataPoolCommandCurrentFiles* >(object);
+  (void)_this;
+}
+void DataPoolCommandCurrentFiles::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void DataPoolCommandCurrentFiles::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const DataPoolCommandCurrentFiles& DataPoolCommandCurrentFiles::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void DataPoolCommandCurrentFiles::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.DataPoolCommandCurrentFiles)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* DataPoolCommandCurrentFiles::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* DataPoolCommandCurrentFiles::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.DataPoolCommandCurrentFiles)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.DataPoolCommandCurrentFiles)
+  return target;
+}
+
+size_t DataPoolCommandCurrentFiles::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.DataPoolCommandCurrentFiles)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void DataPoolCommandCurrentFiles::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.DataPoolCommandCurrentFiles)
+  GOOGLE_DCHECK_NE(&from, this);
+  const DataPoolCommandCurrentFiles* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DataPoolCommandCurrentFiles>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.DataPoolCommandCurrentFiles)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.DataPoolCommandCurrentFiles)
+    MergeFrom(*source);
+  }
+}
+
+void DataPoolCommandCurrentFiles::MergeFrom(const DataPoolCommandCurrentFiles& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.DataPoolCommandCurrentFiles)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+}
+
+void DataPoolCommandCurrentFiles::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.DataPoolCommandCurrentFiles)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DataPoolCommandCurrentFiles::CopyFrom(const DataPoolCommandCurrentFiles& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.DataPoolCommandCurrentFiles)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DataPoolCommandCurrentFiles::IsInitialized() const {
+  return true;
+}
+
+void DataPoolCommandCurrentFiles::InternalSwap(DataPoolCommandCurrentFiles* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata DataPoolCommandCurrentFiles::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+void DataPoolCommandCurrentFilesReply::InitAsDefaultInstance() {
+}
+class DataPoolCommandCurrentFilesReply::_Internal {
+ public:
+};
+
+DataPoolCommandCurrentFilesReply::DataPoolCommandCurrentFilesReply(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
+  filenames_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.DataPoolCommandCurrentFilesReply)
+}
+DataPoolCommandCurrentFilesReply::DataPoolCommandCurrentFilesReply(const DataPoolCommandCurrentFilesReply& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      filenames_(from.filenames_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:tinc.DataPoolCommandCurrentFilesReply)
+}
+
+void DataPoolCommandCurrentFilesReply::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto.base);
+}
+
+DataPoolCommandCurrentFilesReply::~DataPoolCommandCurrentFilesReply() {
+  // @@protoc_insertion_point(destructor:tinc.DataPoolCommandCurrentFilesReply)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void DataPoolCommandCurrentFilesReply::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void DataPoolCommandCurrentFilesReply::ArenaDtor(void* object) {
+  DataPoolCommandCurrentFilesReply* _this = reinterpret_cast< DataPoolCommandCurrentFilesReply* >(object);
+  (void)_this;
+}
+void DataPoolCommandCurrentFilesReply::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void DataPoolCommandCurrentFilesReply::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const DataPoolCommandCurrentFilesReply& DataPoolCommandCurrentFilesReply::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void DataPoolCommandCurrentFilesReply::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.DataPoolCommandCurrentFilesReply)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  filenames_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* DataPoolCommandCurrentFilesReply::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // repeated string filenames = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            auto str = _internal_add_filenames();
+            ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+            CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "tinc.DataPoolCommandCurrentFilesReply.filenames"));
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* DataPoolCommandCurrentFilesReply::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.DataPoolCommandCurrentFilesReply)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // repeated string filenames = 1;
+  for (int i = 0, n = this->_internal_filenames_size(); i < n; i++) {
+    const auto& s = this->_internal_filenames(i);
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      s.data(), static_cast<int>(s.length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "tinc.DataPoolCommandCurrentFilesReply.filenames");
+    target = stream->WriteString(1, s, target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.DataPoolCommandCurrentFilesReply)
+  return target;
+}
+
+size_t DataPoolCommandCurrentFilesReply::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.DataPoolCommandCurrentFilesReply)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // repeated string filenames = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(filenames_.size());
+  for (int i = 0, n = filenames_.size(); i < n; i++) {
+    total_size += ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+      filenames_.Get(i));
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void DataPoolCommandCurrentFilesReply::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.DataPoolCommandCurrentFilesReply)
+  GOOGLE_DCHECK_NE(&from, this);
+  const DataPoolCommandCurrentFilesReply* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DataPoolCommandCurrentFilesReply>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.DataPoolCommandCurrentFilesReply)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.DataPoolCommandCurrentFilesReply)
+    MergeFrom(*source);
+  }
+}
+
+void DataPoolCommandCurrentFilesReply::MergeFrom(const DataPoolCommandCurrentFilesReply& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.DataPoolCommandCurrentFilesReply)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  filenames_.MergeFrom(from.filenames_);
+}
+
+void DataPoolCommandCurrentFilesReply::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.DataPoolCommandCurrentFilesReply)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DataPoolCommandCurrentFilesReply::CopyFrom(const DataPoolCommandCurrentFilesReply& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.DataPoolCommandCurrentFilesReply)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DataPoolCommandCurrentFilesReply::IsInitialized() const {
+  return true;
+}
+
+void DataPoolCommandCurrentFilesReply::InternalSwap(DataPoolCommandCurrentFilesReply* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  filenames_.InternalSwap(&other->filenames_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata DataPoolCommandCurrentFilesReply::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace tinc
 PROTOBUF_NAMESPACE_OPEN
@@ -6729,6 +7157,12 @@ template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandSlice* Arena::CreateMaybeMes
 }
 template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandSliceReply* Arena::CreateMaybeMessage< ::tinc::DataPoolCommandSliceReply >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::DataPoolCommandSliceReply >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandCurrentFiles* Arena::CreateMaybeMessage< ::tinc::DataPoolCommandCurrentFiles >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::DataPoolCommandCurrentFiles >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandCurrentFilesReply* Arena::CreateMaybeMessage< ::tinc::DataPoolCommandCurrentFilesReply >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::DataPoolCommandCurrentFilesReply >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

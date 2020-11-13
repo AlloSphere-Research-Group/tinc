@@ -92,9 +92,7 @@ std::vector<std::string> ParameterSpace::runningPaths() {
   bool done = false;
   while (!done) {
     done = true;
-    auto path = al::File::conformPathToOS(rootPath) +
-                al::File::conformPathToOS(
-                    generateRelativeRunPath(currentIndeces, this));
+    auto path = al::File::conformPathToOS(rootPath) + currentRunPath();
     // TODO write more efficient way to determine if a dimension affects the
     // filesystem. Perhaps analyze before running this loop to prune dimensions
     // that don't affect the filesystem
@@ -112,9 +110,9 @@ std::string ParameterSpace::currentRunPath() {
   {
     std::unique_lock<std::mutex> lk(mSpaceLock);
     for (auto ps : mDimensions) {
-      if (ps->isFilesystemDimension()) {
-        indeces[ps->getName()] = ps->getCurrentIndex();
-      }
+      //      if (ps->isFilesystemDimension()) {
+      indeces[ps->getName()] = ps->getCurrentIndex();
+      //      }
     }
   }
   return al::File::conformPathToOS(generateRelativeRunPath(indeces, this));

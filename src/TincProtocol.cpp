@@ -741,7 +741,8 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
         sendValueMessage(value, p->getFullAddress(), src);
       });
     } else if (strcmp(typeid(*param).name(),
-                      typeid(al::ParameterString).name()) == 0) {
+                      typeid(al::ParameterString).name()) ==
+               0) { // al::Parameter
       al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
       p->registerChangeCallback(
           [&, p](std::string value, al::ValueSource *src) {
@@ -1246,10 +1247,10 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   }
   case ParameterDataType::PARAMETER_MENU:
   case ParameterDataType::PARAMETER_CHOICE:
-    // FIXME implement
-    //    param = new al::ParameterChoice(id, group, def.valueuint64());
-    //    registerParameter(*param);
-    //    sendRegisterMessage(param, src);
+  // FIXME implement
+  //    param = new al::ParameterChoice(id, group, def.valueuint64());
+  //    registerParameter(*param);
+  //    sendRegisterMessage(param, src);
   case ParameterDataType::PARAMETER_TRIGGER:
   default: // ParameterDataType_INT_MIN_SENTINEL_DO_NOT_USE_ &
            // ParameterDataType_INT_MAX_SENTINEL_DO_NOT_USE_
@@ -1585,7 +1586,7 @@ void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
 
 void TincProtocol::sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
                                         bool isResponse) {
-  assert(1 == 0); // Implement!
+  // TODO implement
 }
 
 void TincProtocol::sendValueMessage(float value, std::string fullAddress,
@@ -1832,7 +1833,6 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
   details->UnpackTo(&command);
   uint32_t commandNumber = command.message_id();
   if (command.details().Is<ParameterRequestChoiceElements>()) {
-
     std::vector<std::string> elements;
     auto id = command.id().id();
     for (auto *param : mParameters) {
