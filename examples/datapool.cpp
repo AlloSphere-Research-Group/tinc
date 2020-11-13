@@ -114,13 +114,3 @@ int main() {
 
   return 0;
 }
-
-std::vector<std::string> tinc::DataPool::getCurrentFiles() {
-  std::vector<std::string> files;
-  std::string path = al::File::conformPathToOS(mParameterSpace->rootPath) +
-                     mParameterSpace->currentRunPath();
-  for (auto f : mDataFilenames) {
-    files.push_back(path + f.first);
-  }
-  return files;
-}

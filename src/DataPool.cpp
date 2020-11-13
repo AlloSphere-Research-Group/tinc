@@ -84,9 +84,9 @@ DataPool::createDataSlice(std::string field,
           float value;
           size_t index =
               mParameterSpace->getDimension(file.second)->getCurrentIndex();
-          if (getFieldFromFile(
-                  field, al::File::conformDirectory(directory) + file.first,
-                  index, &value)) {
+          if (getFieldFromFile(field, al::File::conformDirectory(directory) +
+                                          file.first,
+                               index, &value)) {
             values.push_back(value);
             break;
           }
@@ -243,4 +243,14 @@ bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
 std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
   std::string type;
   return type;
+}
+
+std::vector<std::string> DataPool::getCurrentFiles() {
+  std::vector<std::string> files;
+  std::string path = al::File::conformPathToOS(mParameterSpace->rootPath) +
+                     mParameterSpace->currentRunPath();
+  for (auto f : mDataFilenames) {
+    files.push_back(path + f.first);
+  }
+  return files;
 }

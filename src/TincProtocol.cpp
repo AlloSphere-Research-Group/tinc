@@ -2039,6 +2039,47 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         return true;
       }
     }
+  } else if (command.details().Is<DataPoolCommandCurrentFiles>()) {
+    DataPoolCommandCurrentFiles commandSlice;
+    command.details().UnpackTo(&commandSlice);
+    auto datapoolId = command.id().id();
+
+    for (auto dp : mDataPools) {
+      if (dp->getId() == datapoolId) {
+        auto filenames = dp->getCurrentFiles();
+
+        //              if (mVerbose) {
+        //                  std::cout << commandNumber << "::::: " << sliceName
+        //                  << std::endl;
+        //              }
+
+        TincMessage msg;
+        msg.set_messagetype(MessageType::COMMAND_REPLY);
+        msg.set_objecttype(ObjectType::DATA_POOL);
+        auto *msgDetails = msg.details().New();
+
+        Command command;
+        command.set_message_id(commandNumber);
+        auto commandId = command.id();
+        commandId.set_id(datapoolId);
+
+        auto *commandDetails = command.details().New();
+        DataPoolCommandCurrentFilesReply reply;
+        for (auto f : filenames) {
+          reply.add_filenames(f);
+        }
+
+        commandDetails->PackFrom(reply);
+        command.set_allocated_details(commandDetails);
+
+        msgDetails->PackFrom(command);
+        msg.set_allocated_details(msgDetails);
+
+        // FIXME switch to sendTincMessage
+        sendProtobufMessage(&msg, src);
+        return true;
+      }
+    }
   }
   return false;
 }
