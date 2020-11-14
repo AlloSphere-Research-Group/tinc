@@ -35,19 +35,21 @@ struct MyApp : public App {
       dimension1->push_back(i, "L_" + std::to_string(i));
     }
     dimension1->conform();
-    dimension1->setSpaceType(tinc::ParameterSpaceDimension::ID);
+    dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
     for (int i = 0; i < 22; i++) {
       dimension2->push_back(i / 220.0);
     }
     dimension2->conform();
-    dimension2->setSpaceType(tinc::ParameterSpaceDimension::INDEX);
+    dimension2->setSpaceRepresentationType(
+        tinc::ParameterSpaceDimension::INDEX);
 
     for (int i = 0; i < 23; i++) {
       inner_param->push_back(10 + i);
     }
     inner_param->conform();
-    inner_param->setSpaceType(tinc::ParameterSpaceDimension::VALUE);
+    inner_param->setSpaceRepresentationType(
+        tinc::ParameterSpaceDimension::VALUE);
 
     ps.registerDimension(dimension1);
     ps.registerDimension(dimension2);

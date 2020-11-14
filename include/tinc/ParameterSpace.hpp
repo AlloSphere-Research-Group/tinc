@@ -26,8 +26,9 @@ public:
    * @return the newly created dimension.
    */
   std::shared_ptr<ParameterSpaceDimension>
-  newDimension(std::string name, ParameterSpaceDimension::DimensionType type =
-                                     ParameterSpaceDimension::VALUE);
+  newDimension(std::string name,
+               ParameterSpaceDimension::RepresentationType type =
+                   ParameterSpaceDimension::VALUE);
 
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
@@ -177,6 +178,79 @@ public:
    * of a sweep
    */
   std::function<void(double progress)> onSweepProcess;
+
+  /**
+   * @brief resolve filename template according to current parameter values
+   * @param fileTemplate
+   * @return resolved string
+   *
+   * You can use %% to delimit dimension names, e.g. "value_%%ParameterValue%%"
+   * where %%ParameterValue%% will be replaced by the current value (in the
+   * correct representation as ID, VALUE or INDEX) of the dimension whose id is
+   * "ParameterValue". You can specify a different representation than the one
+   * set
+   * for the ParameterSpaceDimension by adding it following a ':'. For example:
+   * "value_%%ParameterValue:INDEX%%" will replace "%%ParameterValue:INDEX%%"
+   * with the current index for ParameterValue.
+   */
+  std::string resolveFilename(std::string fileTemplate) {
+    std::string resolvedName;
+    size_t currentPos = 0;
+    size_t beginPos = fileTemplate.find("%%", currentPos);
+    resolvedName += fileTemplate.substr(0, beginPos);
+    while (beginPos != std::string::npos) {
+      auto endPos = fileTemplate.find("%%", beginPos + 2);
+      if (endPos != std::string::npos) {
+        auto token = fileTemplate.substr(beginPos + 2, endPos - beginPos - 2);
+        std::string representation;
+        auto representationSeparation = token.find(":");
+        if (representationSeparation != std::string::npos) {
+          representation = token.substr(representationSeparation + 1);
+          token = token.substr(0, representationSeparation);
+        }
+        bool replaced = false;
+        for (auto dim : getDimensions()) {
+          if (dim->getName() == token) {
+            if (representation.size() == 0) {
+              switch (dim->getSpaceRepresentationType()) {
+              case ParameterSpaceDimension::ID:
+                representation = "ID";
+                break;
+              case ParameterSpaceDimension::VALUE:
+                representation = "VALUE";
+                break;
+              case ParameterSpaceDimension::INDEX:
+                representation = "INDEX";
+                break;
+              }
+            }
+            if (representation == "ID") {
+              resolvedName += dim->getCurrentId();
+            } else if (representation == "VALUE") {
+              resolvedName += std::to_string(dim->getCurrentValue());
+            } else if (representation == "INDEX") {
+              resolvedName += std::to_string(dim->getCurrentIndex());
+            } else {
+              std::cerr << "Representation error: " << representation
+                        << std::endl;
+            }
+
+            replaced = true;
+            break;
+          }
+        }
+      }
+      currentPos = endPos + 2;
+      beginPos = fileTemplate.find("%%", endPos + 2);
+
+      if (beginPos != std::string::npos) {
+        resolvedName += fileTemplate.substr(currentPos, beginPos - currentPos);
+      } else {
+        resolvedName += fileTemplate.substr(currentPos);
+      }
+    }
+    return resolvedName;
+  }
 
   /**
    * @brief callback when the value in any particular dimension changes.

@@ -143,7 +143,11 @@ size_t ParameterSpaceDimension::getFirstIndexForId(std::string id,
 }
 
 float ParameterSpaceDimension::getCurrentValue() {
-  return mValues[getCurrentIndex()];
+  if (mValues.size() > 0) {
+    return mValues[getCurrentIndex()];
+  } else {
+    return mParameterValue.get();
+  }
 }
 
 void ParameterSpaceDimension::setCurrentValue(float value) {
@@ -300,11 +304,12 @@ void ParameterSpaceDimension::append(float *values, size_t count,
   size_t oldSize = mValues.size();
   mValues.resize(mValues.size() + count);
   auto valueIt = mValues.begin() + oldSize;
-  auto idIt = mIds.begin() + oldSize;
   bool useIds = false;
   if (mIds.size() > 0 || idprefix.size() > 0) {
     useIds = true;
+    mIds.resize(mValues.size() + count);
   }
+  auto idIt = mIds.begin() + oldSize;
   for (size_t i = 0; i < count; i++) {
     if (useIds) {
       *idIt = idprefix + std::to_string(*values);
@@ -413,7 +418,7 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {
   auto dimCopy =
       std::make_shared<ParameterSpaceDimension>(getName(), getGroup());
   dimCopy->datatype = datatype;
-  dimCopy->mType = mType;
+  dimCopy->mRepresentationType = mRepresentationType;
   dimCopy->mIds = mIds;
   dimCopy->mValues = mValues;
   dimCopy->setCurrentIndex(getCurrentIndex());

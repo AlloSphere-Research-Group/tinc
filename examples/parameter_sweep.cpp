@@ -16,7 +16,7 @@ int main() {
   dimension1->push_back(0.3, "C");
   dimension1->push_back(0.4, "D");
   dimension1->push_back(0.5, "E");
-  dimension1->setSpaceType(tinc::ParameterSpaceDimension::ID);
+  dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
   dimension1->setFilesystemDimension();
 
   dimension2->push_back(10.1);
@@ -24,7 +24,7 @@ int main() {
   dimension2->push_back(10.3);
   dimension2->push_back(10.4);
   dimension2->push_back(10.5);
-  dimension2->setSpaceType(tinc::ParameterSpaceDimension::INDEX);
+  dimension2->setSpaceRepresentationType(tinc::ParameterSpaceDimension::INDEX);
   dimension1->setFilesystemDimension();
 
   inner_param->push_back(1);
@@ -32,7 +32,7 @@ int main() {
   inner_param->push_back(3);
   inner_param->push_back(4);
   inner_param->push_back(5);
-  inner_param->setSpaceType(tinc::ParameterSpaceDimension::VALUE);
+  inner_param->setSpaceRepresentationType(tinc::ParameterSpaceDimension::VALUE);
 
   tinc::ParameterSpace ps;
 

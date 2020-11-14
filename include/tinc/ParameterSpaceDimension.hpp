@@ -33,7 +33,7 @@ public:
   // TODO implement more data types (in particular DOUBLE, INT64, STRING)
   typedef enum { FLOAT, UINT8, INT32, UINT32 } Datatype;
 
-  typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } DimensionType;
+  typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } RepresentationType;
 
   ParameterSpaceDimension(std::string name, std::string group = "")
       : mParameterValue(name, group) {}
@@ -49,12 +49,14 @@ public:
   void setCurrentIndex(size_t index);
   std::string getCurrentId();
 
-  void setSpaceType(DimensionType type) {
-    mType = type;
+  void setSpaceRepresentationType(RepresentationType type) {
+    mRepresentationType = type;
     onDimensionMetadataChange(this);
   }
 
-  DimensionType getSpaceType() { return mType; }
+  RepresentationType getSpaceRepresentationType() {
+    return mRepresentationType;
+  }
 
   // This dimension affects the filesystem. All filesystem dimension in a
   // parameter space must have the smae size
@@ -150,7 +152,7 @@ private:
   std::vector<float> mValues;
   std::vector<std::string> mIds;
 
-  DimensionType mType{VALUE};
+  RepresentationType mRepresentationType{VALUE};
   bool mFilesystemDimension{false};
 
   std::mutex mLock;

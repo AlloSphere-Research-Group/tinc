@@ -35,10 +35,10 @@ ParameterSpace::getDimension(std::string name) {
 
 std::shared_ptr<ParameterSpaceDimension>
 ParameterSpace::newDimension(std::string name,
-                             ParameterSpaceDimension::DimensionType type) {
+                             ParameterSpaceDimension::RepresentationType type) {
   auto newDim = std::make_shared<ParameterSpaceDimension>(name);
 
-  newDim->mType = type;
+  newDim->mRepresentationType = type;
   registerDimension(newDim);
   return newDim;
 }
@@ -52,7 +52,7 @@ void ParameterSpace::registerDimension(
       dim->mIds = dimension->ids();
       dim->mConnectedSpaces = dimension->mConnectedSpaces;
       dim->datatype = dimension->datatype;
-      dim->mType = dimension->getSpaceType();
+      dim->mRepresentationType = dimension->getSpaceRepresentationType();
 
       //      std::cout << "Updated dimension: " << dimension->getName() <<
       //      std::endl;
@@ -198,11 +198,11 @@ void ParameterSpace::sweep(Processor &processor,
     {
       std::unique_lock<std::mutex> lk(mSpaceLock);
       for (auto dim : mDimensions) {
-        if (dim->mType == ParameterSpaceDimension::VALUE) {
+        if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
           processor.configuration[dim->getName()] = dim->getCurrentValue();
-        } else if (dim->mType == ParameterSpaceDimension::ID) {
+        } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
           processor.configuration[dim->getName()] = dim->getCurrentId();
-        } else if (dim->mType == ParameterSpaceDimension::INDEX) {
+        } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
           assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
           processor.configuration[dim->getName()] =
               (int64_t)dim->getCurrentIndex();
@@ -407,7 +407,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
       pdim->conform();
-      pdim->mType = ParameterSpaceDimension::VALUE;
+      pdim->mRepresentationType = ParameterSpaceDimension::VALUE;
       newDimensions.push_back(pdim);
       //    std::cout << "internal state " << i << ":" << groupName
       //              << " length: " << lenp << std::endl;
@@ -474,7 +474,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
 
       pdim->conform();
-      pdim->mType = ParameterSpaceDimension::ID;
+      pdim->mRepresentationType = ParameterSpaceDimension::ID;
       newDimensions.push_back(pdim);
 
       //      std::cout << "mapped parameter " << i << ":" << parameterName
@@ -504,7 +504,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
 
       pdim->conform();
-      pdim->mType = ParameterSpaceDimension::INDEX;
+      pdim->mRepresentationType = ParameterSpaceDimension::INDEX;
       newDimensions.push_back(pdim);
     }
   } else {
@@ -701,7 +701,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
   }
 
   for (auto ps : mDimensions) {
-    if (ps->mType == ParameterSpaceDimension::VALUE) {
+    if (ps->mRepresentationType == ParameterSpaceDimension::VALUE) {
       int datagrpid;
       if ((retval = nc_def_grp(grpid, ps->getName().c_str(), &datagrpid))) {
         std::cerr << nc_strerror(retval) << std::endl;
@@ -718,7 +718,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
     return false;
   }
   for (auto ps : mDimensions) {
-    if (ps->mType == ParameterSpaceDimension::INDEX) {
+    if (ps->mRepresentationType == ParameterSpaceDimension::INDEX) {
       int datagrpid;
       if ((retval = nc_def_grp(grpid, ps->getName().c_str(), &datagrpid))) {
         std::cerr << nc_strerror(retval) << std::endl;
@@ -735,7 +735,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
     return false;
   }
   for (auto ps : mDimensions) {
-    if (ps->mType == ParameterSpaceDimension::ID) {
+    if (ps->mRepresentationType == ParameterSpaceDimension::ID) {
       int shuffle = 1;
       int deflate = 9;
       int datagrpid;

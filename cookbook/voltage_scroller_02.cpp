@@ -76,21 +76,21 @@ struct MyApp : public App {
       eci1_dim->push_back(val, "_" + clean_double_to_string(val));
     }
     eci1_dim->conform();
-    eci1_dim->setSpaceType(ParameterSpaceDimension::ID);
+    eci1_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
     for (const auto &val : eci2_values) {
       eci2_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci2_dim->setSpaceType(ParameterSpaceDimension::ID);
+    eci2_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
     eci2_dim->conform();
     for (const auto &val : eci3_values) {
       eci3_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci3_dim->setSpaceType(ParameterSpaceDimension::ID);
+    eci3_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
     eci3_dim->conform();
     for (const auto &val : eci4_values) {
       eci4_dim->push_back(val, "_" + clean_double_to_string(val));
     }
-    eci4_dim->setSpaceType(ParameterSpaceDimension::ID);
+    eci4_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
     eci4_dim->conform();
 
     ps.registerDimension(eci1_dim);

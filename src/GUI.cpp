@@ -12,21 +12,21 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
     std::string dimensionText = dim->getName() + ":" + dim->getCurrentId();
     ImGui::Text("%s", dimensionText.c_str());
   } else if (dim->size() > 1) {
-    if (dim->getSpaceType() == ParameterSpaceDimension::ID) {
+    if (dim->getSpaceRepresentationType() == ParameterSpaceDimension::ID) {
       int v = dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
-    } else if (dim->getSpaceType() == ParameterSpaceDimension::INDEX) {
+    } else if (dim->getSpaceRepresentationType() == ParameterSpaceDimension::INDEX) {
       int v = dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
-    } else if (dim->getSpaceType() == ParameterSpaceDimension::VALUE) {
+    } else if (dim->getSpaceRepresentationType() == ParameterSpaceDimension::VALUE) {
       float value = dim->getCurrentValue();
       size_t previousIndex = dim->getCurrentIndex();
       bool changed =
