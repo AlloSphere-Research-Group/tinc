@@ -118,6 +118,8 @@ protected:
   // Outgoing configure message (only value) for callback functions
   void sendValueMessage(float value, std::string fullAddress,
                         al::ValueSource *src);
+  void sendValueMessage(bool value, std::string fullAddress,
+                        al::ValueSource *src);
   void sendValueMessage(int32_t value, std::string fullAddress,
                         al::ValueSource *src);
   void sendValueMessage(uint64_t value, std::string fullAddress,
@@ -146,7 +148,7 @@ protected:
   virtual bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
                                bool isResponse = false,
                                al::ValueSource *src = nullptr) {
-    std::cerr << "Using unimplemented virtual function of sendTincMessage"
+    std::cerr << __FUNCTION__ << ": Using invalid virtual implementation"
               << std::endl;
     return true;
   }
