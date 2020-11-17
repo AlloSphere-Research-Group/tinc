@@ -236,44 +236,79 @@ using namespace tinc;
 //   tserver.stop();
 // }
 
-TEST(TincProtocol, RemoteParameterPose) {
-  TincServer tserver;
-  EXPECT_TRUE(tserver.start());
+// TEST(TincProtocol, RemoteParameterPose) {
+//   TincServer tserver;
+//   EXPECT_TRUE(tserver.start());
 
-  TincClient tclient;
-  EXPECT_TRUE(tclient.start());
+//   TincClient tclient;
+//   EXPECT_TRUE(tclient.start());
 
-  al::ParameterPose p{"param", "group",
-                      al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6, 0.7})};
+//   // in actual use quat values should be normalized
+//   al::ParameterPose p{"param", "group",
+//                       al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6, 0.7})};
 
-  // register automatically gets propagated to server
-  tclient << p;
-  al::al_sleep(0.5); // wait for parameters to get sent
+//   // register automatically gets propagated to server
+//   tclient << p;
+//   al::al_sleep(0.5); // wait for parameters to get sent
 
-  auto *param = tserver.getParameter("param");
-  EXPECT_NE(param, nullptr);
+//   auto *param = tserver.getParameter("param");
+//   EXPECT_NE(param, nullptr);
 
-  auto *paramPose = static_cast<al::ParameterPose *>(param);
-  EXPECT_EQ(paramPose->get(), al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6, 0.7}));
+//   auto *paramPose = static_cast<al::ParameterPose *>(param);
+//   EXPECT_EQ(paramPose->get(), al::Pose({0.1, 0.2, 0.3}, {0.4, 0.5, 0.6,
+//   0.7}));
 
-  // change value on the clientside
-  p.set(al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
-  al::al_sleep(0.5); // wait for new value
+//   // change value on the clientside
+//   p.set(al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
+//   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(paramPose->get(),
-            al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
+//   EXPECT_EQ(paramPose->get(),
+//             al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
 
-  // change value on the serverside
-  paramPose->set(al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
-  al::al_sleep(0.5); // wait for new value
+//   // change value on the serverside
+//   paramPose->set(al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
+//   al::al_sleep(0.5); // wait for new value
 
-  EXPECT_EQ(p.get(), al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
+//   EXPECT_EQ(p.get(), al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
 
-  tclient.stop();
-  tserver.stop();
-}
+//   tclient.stop();
+//   tserver.stop();
+// }
 
-// TEST(TincProtocol, RemoteParameterMenu) { EXPECT_TRUE(false); }
+// TEST(TincProtocol, RemoteParameterMenu) {
+//   TincServer tserver;
+//   EXPECT_TRUE(tserver.start());
+
+//   TincClient tclient;
+//   EXPECT_TRUE(tclient.start());
+
+//   al::ParameterMenu p{"param", "group", 1};
+
+//   // register automatically gets propagated to server
+//   tclient << p;
+//   al::al_sleep(0.5); // wait for parameters to get sent
+
+//   auto *param = tserver.getParameter("param");
+//   EXPECT_NE(param, nullptr);
+
+//   auto *paramMenu = static_cast<al::ParameterMenu *>(param);
+//   EXPECT_EQ(paramMenu->get(), 1);
+
+//   // change value on the clientside
+//   p.set(2);
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(paramMenu->get(), 2);
+
+//   // change value on the serverside
+//   paramMenu->set(3);
+//   al::al_sleep(0.5); // wait for new value
+
+//   EXPECT_EQ(p.get(), 3);
+
+//   tclient.stop();
+//   tserver.stop();
+// }
 
 // TEST(TincProtocol, RemoteParameterChoice) { EXPECT_TRUE(false); }
 
