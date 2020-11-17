@@ -10,11 +10,11 @@ version: 2.1
 workflows:
   main:
     jobs:
-      - build
+      - buildAndTest
 
 # list of possible jobs and steps
 jobs:
-  build:
+  buildAndTest:
     # executor: exec1
     docker:
       - image: debian:bullseye-slim
@@ -35,10 +35,12 @@ jobs:
             mkdir -p build
             cd build
             cmake .. -DTINC_BUILD_TESTS=ON
-
       - run:
           name: Cmake build
           command: |
             cd build
             cmake --build . -j7
+      - run:
+          name: Run tests
+          command: ./bin/tinc_tests
 
