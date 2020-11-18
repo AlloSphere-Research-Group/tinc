@@ -45,52 +45,63 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
           details.UnpackTo(&objectId);
           readRequestMessage(objectType, objectId.id(), src);
         } else {
-          std::cout << "Request message has unexpected payload. Not ObjectId";
+          std::cerr << __FUNCTION__ << ": Request message has invalid payload"
+                    << std::endl;
         }
         break;
       case MessageType::REMOVE:
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          std::cout << "Remove message received, but not implemented"
+          std::cerr << __FUNCTION__
+                    << ": Remove message received, but not implemented"
                     << std::endl;
         }
         break;
       case MessageType::REGISTER:
+        // FIXME remove after debugging
         std::cout << "client register" << std::endl;
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing register message" << std::endl;
+          std::cerr << __FUNCTION__ << ": Error processing Register message"
+                    << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
+        // FIXME remove after debugging
         std::cout << "client configure" << std::endl;
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing configure message" << std::endl;
+          std::cerr << __FUNCTION__ << ": Error processing Configure message"
+                    << std::endl;
         }
         break;
       case MessageType::COMMAND:
-        std::cout << "Command message received, but not implemented"
+        std::cerr << __FUNCTION__
+                  << ": Command message received, but not implemented"
                   << std::endl;
         break;
       case MessageType::PING:
-        std::cout << "Ping message received, but not implemented" << std::endl;
+        std::cerr << __FUNCTION__
+                  << ": Ping message received, but not implemented"
+                  << std::endl;
         break;
       case MessageType::PONG:
-        std::cout << "Pong message received, but not implemented" << std::endl;
+        std::cerr << __FUNCTION__
+                  << ": Pong message received, but not implemented"
+                  << std::endl;
         break;
       default:
-        std::cout << "Unused message type" << std::endl;
+        std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
         break;
       }
     } else {
-      std::cerr << "Error parsing message" << std::endl;
+      std::cerr << __FUNCTION__ << ": Error parsing message" << std::endl;
     }
 
     message.pushReadIndex(msgSize);
   }
 
   if (verbose()) {
-    std::cout << "message buffer : " << message.remainingBytes() << std::endl;
+    std::cout << "Message buffer : " << message.remainingBytes() << std::endl;
   }
 
   return true;

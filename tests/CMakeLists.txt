@@ -13,12 +13,12 @@ FetchContent_MakeAvailable(googletest)
 
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
-set(TEST_SOURCES main.cpp 
+set(TEST_SOURCES main.cpp
   scriptprocessor.cpp
-  parameterspace.cpp.
   tincprotocol.cpp
   tincprotocol_parameters.cpp
   tincprotocol_remote_parameter.cpp
+  parameterspace.cpp
   tincprotocol_parameterspaces.cpp
   tincprotocol_processors.cpp
   tincprotocol_diskbuffers.cpp
