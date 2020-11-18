@@ -26,7 +26,7 @@ ParameterSpace::getDimension(std::string name) {
     name = parameterNameMap[name];
   }
   for (auto ps : getDimensions()) {
-    if (ps->parameter().getName() == name) {
+    if (ps->parameterMeta()->getName() == name) {
       return ps;
     }
   }
@@ -36,7 +36,16 @@ ParameterSpace::getDimension(std::string name) {
 std::shared_ptr<ParameterSpaceDimension>
 ParameterSpace::newDimension(std::string name,
                              ParameterSpaceDimension::RepresentationType type) {
-  auto newDim = std::make_shared<ParameterSpaceDimension>(name);
+  al::DiscreteParameterValues::Datatype datatype;
+  if (type == ParameterSpaceDimension::ID) {
+    datatype = al::DiscreteParameterValues::INT32;
+  } else if (type == ParameterSpaceDimension::VALUE) {
+    datatype = al::DiscreteParameterValues::FLOAT;
+  } else if (type == ParameterSpaceDimension::INDEX) {
+    datatype = al::DiscreteParameterValues::INT32;
+  }
+
+  auto newDim = std::make_shared<ParameterSpaceDimension>(name, "", datatype);
 
   newDim->mRepresentationType = type;
   registerDimension(newDim);
@@ -48,33 +57,94 @@ void ParameterSpace::registerDimension(
   std::unique_lock<std::mutex> lk(mSpaceLock);
   for (auto dim : getDimensions()) {
     if (dim->getName() == dimension->getName()) {
-      dim->mValues = dimension->values();
-      dim->mIds = dimension->ids();
-      dim->mConnectedSpaces = dimension->mConnectedSpaces;
-      dim->datatype = dimension->datatype;
-      dim->mRepresentationType = dimension->getSpaceRepresentationType();
+      // FIXME check data type
+      if (dim->mSpaceValues.getDataType() ==
+          dimension->mSpaceValues.getDataType()) {
+        dim->mSpaceValues.append(dimension->mSpaceValues.getValuesPtr(),
+                                 dimension->mSpaceValues.size());
+        dim->mSpaceValues.setIds(dimension->mSpaceValues.getIds());
+        dim->mRepresentationType = dimension->getSpaceRepresentationType();
 
-      //      std::cout << "Updated dimension: " << dimension->getName() <<
-      //      std::endl;
-      onDimensionRegister(dim.get(), this);
-      return;
+        //      std::cout << "Updated dimension: " << dimension->getName() <<
+        //      std::endl;
+        onDimensionRegister(dim.get(), this);
+        return;
+      } else {
+        std::cout << "WARNING: Dimension datatype change." << std::endl;
+      }
     }
   }
 
-  dimension->parameter().registerChangeCallback([dimension, this](float value) {
-    //    std::cout << value << dimension->getName() << std::endl;
-    float oldValue = dimension->parameter().get();
-    dimension->parameter().setNoCalls(value);
+  if (al::ParameterBool *p =
+          dynamic_cast<al::ParameterBool *>(dimension->parameterMeta())) {
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](float value) {
+      //    std::cout << value << dimension->getName() << std::endl;
+      float oldValue = param.get();
+      param.setNoCalls(value);
 
-    this->updateParameterSpace(oldValue, dimension.get());
-    this->updateComputationSettings(oldValue, dimension.get(), this);
-    this->onValueChange(oldValue, dimension.get(), this);
-    dimension->parameter().setNoCalls(oldValue);
-    // The internal parameter will get set internally to the new value
-    // later on inside the Parameter classes
-  });
+      this->updateParameterSpace(oldValue, dimension.get());
+      this->updateComputationSettings(oldValue, dimension.get(), this);
+      this->onValueChange(oldValue, dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+    mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this);
+  } else if (al::Parameter *p =
+                 dynamic_cast<al::Parameter *>(dimension->parameterMeta())) {
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](float value) {
+      //    std::cout << value << dimension->getName() << std::endl;
+      float oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(oldValue, dimension.get());
+      this->updateComputationSettings(oldValue, dimension.get(), this);
+      this->onValueChange(oldValue, dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+    mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this);
+  } else if (al::ParameterInt *p =
+                 dynamic_cast<al::ParameterInt *>(dimension->parameterMeta())) {
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](int32_t value) {
+      //    std::cout << value << dimension->getName() << std::endl;
+      int32_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(oldValue, dimension.get());
+      this->updateComputationSettings(oldValue, dimension.get(), this);
+      this->onValueChange(oldValue, dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+    mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this);
+  } else {
+    // FIXME implement for all parameter types
+    std::cerr << "Support for parameter type not implemented in dimension "
+              << __FILE__ << ":" << __LINE__ << std::endl;
+  }
   mDimensions.push_back(dimension);
   onDimensionRegister(dimension.get(), this);
+}
+
+void ParameterSpace::removeDimension(std::string dimensionName) {
+  auto it = mDimensions.begin();
+  while ((*it)->getName() != dimensionName && it < mDimensions.end()) {
+    it++;
+  }
+  if (it != mDimensions.end()) {
+    mDimensions.erase(it);
+    // TODO ensure space inside dimension is cleaned up correctly. It's probably
+    // leaking.
+  }
 }
 
 std::vector<std::shared_ptr<ParameterSpaceDimension>>
@@ -115,14 +185,14 @@ std::string ParameterSpace::currentRunPath() {
       //      }
     }
   }
-  return al::File::conformPathToOS(generateRelativeRunPath(indeces, this));
+  return generateRelativeRunPath(indeces, this);
 }
 
 std::vector<std::string> ParameterSpace::dimensionNames() {
   std::unique_lock<std::mutex> lk(mSpaceLock);
   std::vector<std::string> dimensionNames;
-  for (auto ps : mDimensions) {
-    dimensionNames.push_back(ps->parameter().getName());
+  for (auto dim : mDimensions) {
+    dimensionNames.push_back(dim->getName());
   }
   return dimensionNames;
 }
@@ -263,7 +333,7 @@ void ParameterSpace::sweepAsync(Processor &processor,
     mAsyncPSCopy->onSweepProcess = onSweepProcess;
     mAsyncPSCopy->onValueChange = onValueChange;
     mAsyncPSCopy->generateRelativeRunPath = generateRelativeRunPath;
-    mAsyncPSCopy->generateOutpuFileNames = generateOutpuFileNames;
+    mAsyncPSCopy->mCurrentPathTemplate = mCurrentPathTemplate;
   }
   mAsyncProcessingThread = std::make_unique<std::thread>([=, &processor]() {
     mAsyncPSCopy->sweep(processor, dimensions, recompute);
@@ -330,7 +400,7 @@ bool readNetCDFValues(int grpid,
     if ((retval = nc_get_var(grpid, varid, data.data()))) {
       return false;
     }
-    pdim->append(data.data(), data.size());
+    pdim->setSpaceValues(data.data(), data.size());
   } else if (xtypep == NC_INT) {
 
     std::vector<int32_t> data;
@@ -338,7 +408,7 @@ bool readNetCDFValues(int grpid,
     if ((retval = nc_get_var(grpid, varid, data.data()))) {
       return false;
     }
-    pdim->append(data.data(), data.size());
+    pdim->setSpaceValues(data.data(), data.size());
   } else if (xtypep == NC_UBYTE) {
 
     std::vector<uint8_t> data;
@@ -346,7 +416,7 @@ bool readNetCDFValues(int grpid,
     if ((retval = nc_get_var(grpid, varid, data.data()))) {
       return false;
     }
-    pdim->append(data.data(), data.size());
+    pdim->setSpaceValues(data.data(), data.size());
   } else if (xtypep == NC_UINT) {
 
     std::vector<uint32_t> data;
@@ -354,7 +424,7 @@ bool readNetCDFValues(int grpid,
     if ((retval = nc_get_var(grpid, varid, data.data()))) {
       return false;
     }
-    pdim->append(data.data(), data.size());
+    pdim->setSpaceValues(data.data(), data.size());
   }
   return true;
 }
@@ -467,11 +537,12 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
       std::shared_ptr<ParameterSpaceDimension> pdim =
           std::make_shared<ParameterSpaceDimension>(parameterName);
-      pdim->append(data.data(), data.size());
-      pdim->mIds.resize(lenp);
+      pdim->appendSpaceValues(data.data(), data.size());
+      std::vector<std::string> newIds;
       for (size_t i = 0; i < lenp; i++) {
-        pdim->mIds[i] = idData[i];
+        newIds.push_back(idData[i]);
       }
+      pdim->setSpaceIds(newIds);
 
       pdim->conform();
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
@@ -518,6 +589,65 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
   }
 
   return true;
+}
+
+std::string ParameterSpace::resolveFilename(std::string fileTemplate) {
+  std::string resolvedName;
+  size_t currentPos = 0;
+  size_t beginPos = fileTemplate.find("%%", currentPos);
+  resolvedName += fileTemplate.substr(0, beginPos);
+  while (beginPos != std::string::npos) {
+    auto endPos = fileTemplate.find("%%", beginPos + 2);
+    if (endPos != std::string::npos) {
+      auto token = fileTemplate.substr(beginPos + 2, endPos - beginPos - 2);
+      std::string representation;
+      auto representationSeparation = token.find(":");
+      if (representationSeparation != std::string::npos) {
+        representation = token.substr(representationSeparation + 1);
+        token = token.substr(0, representationSeparation);
+      }
+      bool replaced = false;
+      for (auto dim : getDimensions()) {
+        if (dim->getName() == token) {
+          if (representation.size() == 0) {
+            switch (dim->getSpaceRepresentationType()) {
+            case ParameterSpaceDimension::ID:
+              representation = "ID";
+              break;
+            case ParameterSpaceDimension::VALUE:
+              representation = "VALUE";
+              break;
+            case ParameterSpaceDimension::INDEX:
+              representation = "INDEX";
+              break;
+            }
+          }
+          if (representation == "ID") {
+            resolvedName += dim->getCurrentId();
+          } else if (representation == "VALUE") {
+            resolvedName += std::to_string(dim->getCurrentValue());
+          } else if (representation == "INDEX") {
+            resolvedName += std::to_string(dim->getCurrentIndex());
+          } else {
+            std::cerr << "Representation error: " << representation
+                      << std::endl;
+          }
+
+          replaced = true;
+          break;
+        }
+      }
+    }
+    currentPos = endPos + 2;
+    beginPos = fileTemplate.find("%%", endPos + 2);
+
+    if (beginPos != std::string::npos) {
+      resolvedName += fileTemplate.substr(currentPos, beginPos - currentPos);
+    } else {
+      resolvedName += fileTemplate.substr(currentPos);
+    }
+  }
+  return resolvedName;
 }
 
 bool ParameterSpace::readFromNetCDF(std::string ncFile) {
@@ -591,7 +721,7 @@ bool writeNetCDFValues(int datagrpid,
     std::cerr << nc_strerror(retval) << std::endl;
     return false;
   }
-  if (ps->datatype == ParameterSpaceDimension::FLOAT) {
+  if (ps->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
     int dimidsp[1] = {dimid};
     if ((retval =
              nc_def_var(datagrpid, "values", NC_FLOAT, 1, dimidsp, &varid))) {
@@ -604,9 +734,9 @@ bool writeNetCDFValues(int datagrpid,
       return false;
     }
 
-    std::vector<float> values = ps->values();
+    std::vector<float> values = ps->getSpaceValues<float>();
     nc_put_var(datagrpid, varid, values.data());
-  } else if (ps->datatype == ParameterSpaceDimension::UINT8) {
+  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::UINT8) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -620,19 +750,10 @@ bool writeNetCDFValues(int datagrpid,
       return false;
     }
 
-    // FIXME we should have an internal representation of the data space in
-    // the
-    // original type instead of transforming
-    std::vector<float> values = ps->values();
-    std::vector<uint8_t> valuesInt;
-    valuesInt.resize(values.size());
-    for (size_t i = 0; i < values.size(); i++) {
-      valuesInt[i] = values.size();
-    }
-
+    std::vector<uint8_t> valuesInt = ps->getSpaceValues<uint8_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
 
-  } else if (ps->datatype == ParameterSpaceDimension::INT32) {
+  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::INT32) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -646,18 +767,9 @@ bool writeNetCDFValues(int datagrpid,
       return false;
     }
 
-    // FIXME we should have an internal representation of the data space in
-    // the
-    // original type instead of transforming
-    std::vector<float> values = ps->values();
-    std::vector<int32_t> valuesInt;
-    valuesInt.resize(values.size());
-    for (size_t i = 0; i < values.size(); i++) {
-      valuesInt[i] = values.size();
-    }
-
+    std::vector<int32_t> valuesInt = ps->getSpaceValues<int32_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
-  } else if (ps->datatype == ParameterSpaceDimension::UINT32) {
+  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::UINT32) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -671,18 +783,10 @@ bool writeNetCDFValues(int datagrpid,
       return false;
     }
 
-    // FIXME we should have an internal representation of the data space in
-    // the
-    // original type instead of transforming
-    std::vector<float> values = ps->values();
-    std::vector<uint32_t> valuesInt;
-    valuesInt.resize(values.size());
-    for (size_t i = 0; i < values.size(); i++) {
-      valuesInt[i] = values.size();
-    }
-
+    std::vector<uint32_t> valuesInt = ps->getSpaceValues<uint32_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
   }
+  // FIXME add support for the rest of the data types.
   return true;
 }
 
@@ -768,7 +872,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
         std::cerr << nc_strerror(retval) << std::endl;
         return false;
       }
-      auto ids = ps->ids();
+      auto ids = ps->getSpaceIds();
       char **idArray = (char **)calloc(ids.size(), sizeof(char *));
       size_t start[1] = {0};
       size_t count[1] = {ids.size()};

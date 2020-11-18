@@ -526,12 +526,27 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
   confMessage.set_configurationkey(ParameterConfigureType::SPACE);
 
   ParameterSpaceValues valuesMessage;
-  for (auto &id : dim->ids()) {
+  for (auto &id : dim->getSpaceIds()) {
     valuesMessage.add_ids(id);
   }
-  for (auto &value : dim->values()) {
-    valuesMessage.add_values()->set_valuefloat(value);
+  if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+    for (auto &value : dim->getSpaceValues<float>()) {
+      valuesMessage.add_values()->set_valuefloat(value);
+    }
+  } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT8) {
+    for (auto &value : dim->getSpaceValues<uint8_t>()) {
+      valuesMessage.add_values()->set_valueuint8(value);
+    }
+  } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::INT32) {
+    for (auto &value : dim->getSpaceValues<int32_t>()) {
+      valuesMessage.add_values()->set_valueint32(value);
+    }
+  } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT32) {
+    for (auto &value : dim->getSpaceValues<int32_t>()) {
+      valuesMessage.add_values()->set_valueint32(value);
+    }
   }
+  // FIXME support the rest of the types
   auto confValue = confMessage.configurationvalue().New();
   confValue->PackFrom(valuesMessage);
   confMessage.set_allocated_configurationvalue(confValue);
@@ -560,17 +575,17 @@ TincMessage createConfigureDataPoolMessage(DataPool *p) {
   return msg;
 }
 
-bool processConfigureParameterValue(ConfigureParameter &conf,
-                                    al::ParameterMeta *param, al::Socket *src) {
-  if (!conf.configurationvalue().Is<ParameterValue>()) {
+bool processConfigureParameterValueMessage(ConfigureParameter &conf,
+                                           al::ParameterMeta *param,
+                                           al::Socket *src) {
+  auto confValue = conf.configurationvalue();
+  if (!confValue.Is<ParameterValue>()) {
     std::cerr << "Configure message doesn't contain proper values" << std::endl;
     return false;
   }
-
   ParameterConfigureType command = conf.configurationkey();
   ParameterValue v;
-  conf.configurationvalue().UnpackTo(&v);
-
+  confValue.UnpackTo(&v);
   if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
     al::Parameter *p = dynamic_cast<al::Parameter *>(param);
     if (command == ParameterConfigureType::VALUE) {
@@ -704,8 +719,95 @@ bool processConfigureParameterValue(ConfigureParameter &conf,
   } else {
     assert(1 == 0); // Implement!
   }
+}
 
-  return true;
+bool processConfigureParameterMessage(ConfigureParameter &conf,
+                                      ParameterSpaceDimension *dim,
+                                      al::Socket *src) {
+
+  ParameterConfigureType command = conf.configurationkey();
+
+  if (command == ParameterConfigureType::SPACE) {
+    ParameterSpaceValues sv;
+    if (conf.configurationvalue().Is<ParameterSpaceValues>()) {
+      conf.configurationvalue().UnpackTo(&sv);
+      dim->clear();
+      auto &values = sv.values();
+      auto idsIt = sv.ids().begin();
+      if (sv.ids().size() != 0 && sv.ids().size() != values.size()) {
+        std::cerr << "ids size mismatch. ignoring" << std::endl;
+        idsIt = sv.ids().end();
+      }
+      if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+        std::vector<float> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valuefloat());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+      } else if (dim->getSpaceDataType() ==
+                 al::DiscreteParameterValues::UINT8) {
+        std::vector<uint8_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueuint8());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+      } else if (dim->getSpaceDataType() ==
+                 al::DiscreteParameterValues::INT32) {
+        std::vector<int32_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+      } else if (dim->getSpaceDataType() ==
+                 al::DiscreteParameterValues::UINT32) {
+        std::vector<uint32_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueuint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+      }
+      // FIXME add all types
+    } else {
+      return false;
+    }
+    // TODO ensure correct forwarding to connections
+    return true;
+  } else if (command == ParameterConfigureType::SPACE_TYPE) {
+
+    if (conf.configurationvalue().Is<ParameterValue>()) {
+      ParameterValue v;
+      conf.configurationvalue().UnpackTo(&v);
+      dim->setSpaceRepresentationType(
+          (ParameterSpaceDimension::RepresentationType)v.valueint32());
+      // TODO ensure correct forwarding to connections
+      return true;
+
+    } else {
+      return false;
+    }
+  }
+  al::ParameterMeta *param = dim->parameterMeta();
+  return processConfigureParameterValueMessage(conf, param, src);
 }
 
 //// ------------------------------------------------------
@@ -714,7 +816,8 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
   bool registered = false;
   for (auto *p : mParameters) {
     // FIXME reevaluate if name/group string comparison is needed
-    // FIXME review: if a new parameter with same name/group but different type
+    // FIXME review: if a new parameter with same name/group but different
+    // type
     // remove the old parameter and register the new one?
     if (p == &pmeta || (p->getName() == pmeta.getName() &&
                         p->getGroup() == pmeta.getGroup())) {
@@ -841,11 +944,12 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *dst) {
 
         // FIXME register all dimensions as parameters multiple times?
         for (auto dim : ps->getDimensions()) {
-          TincMessage msg = createRegisterParameterMessage(&dim->parameter());
+          TincMessage msg =
+              createRegisterParameterMessage(dim->parameterMeta());
           sendTincMessage(&msg);
 
           auto confMessages =
-              createConfigureParameterMessage(&dim->parameter());
+              createConfigureParameterMessage(dim->parameterMeta());
           for (auto &confMessage : confMessages) {
             sendTincMessage(&confMessage);
           }
@@ -877,29 +981,26 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
   if (!registered) {
     mParameterSpaceDimensions.push_back(&psd);
 
-    psd.parameter().registerChangeCallback(
-        [&](float value, al::ValueSource *src) {
-          sendValueMessage(value, psd.parameter().getFullAddress(), src);
-        });
+    registerParameter(*psd.parameterMeta());
 
-    psd.onDimensionMetadataChange =
-        [&](ParameterSpaceDimension *changedDimension) {
-          // FIXME register necessary here?
-          registerParameterSpaceDimension(*changedDimension);
+    psd.onDimensionMetadataChange = [&](
+        ParameterSpaceDimension *changedDimension) {
+      // FIXME register necessary here?
+      registerParameterSpaceDimension(*changedDimension);
 
-          TincMessage msg =
-              createRegisterParameterMessage(&changedDimension->parameter());
-          sendTincMessage(&msg);
+      TincMessage msg =
+          createRegisterParameterMessage(changedDimension->parameterMeta());
+      sendTincMessage(&msg);
 
-          auto confMessages =
-              createConfigureParameterMessage(&changedDimension->parameter());
-          for (auto &confMessage : confMessages) {
-            sendTincMessage(&confMessage);
-          }
+      auto confMessages =
+          createConfigureParameterMessage(changedDimension->parameterMeta());
+      for (auto &confMessage : confMessages) {
+        sendTincMessage(&confMessage);
+      }
 
-          msg = createConfigureParameterSpaceDimensionMessage(changedDimension);
-          sendTincMessage(&msg);
-        };
+      msg = createConfigureParameterSpaceDimensionMessage(changedDimension);
+      sendTincMessage(&msg);
+    };
 
     // Broadcast registered ParameterSpaceDimension
     sendRegisterMessage(&psd, dst);
@@ -1194,10 +1295,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   al::ParameterMeta *param = nullptr;
   switch (datatype) {
   case ParameterDataType::PARAMETER_FLOAT:
-    // param = new ParameterSpaceDimension(id, group);
-    // param->parameter().setDefault(def.valuefloat());
-    // registerParameterSpaceDimension(*param);
-    // sendRegisterMessage(param, src);
+    param = new al::Parameter(id, group, def.valuefloat());
+    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_BOOL:
     param = new al::ParameterBool(id, group, def.valuefloat());
@@ -1302,8 +1401,8 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
 
 void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
                                        al::Socket *dst, bool isResponse) {
-  // FIXME check if registering psd as parameter is right
-  sendRegisterMessage(&dim->parameter(), dst, isResponse);
+  // FIXME register dimension, not only parameter
+  sendRegisterMessage(dim->parameterMeta(), dst, isResponse);
   sendConfigureMessage(dim, dst, isResponse);
 }
 
@@ -1444,21 +1543,21 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
 
   for (auto *dim : mParameterSpaceDimensions) {
     if (addr == dim->getFullAddress()) {
-      return processConfigureParameterValue(conf, &dim->parameter(), src);
+      return processConfigureParameterMessage(conf, dim, src);
     }
   }
 
   for (auto *ps : mParameterSpaces) {
     for (auto dim : ps->getDimensions()) {
       if (addr == dim->getFullAddress()) {
-        return processConfigureParameterValue(conf, &dim->parameter(), src);
+        return processConfigureParameterMessage(conf, dim.get(), src);
       }
     }
   }
 
   for (auto *param : mParameters) {
     if (addr == param->getFullAddress()) {
-      return processConfigureParameterValue(conf, param, src);
+      return processConfigureParameterValueMessage(conf, param, src);
     }
   }
 
@@ -1847,9 +1946,9 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     for (auto *ps : mParameterSpaces) {
       for (auto dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
-          if (strcmp(typeid(dim->parameter()).name(),
+          if (strcmp(typeid(*dim->parameterMeta()).name(),
                      typeid(al::ParameterChoice).name()) == 0) {
-            elements = dynamic_cast<al::ParameterChoice *>(&dim->parameter())
+            elements = dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())
                            ->getElements();
             break;
           }
@@ -1858,9 +1957,9 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     }
     for (auto dim : mParameterSpaceDimensions) {
       if (dim->getFullAddress() == id) {
-        if (strcmp(typeid(dim->parameter()).name(),
+        if (strcmp(typeid(*dim->parameterMeta()).name(),
                    typeid(al::ParameterChoice).name()) == 0) {
-          elements = dynamic_cast<al::ParameterChoice *>(&dim->parameter())
+          elements = dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())
                          ->getElements();
           break;
         }
@@ -2049,7 +2148,8 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         auto filenames = dp->getCurrentFiles();
 
         //              if (mVerbose) {
-        //                  std::cout << commandNumber << "::::: " << sliceName
+        //                  std::cout << commandNumber << "::::: " <<
+        //                  sliceName
         //                  << std::endl;
         //              }
 

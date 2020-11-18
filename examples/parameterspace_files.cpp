@@ -11,25 +11,14 @@ int main() {
   auto inner_param =
       std::make_shared<tinc::ParameterSpaceDimension>("inner_param");
 
-  dimension1->push_back(0.1, "A");
-  dimension1->push_back(0.2, "B");
-  dimension1->push_back(0.3, "C");
-  dimension1->push_back(0.4, "D");
-  dimension1->push_back(0.5, "E");
+  dimension1->setSpaceValues({0.1, 0.2, 0.3, 0.4, 0.5});
+  dimension1->setSpaceIds({"A", "B", "C", "D", "E"});
   dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
-  dimension2->push_back(10.1);
-  dimension2->push_back(10.2);
-  dimension2->push_back(10.3);
-  dimension2->push_back(10.4);
-  dimension2->push_back(10.5);
+  dimension2->setSpaceValues({10.1, 10.2, 10.3, 10.4, 10.5});
   dimension2->setSpaceRepresentationType(tinc::ParameterSpaceDimension::INDEX);
 
-  inner_param->push_back(1);
-  inner_param->push_back(2);
-  inner_param->push_back(3);
-  inner_param->push_back(4);
-  inner_param->push_back(5);
+  inner_param->setSpaceValues({1, 2, 3, 4, 5});
   inner_param->setSpaceRepresentationType(tinc::ParameterSpaceDimension::VALUE);
 
   tinc::ParameterSpace ps;
@@ -52,12 +41,12 @@ int main() {
     auto dim = ps2.getDimension(dimensionName);
 
     std::cout << "  Values: " << std::endl;
-    for (auto value : dim->values()) {
+    for (auto value : dim->getSpaceValues<float>()) {
       std::cout << value << std::endl;
     }
-    if (dim->ids().size() > 0) {
+    if (dim->getSpaceIds().size() > 0) {
       std::cout << "  Ids: " << std::endl;
-      for (auto id : dim->ids()) {
+      for (auto id : dim->getSpaceIds()) {
         std::cout << id << std::endl;
       }
     }

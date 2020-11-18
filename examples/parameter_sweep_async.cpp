@@ -31,22 +31,31 @@ struct MyApp : public App {
         std::make_shared<tinc::ParameterSpaceDimension>("inner_param");
 
     // Create large parameter space
-    for (int i = 0; i < 20; i++) {
-      dimension1->push_back(i, "L_" + std::to_string(i));
+    std::vector<std::string> ids;
+    std::vector<float> values;
+    for (int i = 0; i < 200; i++) {
+      values.push_back(i);
+      ids.push_back("L_" + std::to_string(i));
     }
+    dimension1->setSpaceValues(values);
+    dimension1->setSpaceIds(ids);
     dimension1->conform();
     dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
-    for (int i = 0; i < 22; i++) {
-      dimension2->push_back(i / 220.0);
+    values.clear();
+    for (int i = 0; i < 220; i++) {
+      values.push_back(i / 220.0);
     }
+    dimension2->setSpaceValues(values);
     dimension2->conform();
     dimension2->setSpaceRepresentationType(
         tinc::ParameterSpaceDimension::INDEX);
 
-    for (int i = 0; i < 23; i++) {
-      inner_param->push_back(10 + i);
+    values.clear();
+    for (int i = 0; i < 230; i++) {
+      values.push_back(10 + i);
     }
+    inner_param->setSpaceValues(values);
     inner_param->conform();
     inner_param->setSpaceRepresentationType(
         tinc::ParameterSpaceDimension::VALUE);
@@ -55,10 +64,9 @@ struct MyApp : public App {
     ps.registerDimension(dimension2);
     ps.registerDimension(inner_param);
 
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
-                                     ParameterSpace *ps) {
-      return "asyncdata/";
-    };
+    // The running path for the parameter space is fixed
+    ps.setCurrentPathTemplate("asyncdata");
+
     // Create necessary filesystem directories to be populated by data
     ps.createDataDirectories();
 
@@ -129,9 +137,9 @@ struct MyApp : public App {
     defineParameterSpace();
     initializeComputation();
 
-    gui << ps.getDimension("dim1")->parameter();
-    gui << ps.getDimension("dim2")->parameter();
-    gui << ps.getDimension("inner_param")->parameter();
+    gui << ps.getDimension("dim1")->parameterMeta();
+    gui << ps.getDimension("dim2")->parameterMeta();
+    gui << ps.getDimension("inner_param")->parameterMeta();
     gui.init();
 
     // Now sweep the parameter space asynchronously

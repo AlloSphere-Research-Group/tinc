@@ -32,6 +32,8 @@ public:
 
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
+  void removeDimension(std::string dimensionName);
+
   /**
    * @brief get list of currently registered dimensions
    */
@@ -147,31 +149,19 @@ public:
   // parameters
   std::map<std::string, std::string> parameterNameMap;
 
-  // FIXME this interface is a little uncomfortable and not consistent with
-  // the other similar functionality in setOuputFilename(), perhaps an output
-  // filename generator function should be provided?
+  void setCurrentPathTemplate(std::string pathTemplate) {
+    mCurrentPathTemplate = pathTemplate;
+  }
+
+  /**
+   * Only override this function if using a path template is insufficient.
+   */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
                                     ParameterSpace *ps) {
-        std::string path;
-        for (auto dimensionSample : indeces) {
-          std::shared_ptr<ParameterSpaceDimension> dimension;
-
-          for (auto ps : getDimensions()) {
-            if (ps->parameter().getName() == dimensionSample.first) {
-              dimension = ps;
-              break;
-            }
-          }
-          if (dimension) {
-            auto id = dimension->idAt(dimensionSample.second);
-            path += id + "/";
-          }
-        }
-        return path;
+        std::string path = ps->resolveFilename(mCurrentPathTemplate);
+        return al::File::conformPathToOS(path);
       };
-  std::function<std::vector<std::string>(std::map<std::string, size_t>)>
-      generateOutpuFileNames;
 
   /**
    * @brief onSweepProcess is called after a sample completes processing as part
@@ -193,64 +183,7 @@ public:
    * "value_%%ParameterValue:INDEX%%" will replace "%%ParameterValue:INDEX%%"
    * with the current index for ParameterValue.
    */
-  std::string resolveFilename(std::string fileTemplate) {
-    std::string resolvedName;
-    size_t currentPos = 0;
-    size_t beginPos = fileTemplate.find("%%", currentPos);
-    resolvedName += fileTemplate.substr(0, beginPos);
-    while (beginPos != std::string::npos) {
-      auto endPos = fileTemplate.find("%%", beginPos + 2);
-      if (endPos != std::string::npos) {
-        auto token = fileTemplate.substr(beginPos + 2, endPos - beginPos - 2);
-        std::string representation;
-        auto representationSeparation = token.find(":");
-        if (representationSeparation != std::string::npos) {
-          representation = token.substr(representationSeparation + 1);
-          token = token.substr(0, representationSeparation);
-        }
-        bool replaced = false;
-        for (auto dim : getDimensions()) {
-          if (dim->getName() == token) {
-            if (representation.size() == 0) {
-              switch (dim->getSpaceRepresentationType()) {
-              case ParameterSpaceDimension::ID:
-                representation = "ID";
-                break;
-              case ParameterSpaceDimension::VALUE:
-                representation = "VALUE";
-                break;
-              case ParameterSpaceDimension::INDEX:
-                representation = "INDEX";
-                break;
-              }
-            }
-            if (representation == "ID") {
-              resolvedName += dim->getCurrentId();
-            } else if (representation == "VALUE") {
-              resolvedName += std::to_string(dim->getCurrentValue());
-            } else if (representation == "INDEX") {
-              resolvedName += std::to_string(dim->getCurrentIndex());
-            } else {
-              std::cerr << "Representation error: " << representation
-                        << std::endl;
-            }
-
-            replaced = true;
-            break;
-          }
-        }
-      }
-      currentPos = endPos + 2;
-      beginPos = fileTemplate.find("%%", endPos + 2);
-
-      if (beginPos != std::string::npos) {
-        resolvedName += fileTemplate.substr(currentPos, beginPos - currentPos);
-      } else {
-        resolvedName += fileTemplate.substr(currentPos);
-      }
-    }
-    return resolvedName;
-  }
+  std::string resolveFilename(std::string fileTemplate);
 
   /**
    * @brief callback when the value in any particular dimension changes.
@@ -278,6 +211,8 @@ public:
       [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
 protected:
+  // FIXME how shoule we support different values types. Use a form of variant
+  // type?
   /**
  * @brief update current position to value in dimension ps
  * @param oldValue You should pass the previous value here.
@@ -289,6 +224,9 @@ protected:
   void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
+
+  /// Stores template to generate current path using resolveFilename()
+  std::string mCurrentPathTemplate;
 
   std::unique_ptr<std::thread> mAsyncProcessingThread;
   std::shared_ptr<ParameterSpace> mAsyncPSCopy;

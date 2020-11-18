@@ -10,11 +10,17 @@ TEST(ParameterSpace, FilenameTemplate) {
   auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
 
   float values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
-  dim2->append(values, 5, "xx");
+  dim2->setSpaceValues(values, 5, "xx");
 
+  float dim2Values[6];
+  std::vector<std::string> ids;
   for (int i = 0; i < 6; i++) {
-    dim3->push_back(i * 0.01, "id" + std::to_string(i));
+    dim2Values[i] = i * 0.01;
+    ids.push_back("id" + std::to_string(i));
   }
+  dim3->setSpaceValues(dim2Values, 6);
+  dim3->setSpaceIds(ids);
+
   dim1->setCurrentValue(0.5);
   dim2->setCurrentValue(0.2);
   dim3->setCurrentValue(0.02);

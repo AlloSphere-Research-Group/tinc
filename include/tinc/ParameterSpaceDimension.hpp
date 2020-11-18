@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "al/ui/al_Parameter.hpp"
+#include "al/ui/al_DiscreteParameterValues.hpp"
 
 namespace tinc {
 
@@ -31,12 +32,12 @@ class ParameterSpaceDimension {
 
 public:
   // TODO implement more data types (in particular DOUBLE, INT64, STRING)
-  typedef enum { FLOAT, UINT8, INT32, UINT32 } Datatype;
 
+  using Datatype = al::DiscreteParameterValues::Datatype;
   typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } RepresentationType;
 
-  ParameterSpaceDimension(std::string name, std::string group = "")
-      : mParameterValue(name, group) {}
+  ParameterSpaceDimension(std::string name, std::string group = "",
+                          Datatype dataType = Datatype::FLOAT);
   std::string getName();
   std::string getGroup();
   std::string getFullAddress();
@@ -60,6 +61,8 @@ public:
 
   // This dimension affects the filesystem. All filesystem dimension in a
   // parameter space must have the smae size
+  // TODO this member should be removed. This should be handled by
+  // ParameterSpace instead
   bool isFilesystemDimension() { return mFilesystemDimension; }
 
   void setFilesystemDimension(bool set = true) {
@@ -67,80 +70,52 @@ public:
     onDimensionMetadataChange(this);
   }
 
-  // Multidimensional parameter spaces will result in single values having
-  // multiple ids. This can be resolved externally using this function
-  // but perhaps we should have a higher level class that solves this issue for
-  // the general case
-  std::vector<std::string> getAllCurrentIds();
-  std::vector<size_t> getAllCurrentIndeces();
-
-  // Access to specific elements
-
-  // When using reverse = true, the value returned describes the
-  // end of an open range, i.e, the index returned is one more than
-  // an index that would match the value.
-  size_t getFirstIndexForValue(float value, bool reverse = false);
-
-  /**
-   * @brief getFirstIndexForId
-   * @param id
-   * @param reverse
-   * @return
-   *
-   * Returns numeric_limits<size_t>::max() if id is not found.
-   */
-  size_t getFirstIndexForId(std::string id, bool reverse = false);
-
-  float at(size_t x);
-
-  std::string idAt(size_t x);
-  size_t getIndexForValue(float value);
-
-  // FIXME Are these getAll still relevant?
-  std::vector<std::string> getAllIds(float value);
-  std::vector<size_t> getAllIndeces(float value);
-
-  // Access to complete sets
-  std::vector<float> values();
-  std::vector<std::string> ids();
-
   // the parameter instance holds the current value.
   // You can set values for parameter space through this function
   // Register notifications and create GUIs/ network synchronization
   // Through this instance.
-  al::Parameter &parameter();
+  template <typename ParameterType> ParameterType &parameter() {
+    return *static_cast<ParameterType *>(mParameterValue.get());
+  }
+
+  al::ParameterMeta *parameterMeta() { return mParameterValue.get(); }
 
   // Move current position in parameter space
   void stepIncrement();
   void stepDecrease();
 
   size_t size();
-  void reserve(size_t totalSize);
 
-  void sort();
+  //  void sort();
   void clear();
 
-  // This is very inefficient and should be avoided if possible
-  void push_back(float value, std::string id = "");
+  float at(size_t index);
+  std::string idAt(size_t index);
 
-  void append(float *values, size_t count, std::string idprefix = "");
-  void append(int32_t *values, size_t count, std::string idprefix = "");
-  void append(uint32_t *values, size_t count, std::string idprefix = "");
-  void append(uint8_t *values, size_t count, std::string idprefix = "");
+  // Discrete parameter space values
+  void setSpaceValues(void *values, size_t count, std::string idprefix = "");
+  void setSpaceValues(std::vector<float> values, std::string idprefix = "");
+  void appendSpaceValues(void *values, size_t count, std::string idprefix = "");
+
+  template <typename SpaceDataType>
+  std::vector<SpaceDataType> getSpaceValues() {
+    return mSpaceValues.getValues<SpaceDataType>();
+  }
+
+  void setSpaceIds(std::vector<std::string> ids);
+
+  std::vector<std::string> getSpaceIds();
+
+  al::DiscreteParameterValues::Datatype getSpaceDataType() {
+    return mSpaceValues.getDataType();
+  }
+
+  size_t getIndexForValue(float value);
 
   // Set limits from internal data
   void conform();
 
   void addConnectedParameterSpace(ParameterSpaceDimension *paramSpace);
-
-  // Protect parameter space (to avoid access during modification)
-  // TODO all readers above need to use this lock
-  void lock() { mLock.lock(); }
-  void unlock() { mLock.unlock(); }
-
-  // TODO these should be made private and access functions added that call
-  // onDimensionMetadataChange()
-  Datatype datatype{FLOAT};
 
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
@@ -149,18 +124,17 @@ public:
 
 private:
   // Data
-  std::vector<float> mValues;
-  std::vector<std::string> mIds;
+  //  std::vector<float> mValues;
+  //  std::vector<std::string> mIds;
+
+  // Used to store discretization values of parameters
+  al::DiscreteParameterValues mSpaceValues;
 
   RepresentationType mRepresentationType{VALUE};
   bool mFilesystemDimension{false};
 
-  std::mutex mLock;
-
   // Current state
-  al::Parameter mParameterValue;
-
-  std::vector<ParameterSpaceDimension *> mConnectedSpaces;
+  std::unique_ptr<al::ParameterMeta> mParameterValue;
 };
 
 } // namespace tinc

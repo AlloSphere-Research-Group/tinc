@@ -39,20 +39,17 @@ struct MyApp : public al::App {
   void prepareParameterSpace() {
     auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
     uint8_t values[] = {0, 2, 4, 6, 8};
-    dirDim->append(values, 5, "datapool_directory_");
+    dirDim->appendSpaceValues(values, 5, "datapool_directory_");
     dirDim->conform();
 
     auto internalValuesDim = ps.newDimension("internalValuesDim");
     float internalValues[] = {-0.3f, -0.2f, -0.1f, 0.0f, 0.1f, 0.2f, 0.3f};
-    internalValuesDim->append(internalValues, 7);
+    internalValuesDim->appendSpaceValues(internalValues, 7);
     internalValuesDim->conform();
-
-    ps.generateRelativeRunPath = [](std::map<std::string, size_t> indeces,
-                                    tinc::ParameterSpace *ps) {
-      std::string path = ps->getDimension("dirDim")->idAt(indeces["dirDim"]);
-      return path;
-    };
     internalValuesDim->setCurrentIndex(0);
+
+    // The running path for the parameter space is determined by 'dirDim'
+    ps.setCurrentPathTemplate("%%dirDim%%");
   }
 
   void prepareProcessor() {

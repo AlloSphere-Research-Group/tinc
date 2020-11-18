@@ -73,7 +73,6 @@ DataPool::createDataSlice(std::string field,
                   sliceDimension) == filesystemDims.end()) {
       // TODO should we perform a  copy of the parameter space to avoid race
       // conditions?
-      dim->lock();
       // sliceDimension is a dimension that affects filesystem paths.
       size_t dimCount = dim->size();
       values.reserve(dimCount);
@@ -92,17 +91,14 @@ DataPool::createDataSlice(std::string field,
           }
         }
       }
-
-      dim->unlock();
     } else { // We can slice the data from a single file
       values.resize(dim->size());
       std::map<std::string, size_t> currentIndeces;
       for (auto dimension : mParameterSpace->getDimensions()) {
         currentIndeces[dimension->getName()] = dimension->getCurrentIndex();
       }
-      auto directory =
-          al::File::conformPathToOS(mParameterSpace->generateRelativeRunPath(
-              currentIndeces, mParameterSpace));
+      auto directory = mParameterSpace->generateRelativeRunPath(
+          currentIndeces, mParameterSpace);
       for (auto file : mDataFilenames) {
         if (getFieldFromFile(field,
                              al::File::conformDirectory(directory) + file.first,
