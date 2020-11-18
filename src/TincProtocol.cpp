@@ -248,18 +248,6 @@ createConfigureParameterFloatMessage(al::Parameter *param) {
     msg.set_messagetype(MessageType::CONFIGURE);
     msg.set_objecttype(ObjectType::PARAMETER);
 
-    google::protobuf::Any *details = msg.details().New();
-    ConfigureParameter confMessage;
-    createParameterValueMessage(param, confMessage);
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-    messages.push_back(msg);
-  }
-  {
-    TincMessage msg;
-    msg.set_messagetype(MessageType::CONFIGURE);
-    msg.set_objecttype(ObjectType::PARAMETER);
-
     ConfigureParameter confMessage;
     confMessage.set_id(param->getFullAddress());
     confMessage.set_configurationkey(ParameterConfigureType::MIN);
@@ -295,6 +283,18 @@ createConfigureParameterFloatMessage(al::Parameter *param) {
 
     messages.push_back(msg);
   }
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::CONFIGURE);
+    msg.set_objecttype(ObjectType::PARAMETER);
+
+    google::protobuf::Any *details = msg.details().New();
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
+    messages.push_back(msg);
+  }
   return messages;
 }
 
@@ -320,18 +320,6 @@ createConfigureParameterStringMessage(al::ParameterString *param) {
 std::vector<TincMessage>
 createConfigureParameterIntMessage(al::ParameterInt *param) {
   std::vector<TincMessage> messages;
-  {
-    TincMessage msg;
-    msg.set_messagetype(MessageType::CONFIGURE);
-    msg.set_objecttype(ObjectType::PARAMETER);
-
-    google::protobuf::Any *details = msg.details().New();
-    ConfigureParameter confMessage;
-    createParameterValueMessage(param, confMessage);
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-    messages.push_back(msg);
-  }
   {
     TincMessage msg;
     msg.set_messagetype(MessageType::CONFIGURE);
@@ -370,6 +358,18 @@ createConfigureParameterIntMessage(al::ParameterInt *param) {
     detailsAny->PackFrom(confMessage);
     msg.set_allocated_details(detailsAny);
 
+    messages.push_back(msg);
+  }
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::CONFIGURE);
+    msg.set_objecttype(ObjectType::PARAMETER);
+
+    google::protobuf::Any *details = msg.details().New();
+    ConfigureParameter confMessage;
+    createParameterValueMessage(param, confMessage);
+    details->PackFrom(confMessage);
+    msg.set_allocated_details(details);
     messages.push_back(msg);
   }
   return messages;

@@ -117,6 +117,7 @@ TEST(TincProtocol, ParameterInt) {
   EXPECT_TRUE(tserver.start());
 
   al::ParameterInt p{"param", "group", 3, -10, 11};
+  p.setNoCalls(-3);
   tserver << p;
 
   TincClient tclient;
@@ -133,7 +134,7 @@ TEST(TincProtocol, ParameterInt) {
   EXPECT_EQ(paramInt->min(), -10);
   EXPECT_EQ(paramInt->max(), 11);
   EXPECT_EQ(paramInt->getDefault(), 3);
-  EXPECT_EQ(paramInt->get(), 3);
+  EXPECT_EQ(paramInt->get(), -3);
 
   // change value on the serverside
   p.set(4);
