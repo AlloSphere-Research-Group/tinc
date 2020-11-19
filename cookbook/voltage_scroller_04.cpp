@@ -67,7 +67,7 @@ struct MyApp : public App {
     eci1_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
 
     eciIds.clear();
-    eci2_dim->setSpaceValues(eci1_values);
+    eci2_dim->setSpaceValues(eci2_values);
     for (const auto &val : eci2_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
@@ -76,7 +76,7 @@ struct MyApp : public App {
     eci2_dim->conformSpace();
 
     eciIds.clear();
-    eci3_dim->setSpaceValues(eci1_values);
+    eci3_dim->setSpaceValues(eci3_values);
     for (const auto &val : eci3_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
@@ -85,7 +85,7 @@ struct MyApp : public App {
     eci3_dim->conformSpace();
 
     eciIds.clear();
-    eci4_dim->setSpaceValues(eci1_values);
+    eci4_dim->setSpaceValues(eci4_values);
     for (const auto &val : eci4_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
