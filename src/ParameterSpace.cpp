@@ -35,16 +35,8 @@ ParameterSpace::getDimension(std::string name) {
 
 std::shared_ptr<ParameterSpaceDimension>
 ParameterSpace::newDimension(std::string name,
-                             ParameterSpaceDimension::RepresentationType type) {
-  al::DiscreteParameterValues::Datatype datatype;
-  if (type == ParameterSpaceDimension::ID) {
-    datatype = al::DiscreteParameterValues::INT32;
-  } else if (type == ParameterSpaceDimension::VALUE) {
-    datatype = al::DiscreteParameterValues::FLOAT;
-  } else if (type == ParameterSpaceDimension::INDEX) {
-    datatype = al::DiscreteParameterValues::INT32;
-  }
-
+                             ParameterSpaceDimension::RepresentationType type,
+                             al::DiscreteParameterValues::Datatype datatype) {
   auto newDim = std::make_shared<ParameterSpaceDimension>(name, "", datatype);
 
   newDim->mRepresentationType = type;
@@ -476,7 +468,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (!readNetCDFValues(state_grp_ids[i], pdim)) {
         return false;
       }
-      pdim->conform();
+      pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::VALUE;
       newDimensions.push_back(pdim);
       //    std::cout << "internal state " << i << ":" << groupName
@@ -544,7 +536,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
       pdim->setSpaceIds(newIds);
 
-      pdim->conform();
+      pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
       newDimensions.push_back(pdim);
 
@@ -574,7 +566,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
 
-      pdim->conform();
+      pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::INDEX;
       newDimensions.push_back(pdim);
     }

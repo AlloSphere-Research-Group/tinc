@@ -112,8 +112,8 @@ public:
 
   size_t getIndexForValue(float value);
 
-  // Set limits from internal data
-  void conform();
+  // Set limits from internal data and sort
+  void conformSpace();
 
   void addConnectedParameterSpace(ParameterSpaceDimension *paramSpace);
 

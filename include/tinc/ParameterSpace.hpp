@@ -28,7 +28,9 @@ public:
   std::shared_ptr<ParameterSpaceDimension>
   newDimension(std::string name,
                ParameterSpaceDimension::RepresentationType type =
-                   ParameterSpaceDimension::VALUE);
+                   ParameterSpaceDimension::VALUE,
+               al::DiscreteParameterValues::Datatype datatype =
+                   al::DiscreteParameterValues::FLOAT);
 
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 

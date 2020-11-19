@@ -29,7 +29,7 @@ class MyApp : public al::App {
     inner_param->setSpaceRepresentationType(
         tinc::ParameterSpaceDimension::VALUE);
 
-    inner_param->conform();
+    inner_param->conformSpace();
 
     ps.registerDimension(dimension1);
     ps.registerDimension(dimension2);

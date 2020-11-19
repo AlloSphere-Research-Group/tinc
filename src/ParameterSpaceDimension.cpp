@@ -145,7 +145,8 @@ size_t ParameterSpaceDimension::getIndexForValue(float value) {
 
 ParameterSpaceDimension::ParameterSpaceDimension(
     std::string name, std::string group,
-    ParameterSpaceDimension::Datatype dataType) {
+    ParameterSpaceDimension::Datatype dataType)
+    : mSpaceValues(dataType) {
   // FIXME clarify how we will handle all data types
   switch (dataType) {
   case Datatype::FLOAT:
@@ -317,51 +318,82 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
   return mSpaceValues.getIds();
 }
 
-void ParameterSpaceDimension::conform() {
-  // FIXME implement
+void ParameterSpaceDimension::conformSpace() {
+  switch (mSpaceValues.getDataType()) {
+  case al::DiscreteParameterValues::FLOAT: {
+    auto &param = parameter<al::Parameter>();
+    float max = std::numeric_limits<float>::min();
+    float min = std::numeric_limits<float>::max();
+    for (auto value : getSpaceValues<float>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max);
+    param.min(min);
+    param.setNoCalls(at(0));
+  } break;
+  case al::DiscreteParameterValues::INT8: {
+    auto &param = parameter<al::ParameterInt>();
+    float max = std::numeric_limits<int8_t>::min();
+    float min = std::numeric_limits<int8_t>::max();
+    for (auto value : getSpaceValues<int8_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.setNoCalls(at(0));
+  } break;
+  case al::DiscreteParameterValues::INT32: {
+    auto &param = parameter<al::ParameterInt>();
+    float max = std::numeric_limits<int32_t>::min();
+    float min = std::numeric_limits<int32_t>::max();
+    for (auto value : getSpaceValues<int32_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.setNoCalls(at(0));
+  } break;
+  case al::DiscreteParameterValues::UINT32: {
+    auto &param = parameter<al::ParameterInt>();
+    float max = std::numeric_limits<uint32_t>::min();
+    float min = std::numeric_limits<uint32_t>::max();
+    for (auto value : getSpaceValues<int32_t>()) {
 
-  //  double valueDbl;
-  //  switch (mSpaceValues.getDataType()) {
-  //  case FLOAT: {
-  //    valueDbl = *(static_cast<float *>(value));
-  //  } break;
-  //  case DOUBLE: {
-  //    valueDbl = *(static_cast<double *>(value));
-  //  } break;
-  //  case INT8: {
-  //    valueDbl = *(static_cast<int8_t *>(value));
-  //  } break;
-  //  case UINT8: {
-  //    valueDbl = *(static_cast<uint8_t *>(value));
-  //  } break;
-  //  case INT32: {
-  //    valueDbl = *(static_cast<int32_t *>(value));
-  //  } break;
-  //  case UINT32: {
-  //    valueDbl = *(static_cast<uint32_t *>(value));
-  //  } break;
-  //  case INT64: {
-  //    valueDbl = *(static_cast<int64_t *>(value));
-  //  } break;
-  //  case UINT64: {
-  //    valueDbl = *(static_cast<uint64_t *>(value));
-  //  } break;
-  //  }
-  //  return valueDbl;
-  //}
+      if (value > param.max()) {
+        param.max(value);
+      }
+      if (value < param.min()) {
+        param.min(value);
+      }
+    }
+    param.setNoCalls(at(0));
+  } break;
+    // FIXME complete support for all types
 
-  // mParameterValue.max(std::numeric_limits<float>::min());
-  // mParameterValue.min(std::numeric_limits<float>::max());
-  // for (auto value : mValues) {
-
-  //  if (value > mParameterValue.max()) {
-  //    mParameterValue.max(value);
-  //  }
-  //  if (value < mParameterValue.min()) {
-  //    mParameterValue.min(value);
-  //  }
-  //}
-  // mParameterValue.setNoCalls(at(0));
+    //  case al::DiscreteParameterValues::DOUBLE: {
+    //    valueDbl = *(static_cast<double *>(value));
+    //  } break;
+    //  case al::DiscreteParameterValues::UINT8: {
+    //    valueDbl = *(static_cast<uint8_t *>(value));
+    //  } break;
+    //  case al::DiscreteParameterValues::INT64: {
+    //    valueDbl = *(static_cast<int64_t *>(value));
+    //  } break;
+    //  case al::DiscreteParameterValues::UINT64: {
+    //    valueDbl = *(static_cast<uint64_t *>(value));
+    //  } break;
+  }
 }
 
 std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {

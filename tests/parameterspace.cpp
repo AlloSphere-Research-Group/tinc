@@ -3,6 +3,22 @@
 #include "tinc/ParameterSpace.hpp"
 using namespace tinc;
 
+TEST(ParameterSpace, DimensionValues) {
+  ParameterSpace ps;
+  auto dim1 = ps.newDimension("dim1");
+  std::vector<float> values = {-0.25, -0.125, 0.0, 0.125, 0.25};
+  dim1->setSpaceValues(values);
+
+  EXPECT_EQ(dim1->size(), 5);
+  auto setValues = dim1->getSpaceValues<float>();
+  for (size_t i = 0; i < 5; i++) {
+
+    EXPECT_EQ(setValues[i], values[i]);
+  }
+
+  // TODO verify dimension space setting for all types.
+}
+
 TEST(ParameterSpace, FilenameTemplate) {
   ParameterSpace ps;
   auto dim1 = ps.newDimension("dim1");

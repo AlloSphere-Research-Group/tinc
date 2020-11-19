@@ -36,7 +36,7 @@ struct MyApp : public App {
     }
     dimension1->setSpaceValues(values);
     dimension1->setSpaceIds(ids);
-    dimension1->conform();
+    dimension1->conformSpace();
     dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
     values.clear();
@@ -44,7 +44,7 @@ struct MyApp : public App {
       values.push_back(i / 220.0);
     }
     dimension2->setSpaceValues(values);
-    dimension2->conform();
+    dimension2->conformSpace();
     dimension2->setSpaceRepresentationType(
         tinc::ParameterSpaceDimension::INDEX);
 
@@ -53,7 +53,7 @@ struct MyApp : public App {
       values.push_back(10 + i);
     }
     inner_param->setSpaceValues(values);
-    inner_param->conform();
+    inner_param->conformSpace();
     inner_param->setSpaceRepresentationType(
         tinc::ParameterSpaceDimension::VALUE);
 

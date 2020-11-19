@@ -24,12 +24,12 @@ struct MyApp : public al::App {
     auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
     uint8_t values[] = {0, 2, 4, 6, 8};
     dirDim->appendSpaceValues(values, 5, "datapool_directory_");
-    dirDim->conform();
+    dirDim->conformSpace();
 
     auto internalValuesDim = ps.newDimension("internalValuesDim");
     float internalValues[] = {-0.3f, -0.2f, -0.1f, 0.0f, 0.1f, 0.2f, 0.3f};
     internalValuesDim->setSpaceValues(internalValues, 7);
-    internalValuesDim->conform();
+    internalValuesDim->conformSpace();
 
     // The running path for the parameter space is determined by 'dirDim'
     ps.setCurrentPathTemplate("%%dirDim%%");

@@ -57,43 +57,47 @@ struct MyApp : public App {
     auto eci4_dim = std::make_shared<tinc::ParameterSpaceDimension>("eci4");
 
     // Create large parameter space
-    std::vector<double> eci1_values = {-0.25, -0.125, 0.0, 0.125, 0.25};
-    std::vector<double> eci2_values = {0.0, 0.5, 1.0, 1.5, 2.5};
-    std::vector<double> eci3_values = {0.0, 0.5, 1.0, 1.5};
-    std::vector<double> eci4_values = {0.0, 0.25, 0.5};
+    std::vector<float> eci1_values = {-0.25, -0.125, 0.0, 0.125, 0.25};
+    std::vector<float> eci2_values = {0.0, 0.5, 1.0, 1.5, 2.5};
+    std::vector<float> eci3_values = {0.0, 0.5, 1.0, 1.5};
+    std::vector<float> eci4_values = {0.0, 0.25, 0.5};
 
     std::vector<std::string> eciIds;
+    eci1_dim->setSpaceValues(eci1_values);
     for (const auto &val : eci1_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
     eci1_dim->setSpaceIds(eciIds);
 
-    eci1_dim->conform();
+    eci1_dim->conformSpace();
     eci1_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
 
     eciIds.clear();
+    eci2_dim->setSpaceValues(eci1_values);
     for (const auto &val : eci2_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
     eci2_dim->setSpaceIds(eciIds);
     eci2_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
-    eci2_dim->conform();
+    eci2_dim->conformSpace();
 
     eciIds.clear();
+    eci3_dim->setSpaceValues(eci1_values);
     for (const auto &val : eci3_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
     eci3_dim->setSpaceIds(eciIds);
     eci3_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
-    eci3_dim->conform();
+    eci3_dim->conformSpace();
 
     eciIds.clear();
+    eci4_dim->setSpaceValues(eci1_values);
     for (const auto &val : eci4_values) {
       eciIds.push_back("_" + clean_double_to_string(val));
     }
     eci4_dim->setSpaceIds(eciIds);
     eci4_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
-    eci4_dim->conform();
+    eci4_dim->conformSpace();
 
     ps.registerDimension(eci1_dim);
     ps.registerDimension(eci2_dim);
