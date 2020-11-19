@@ -31,13 +31,17 @@ class ParameterSpaceDimension {
   friend class ParameterSpace;
 
 public:
-  // TODO implement more data types (in particular DOUBLE, INT64, STRING)
-
   using Datatype = al::DiscreteParameterValues::Datatype;
   typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } RepresentationType;
 
   ParameterSpaceDimension(std::string name, std::string group = "",
                           Datatype dataType = Datatype::FLOAT);
+
+  //
+  ParameterSpaceDimension(al::ParameterMeta *param);
+
+  ~ParameterSpaceDimension();
+
   std::string getName();
   std::string getGroup();
   std::string getFullAddress();
@@ -75,10 +79,10 @@ public:
   // Register notifications and create GUIs/ network synchronization
   // Through this instance.
   template <typename ParameterType> ParameterType &parameter() {
-    return *static_cast<ParameterType *>(mParameterValue.get());
+    return *static_cast<ParameterType *>(mParameterValue);
   }
 
-  al::ParameterMeta *parameterMeta() { return mParameterValue.get(); }
+  al::ParameterMeta *parameterMeta() { return mParameterValue; }
 
   // Move current position in parameter space
   void stepIncrement();
@@ -93,16 +97,19 @@ public:
   std::string idAt(size_t index);
 
   // Discrete parameter space values
-  void setSpaceValues(void *values, size_t count, std::string idprefix = "");
-  void setSpaceValues(std::vector<float> values, std::string idprefix = "");
-  void appendSpaceValues(void *values, size_t count, std::string idprefix = "");
+  void setSpaceValues(void *values, size_t count, std::string idprefix = "",
+                      bool propagate = true);
+  void setSpaceValues(std::vector<float> values, std::string idprefix = "",
+                      bool propagate = true);
+  void appendSpaceValues(void *values, size_t count, std::string idprefix = "",
+                         bool propagate = true);
 
   template <typename SpaceDataType>
   std::vector<SpaceDataType> getSpaceValues() {
     return mSpaceValues.getValues<SpaceDataType>();
   }
 
-  void setSpaceIds(std::vector<std::string> ids);
+  void setSpaceIds(std::vector<std::string> ids, bool propagate = true);
 
   std::vector<std::string> getSpaceIds();
 
@@ -134,7 +141,8 @@ private:
   bool mFilesystemDimension{false};
 
   // Current state
-  std::unique_ptr<al::ParameterMeta> mParameterValue;
+  al::ParameterMeta *mParameterValue{nullptr};
+  bool mParamInternal;
 };
 
 } // namespace tinc

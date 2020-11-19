@@ -45,10 +45,12 @@ public:
   void requestDataPools(al::Socket *dst);
 
   // TODO what if same name but different group?
-  al::ParameterMeta *getParameter(std::string name) {
-    for (auto *param : mParameters) {
-      if (param->getName() == name) {
-        return param;
+  al::ParameterMeta *getParameter(std::string name, std::string group = "") {
+    for (auto *dim : mParameterSpaceDimensions) {
+      if (dim->getName() == name && dim->getGroup() == group) {
+        return dim->parameterMeta();
+      } else if (group == "" && dim->getFullAddress() == name) {
+        return dim->parameterMeta();
       }
     }
     return nullptr;
@@ -62,6 +64,8 @@ public:
   void setVerbose(bool v) { mVerbose = v; }
 
 protected:
+  void connectParameterCallbacks(al::ParameterMeta &param);
+  void connectDimensionCallbacks(ParameterSpaceDimension &psd);
   // Incoming request message
   void readRequestMessage(int objectType, std::string objectId,
                           al::Socket *src);
@@ -80,8 +84,8 @@ protected:
   bool processRegisterDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing register message
-  void sendRegisterMessage(al::ParameterMeta *param, al::Socket *dst,
-                           bool isResponse = false);
+  //  void sendRegisterMessage(al::ParameterMeta *param, al::Socket *dst,
+  //                           bool isResponse = false);
   void sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
                            bool isResponse = false);
   void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
@@ -102,8 +106,8 @@ protected:
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing configure message (value + details)
-  void sendConfigureMessage(al::ParameterMeta *param, al::Socket *dst,
-                            bool isResponse = false);
+  //  void sendConfigureMessage(al::ParameterMeta *param, al::Socket *dst,
+  //                            bool isResponse = false);
   void sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                             bool isResponse = false);
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
@@ -153,13 +157,16 @@ protected:
     return true;
   }
 
-  std::vector<al::ParameterMeta *> mParameters;
+  //  std::vector<al::ParameterMeta *> mParameters;
   std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
   std::vector<Processor *> mProcessors;
   std::vector<AbstractDiskBuffer *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
   std::vector<al::ParameterServer *> mParameterServers;
+
+  // Dimensions that were allocated by this class to wrap a parameter
+  std::vector<ParameterSpaceDimension *> mParameterWrappers;
 
   bool mVerbose{false};
 };

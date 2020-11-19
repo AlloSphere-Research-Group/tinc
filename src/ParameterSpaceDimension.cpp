@@ -6,6 +6,48 @@
 
 using namespace tinc;
 
+ParameterSpaceDimension::ParameterSpaceDimension(
+    std::string name, std::string group,
+    ParameterSpaceDimension::Datatype dataType)
+    : mSpaceValues(dataType) {
+  // FIXME define how we will handle all data types
+  mParamInternal = true; // FIXME crash if unsupported data type on destrcutor
+  switch (dataType) {
+  case Datatype::FLOAT:
+    mParameterValue = new al::Parameter(name, group);
+    break;
+  case Datatype::UINT8:
+  case Datatype::INT32:
+  case Datatype::UINT32:
+    mParameterValue = new al::ParameterInt(name, group);
+    break;
+  }
+}
+
+ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
+  if (dynamic_cast<al::Parameter *>(param)) {
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  }
+  if (dynamic_cast<al::ParameterBool *>(param)) {
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  }
+  if (dynamic_cast<al::ParameterInt *>(param)) {
+    return ParameterSpaceDimension::Datatype::INT32;
+  }
+  if (dynamic_cast<al::ParameterMenu *>(param)) {
+    return ParameterSpaceDimension::Datatype::INT32;
+  }
+  // FIXME complete implementation
+  assert(0 == 1);
+  return ParameterSpaceDimension::Datatype::FLOAT;
+}
+
+ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param)
+    : mSpaceValues(dataTypeForParam(param)) {
+  mParamInternal = false;
+  mParameterValue = param;
+}
+
 size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
 
 void ParameterSpaceDimension::clear() {
@@ -143,20 +185,9 @@ size_t ParameterSpaceDimension::getIndexForValue(float value) {
   return mSpaceValues.getIndexForValue(value);
 }
 
-ParameterSpaceDimension::ParameterSpaceDimension(
-    std::string name, std::string group,
-    ParameterSpaceDimension::Datatype dataType)
-    : mSpaceValues(dataType) {
-  // FIXME clarify how we will handle all data types
-  switch (dataType) {
-  case Datatype::FLOAT:
-    mParameterValue = std::make_unique<al::Parameter>(name, group);
-    break;
-  case Datatype::UINT8:
-  case Datatype::INT32:
-  case Datatype::UINT32:
-    mParameterValue = std::make_unique<al::ParameterInt>(name, group);
-    break;
+ParameterSpaceDimension::~ParameterSpaceDimension() {
+  if (mParamInternal) {
+    delete mParameterValue;
   }
 }
 
@@ -288,30 +319,43 @@ void ParameterSpaceDimension::stepDecrease() {
 //}
 
 void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
-                                             std::string idprefix) {
+                                             std::string idprefix,
+                                             bool propagate) {
   // TODO add safety check for types and pointer sizes
   mSpaceValues.clear();
   mSpaceValues.append(values, count, idprefix);
-  onDimensionMetadataChange(this);
+  if (propagate) {
+    onDimensionMetadataChange(this);
+  }
 }
 
 void ParameterSpaceDimension::setSpaceValues(std::vector<float> values,
-                                             std::string idprefix) {
+                                             std::string idprefix,
+                                             bool propagate) {
   mSpaceValues.clear();
   // TODO add safety check for types and pointer sizes
   mSpaceValues.append(values.data(), values.size(), idprefix);
-  onDimensionMetadataChange(this);
+  if (propagate) {
+    onDimensionMetadataChange(this);
+  }
 }
 
 void ParameterSpaceDimension::appendSpaceValues(void *values, size_t count,
-                                                std::string idprefix) {
+                                                std::string idprefix,
+                                                bool propagate) {
   // TODO add safety check for types and pointer sizes
   mSpaceValues.append(values, count, idprefix);
-  onDimensionMetadataChange(this);
+  if (propagate) {
+    onDimensionMetadataChange(this);
+  }
 }
 
-void ParameterSpaceDimension::setSpaceIds(std::vector<std::string> ids) {
+void ParameterSpaceDimension::setSpaceIds(std::vector<std::string> ids,
+                                          bool propagate) {
   mSpaceValues.setIds(ids);
+  if (propagate) {
+    onDimensionMetadataChange(this);
+  }
 }
 
 std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
