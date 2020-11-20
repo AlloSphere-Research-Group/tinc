@@ -2135,9 +2135,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
 
         msgDetails->PackFrom(command);
         msg.set_allocated_details(msgDetails);
-
-        // FIXME switch to sendTincMessage
-        sendProtobufMessage(&msg, src);
+        sendTincMessage(&msg, src, true);
         return true;
       }
     }
@@ -2173,8 +2171,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         msgDetails->PackFrom(command);
         msg.set_allocated_details(msgDetails);
 
-        // FIXME switch to sendTincMessage
-        sendProtobufMessage(&msg, src);
+        sendTincMessage(&msg, src, true);
         return true;
       }
     }
