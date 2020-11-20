@@ -27,15 +27,28 @@ ParameterSpaceDimension::ParameterSpaceDimension(
 ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
   if (dynamic_cast<al::Parameter *>(param)) {
     return ParameterSpaceDimension::Datatype::FLOAT;
-  }
-  if (dynamic_cast<al::ParameterBool *>(param)) {
+  } else if (dynamic_cast<al::ParameterBool *>(param)) {
     return ParameterSpaceDimension::Datatype::FLOAT;
-  }
-  if (dynamic_cast<al::ParameterInt *>(param)) {
+  } else if (dynamic_cast<al::ParameterInt *>(param)) {
     return ParameterSpaceDimension::Datatype::INT32;
-  }
-  if (dynamic_cast<al::ParameterMenu *>(param)) {
+  } else if (dynamic_cast<al::ParameterMenu *>(param)) {
     return ParameterSpaceDimension::Datatype::INT32;
+  } else if (dynamic_cast<al::ParameterString *>(param)) {
+    return ParameterSpaceDimension::Datatype::STRING;
+  } else if (dynamic_cast<al::ParameterVec3 *>(param)) {
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  } else if (dynamic_cast<al::ParameterVec4 *>(param)) {
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  } else if (dynamic_cast<al::ParameterColor *>(param)) {
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  } else if (dynamic_cast<al::ParameterPose *>(param)) {
+    return ParameterSpaceDimension::Datatype::DOUBLE;
+  } else if (dynamic_cast<al::ParameterMenu *>(param)) {
+    return ParameterSpaceDimension::Datatype::INT32;
+  } else if (dynamic_cast<al::ParameterChoice *>(param)) {
+    return ParameterSpaceDimension::Datatype::UINT64;
+  } else if (dynamic_cast<al::Trigger *>(param)) {
+    return ParameterSpaceDimension::Datatype::BOOL;
   }
   // FIXME complete implementation
   assert(0 == 1);
@@ -392,12 +405,14 @@ void ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
+    param.max(max);
+    param.min(min);
     param.setNoCalls(at(0));
   } break;
   case al::DiscreteParameterValues::INT32: {
     auto &param = parameter<al::ParameterInt>();
-    float max = std::numeric_limits<int32_t>::min();
-    float min = std::numeric_limits<int32_t>::max();
+    int32_t max = std::numeric_limits<int32_t>::min();
+    int32_t min = std::numeric_limits<int32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {
       if (value > max) {
         max = value;
@@ -406,12 +421,14 @@ void ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
+    param.max(max);
+    param.min(min);
     param.setNoCalls(at(0));
   } break;
   case al::DiscreteParameterValues::UINT32: {
     auto &param = parameter<al::ParameterInt>();
-    float max = std::numeric_limits<uint32_t>::min();
-    float min = std::numeric_limits<uint32_t>::max();
+    uint32_t max = std::numeric_limits<uint32_t>::min();
+    uint32_t min = std::numeric_limits<uint32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {
 
       if (value > param.max()) {
@@ -421,6 +438,8 @@ void ParameterSpaceDimension::conformSpace() {
         param.min(value);
       }
     }
+    param.max(max);
+    param.min(min);
     param.setNoCalls(at(0));
   } break;
     // FIXME complete support for all types

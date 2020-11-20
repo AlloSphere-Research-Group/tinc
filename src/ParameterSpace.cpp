@@ -123,8 +123,6 @@ void ParameterSpace::registerDimension(
     std::cerr << "Support for parameter type not implemented in dimension "
               << __FILE__ << ":" << __LINE__ << std::endl;
   }
-  mDimensions.push_back(dimension);
-  onDimensionRegister(dimension.get(), this);
 }
 
 void ParameterSpace::removeDimension(std::string dimensionName) {
@@ -421,6 +419,33 @@ bool readNetCDFValues(int grpid,
   return true;
 }
 
+#ifdef TINC_HAS_HDF5
+ParameterSpaceDimension::Datatype nctypeToTincType(nc_type nctype) {
+  // TODO complete support for all netcdf types
+  switch (nctype) {
+  case NC_STRING:
+    return ParameterSpaceDimension::Datatype::STRING;
+  case NC_FLOAT:
+    return ParameterSpaceDimension::Datatype::FLOAT;
+  case NC_DOUBLE:
+    return ParameterSpaceDimension::Datatype::DOUBLE;
+  case NC_BYTE:
+    return ParameterSpaceDimension::Datatype::INT8;
+  case NC_UBYTE:
+    return ParameterSpaceDimension::Datatype::UINT8;
+  case NC_INT:
+    return ParameterSpaceDimension::Datatype::INT32;
+  case NC_UINT:
+    return ParameterSpaceDimension::Datatype::UINT32;
+  case NC_INT64:
+    return ParameterSpaceDimension::Datatype::INT64;
+  case NC_UINT64:
+    return ParameterSpaceDimension::Datatype::UINT64;
+  }
+  return ParameterSpaceDimension::Datatype::FLOAT;
+}
+#endif
+
 bool ParameterSpace::readDimensionsInNetCDFFile(
     std::string filename,
     std::vector<std::shared_ptr<ParameterSpaceDimension>> &newDimensions) {
@@ -462,15 +487,32 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (nc_inq_grpname(state_grp_ids[i], groupName)) {
         return false;
       }
-      std::shared_ptr<ParameterSpaceDimension> pdim =
-          std::make_shared<ParameterSpaceDimension>(groupName);
+      std::shared_ptr<ParameterSpaceDimension> pdim;
+      for (auto dim : getDimensions()) {
+        if (dim->getName() == groupName && dim->getGroup().size() == 0) {
+          pdim = dim;
+          break;
+        }
+      }
+      if (!pdim) {
+        int varid;
+        if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
+          return false;
+        }
+        nc_type nctypeid;
+        if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
+          return false;
+        }
 
+        pdim = std::make_shared<ParameterSpaceDimension>(
+            groupName, "", nctypeToTincType(nctypeid));
+        newDimensions.push_back(pdim);
+      }
       if (!readNetCDFValues(state_grp_ids[i], pdim)) {
         return false;
       }
       pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::VALUE;
-      newDimensions.push_back(pdim);
       //    std::cout << "internal state " << i << ":" << groupName
       //              << " length: " << lenp << std::endl;
     }
@@ -526,10 +568,27 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
                nc_get_var_string(parameters_ids[i], varid, idData.data()))) {
         return false;
       }
+      std::shared_ptr<ParameterSpaceDimension> pdim;
+      for (auto dim : getDimensions()) {
+        if (dim->getName() == parameterName && dim->getGroup().size() == 0) {
+          pdim = dim;
+          break;
+        }
+      }
+      if (!pdim) {
+        int varid;
+        if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
+          return false;
+        }
+        nc_type nctypeid;
+        if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
+          return false;
+        }
+        pdim = std::make_shared<ParameterSpaceDimension>(parameterName);
+        newDimensions.push_back(pdim);
+      }
 
-      std::shared_ptr<ParameterSpaceDimension> pdim =
-          std::make_shared<ParameterSpaceDimension>(parameterName);
-      pdim->appendSpaceValues(data.data(), data.size());
+      pdim->setSpaceValues(data.data(), data.size());
       std::vector<std::string> newIds;
       for (size_t i = 0; i < lenp; i++) {
         newIds.push_back(idData[i]);
@@ -538,7 +597,6 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
       pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
-      newDimensions.push_back(pdim);
 
       //      std::cout << "mapped parameter " << i << ":" << parameterName
       //                << " length: " << lenp << std::endl;
@@ -559,8 +617,17 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (nc_inq_grpname(conditions_ids[i], conditionName)) {
         return false;
       }
-      std::shared_ptr<ParameterSpaceDimension> pdim =
-          std::make_shared<ParameterSpaceDimension>(conditionName);
+      std::shared_ptr<ParameterSpaceDimension> pdim;
+      for (auto dim : getDimensions()) {
+        if (dim->getName() == conditionName && dim->getGroup().size() == 0) {
+          pdim = dim;
+          break;
+        }
+      }
+      if (!pdim) {
+        pdim = std::make_shared<ParameterSpaceDimension>(conditionName);
+        newDimensions.push_back(pdim);
+      }
 
       if (!readNetCDFValues(conditions_ids[i], pdim)) {
         return false;
@@ -568,7 +635,6 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
       pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::INDEX;
-      newDimensions.push_back(pdim);
     }
   } else {
     std::cerr << "Error finding group 'index_dimensions' in " << filename

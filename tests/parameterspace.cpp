@@ -28,13 +28,13 @@ TEST(ParameterSpace, FilenameTemplate) {
   float values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
   dim2->setSpaceValues(values, 5, "xx");
 
-  float dim2Values[6];
+  float dim3Values[6];
   std::vector<std::string> ids;
   for (int i = 0; i < 6; i++) {
-    dim2Values[i] = i * 0.01;
+    dim3Values[i] = i * 0.01;
     ids.push_back("id" + std::to_string(i));
   }
-  dim3->setSpaceValues(dim2Values, 6);
+  dim3->setSpaceValues(dim3Values, 6);
   dim3->setSpaceIds(ids);
 
   dim1->setCurrentValue(0.5);

@@ -45,6 +45,7 @@ TEST(TincProtocol, ParameterBool) {
   al::ParameterBool p{"param", "group", true};
   tserver << p;
 
+  p.set(1.0);
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
@@ -52,12 +53,12 @@ TEST(TincProtocol, ParameterBool) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramBool = static_cast<al::ParameterBool *>(param);
-  EXPECT_EQ(paramBool->getDefault(), true);
-  EXPECT_EQ(paramBool->get(), true);
+  EXPECT_EQ(paramBool->getDefault(), 0.0);
+  EXPECT_EQ(paramBool->get(), 1.0);
 
   // change value on the serverside
   p.set(false);
@@ -89,7 +90,7 @@ TEST(TincProtocol, ParameterString) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramString = static_cast<al::ParameterString *>(param);
@@ -127,7 +128,7 @@ TEST(TincProtocol, ParameterInt) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramInt = static_cast<al::ParameterInt *>(param);
@@ -166,7 +167,7 @@ TEST(TincProtocol, ParameterVec3) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramVec3 = static_cast<al::ParameterVec3 *>(param);
@@ -203,7 +204,7 @@ TEST(TincProtocol, ParameterVec4) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramVec4 = static_cast<al::ParameterVec4 *>(param);
@@ -240,7 +241,7 @@ TEST(TincProtocol, ParameterColor) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramColor = static_cast<al::ParameterColor *>(param);
@@ -281,7 +282,7 @@ TEST(TincProtocol, ParameterPose) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramPose = static_cast<al::ParameterPose *>(param);
@@ -322,7 +323,7 @@ TEST(TincProtocol, ParameterMenu) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramMenu = static_cast<al::ParameterMenu *>(param);
@@ -363,7 +364,7 @@ TEST(TincProtocol, ParameterChoice) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramChoice = static_cast<al::ParameterChoice *>(param);
@@ -401,7 +402,7 @@ TEST(TincProtocol, ParameterTrigger) {
   tclient.requestParameters();
   al::al_sleep(0.1); // wait for parameters to get sent
 
-  auto *param = tclient.getParameter("param");
+  auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramTrigger = static_cast<al::Trigger *>(param);

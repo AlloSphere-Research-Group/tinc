@@ -23,31 +23,23 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
   RegisterParameter details;
   details.set_id(param->getName());
   details.set_group(param->getGroup());
-  if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+  if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     details.set_datatype(PARAMETER_FLOAT);
     details.defaultvalue().New()->set_valuefloat(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) ==
-             0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+  } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     details.set_datatype(PARAMETER_BOOL);
     auto *def = details.mutable_defaultvalue();
     def->set_valuefloat(p->getDefault());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { //
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+  } else if (al::ParameterString *p =
+                 dynamic_cast<al::ParameterString *>(param)) {
     details.set_datatype(PARAMETER_STRING);
     auto *def = details.mutable_defaultvalue();
     def->set_valuestring(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+  } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
     details.set_datatype(PARAMETER_INT32);
     auto *def = details.mutable_defaultvalue();
     def->set_valueint32(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) {
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+  } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     details.set_datatype(PARAMETER_VEC3F);
     al::Vec3f defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
@@ -57,9 +49,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuefloat(defaultValue[1]);
     val = def->add_valuelist();
     val->set_valuefloat(defaultValue[2]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) {
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+  } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
     details.set_datatype(PARAMETER_VEC4F);
     al::Vec4f defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
@@ -71,9 +61,8 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuefloat(defaultValue[2]);
     val = def->add_valuelist();
     val->set_valuefloat(defaultValue[3]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) {
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+  } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(param)) {
     details.set_datatype(PARAMETER_COLORF);
     al::Color defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
@@ -85,9 +74,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuefloat(defaultValue.b);
     val = def->add_valuelist();
     val->set_valuefloat(defaultValue.a);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) {
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+  } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
     details.set_datatype(PARAMETER_POSED);
     al::Pose defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
@@ -105,20 +92,16 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuedouble(defaultValue.quat()[2]);
     val = def->add_valuelist();
     val->set_valuedouble(defaultValue.quat()[3]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) {
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+  } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
     details.set_datatype(PARAMETER_MENU);
     auto *def = details.mutable_defaultvalue();
     def->set_valueint32(p->getDefault());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) == 0) {
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+  } else if (al::ParameterChoice *p =
+                 dynamic_cast<al::ParameterChoice *>(param)) {
     details.set_datatype(PARAMETER_CHOICE);
     auto *def = details.mutable_defaultvalue();
     def->set_valueuint64(p->getDefault());
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+  } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     details.set_datatype(PARAMETER_TRIGGER);
     auto *def = details.mutable_defaultvalue();
     def->set_valuefloat(p->getDefault());
@@ -913,68 +896,31 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
     } else if (al::ParameterBool *p =
                    dynamic_cast<al::ParameterBool *>(&pmeta)) {
       newDim = new ParameterSpaceDimension(&pmeta);
-      //    } else if (al::ParameterString *p =
-      //                   dynamic_cast<al::ParameterString *>(&pmeta)) {
-      // string parameters not supported
-      //      newDim =
-      //        new ParameterSpaceDimension(pmeta.getName(), pmeta.getGroup(),
-      //                                    ParameterSpaceDimension::Datatype::FLOAT);
-      //      p->registerChangeCallback(
-      //          [&, p](std::string value, al::ValueSource *src) {
-      //            sendValueMessage(value, p->getFullAddress(), src);
-      //          });
+    } else if (al::ParameterString *p =
+                   dynamic_cast<al::ParameterString *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
     } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(&pmeta)) {
       newDim = new ParameterSpaceDimension(&pmeta);
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterVec3).name()) == 0) {
-      //      al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-      //      p->registerChangeCallback([&, p](al::Vec3f value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterVec4).name()) == 0) {
-      //      al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-      //      p->registerChangeCallback([&, p](al::Vec4f value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterColor).name()) == 0) {
-      //      al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-      //      p->registerChangeCallback([&, p](al::Color value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterPose).name()) == 0) {
-      //      al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-      //      p->registerChangeCallback([&, p](al::Pose value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterMenu).name()) == 0) {
-      //      al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-      //      p->registerChangeCallback([&, p](int32_t value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(),
-      //                      typeid(al::ParameterChoice).name()) == 0) {
-      //      al::ParameterChoice *p = dynamic_cast<al::ParameterChoice
-      //      *>(param);
-      //      p->registerChangeCallback([&, p](uint64_t value, al::ValueSource
-      //      *src) {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
-      //    } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name())
-      //    == 0) {
-      //      al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-      //      p->registerChangeCallback([&, p](bool value, al::ValueSource *src)
-      //      {
-      //        sendValueMessage(value, p->getFullAddress(), src);
-      //      });
+    } else if (al::ParameterVec3 *p =
+                   dynamic_cast<al::ParameterVec3 *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::ParameterVec4 *p =
+                   dynamic_cast<al::ParameterVec4 *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::ParameterColor *p =
+                   dynamic_cast<al::ParameterColor *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::ParameterPose *p =
+                   dynamic_cast<al::ParameterPose *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::ParameterMenu *p =
+                   dynamic_cast<al::ParameterMenu *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::ParameterChoice *p =
+                   dynamic_cast<al::ParameterChoice *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
+    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(&pmeta)) {
+      newDim = new ParameterSpaceDimension(&pmeta);
     } else {
       std::cerr << __FUNCTION__ << ": Unsupported Parameter type" << std::endl;
     }
@@ -1278,70 +1224,45 @@ void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
-    //    } else if (al::ParameterString *p =
-    //                   dynamic_cast<al::ParameterString *>(&pmeta)) {
-    // string parameters not supported
-    //      newDim =
-    //        new ParameterSpaceDimension(pmeta.getName(), pmeta.getGroup(),
-    //                                    ParameterSpaceDimension::Datatype::FLOAT);
-    //      p->registerChangeCallback(
-    //          [&, p](std::string value, al::ValueSource *src) {
-    //            sendValueMessage(value, p->getFullAddress(), src);
-    //          });
+  } else if (al::ParameterString *p =
+                 dynamic_cast<al::ParameterString *>(&pmeta)) {
+    p->registerChangeCallback([&, p](std::string value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(&pmeta)) {
     p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterVec3).name()) == 0) {
-    //      al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
-    //      p->registerChangeCallback([&, p](al::Vec3f value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterVec4).name()) == 0) {
-    //      al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
-    //      p->registerChangeCallback([&, p](al::Vec4f value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterColor).name()) == 0) {
-    //      al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
-    //      p->registerChangeCallback([&, p](al::Color value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterPose).name()) == 0) {
-    //      al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
-    //      p->registerChangeCallback([&, p](al::Pose value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterMenu).name()) == 0) {
-    //      al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
-    //      p->registerChangeCallback([&, p](int32_t value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(),
-    //                      typeid(al::ParameterChoice).name()) == 0) {
-    //      al::ParameterChoice *p = dynamic_cast<al::ParameterChoice
-    //      *>(param);
-    //      p->registerChangeCallback([&, p](uint64_t value, al::ValueSource
-    //      *src) {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
-    //    } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name())
-    //    == 0) {
-    //      al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-    //      p->registerChangeCallback([&, p](bool value, al::ValueSource *src)
-    //      {
-    //        sendValueMessage(value, p->getFullAddress(), src);
-    //      });
+  } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(&pmeta)) {
+    p->registerChangeCallback([&, p](al::Vec3f value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(&pmeta)) {
+    p->registerChangeCallback([&, p](al::Vec4f value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(&pmeta)) {
+    p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(&pmeta)) {
+    p->registerChangeCallback([&, p](al::Pose value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(&pmeta)) {
+    p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::ParameterChoice *p =
+                 dynamic_cast<al::ParameterChoice *>(&pmeta)) {
+    p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
+  } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(&pmeta)) {
+    p->registerChangeCallback([&, p](bool value, al::ValueSource *src) {
+      sendValueMessage(value, p->getFullAddress(), src);
+    });
   }
 }
 
