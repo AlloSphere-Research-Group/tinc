@@ -3,7 +3,7 @@
 #include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
 #include "tinc/NetCDFDiskBuffer.hpp"
-#include "tinc/ProcessorAsync.hpp"
+#include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/TincClient.hpp"
 
 #include <iostream>
@@ -1498,8 +1498,8 @@ void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
 void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
                                        bool isResponse) {
   // Handle Asynchronous Processors
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
+  if (strcmp(typeid(*p).name(), typeid(ProcessorAsyncWrapper).name()) == 0) {
+    p = dynamic_cast<ProcessorAsyncWrapper *>(p)->processor();
   }
 
   TincMessage msg;
@@ -1724,8 +1724,8 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
                                         bool isResponse) {
   // if processor is asynchronous
-  if (strcmp(typeid(*p).name(), typeid(ProcessorAsync).name()) == 0) {
-    p = dynamic_cast<ProcessorAsync *>(p)->processor();
+  if (strcmp(typeid(*p).name(), typeid(ProcessorAsyncWrapper).name()) == 0) {
+    p = dynamic_cast<ProcessorAsyncWrapper *>(p)->processor();
   }
 
   for (auto config : p->configuration) {

@@ -10,7 +10,7 @@ void ComputationChain::addProcessor(Processor &chain) {
   case PROCESS_ASYNC:
     // FIXME check if process is already async, so there's no need to do this.
     // FIXME free this on destructor
-    mAsyncProcessesInternal.emplace_back(new ProcessorAsync(&chain));
+    mAsyncProcessesInternal.emplace_back(new ProcessorAsyncWrapper(&chain));
     mProcessors.push_back(mAsyncProcessesInternal.back());
     break;
   case PROCESS_SERIAL:
@@ -44,7 +44,7 @@ bool ComputationChain::process(bool forceRecompute) {
       mResults[chain->getId()] = chain->process(forceRecompute);
     }
     for (auto chain : mProcessors) {
-      thisRet = ((ProcessorAsync *)chain)->waitUntilDone();
+      thisRet = ((ProcessorAsyncWrapper *)chain)->waitUntilDone();
       mResults[chain->getId()] = thisRet;
       if (!chain->ignoreFail) {
         if (!chain->ignoreFail) {

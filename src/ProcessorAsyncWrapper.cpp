@@ -1,27 +1,27 @@
 #include "al/system/al_Time.hpp"
 
-#include "tinc/ProcessorAsync.hpp"
+#include "tinc/ProcessorAsyncWrapper.hpp"
 
 #include <iostream>
 #include <thread>
 
 using namespace tinc;
 
-ProcessorAsync::ProcessorAsync(std::string id) : Processor(id) {
+ProcessorAsyncWrapper::ProcessorAsyncWrapper(std::string id) : Processor(id) {
   startThread();
 }
 
-ProcessorAsync::ProcessorAsync(Processor *processor)
+ProcessorAsyncWrapper::ProcessorAsyncWrapper(Processor *processor)
     : Processor(processor->getId()), mProcessor(processor) {
   startThread();
 }
 
-ProcessorAsync::~ProcessorAsync() {
+ProcessorAsyncWrapper::~ProcessorAsyncWrapper() {
   mRunning = false;
   mThread->join();
 }
 
-bool ProcessorAsync::process(bool forceRecompute) {
+bool ProcessorAsyncWrapper::process(bool forceRecompute) {
   {
     std::unique_lock<std::mutex> lk(mLock);
     //    std::cout << "start " << mProcessor->id << std::endl;
@@ -36,7 +36,7 @@ bool ProcessorAsync::process(bool forceRecompute) {
   return true;
 }
 
-bool ProcessorAsync::waitUntilDone() {
+bool ProcessorAsyncWrapper::waitUntilDone() {
   // As soon as we can acquire the lock, the thread is waiting
   mLock.lock();
   //  std::cout << "done " << mProcessor->id << std::endl;
@@ -44,7 +44,7 @@ bool ProcessorAsync::waitUntilDone() {
   return mRetValue;
 }
 
-void ProcessorAsync::startThread() {
+void ProcessorAsyncWrapper::startThread() {
 
   mThread = std::make_unique<std::thread>([this]() {
     std::unique_lock<std::mutex> lk(mLock);
@@ -68,8 +68,8 @@ void ProcessorAsync::startThread() {
   });
 }
 
-Processor *ProcessorAsync::processor() const { return mProcessor; }
+Processor *ProcessorAsyncWrapper::processor() const { return mProcessor; }
 
-void ProcessorAsync::setProcessor(Processor *processor) {
+void ProcessorAsyncWrapper::setProcessor(Processor *processor) {
   mProcessor = processor;
 }

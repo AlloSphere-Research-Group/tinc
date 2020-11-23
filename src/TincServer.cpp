@@ -4,7 +4,7 @@
 #include "tinc/ImageDiskBuffer.hpp"
 #include "tinc/JsonDiskBuffer.hpp"
 #include "tinc/NetCDFDiskBuffer.hpp"
-#include "tinc/ProcessorAsync.hpp"
+#include "tinc/ProcessorAsyncWrapper.hpp"
 
 #include <iostream>
 #include <memory>

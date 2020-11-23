@@ -16,9 +16,8 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceNode.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/Processor.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorAsync.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorAsyncWrapper.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ScriptProcessor.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincClient.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincProtocol.cpp
@@ -44,10 +43,9 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/NetCDFDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpace.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceDimension.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceNode.hpp
     ${TINC_INCLUDE_PATH}/tinc/PeriodicTask.hpp
     ${TINC_INCLUDE_PATH}/tinc/Processor.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ProcessorAsync.hpp
+    ${TINC_INCLUDE_PATH}/tinc/ProcessorAsyncWrapper.hpp
     ${TINC_INCLUDE_PATH}/tinc/ScriptProcessor.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincClient.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincProtocol.hpp
