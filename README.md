@@ -1,4 +1,7 @@
 # TINC (Toolkit for Interactive Computation)
+[![CircleCI](https://circleci.com/gh/circleci/circleci-docs.svg?style=svg)](https://github.com/AlloSphere-Research-Group/tinc)
+
+
 This repository contains the TINC library.
 
 # Using TINC
