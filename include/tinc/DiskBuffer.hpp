@@ -43,29 +43,9 @@
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/BufferManager.hpp"
-#include "tinc/IdObject.hpp"
+#include "tinc/AbstractDiskBuffer.hpp"
 
 namespace tinc {
-
-class AbstractDiskBuffer : public IdObject {
-public:
-  // Careful, this is not thread safe. Needs to be called synchronously to any
-  // process functions
-  std::string getCurrentFileName() { return m_fileName; }
-
-  virtual bool updateData(std::string filename) = 0;
-  //  void exposeToNetwork(al::ParameterServer &p);
-
-  std::string getBaseFileName() { return m_fileName; }
-
-  void setPath(std::string path) { m_path = path; }
-  std::string getPath() { return m_path; }
-
-protected:
-  std::string m_fileName;
-  std::string m_path;
-  std::shared_ptr<al::ParameterString> m_trigger;
-};
 
 template <class DataType>
 class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {

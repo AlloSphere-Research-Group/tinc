@@ -29,6 +29,7 @@ set(TINC_SRC
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(TINC_HEADERS
+    ${TINC_INCLUDE_PATH}/tinc/AbstractDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/AtomRenderer.hpp
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/ComputationChain.hpp
