@@ -9,34 +9,40 @@
 
 using namespace tinc;
 
-// TEST(TincProtocol, ParameterFloat) {
-//   TincServer tserver;
-//   EXPECT_TRUE(tserver.start());
+TEST(TincProtocol, ParameterFloat) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
 
-//   al::Parameter p{"param", "group", 0.2, -10, 9.9};
-//   tserver << p;
-//   p.set(0.5);
+  al::Parameter p{"param", "group", 0.2, -10, 9.9};
+  tserver << p;
+  p.set(0.5);
 
-//   TincClient tclient;
-//   EXPECT_TRUE(tclient.start());
+  TincClient tclient;
+  EXPECT_TRUE(tclient.start());
 
-//   al::al_sleep(0.1); // Give time to connect
+  int counter = 0;
 
-//   tclient.requestParameters();
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
 
-//   al::al_sleep(0.1); // Give time to connect
+  EXPECT_NE(param, nullptr);
 
-//   auto *param = tclient.getParameter("param");
-//   EXPECT_NE(param, nullptr);
+  auto *paramFloat = static_cast<al::Parameter *>(param);
+  EXPECT_FLOAT_EQ(paramFloat->min(), -10);
+  EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
+  EXPECT_FLOAT_EQ(paramFloat->get(), 0.5);
 
-//   auto *paramFloat = static_cast<al::Parameter *>(param);
-//   EXPECT_FLOAT_EQ(paramFloat->min(), -10);
-//   EXPECT_FLOAT_EQ(paramFloat->max(), -9.9);
-//   EXPECT_FLOAT_EQ(paramFloat->get(), 0.5);
-
-//   tclient.stop();
-//   tserver.stop();
-// }
+  tclient.stop();
+  tserver.stop();
+}
 
 TEST(TincProtocol, ParameterBool) {
   TincServer tserver;
@@ -49,11 +55,19 @@ TEST(TincProtocol, ParameterBool) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramBool = static_cast<al::ParameterBool *>(param);
@@ -86,11 +100,19 @@ TEST(TincProtocol, ParameterString) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramString = static_cast<al::ParameterString *>(param);
@@ -124,11 +146,19 @@ TEST(TincProtocol, ParameterInt) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramInt = static_cast<al::ParameterInt *>(param);
@@ -163,11 +193,19 @@ TEST(TincProtocol, ParameterVec3) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramVec3 = static_cast<al::ParameterVec3 *>(param);
@@ -200,11 +238,19 @@ TEST(TincProtocol, ParameterVec4) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramVec4 = static_cast<al::ParameterVec4 *>(param);
@@ -237,11 +283,19 @@ TEST(TincProtocol, ParameterColor) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramColor = static_cast<al::ParameterColor *>(param);
@@ -278,11 +332,19 @@ TEST(TincProtocol, ParameterPose) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramPose = static_cast<al::ParameterPose *>(param);
@@ -319,11 +381,19 @@ TEST(TincProtocol, ParameterMenu) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramMenu = static_cast<al::ParameterMenu *>(param);
@@ -360,11 +430,19 @@ TEST(TincProtocol, ParameterChoice) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramChoice = static_cast<al::ParameterChoice *>(param);
@@ -398,11 +476,19 @@ TEST(TincProtocol, ParameterTrigger) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
+  int counter = 0;
 
-  auto *param = tclient.getParameter("param", "group");
+  al::ParameterMeta *param{nullptr};
+  tclient.requestParameters();
+  while (!param) {
+    al::al_sleep(0.001); // Give time to connect
+    param = tclient.getParameter("param", "group");
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_NE(param, nullptr);
 
   auto *paramTrigger = static_cast<al::Trigger *>(param);

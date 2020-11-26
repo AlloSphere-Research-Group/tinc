@@ -11,6 +11,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+add_definitions(-DTINC_TESTS_TIMEOUT_MS=250)
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
 set(TEST_SOURCES main.cpp

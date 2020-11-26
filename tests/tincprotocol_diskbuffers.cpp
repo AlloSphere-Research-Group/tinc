@@ -45,7 +45,18 @@ TEST(TincProtocol, DiskBuffers) {
   EXPECT_TRUE(tclient.start());
   tclient.setVerbose(true);
 
-  al::al_sleep(0.5); // Give time to connect
+  bool timeout = false;
+  int counter = 0;
+
+  al::ParameterMeta *param{nullptr};
+  while (!tclient.isConnected() && !timeout) {
+    al::al_sleep(0.001); // Give time to connect
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_TRUE(tclient.isConnected());
 
   tclient.requestDiskBuffers();
