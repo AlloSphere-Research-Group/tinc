@@ -93,6 +93,11 @@ public:
     return mParameterSpaceDimensions;
   }
 
+  std::vector<ParameterSpace *> parameterSpaces() {
+    // TODO protect possible race conditions.
+    return mParameterSpaces;
+  }
+
   void setVerbose(bool v) { mVerbose = v; }
 
 protected:
