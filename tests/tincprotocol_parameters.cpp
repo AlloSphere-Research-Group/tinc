@@ -25,7 +25,7 @@ TEST(TincProtocol, ParameterFloat) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -60,7 +60,7 @@ TEST(TincProtocol, ParameterBool) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -105,7 +105,7 @@ TEST(TincProtocol, ParameterString) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -151,7 +151,7 @@ TEST(TincProtocol, ParameterInt) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -198,7 +198,7 @@ TEST(TincProtocol, ParameterVec3) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -243,7 +243,7 @@ TEST(TincProtocol, ParameterVec4) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -288,7 +288,7 @@ TEST(TincProtocol, ParameterColor) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -337,7 +337,7 @@ TEST(TincProtocol, ParameterPose) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -386,7 +386,7 @@ TEST(TincProtocol, ParameterMenu) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -435,7 +435,7 @@ TEST(TincProtocol, ParameterChoice) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
@@ -481,7 +481,7 @@ TEST(TincProtocol, ParameterTrigger) {
   al::ParameterMeta *param{nullptr};
   tclient.requestParameters();
   while (!param) {
-    al::al_sleep(0.001); // Give time to connect
+    al::al_sleep(0.5); // Give time to connect
     param = tclient.getParameter("param", "group");
     if (counter++ == TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
