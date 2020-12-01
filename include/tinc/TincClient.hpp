@@ -33,6 +33,8 @@
  * authors: Andres Cabrera, Kon Hyong Kim
 */
 
+#include <deque>
+
 #include "al/io/al_Socket.hpp"
 #include "al/protocol/al_CommandConnection.hpp"
 #include "al/ui/al_ParameterServer.hpp"
@@ -65,10 +67,26 @@ public:
     TincProtocol::requestParameterSpaces(&mSocket);
   }
 
+  /**
+   * @brief Wait for lock, then wait for unlock.
+   * @param group group to make the barrier for. 0 is all.
+   * @param timeoutsec timeout time im seconds
+   * @return true if not timed out
+   */
+  bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
+
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }
 
+protected:
+  void processBarrierRequest(al::Socket *src, uint64_t barrierConsecutive);
+  void processBarrierUnlock(al::Socket *src, uint64_t barrierConsecutive);
+
 private:
+  // Network barriers
+  std::map<uint64_t, al::Socket *> mBarrierRequests;
+  std::map<uint64_t, al::Socket *> mBarrierUnlocks;
+  std::mutex mBarrierQueuesLock;
 };
 
 } // namespace tinc

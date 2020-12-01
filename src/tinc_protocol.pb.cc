@@ -58,6 +58,10 @@ class ConfigureParameterDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ConfigureParameter> _instance;
 } _ConfigureParameter_default_instance_;
+class ConfigureParameterSpaceDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ConfigureParameterSpace> _instance;
+} _ConfigureParameterSpace_default_instance_;
 class ConfigureProcessorDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ConfigureProcessor> _instance;
@@ -174,6 +178,21 @@ static void InitDefaultsscc_info_ConfigureParameter_tinc_5fprotocol_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ConfigureParameter_tinc_5fprotocol_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_ConfigureParameter_tinc_5fprotocol_2eproto}, {
+      &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
+
+static void InitDefaultsscc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_ConfigureParameterSpace_default_instance_;
+    new (ptr) ::tinc::ConfigureParameterSpace();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::ConfigureParameterSpace::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
 
 static void InitDefaultsscc_info_ConfigureProcessor_tinc_5fprotocol_2eproto() {
@@ -460,8 +479,8 @@ static void InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[24];
-static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[8];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[25];
+static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[9];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_tinc_5fprotocol_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -553,6 +572,14 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameter, id_),
   PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameter, configurationkey_),
   PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameter, configurationvalue_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameterSpace, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameterSpace, id_),
+  PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameterSpace, configurationkey_),
+  PROTOBUF_FIELD_OFFSET(::tinc::ConfigureParameterSpace, configurationvalue_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::tinc::ConfigureProcessor, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -654,20 +681,21 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 64, -1, sizeof(::tinc::RegisterParameter)},
   { 73, -1, sizeof(::tinc::ParameterSpaceValues)},
   { 80, -1, sizeof(::tinc::ConfigureParameter)},
-  { 88, -1, sizeof(::tinc::ConfigureProcessor)},
-  { 96, -1, sizeof(::tinc::ConfigureDiskBuffer)},
-  { 104, -1, sizeof(::tinc::ConfigureDataPool)},
-  { 112, -1, sizeof(::tinc::Command)},
-  { 120, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
-  { 125, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
-  { 131, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
-  { 136, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
-  { 142, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
-  { 147, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
-  { 153, -1, sizeof(::tinc::DataPoolCommandSlice)},
-  { 160, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
-  { 166, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
-  { 171, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
+  { 88, -1, sizeof(::tinc::ConfigureParameterSpace)},
+  { 96, -1, sizeof(::tinc::ConfigureProcessor)},
+  { 104, -1, sizeof(::tinc::ConfigureDiskBuffer)},
+  { 112, -1, sizeof(::tinc::ConfigureDataPool)},
+  { 120, -1, sizeof(::tinc::Command)},
+  { 128, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
+  { 133, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
+  { 139, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
+  { 144, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
+  { 150, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
+  { 155, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
+  { 161, -1, sizeof(::tinc::DataPoolCommandSlice)},
+  { 168, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
+  { 174, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
+  { 179, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -681,6 +709,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_RegisterParameter_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterSpaceValues_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureParameter_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureParameterSpace_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureProcessor_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDiskBuffer_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDataPool_default_instance_),
@@ -728,59 +757,68 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "\022ConfigureParameter\022\n\n\002id\030\001 \001(\t\0226\n\020confi"
   "gurationKey\030\002 \001(\0162\034.tinc.ParameterConfig"
   "ureType\0220\n\022configurationValue\030\003 \001(\0132\024.go"
-  "ogle.protobuf.Any\"l\n\022ConfigureProcessor\022"
-  "\n\n\002id\030\001 \001(\t\022\030\n\020configurationKey\030\002 \001(\t\0220\n"
-  "\022configurationValue\030\003 \001(\0132\024.google.proto"
-  "buf.Any\"\214\001\n\023ConfigureDiskBuffer\022\n\n\002id\030\001 "
-  "\001(\t\0227\n\020configurationKey\030\002 \001(\0162\035.tinc.Dis"
-  "kBufferConfigureType\0220\n\022configurationVal"
-  "ue\030\003 \001(\0132\024.google.protobuf.Any\"\210\001\n\021Confi"
-  "gureDataPool\022\n\n\002id\030\001 \001(\t\0225\n\020configuratio"
-  "nKey\030\002 \001(\0162\033.tinc.DataPoolConfigureType\022"
-  "0\n\022configurationValue\030\003 \001(\0132\024.google.pro"
-  "tobuf.Any\"`\n\007Command\022\022\n\nmessage_id\030\001 \001(\r"
-  "\022\032\n\002id\030\002 \001(\0132\016.tinc.ObjectId\022%\n\007details\030"
-  "\003 \001(\0132\024.google.protobuf.Any\" \n\036Parameter"
-  "RequestChoiceElements\"7\n#ParameterReques"
-  "tChoiceElementsReply\022\020\n\010elements\030\001 \003(\t\"\""
-  "\n ParameterSpaceRequestCurrentPath\"5\n%Pa"
-  "rameterSpaceRequestCurrentPathReply\022\014\n\004p"
-  "ath\030\001 \001(\t\"\037\n\035ParameterSpaceRequestRootPa"
-  "th\"2\n\"ParameterSpaceRequestRootPathReply"
-  "\022\014\n\004path\030\001 \001(\t\"8\n\024DataPoolCommandSlice\022\r"
-  "\n\005field\030\001 \001(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031Data"
-  "PoolCommandSliceReply\022\020\n\010filename\030\001 \001(\t\""
-  "\035\n\033DataPoolCommandCurrentFiles\"5\n DataPo"
-  "olCommandCurrentFilesReply\022\021\n\tfilenames\030"
-  "\001 \003(\t*w\n\013MessageType\022\013\n\007REQUEST\020\000\022\n\n\006REM"
-  "OVE\020\001\022\014\n\010REGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007CO"
-  "MMAND\020\004\022\021\n\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004"
-  "PONG\020c*_\n\nObjectType\022\r\n\tPARAMETER\020\000\022\r\n\tP"
-  "ROCESSOR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL"
-  "\020\003\022\023\n\017PARAMETER_SPACE\020\004*3\n\rProcessorType"
-  "\022\016\n\nDATASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n"
-  "\021ParameterDataType\022\023\n\017PARAMETER_FLOAT\020\000\022"
-  "\022\n\016PARAMETER_BOOL\020\001\022\024\n\020PARAMETER_STRING\020"
-  "\002\022\023\n\017PARAMETER_INT32\020\003\022\023\n\017PARAMETER_VEC3"
-  "F\020\004\022\023\n\017PARAMETER_VEC4F\020\005\022\024\n\020PARAMETER_CO"
-  "LORF\020\006\022\023\n\017PARAMETER_POSED\020\007\022\022\n\016PARAMETER"
-  "_MENU\020\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMET"
-  "ER_TRIGGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY"
-  "\020\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IM"
-  "AGE\020\004*P\n\026ParameterConfigureType\022\t\n\005VALUE"
-  "\020\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE"
-  "_TYPE\020\004*+\n\027DiskBufferConfigureType\022\020\n\014CU"
-  "RRENT_FILE\020\000*,\n\025DataPoolConfigureType\022\023\n"
-  "\017SLICE_CACHE_DIR\020\000b\006proto3"
+  "ogle.protobuf.Any\"\224\001\n\027ConfigureParameter"
+  "Space\022\n\n\002id\030\001 \001(\t\022;\n\020configurationKey\030\002 "
+  "\001(\0162!.tinc.ParameterSpaceConfigureType\0220"
+  "\n\022configurationValue\030\003 \001(\0132\024.google.prot"
+  "obuf.Any\"l\n\022ConfigureProcessor\022\n\n\002id\030\001 \001"
+  "(\t\022\030\n\020configurationKey\030\002 \001(\t\0220\n\022configur"
+  "ationValue\030\003 \001(\0132\024.google.protobuf.Any\"\214"
+  "\001\n\023ConfigureDiskBuffer\022\n\n\002id\030\001 \001(\t\0227\n\020co"
+  "nfigurationKey\030\002 \001(\0162\035.tinc.DiskBufferCo"
+  "nfigureType\0220\n\022configurationValue\030\003 \001(\0132"
+  "\024.google.protobuf.Any\"\210\001\n\021ConfigureDataP"
+  "ool\022\n\n\002id\030\001 \001(\t\0225\n\020configurationKey\030\002 \001("
+  "\0162\033.tinc.DataPoolConfigureType\0220\n\022config"
+  "urationValue\030\003 \001(\0132\024.google.protobuf.Any"
+  "\"`\n\007Command\022\022\n\nmessage_id\030\001 \001(\004\022\032\n\002id\030\002 "
+  "\001(\0132\016.tinc.ObjectId\022%\n\007details\030\003 \001(\0132\024.g"
+  "oogle.protobuf.Any\" \n\036ParameterRequestCh"
+  "oiceElements\"7\n#ParameterRequestChoiceEl"
+  "ementsReply\022\020\n\010elements\030\001 \003(\t\"\"\n Paramet"
+  "erSpaceRequestCurrentPath\"5\n%ParameterSp"
+  "aceRequestCurrentPathReply\022\014\n\004path\030\001 \001(\t"
+  "\"\037\n\035ParameterSpaceRequestRootPath\"2\n\"Par"
+  "ameterSpaceRequestRootPathReply\022\014\n\004path\030"
+  "\001 \001(\t\"8\n\024DataPoolCommandSlice\022\r\n\005field\030\001"
+  " \001(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031DataPoolComma"
+  "ndSliceReply\022\020\n\010filename\030\001 \001(\t\"\035\n\033DataPo"
+  "olCommandCurrentFiles\"5\n DataPoolCommand"
+  "CurrentFilesReply\022\021\n\tfilenames\030\001 \003(\t*\266\001\n"
+  "\013MessageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022\014\n"
+  "\010REGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020\004\022"
+  "\021\n\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004PONG\020c\022\023"
+  "\n\017BARRIER_REQUEST\020d\022\024\n\020BARRIER_ACK_LOCK\020"
+  "e\022\022\n\016BARRIER_UNLOCK\020f*k\n\nObjectType\022\r\n\tP"
+  "ARAMETER\020\000\022\r\n\tPROCESSOR\020\001\022\017\n\013DISK_BUFFER"
+  "\020\002\022\r\n\tDATA_POOL\020\003\022\023\n\017PARAMETER_SPACE\020\004\022\n"
+  "\n\006GLOBAL\020\005*3\n\rProcessorType\022\016\n\nDATASCRIP"
+  "T\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021ParameterDat"
+  "aType\022\023\n\017PARAMETER_FLOAT\020\000\022\022\n\016PARAMETER_"
+  "BOOL\020\001\022\024\n\020PARAMETER_STRING\020\002\022\023\n\017PARAMETE"
+  "R_INT32\020\003\022\023\n\017PARAMETER_VEC3F\020\004\022\023\n\017PARAME"
+  "TER_VEC4F\020\005\022\024\n\020PARAMETER_COLORF\020\006\022\023\n\017PAR"
+  "AMETER_POSED\020\007\022\022\n\016PARAMETER_MENU\020\010\022\024\n\020PA"
+  "RAMETER_CHOICE\020\t\022\025\n\021PARAMETER_TRIGGER\020\n*"
+  "G\n\016DiskBufferType\022\n\n\006BINARY\020\000\022\010\n\004TEXT\020\001\022"
+  "\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*P\n\026Para"
+  "meterConfigureType\022\t\n\005VALUE\020\000\022\007\n\003MIN\020\001\022\007"
+  "\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020\004*F\n\033Pa"
+  "rameterSpaceConfigureType\022\021\n\rADD_PARAMET"
+  "ER\020\000\022\024\n\020REMOVE_PARAMETER\020\001*+\n\027DiskBuffer"
+  "ConfigureType\022\020\n\014CURRENT_FILE\020\000*,\n\025DataP"
+  "oolConfigureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006p"
+  "roto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[24] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[25] = {
   &scc_info_Command_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDataPool_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDiskBuffer_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureParameter_tinc_5fprotocol_2eproto.base,
+  &scc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureProcessor_tinc_5fprotocol_2eproto.base,
   &scc_info_DataPoolCommandCurrentFiles_tinc_5fprotocol_2eproto.base,
   &scc_info_DataPoolCommandCurrentFilesReply_tinc_5fprotocol_2eproto.base,
@@ -804,10 +842,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 2946,
-  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 24, 1,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3245,
+  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 25, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
-  file_level_metadata_tinc_5fprotocol_2eproto, 24, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
+  file_level_metadata_tinc_5fprotocol_2eproto, 25, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -827,6 +865,9 @@ bool MessageType_IsValid(int value) {
     case 5:
     case 98:
     case 99:
+    case 100:
+    case 101:
+    case 102:
       return true;
     default:
       return false;
@@ -844,6 +885,7 @@ bool ObjectType_IsValid(int value) {
     case 2:
     case 3:
     case 4:
+    case 5:
       return true;
     default:
       return false;
@@ -922,9 +964,23 @@ bool ParameterConfigureType_IsValid(int value) {
   }
 }
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DiskBufferConfigureType_descriptor() {
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ParameterSpaceConfigureType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
   return file_level_enum_descriptors_tinc_5fprotocol_2eproto[6];
+}
+bool ParameterSpaceConfigureType_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DiskBufferConfigureType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[7];
 }
 bool DiskBufferConfigureType_IsValid(int value) {
   switch (value) {
@@ -937,7 +993,7 @@ bool DiskBufferConfigureType_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DataPoolConfigureType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
-  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[7];
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[8];
 }
 bool DataPoolConfigureType_IsValid(int value) {
   switch (value) {
@@ -3966,6 +4022,298 @@ void ConfigureParameter::InternalSwap(ConfigureParameter* other) {
 
 // ===================================================================
 
+void ConfigureParameterSpace::InitAsDefaultInstance() {
+  ::tinc::_ConfigureParameterSpace_default_instance_._instance.get_mutable()->configurationvalue_ = const_cast< PROTOBUF_NAMESPACE_ID::Any*>(
+      PROTOBUF_NAMESPACE_ID::Any::internal_default_instance());
+}
+class ConfigureParameterSpace::_Internal {
+ public:
+  static const PROTOBUF_NAMESPACE_ID::Any& configurationvalue(const ConfigureParameterSpace* msg);
+};
+
+const PROTOBUF_NAMESPACE_ID::Any&
+ConfigureParameterSpace::_Internal::configurationvalue(const ConfigureParameterSpace* msg) {
+  return *msg->configurationvalue_;
+}
+void ConfigureParameterSpace::clear_configurationvalue() {
+  if (GetArena() == nullptr && configurationvalue_ != nullptr) {
+    delete configurationvalue_;
+  }
+  configurationvalue_ = nullptr;
+}
+ConfigureParameterSpace::ConfigureParameterSpace(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.ConfigureParameterSpace)
+}
+ConfigureParameterSpace::ConfigureParameterSpace(const ConfigureParameterSpace& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_id().empty()) {
+    id_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_id(),
+      GetArena());
+  }
+  if (from._internal_has_configurationvalue()) {
+    configurationvalue_ = new PROTOBUF_NAMESPACE_ID::Any(*from.configurationvalue_);
+  } else {
+    configurationvalue_ = nullptr;
+  }
+  configurationkey_ = from.configurationkey_;
+  // @@protoc_insertion_point(copy_constructor:tinc.ConfigureParameterSpace)
+}
+
+void ConfigureParameterSpace::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto.base);
+  id_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  ::memset(&configurationvalue_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&configurationkey_) -
+      reinterpret_cast<char*>(&configurationvalue_)) + sizeof(configurationkey_));
+}
+
+ConfigureParameterSpace::~ConfigureParameterSpace() {
+  // @@protoc_insertion_point(destructor:tinc.ConfigureParameterSpace)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void ConfigureParameterSpace::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  id_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (this != internal_default_instance()) delete configurationvalue_;
+}
+
+void ConfigureParameterSpace::ArenaDtor(void* object) {
+  ConfigureParameterSpace* _this = reinterpret_cast< ConfigureParameterSpace* >(object);
+  (void)_this;
+}
+void ConfigureParameterSpace::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void ConfigureParameterSpace::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const ConfigureParameterSpace& ConfigureParameterSpace::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_ConfigureParameterSpace_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void ConfigureParameterSpace::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.ConfigureParameterSpace)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  id_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  if (GetArena() == nullptr && configurationvalue_ != nullptr) {
+    delete configurationvalue_;
+  }
+  configurationvalue_ = nullptr;
+  configurationkey_ = 0;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* ConfigureParameterSpace::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // string id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_id();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "tinc.ConfigureParameterSpace.id"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .tinc.ParameterSpaceConfigureType configurationKey = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_configurationkey(static_cast<::tinc::ParameterSpaceConfigureType>(val));
+        } else goto handle_unusual;
+        continue;
+      // .google.protobuf.Any configurationValue = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 26)) {
+          ptr = ctx->ParseMessage(_internal_mutable_configurationvalue(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* ConfigureParameterSpace::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.ConfigureParameterSpace)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string id = 1;
+  if (this->id().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_id().data(), static_cast<int>(this->_internal_id().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "tinc.ConfigureParameterSpace.id");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_id(), target);
+  }
+
+  // .tinc.ParameterSpaceConfigureType configurationKey = 2;
+  if (this->configurationkey() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      2, this->_internal_configurationkey(), target);
+  }
+
+  // .google.protobuf.Any configurationValue = 3;
+  if (this->has_configurationvalue()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        3, _Internal::configurationvalue(this), target, stream);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.ConfigureParameterSpace)
+  return target;
+}
+
+size_t ConfigureParameterSpace::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.ConfigureParameterSpace)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string id = 1;
+  if (this->id().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_id());
+  }
+
+  // .google.protobuf.Any configurationValue = 3;
+  if (this->has_configurationvalue()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *configurationvalue_);
+  }
+
+  // .tinc.ParameterSpaceConfigureType configurationKey = 2;
+  if (this->configurationkey() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_configurationkey());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void ConfigureParameterSpace::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.ConfigureParameterSpace)
+  GOOGLE_DCHECK_NE(&from, this);
+  const ConfigureParameterSpace* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<ConfigureParameterSpace>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.ConfigureParameterSpace)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.ConfigureParameterSpace)
+    MergeFrom(*source);
+  }
+}
+
+void ConfigureParameterSpace::MergeFrom(const ConfigureParameterSpace& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.ConfigureParameterSpace)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.id().size() > 0) {
+    _internal_set_id(from._internal_id());
+  }
+  if (from.has_configurationvalue()) {
+    _internal_mutable_configurationvalue()->PROTOBUF_NAMESPACE_ID::Any::MergeFrom(from._internal_configurationvalue());
+  }
+  if (from.configurationkey() != 0) {
+    _internal_set_configurationkey(from._internal_configurationkey());
+  }
+}
+
+void ConfigureParameterSpace::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.ConfigureParameterSpace)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void ConfigureParameterSpace::CopyFrom(const ConfigureParameterSpace& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.ConfigureParameterSpace)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool ConfigureParameterSpace::IsInitialized() const {
+  return true;
+}
+
+void ConfigureParameterSpace::InternalSwap(ConfigureParameterSpace* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  id_.Swap(&other->id_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(ConfigureParameterSpace, configurationkey_)
+      + sizeof(ConfigureParameterSpace::configurationkey_)
+      - PROTOBUF_FIELD_OFFSET(ConfigureParameterSpace, configurationvalue_)>(
+          reinterpret_cast<char*>(&configurationvalue_),
+          reinterpret_cast<char*>(&other->configurationvalue_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata ConfigureParameterSpace::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void ConfigureProcessor::InitAsDefaultInstance() {
   ::tinc::_ConfigureProcessor_default_instance_._instance.get_mutable()->configurationvalue_ = const_cast< PROTOBUF_NAMESPACE_ID::Any*>(
       PROTOBUF_NAMESPACE_ID::Any::internal_default_instance());
@@ -4944,7 +5292,7 @@ void Command::Clear() {
     delete details_;
   }
   details_ = nullptr;
-  message_id_ = 0u;
+  message_id_ = PROTOBUF_ULONGLONG(0);
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -4956,10 +5304,10 @@ const char* Command::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     CHK_(ptr);
     switch (tag >> 3) {
-      // uint32 message_id = 1;
+      // uint64 message_id = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          message_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          message_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -5005,10 +5353,10 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // uint32 message_id = 1;
+  // uint64 message_id = 1;
   if (this->message_id() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(1, this->_internal_message_id(), target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_message_id(), target);
   }
 
   // .tinc.ObjectId id = 2;
@@ -5057,10 +5405,10 @@ size_t Command::ByteSizeLong() const {
         *details_);
   }
 
-  // uint32 message_id = 1;
+  // uint64 message_id = 1;
   if (this->message_id() != 0) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
         this->_internal_message_id());
   }
 
@@ -7121,6 +7469,9 @@ template<> PROTOBUF_NOINLINE ::tinc::ParameterSpaceValues* Arena::CreateMaybeMes
 }
 template<> PROTOBUF_NOINLINE ::tinc::ConfigureParameter* Arena::CreateMaybeMessage< ::tinc::ConfigureParameter >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::ConfigureParameter >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::ConfigureParameterSpace* Arena::CreateMaybeMessage< ::tinc::ConfigureParameterSpace >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::ConfigureParameterSpace >(arena);
 }
 template<> PROTOBUF_NOINLINE ::tinc::ConfigureProcessor* Arena::CreateMaybeMessage< ::tinc::ConfigureProcessor >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::ConfigureProcessor >(arena);

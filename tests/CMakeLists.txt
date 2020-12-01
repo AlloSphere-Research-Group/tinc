@@ -15,11 +15,12 @@ add_definitions(-DTINC_TESTS_TIMEOUT_MS=250)
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
 set(TEST_SOURCES main.cpp
+  parameterspace.cpp
   scriptprocessor.cpp
   tincprotocol.cpp
+  tincprotocol_barrier.cpp
   tincprotocol_parameters.cpp
   tincprotocol_remote_parameter.cpp
-  parameterspace.cpp
   tincprotocol_parameterspaces.cpp
   tincprotocol_processors.cpp
   tincprotocol_diskbuffers.cpp

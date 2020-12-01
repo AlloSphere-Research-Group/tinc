@@ -14,6 +14,10 @@ enum MessageType {
 
   PING = 98;
   PONG = 99;
+
+  BARRIER_REQUEST = 100;
+  BARRIER_ACK_LOCK = 101;
+  BARRIER_UNLOCK = 102;
 }
 
 enum ObjectType {
@@ -22,6 +26,7 @@ enum ObjectType {
   DISK_BUFFER = 2;
   DATA_POOL = 3;
   PARAMETER_SPACE = 4;
+  GLOBAL = 5;
 }
 
 enum ProcessorType {
@@ -140,6 +145,17 @@ message ConfigureParameter {
   google.protobuf.Any configurationValue = 3;
 }
 
+enum ParameterSpaceConfigureType {
+    ADD_PARAMETER = 0;
+    REMOVE_PARAMETER = 1;
+}
+
+message ConfigureParameterSpace {
+  string id = 1;
+  ParameterSpaceConfigureType configurationKey = 2;
+  google.protobuf.Any configurationValue = 3;
+}
+
 message ConfigureProcessor {
   string id = 1;
   string configurationKey = 2;
@@ -169,7 +185,7 @@ message ConfigureDataPool {
 // Commands
 
 message Command {
-    uint32 message_id = 1;
+    uint64 message_id = 1;
     ObjectId id = 2;
     google.protobuf.Any details = 3;
 }

@@ -98,6 +98,16 @@ public:
     return mParameterSpaces;
   }
 
+  /**
+   * @brief activate a network barrier
+   * @param group group to make the barrier for. 0 is all.
+   * @param timeoutsec timeout in secods
+   * @return true if barrier succeeded before timing out
+   *
+   * Group support not implemented yet.
+   */
+  virtual bool barrier(uint32_t group = 0, float timeoutsec = 0.0) = 0;
+
   void setVerbose(bool v) { mVerbose = v; }
 
 protected:
@@ -156,6 +166,15 @@ protected:
   void sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
                             bool isResponse = false);
 
+  void sendConfigureParameterSpaceAddDimension(ParameterSpace *ps,
+                                               ParameterSpaceDimension *dim,
+                                               al::Socket *dst,
+                                               bool isResponse = false);
+  void sendConfigureParameterSpaceRemoveDimension(ParameterSpace *ps,
+                                                  ParameterSpaceDimension *dim,
+                                                  al::Socket *dst,
+                                                  bool isResponse = false);
+
   // Outgoing configure message (only value) for callback functions
   void sendValueMessage(float value, std::string fullAddress,
                         al::ValueSource *src);
@@ -204,6 +223,9 @@ protected:
 
   // Dimensions that were allocated by this class to wrap a parameter
   std::vector<ParameterSpaceDimension *> mParameterWrappers;
+
+  // Barriers
+  int barrierWaitGranularTimeMs = 20;
 
   bool mVerbose{false};
 };

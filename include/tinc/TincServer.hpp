@@ -33,6 +33,9 @@
  * authors: Andres Cabrera, Kon Hyong Kim
 */
 
+#include <map>
+#include <deque>
+
 #include "al/io/al_Socket.hpp"
 #include "al/protocol/al_CommandConnection.hpp"
 #include "al/ui/al_ParameterServer.hpp"
@@ -61,7 +64,36 @@ public:
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }
 
+  /**
+   * @brief Initiate a barrier by notifying all connections to lock, and then
+   * unlock after all acknowledge
+   * @param group group to make the barrier for. 0 is all.
+   * @param timeoutsec timeout in seconds
+   * @return true if all connections locked and unlock message was sent before
+   * the timeout
+   */
+  bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
+
+protected:
+  void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive) {
+    std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
+              << src->port() << std::endl;
+    std::unique_lock<std::mutex> lk(mBarrierAckLock);
+    if (mBarrierAcks.find(barrierConsecutive) != mBarrierAcks.end()) {
+      mBarrierAcks[barrierConsecutive].push_back(src);
+    } else {
+      std::cerr << __FUNCTION__ << " ERROR unexpected ACK_LOCK. Ignoring"
+                << std::endl;
+    }
+  }
+
 private:
+  uint64_t mBarrierConsecutive{1};
+  std::mutex mBarrierLock;
+
+  // Network barriers
+  std::map<uint64_t, std::deque<al::Socket *>> mBarrierAcks;
+  std::mutex mBarrierAckLock;
 };
 
 } // namespace tinc

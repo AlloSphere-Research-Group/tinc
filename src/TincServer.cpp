@@ -90,6 +90,24 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
                   << ": Pong message received, but not implemented"
                   << std::endl;
         break;
+      case MessageType::BARRIER_REQUEST:
+        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_REQUEST in server"
+                  << std::endl;
+        break;
+      case MessageType::BARRIER_ACK_LOCK:
+        if (details.Is<Command>()) {
+          Command objectId;
+          details.UnpackTo(&objectId);
+          processBarrierAckLock(src, objectId.message_id());
+        } else {
+          std::cerr << __FUNCTION__ << ": Invalid payload for BARRIER_REQUEST"
+                    << std::endl;
+        }
+        break;
+      case MessageType::BARRIER_UNLOCK:
+        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_UNLOCK in server"
+                  << std::endl;
+        break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
       }
@@ -110,6 +128,98 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
 void TincServer::setVerbose(bool verbose) {
   CommandConnection::mVerbose = verbose;
   TincProtocol::mVerbose = verbose;
+}
+
+bool TincServer::barrier(uint32_t group, float timeoutsec) {
+  std::cerr << __FUNCTION__ << " Enter server barrier " << std::endl;
+  std::unique_lock<std::mutex> lk(mBarrierLock);
+  TincMessage msg;
+  msg.set_messagetype(MessageType::BARRIER_REQUEST);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  Command details;
+  auto currentConsecutive = mBarrierConsecutive;
+  details.set_message_id(currentConsecutive);
+  mBarrierConsecutive++;
+
+  auto *commandDetails = msg.details().New();
+  commandDetails->PackFrom(details);
+  msg.set_allocated_details(commandDetails);
+  {
+    // Prepare for barrier acks
+    std::unique_lock<std::mutex> lk(mBarrierAckLock);
+    mBarrierAcks[currentConsecutive] = {};
+  }
+
+  std::vector<al::Socket *> barrierSentRequests;
+  for (auto connection : mServerConnections) {
+    bool ret = sendProtobufMessage(&msg, connection.get());
+    if (ret) {
+      barrierSentRequests.push_back(connection.get());
+    }
+  }
+
+  std::cerr << __FUNCTION__ << " Server sent BARRIER_REQUEST "
+            << currentConsecutive << std::endl;
+  std::vector<al::Socket *> barrierRequestsPending = barrierSentRequests;
+  int timems = 0;
+
+  while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0) &&
+         barrierRequestsPending.size() != 0) {
+
+    if (mBarrierAckLock.try_lock()) {
+      for (auto barrierAck : mBarrierAcks[currentConsecutive]) {
+        auto posToPop = barrierRequestsPending.begin();
+        if ((posToPop = std::find(barrierRequestsPending.begin(),
+                                  barrierRequestsPending.end(), barrierAck)) !=
+            barrierRequestsPending.end()) {
+          std::cout << "Barrier ACK lock:" << barrierAck->address() << ":"
+                    << barrierAck->port() << std::endl;
+          barrierRequestsPending.erase(posToPop);
+          mBarrierAcks[currentConsecutive].erase(
+              std::find(mBarrierAcks[currentConsecutive].begin(),
+                        mBarrierAcks[currentConsecutive].end(), barrierAck));
+          // TODO write quicker way to go through pending
+          break;
+        } else {
+          std::cerr << "ERROR: Unexpected ACK lock from: "
+                    << barrierAck->address() << ":" << barrierAck->port()
+                    << std::endl;
+        }
+      }
+      mBarrierAckLock.unlock();
+    }
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(barrierWaitGranularTimeMs));
+    timems += barrierWaitGranularTimeMs;
+  }
+
+  std::cerr << __FUNCTION__ << " Server received all BARRIER_ACK_LOCK "
+            << std::endl;
+  // All node have acknowledged lock. So now send order to peroceed.
+  TincMessage msgUnlock;
+  msgUnlock.set_messagetype(MessageType::BARRIER_UNLOCK);
+  msgUnlock.set_objecttype(ObjectType::GLOBAL);
+  Command unlockDetails;
+  unlockDetails.set_message_id(currentConsecutive);
+
+  auto *commandUnlockDetails = msgUnlock.details().New();
+  commandUnlockDetails->PackFrom(unlockDetails);
+  msgUnlock.set_allocated_details(commandUnlockDetails);
+
+  for (auto *connection : barrierSentRequests) {
+    bool ret = sendProtobufMessage(&msgUnlock, connection);
+    if (!ret) {
+      std::cerr << "ERROR sending unlock command to " << connection->address()
+                << ":" << connection->port() << std::endl;
+    }
+  }
+
+  {
+    std::unique_lock<std::mutex> lk(mBarrierAckLock);
+    mBarrierAcks.erase(currentConsecutive);
+  }
+  std::cerr << __FUNCTION__ << " Exit server barrier --------" << std::endl;
+  return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
 }
 
 bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
