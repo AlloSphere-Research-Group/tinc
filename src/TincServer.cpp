@@ -226,6 +226,14 @@ std::pair<std::string, uint16_t> TincServer::serverAddress() {
   return {mSocket.address(), mSocket.port()};
 }
 
+void TincServer::resetServer() {
+  std::unique_lock<std::mutex> lk(mConnectionsLock);
+  for (auto conn : mServerConnections) {
+    conn->close();
+  }
+  mServerConnections.clear();
+}
+
 bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
                                  al::ValueSource *src) {
   bool ret = true;

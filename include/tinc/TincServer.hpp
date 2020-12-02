@@ -76,6 +76,8 @@ public:
 
   std::pair<std::string, uint16_t> serverAddress();
 
+  void resetServer();
+
 protected:
   void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive) {
     std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
