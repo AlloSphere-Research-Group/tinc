@@ -1532,7 +1532,7 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
 
   for (auto dim : ps->getDimensions()) {
     sendRegisterMessage(dim.get(), dst, isResponse);
-    sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst);
+    sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, isResponse);
   }
 }
 

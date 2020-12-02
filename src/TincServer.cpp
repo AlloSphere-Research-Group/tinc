@@ -222,6 +222,10 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
 }
 
+std::pair<std::string, uint16_t> TincServer::serverAddress() {
+  return {mSocket.address(), mSocket.port()};
+}
+
 bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
                                  al::ValueSource *src) {
   bool ret = true;

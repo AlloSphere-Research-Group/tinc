@@ -393,10 +393,26 @@ void ParameterSpaceDimension::conformSpace() {
     param.min(min);
     param.setNoCalls(at(0));
   } break;
+  case al::DiscreteParameterValues::UINT8: {
+    auto &param = parameter<al::ParameterInt>();
+    uint8_t max = std::numeric_limits<uint8_t>::min();
+    uint8_t min = std::numeric_limits<uint8_t>::max();
+    for (auto value : getSpaceValues<uint8_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max);
+    param.min(min);
+    param.setNoCalls(at(0));
+  } break;
   case al::DiscreteParameterValues::INT8: {
     auto &param = parameter<al::ParameterInt>();
-    float max = std::numeric_limits<int8_t>::min();
-    float min = std::numeric_limits<int8_t>::max();
+    int8_t max = std::numeric_limits<int8_t>::min();
+    int8_t min = std::numeric_limits<int8_t>::max();
     for (auto value : getSpaceValues<int8_t>()) {
       if (value > max) {
         max = value;

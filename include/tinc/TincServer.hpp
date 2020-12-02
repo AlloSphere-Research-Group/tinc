@@ -74,6 +74,8 @@ public:
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 
+  std::pair<std::string, uint16_t> serverAddress();
+
 protected:
   void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive) {
     std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
