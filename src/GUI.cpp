@@ -83,9 +83,26 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
 }
 
 void drawControls(ParameterSpace &ps) {
+  ImGui::PushID(("TincParameterSpace_" + ps.getId()).c_str());
+  ImGui::Text("Parameter Space: %s", ps.getId().c_str());
   for (auto dim : ps.getDimensions()) {
+
     drawControl(dim.get());
   }
+  ImGui::PopID();
+}
+
+void drawTincServerInfo(TincServer &tserv) {
+  ImGui::PushID(&tserv);
+
+  auto serverAddr = tserv.serverAddress();
+  ImGui::Text("Tinc server at %#010x -- %s:%i", (unsigned int)&tserv,
+              serverAddr.first.c_str(), serverAddr.second);
+  for (auto conn : tserv.connections()) {
+    ImGui::Text("%s:%i", conn.first.c_str(), conn.second);
+  }
+
+  ImGui::PopID();
 }
 
 } // namespace gui

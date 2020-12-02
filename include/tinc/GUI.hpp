@@ -35,6 +35,7 @@
 
 #include "tinc/ParameterSpace.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
+#include "tinc/TincServer.hpp"
 
 #include <memory>
 
@@ -47,6 +48,8 @@ namespace gui {
 void drawControl(ParameterSpaceDimension *dim);
 
 void drawControls(ParameterSpace &ps);
+
+void drawTincServerInfo(TincServer &tserv);
 
 } // namespace gui
 } // namespace tinc
