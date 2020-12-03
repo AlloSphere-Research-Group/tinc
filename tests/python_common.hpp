@@ -75,7 +75,7 @@ tclient.stop()
         printf("SetEnvironmentVariable failed (%d)\n", GetLastError());
       }
 #else
-      std::setenv("PYTHONPATH", pythonPath.c_str(), 1); // overwrite
+      std::setenv("PYTHONPATH", pythonModulePath.c_str(), 1); // overwrite
 #endif
     }
     if (std::system(command.c_str()) != 0) {
