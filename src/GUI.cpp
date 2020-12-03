@@ -95,7 +95,7 @@ void drawTincServerInfo(TincServer &tserv) {
   ImGui::PushID(&tserv);
 
   auto serverAddr = tserv.serverAddress();
-  ImGui::Text("Tinc server at %#010x -- %s:%i", (unsigned int)&tserv,
+  ImGui::Text("Tinc server at %#010lx -- %s:%i", (uintptr_t)&tserv,
               serverAddr.first.c_str(), serverAddr.second);
   ImGui::SameLine();
   if (ImGui::Button("Reset TincServer")) {
