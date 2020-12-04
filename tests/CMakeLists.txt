@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(googletest)
 
 set(PYTHON_EXECUTABLE "python" CACHE FILEPATH "Path to the python executable")
 
-add_definitions(-DTINC_TESTS_TIMEOUT_MS=250)
+add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
 
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
