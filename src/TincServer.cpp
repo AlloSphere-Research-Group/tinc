@@ -75,6 +75,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::COMMAND:
+        std::cout << "server command" << std::endl;
         if (!readCommandMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Command message"
                     << std::endl;
@@ -105,6 +106,10 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::BARRIER_UNLOCK:
+        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_UNLOCK in server"
+                  << std::endl;
+        break;
+      case MessageType::GOODBYE:
         std::cerr << __FUNCTION__ << ": Unsupported BARRIER_UNLOCK in server"
                   << std::endl;
         break;
@@ -226,12 +231,41 @@ std::pair<std::string, uint16_t> TincServer::serverAddress() {
   return {mSocket.address(), mSocket.port()};
 }
 
-void TincServer::resetServer() {
+void TincServer::disconnectAllClients() {
   std::unique_lock<std::mutex> lk(mConnectionsLock);
   for (auto conn : mServerConnections) {
     conn->close();
   }
   mServerConnections.clear();
+}
+
+void TincServer::processBarrierAckLock(al::Socket *src,
+                                       uint64_t barrierConsecutive) {
+  std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
+            << src->port() << std::endl;
+  std::unique_lock<std::mutex> lk(mBarrierAckLock);
+  if (mBarrierAcks.find(barrierConsecutive) != mBarrierAcks.end()) {
+    mBarrierAcks[barrierConsecutive].push_back(src);
+  } else {
+    std::cerr << __FUNCTION__ << " ERROR unexpected ACK_LOCK. Ignoring"
+              << std::endl;
+  }
+}
+
+void TincServer::disconnectClient(al::Socket *src) {
+  std::unique_lock<std::mutex> lk(mConnectionsLock);
+  for (auto connIt = mServerConnections.begin();
+       connIt != mServerConnections.end(); connIt++) {
+    if (connIt->get() == src) {
+      mServerConnections.erase(connIt);
+      break;
+    } else if ((*connIt)->address() == src->address() &&
+               (*connIt)->port() == src->port()) {
+      // TODO is there need for this check?
+      mServerConnections.erase(connIt);
+      break;
+    }
+  }
 }
 
 bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,

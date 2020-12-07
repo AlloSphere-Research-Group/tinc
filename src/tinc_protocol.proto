@@ -18,6 +18,8 @@ enum MessageType {
   BARRIER_REQUEST = 100;
   BARRIER_ACK_LOCK = 101;
   BARRIER_UNLOCK = 102;
+
+  GOODBYE = 200;
 }
 
 enum ObjectType {
@@ -56,6 +58,7 @@ enum DiskBufferType {
     JSON = 3;
     IMAGE = 4;
 }
+
 
 /// ################ TincMessage #####################
 message TincMessage {
@@ -188,6 +191,10 @@ message Command {
     uint64 message_id = 1;
     ObjectId id = 2;
     google.protobuf.Any details = 3;
+}
+
+message CommandErrorPayload {
+  string error = 1;
 }
 
 message ParameterRequestChoiceElements {

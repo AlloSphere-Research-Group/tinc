@@ -91,15 +91,17 @@ void drawControls(ParameterSpace &ps) {
   ImGui::PopID();
 }
 
-void drawTincServerInfo(TincServer &tserv) {
+void drawTincServerInfo(TincServer &tserv, bool debug) {
   ImGui::PushID(&tserv);
 
   auto serverAddr = tserv.serverAddress();
   ImGui::Text("Tinc server at %#010lx -- %s:%i", (uintptr_t)&tserv,
               serverAddr.first.c_str(), serverAddr.second);
-  ImGui::SameLine();
-  if (ImGui::Button("Reset TincServer")) {
-    tserv.resetServer();
+  if (debug) {
+    ImGui::SameLine();
+    if (ImGui::Button("Disconnect all")) {
+      tserv.disconnectAllClients();
+    }
   }
   for (auto conn : tserv.connections()) {
     ImGui::Text("%s:%i", conn.first.c_str(), conn.second);

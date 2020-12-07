@@ -976,6 +976,8 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
 
       // Broadcast registered ParameterSpaceDimension
       sendRegisterMessage(newDim, dst);
+
+      sendConfigureMessage(newDim, dst);
     }
     // Broadcast registered Parameter
   } else {
@@ -1541,8 +1543,6 @@ void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
 
   TincMessage msg = createRegisterParameterMessage(dim->parameterMeta());
   sendTincMessage(&msg, dst, isResponse);
-
-  sendConfigureMessage(dim, dst, isResponse);
 }
 
 void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
@@ -2091,6 +2091,30 @@ bool TincProtocol::readCommandMessage(int objectType, void *any,
   return false;
 }
 
+bool TincProtocol::sendCommandErrorMessage(uint64_t commandNumber,
+                                           std::string objectId,
+                                           std::string errorMessage,
+                                           al::Socket *src) {
+
+  TincMessage msg;
+  msg.set_messagetype(MessageType::COMMAND_REPLY);
+  msg.set_objecttype(ObjectType::PARAMETER);
+  auto *msgDetails = msg.details().New();
+
+  Command command;
+  command.set_message_id(commandNumber);
+  auto commandId = command.id();
+  commandId.set_id(objectId);
+  auto *errorPayload = command.details().New();
+  CommandErrorPayload errorPayloadMsg;
+  errorPayloadMsg.set_error(errorMessage);
+
+  errorPayload->PackFrom(errorPayloadMsg);
+  command.set_allocated_details(errorPayload);
+  msg.set_allocated_details(msgDetails);
+  return sendProtobufMessage(&msg, src);
+}
+
 bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<Command>()) {
@@ -2102,9 +2126,9 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
   Command incomingCommand;
   details->UnpackTo(&incomingCommand);
   uint64_t commandNumber = incomingCommand.message_id();
+  auto id = incomingCommand.id().id();
   if (incomingCommand.details().Is<ParameterRequestChoiceElements>()) {
     std::vector<std::string> elements;
-    auto id = incomingCommand.id().id();
     for (auto *ps : mParameterSpaces) {
       for (auto dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
@@ -2153,6 +2177,10 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     // FIXME what is command reply? can this be sendTincmessage
     sendProtobufMessage(&msg, src);
     return true;
+  } else {
+    sendCommandErrorMessage(commandNumber, id,
+                            "ParameterSpace not registered in server", src);
+    return false;
   }
   return false;
 }
@@ -2164,14 +2192,13 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
               << std::endl;
     return false;
   }
-
   Command incomingCommand;
   details->UnpackTo(&incomingCommand);
   uint64_t commandNumber = incomingCommand.message_id();
+  auto psId = incomingCommand.id().id();
   if (incomingCommand.details().Is<ParameterSpaceRequestCurrentPath>()) {
     ParameterSpaceRequestCurrentPath request;
     incomingCommand.details().UnpackTo(&request);
-    auto psId = incomingCommand.id().id();
     for (auto ps : mParameterSpaces) {
       if (ps->getId() == psId) {
         auto curDir = ps->currentRunPath();
@@ -2203,10 +2230,11 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         return true;
       }
     }
+    sendCommandErrorMessage(commandNumber, psId,
+                            "ParameterSpace not registered in server", src);
   } else if (incomingCommand.details().Is<ParameterSpaceRequestRootPath>()) {
     ParameterSpaceRequestRootPath request;
     incomingCommand.details().UnpackTo(&request);
-    auto psId = incomingCommand.id().id();
     for (auto ps : mParameterSpaces) {
       if (ps->getId() == psId) {
         auto rootPath = ps->rootPath;
@@ -2239,6 +2267,12 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         return true;
       }
     }
+    sendCommandErrorMessage(commandNumber, psId,
+                            "ParameterSpace not registered in server", src);
+  } else {
+    sendCommandErrorMessage(commandNumber, psId,
+                            "Unsupported command reply for ParameterSpace",
+                            src);
   }
   return false;
 }
@@ -2254,10 +2288,10 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
   Command incomingCommand;
   details->UnpackTo(&incomingCommand);
   uint64_t commandNumber = incomingCommand.message_id();
+  auto datapoolId = incomingCommand.id().id();
   if (incomingCommand.details().Is<DataPoolCommandSlice>()) {
     DataPoolCommandSlice commandSlice;
     incomingCommand.details().UnpackTo(&commandSlice);
-    auto datapoolId = incomingCommand.id().id();
     auto field = commandSlice.field();
 
     std::vector<std::string> dims;
@@ -2299,10 +2333,11 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         return true;
       }
     }
+    sendCommandErrorMessage(commandNumber, datapoolId,
+                            "Datapool not registered in server", src);
   } else if (incomingCommand.details().Is<DataPoolCommandCurrentFiles>()) {
     DataPoolCommandCurrentFiles commandSlice;
     incomingCommand.details().UnpackTo(&commandSlice);
-    auto datapoolId = incomingCommand.id().id();
 
     for (auto dp : mDataPools) {
       if (dp->getId() == datapoolId) {
@@ -2340,6 +2375,11 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         return true;
       }
     }
+    sendCommandErrorMessage(commandNumber, datapoolId,
+                            "Datapool not registered in server", src);
+  } else {
+    sendCommandErrorMessage(commandNumber, datapoolId,
+                            "Unsupported command reply for Datapool", src);
   }
   return false;
 }

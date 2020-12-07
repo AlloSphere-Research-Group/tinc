@@ -197,6 +197,9 @@ protected:
 
   // Incoming command message
   bool readCommandMessage(int objectType, void *any, al::Socket *src);
+  bool sendCommandErrorMessage(uint64_t commandId, std::string objectId,
+                               std::string errorMessage, al::Socket *src);
+
   bool processCommandParameter(void *any, al::Socket *src);
   bool processCommandParameterSpace(void *any, al::Socket *src);
   bool processCommandDataPool(void *any, al::Socket *src);

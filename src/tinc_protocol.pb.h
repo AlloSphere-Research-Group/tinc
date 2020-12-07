@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[25]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -60,6 +60,9 @@ namespace tinc {
 class Command;
 class CommandDefaultTypeInternal;
 extern CommandDefaultTypeInternal _Command_default_instance_;
+class CommandErrorPayload;
+class CommandErrorPayloadDefaultTypeInternal;
+extern CommandErrorPayloadDefaultTypeInternal _CommandErrorPayload_default_instance_;
 class ConfigureDataPool;
 class ConfigureDataPoolDefaultTypeInternal;
 extern ConfigureDataPoolDefaultTypeInternal _ConfigureDataPool_default_instance_;
@@ -135,6 +138,7 @@ extern TincMessageDefaultTypeInternal _TincMessage_default_instance_;
 }  // namespace tinc
 PROTOBUF_NAMESPACE_OPEN
 template<> ::tinc::Command* Arena::CreateMaybeMessage<::tinc::Command>(Arena*);
+template<> ::tinc::CommandErrorPayload* Arena::CreateMaybeMessage<::tinc::CommandErrorPayload>(Arena*);
 template<> ::tinc::ConfigureDataPool* Arena::CreateMaybeMessage<::tinc::ConfigureDataPool>(Arena*);
 template<> ::tinc::ConfigureDiskBuffer* Arena::CreateMaybeMessage<::tinc::ConfigureDiskBuffer>(Arena*);
 template<> ::tinc::ConfigureParameter* Arena::CreateMaybeMessage<::tinc::ConfigureParameter>(Arena*);
@@ -174,12 +178,13 @@ enum MessageType : int {
   BARRIER_REQUEST = 100,
   BARRIER_ACK_LOCK = 101,
   BARRIER_UNLOCK = 102,
+  GOODBYE = 200,
   MessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MessageType_IsValid(int value);
 constexpr MessageType MessageType_MIN = REQUEST;
-constexpr MessageType MessageType_MAX = BARRIER_UNLOCK;
+constexpr MessageType MessageType_MAX = GOODBYE;
 constexpr int MessageType_ARRAYSIZE = MessageType_MAX + 1;
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MessageType_descriptor();
@@ -3180,6 +3185,150 @@ class Command PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class CommandErrorPayload PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.CommandErrorPayload) */ {
+ public:
+  inline CommandErrorPayload() : CommandErrorPayload(nullptr) {}
+  virtual ~CommandErrorPayload();
+
+  CommandErrorPayload(const CommandErrorPayload& from);
+  CommandErrorPayload(CommandErrorPayload&& from) noexcept
+    : CommandErrorPayload() {
+    *this = ::std::move(from);
+  }
+
+  inline CommandErrorPayload& operator=(const CommandErrorPayload& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline CommandErrorPayload& operator=(CommandErrorPayload&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const CommandErrorPayload& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const CommandErrorPayload* internal_default_instance() {
+    return reinterpret_cast<const CommandErrorPayload*>(
+               &_CommandErrorPayload_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(CommandErrorPayload& a, CommandErrorPayload& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(CommandErrorPayload* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(CommandErrorPayload* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline CommandErrorPayload* New() const final {
+    return CreateMaybeMessage<CommandErrorPayload>(nullptr);
+  }
+
+  CommandErrorPayload* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CommandErrorPayload>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const CommandErrorPayload& from);
+  void MergeFrom(const CommandErrorPayload& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(CommandErrorPayload* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.CommandErrorPayload";
+  }
+  protected:
+  explicit CommandErrorPayload(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kErrorFieldNumber = 1,
+  };
+  // string error = 1;
+  void clear_error();
+  const std::string& error() const;
+  void set_error(const std::string& value);
+  void set_error(std::string&& value);
+  void set_error(const char* value);
+  void set_error(const char* value, size_t size);
+  std::string* mutable_error();
+  std::string* release_error();
+  void set_allocated_error(std::string* error);
+  private:
+  const std::string& _internal_error() const;
+  void _internal_set_error(const std::string& value);
+  std::string* _internal_mutable_error();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.CommandErrorPayload)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr error_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class ParameterRequestChoiceElements PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.ParameterRequestChoiceElements) */ {
  public:
@@ -3222,7 +3371,7 @@ class ParameterRequestChoiceElements PROTOBUF_FINAL :
                &_ParameterRequestChoiceElements_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    16;
 
   friend void swap(ParameterRequestChoiceElements& a, ParameterRequestChoiceElements& b) {
     a.Swap(&b);
@@ -3346,7 +3495,7 @@ class ParameterRequestChoiceElementsReply PROTOBUF_FINAL :
                &_ParameterRequestChoiceElementsReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    17;
 
   friend void swap(ParameterRequestChoiceElementsReply& a, ParameterRequestChoiceElementsReply& b) {
     a.Swap(&b);
@@ -3498,7 +3647,7 @@ class ParameterSpaceRequestCurrentPath PROTOBUF_FINAL :
                &_ParameterSpaceRequestCurrentPath_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    18;
 
   friend void swap(ParameterSpaceRequestCurrentPath& a, ParameterSpaceRequestCurrentPath& b) {
     a.Swap(&b);
@@ -3622,7 +3771,7 @@ class ParameterSpaceRequestCurrentPathReply PROTOBUF_FINAL :
                &_ParameterSpaceRequestCurrentPathReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    19;
 
   friend void swap(ParameterSpaceRequestCurrentPathReply& a, ParameterSpaceRequestCurrentPathReply& b) {
     a.Swap(&b);
@@ -3766,7 +3915,7 @@ class ParameterSpaceRequestRootPath PROTOBUF_FINAL :
                &_ParameterSpaceRequestRootPath_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    20;
 
   friend void swap(ParameterSpaceRequestRootPath& a, ParameterSpaceRequestRootPath& b) {
     a.Swap(&b);
@@ -3890,7 +4039,7 @@ class ParameterSpaceRequestRootPathReply PROTOBUF_FINAL :
                &_ParameterSpaceRequestRootPathReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    21;
 
   friend void swap(ParameterSpaceRequestRootPathReply& a, ParameterSpaceRequestRootPathReply& b) {
     a.Swap(&b);
@@ -4034,7 +4183,7 @@ class DataPoolCommandSlice PROTOBUF_FINAL :
                &_DataPoolCommandSlice_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    22;
 
   friend void swap(DataPoolCommandSlice& a, DataPoolCommandSlice& b) {
     a.Swap(&b);
@@ -4204,7 +4353,7 @@ class DataPoolCommandSliceReply PROTOBUF_FINAL :
                &_DataPoolCommandSliceReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    23;
 
   friend void swap(DataPoolCommandSliceReply& a, DataPoolCommandSliceReply& b) {
     a.Swap(&b);
@@ -4348,7 +4497,7 @@ class DataPoolCommandCurrentFiles PROTOBUF_FINAL :
                &_DataPoolCommandCurrentFiles_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    24;
 
   friend void swap(DataPoolCommandCurrentFiles& a, DataPoolCommandCurrentFiles& b) {
     a.Swap(&b);
@@ -4472,7 +4621,7 @@ class DataPoolCommandCurrentFilesReply PROTOBUF_FINAL :
                &_DataPoolCommandCurrentFilesReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    25;
 
   friend void swap(DataPoolCommandCurrentFilesReply& a, DataPoolCommandCurrentFilesReply& b) {
     a.Swap(&b);
@@ -7316,6 +7465,72 @@ inline void Command::set_allocated_details(PROTOBUF_NAMESPACE_ID::Any* details) 
 
 // -------------------------------------------------------------------
 
+// CommandErrorPayload
+
+// string error = 1;
+inline void CommandErrorPayload::clear_error() {
+  error_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& CommandErrorPayload::error() const {
+  // @@protoc_insertion_point(field_get:tinc.CommandErrorPayload.error)
+  return _internal_error();
+}
+inline void CommandErrorPayload::set_error(const std::string& value) {
+  _internal_set_error(value);
+  // @@protoc_insertion_point(field_set:tinc.CommandErrorPayload.error)
+}
+inline std::string* CommandErrorPayload::mutable_error() {
+  // @@protoc_insertion_point(field_mutable:tinc.CommandErrorPayload.error)
+  return _internal_mutable_error();
+}
+inline const std::string& CommandErrorPayload::_internal_error() const {
+  return error_.Get();
+}
+inline void CommandErrorPayload::_internal_set_error(const std::string& value) {
+  
+  error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void CommandErrorPayload::set_error(std::string&& value) {
+  
+  error_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.CommandErrorPayload.error)
+}
+inline void CommandErrorPayload::set_error(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.CommandErrorPayload.error)
+}
+inline void CommandErrorPayload::set_error(const char* value,
+    size_t size) {
+  
+  error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.CommandErrorPayload.error)
+}
+inline std::string* CommandErrorPayload::_internal_mutable_error() {
+  
+  return error_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* CommandErrorPayload::release_error() {
+  // @@protoc_insertion_point(field_release:tinc.CommandErrorPayload.error)
+  return error_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void CommandErrorPayload::set_allocated_error(std::string* error) {
+  if (error != nullptr) {
+    
+  } else {
+    
+  }
+  error_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), error,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.CommandErrorPayload.error)
+}
+
+// -------------------------------------------------------------------
+
 // ParameterRequestChoiceElements
 
 // -------------------------------------------------------------------
@@ -7827,6 +8042,8 @@ DataPoolCommandCurrentFilesReply::mutable_filenames() {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

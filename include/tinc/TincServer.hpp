@@ -76,20 +76,11 @@ public:
 
   std::pair<std::string, uint16_t> serverAddress();
 
-  void resetServer();
+  void disconnectAllClients();
 
 protected:
-  void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive) {
-    std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
-              << src->port() << std::endl;
-    std::unique_lock<std::mutex> lk(mBarrierAckLock);
-    if (mBarrierAcks.find(barrierConsecutive) != mBarrierAcks.end()) {
-      mBarrierAcks[barrierConsecutive].push_back(src);
-    } else {
-      std::cerr << __FUNCTION__ << " ERROR unexpected ACK_LOCK. Ignoring"
-                << std::endl;
-    }
-  }
+  void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive);
+  void disconnectClient(al::Socket *src);
 
 private:
   uint64_t mBarrierConsecutive{1};

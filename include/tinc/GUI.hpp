@@ -49,7 +49,7 @@ void drawControl(ParameterSpaceDimension *dim);
 
 void drawControls(ParameterSpace &ps);
 
-void drawTincServerInfo(TincServer &tserv);
+void drawTincServerInfo(TincServer &tserv, bool debug = false);
 
 } // namespace gui
 } // namespace tinc

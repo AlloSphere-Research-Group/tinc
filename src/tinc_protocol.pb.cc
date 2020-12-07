@@ -78,6 +78,10 @@ class CommandDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Command> _instance;
 } _Command_default_instance_;
+class CommandErrorPayloadDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<CommandErrorPayload> _instance;
+} _CommandErrorPayload_default_instance_;
 class ParameterRequestChoiceElementsDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<ParameterRequestChoiceElements> _instance;
@@ -134,6 +138,20 @@ static void InitDefaultsscc_info_Command_tinc_5fprotocol_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 2, 0, InitDefaultsscc_info_Command_tinc_5fprotocol_2eproto}, {
       &scc_info_ObjectId_tinc_5fprotocol_2eproto.base,
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
+
+static void InitDefaultsscc_info_CommandErrorPayload_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_CommandErrorPayload_default_instance_;
+    new (ptr) ::tinc::CommandErrorPayload();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::CommandErrorPayload::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_CommandErrorPayload_tinc_5fprotocol_2eproto}, {}};
 
 static void InitDefaultsscc_info_ConfigureDataPool_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -479,7 +497,7 @@ static void InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[25];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[26];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[9];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_tinc_5fprotocol_2eproto = nullptr;
 
@@ -613,6 +631,12 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   PROTOBUF_FIELD_OFFSET(::tinc::Command, id_),
   PROTOBUF_FIELD_OFFSET(::tinc::Command, details_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::CommandErrorPayload, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::tinc::CommandErrorPayload, error_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterRequestChoiceElements, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -686,16 +710,17 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 104, -1, sizeof(::tinc::ConfigureDiskBuffer)},
   { 112, -1, sizeof(::tinc::ConfigureDataPool)},
   { 120, -1, sizeof(::tinc::Command)},
-  { 128, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
-  { 133, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
-  { 139, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
-  { 144, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
-  { 150, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
-  { 155, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
-  { 161, -1, sizeof(::tinc::DataPoolCommandSlice)},
-  { 168, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
-  { 174, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
-  { 179, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
+  { 128, -1, sizeof(::tinc::CommandErrorPayload)},
+  { 134, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
+  { 139, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
+  { 145, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
+  { 150, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
+  { 156, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
+  { 161, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
+  { 167, -1, sizeof(::tinc::DataPoolCommandSlice)},
+  { 174, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
+  { 180, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
+  { 185, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -714,6 +739,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDiskBuffer_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDataPool_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_Command_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_CommandErrorPayload_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterRequestChoiceElements_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterRequestChoiceElementsReply_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterSpaceRequestCurrentPath_default_instance_),
@@ -773,48 +799,50 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "urationValue\030\003 \001(\0132\024.google.protobuf.Any"
   "\"`\n\007Command\022\022\n\nmessage_id\030\001 \001(\004\022\032\n\002id\030\002 "
   "\001(\0132\016.tinc.ObjectId\022%\n\007details\030\003 \001(\0132\024.g"
-  "oogle.protobuf.Any\" \n\036ParameterRequestCh"
-  "oiceElements\"7\n#ParameterRequestChoiceEl"
-  "ementsReply\022\020\n\010elements\030\001 \003(\t\"\"\n Paramet"
-  "erSpaceRequestCurrentPath\"5\n%ParameterSp"
-  "aceRequestCurrentPathReply\022\014\n\004path\030\001 \001(\t"
-  "\"\037\n\035ParameterSpaceRequestRootPath\"2\n\"Par"
-  "ameterSpaceRequestRootPathReply\022\014\n\004path\030"
-  "\001 \001(\t\"8\n\024DataPoolCommandSlice\022\r\n\005field\030\001"
-  " \001(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031DataPoolComma"
-  "ndSliceReply\022\020\n\010filename\030\001 \001(\t\"\035\n\033DataPo"
-  "olCommandCurrentFiles\"5\n DataPoolCommand"
-  "CurrentFilesReply\022\021\n\tfilenames\030\001 \003(\t*\266\001\n"
-  "\013MessageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022\014\n"
-  "\010REGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020\004\022"
-  "\021\n\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004PONG\020c\022\023"
-  "\n\017BARRIER_REQUEST\020d\022\024\n\020BARRIER_ACK_LOCK\020"
-  "e\022\022\n\016BARRIER_UNLOCK\020f*k\n\nObjectType\022\r\n\tP"
-  "ARAMETER\020\000\022\r\n\tPROCESSOR\020\001\022\017\n\013DISK_BUFFER"
-  "\020\002\022\r\n\tDATA_POOL\020\003\022\023\n\017PARAMETER_SPACE\020\004\022\n"
-  "\n\006GLOBAL\020\005*3\n\rProcessorType\022\016\n\nDATASCRIP"
-  "T\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021ParameterDat"
-  "aType\022\023\n\017PARAMETER_FLOAT\020\000\022\022\n\016PARAMETER_"
-  "BOOL\020\001\022\024\n\020PARAMETER_STRING\020\002\022\023\n\017PARAMETE"
-  "R_INT32\020\003\022\023\n\017PARAMETER_VEC3F\020\004\022\023\n\017PARAME"
-  "TER_VEC4F\020\005\022\024\n\020PARAMETER_COLORF\020\006\022\023\n\017PAR"
-  "AMETER_POSED\020\007\022\022\n\016PARAMETER_MENU\020\010\022\024\n\020PA"
-  "RAMETER_CHOICE\020\t\022\025\n\021PARAMETER_TRIGGER\020\n*"
-  "G\n\016DiskBufferType\022\n\n\006BINARY\020\000\022\010\n\004TEXT\020\001\022"
-  "\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*P\n\026Para"
-  "meterConfigureType\022\t\n\005VALUE\020\000\022\007\n\003MIN\020\001\022\007"
-  "\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020\004*F\n\033Pa"
-  "rameterSpaceConfigureType\022\021\n\rADD_PARAMET"
-  "ER\020\000\022\024\n\020REMOVE_PARAMETER\020\001*+\n\027DiskBuffer"
-  "ConfigureType\022\020\n\014CURRENT_FILE\020\000*,\n\025DataP"
-  "oolConfigureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006p"
-  "roto3"
+  "oogle.protobuf.Any\"$\n\023CommandErrorPayloa"
+  "d\022\r\n\005error\030\001 \001(\t\" \n\036ParameterRequestChoi"
+  "ceElements\"7\n#ParameterRequestChoiceElem"
+  "entsReply\022\020\n\010elements\030\001 \003(\t\"\"\n Parameter"
+  "SpaceRequestCurrentPath\"5\n%ParameterSpac"
+  "eRequestCurrentPathReply\022\014\n\004path\030\001 \001(\t\"\037"
+  "\n\035ParameterSpaceRequestRootPath\"2\n\"Param"
+  "eterSpaceRequestRootPathReply\022\014\n\004path\030\001 "
+  "\001(\t\"8\n\024DataPoolCommandSlice\022\r\n\005field\030\001 \001"
+  "(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031DataPoolCommand"
+  "SliceReply\022\020\n\010filename\030\001 \001(\t\"\035\n\033DataPool"
+  "CommandCurrentFiles\"5\n DataPoolCommandCu"
+  "rrentFilesReply\022\021\n\tfilenames\030\001 \003(\t*\304\001\n\013M"
+  "essageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022\014\n\010R"
+  "EGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020\004\022\021\n"
+  "\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004PONG\020c\022\023\n\017"
+  "BARRIER_REQUEST\020d\022\024\n\020BARRIER_ACK_LOCK\020e\022"
+  "\022\n\016BARRIER_UNLOCK\020f\022\014\n\007GOODBYE\020\310\001*k\n\nObj"
+  "ectType\022\r\n\tPARAMETER\020\000\022\r\n\tPROCESSOR\020\001\022\017\n"
+  "\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL\020\003\022\023\n\017PARAMET"
+  "ER_SPACE\020\004\022\n\n\006GLOBAL\020\005*3\n\rProcessorType\022"
+  "\016\n\nDATASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021"
+  "ParameterDataType\022\023\n\017PARAMETER_FLOAT\020\000\022\022"
+  "\n\016PARAMETER_BOOL\020\001\022\024\n\020PARAMETER_STRING\020\002"
+  "\022\023\n\017PARAMETER_INT32\020\003\022\023\n\017PARAMETER_VEC3F"
+  "\020\004\022\023\n\017PARAMETER_VEC4F\020\005\022\024\n\020PARAMETER_COL"
+  "ORF\020\006\022\023\n\017PARAMETER_POSED\020\007\022\022\n\016PARAMETER_"
+  "MENU\020\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMETE"
+  "R_TRIGGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY\020"
+  "\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMA"
+  "GE\020\004*P\n\026ParameterConfigureType\022\t\n\005VALUE\020"
+  "\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_"
+  "TYPE\020\004*F\n\033ParameterSpaceConfigureType\022\021\n"
+  "\rADD_PARAMETER\020\000\022\024\n\020REMOVE_PARAMETER\020\001*+"
+  "\n\027DiskBufferConfigureType\022\020\n\014CURRENT_FIL"
+  "E\020\000*,\n\025DataPoolConfigureType\022\023\n\017SLICE_CA"
+  "CHE_DIR\020\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[25] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[26] = {
   &scc_info_Command_tinc_5fprotocol_2eproto.base,
+  &scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDataPool_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDiskBuffer_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureParameter_tinc_5fprotocol_2eproto.base,
@@ -842,10 +870,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3245,
-  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 25, 1,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3297,
+  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 26, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
-  file_level_metadata_tinc_5fprotocol_2eproto, 25, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
+  file_level_metadata_tinc_5fprotocol_2eproto, 26, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -868,6 +896,7 @@ bool MessageType_IsValid(int value) {
     case 100:
     case 101:
     case 102:
+    case 200:
       return true;
     default:
       return false;
@@ -5490,6 +5519,215 @@ void Command::InternalSwap(Command* other) {
 
 // ===================================================================
 
+void CommandErrorPayload::InitAsDefaultInstance() {
+}
+class CommandErrorPayload::_Internal {
+ public:
+};
+
+CommandErrorPayload::CommandErrorPayload(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.CommandErrorPayload)
+}
+CommandErrorPayload::CommandErrorPayload(const CommandErrorPayload& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  error_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_error().empty()) {
+    error_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_error(),
+      GetArena());
+  }
+  // @@protoc_insertion_point(copy_constructor:tinc.CommandErrorPayload)
+}
+
+void CommandErrorPayload::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto.base);
+  error_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+CommandErrorPayload::~CommandErrorPayload() {
+  // @@protoc_insertion_point(destructor:tinc.CommandErrorPayload)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void CommandErrorPayload::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  error_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void CommandErrorPayload::ArenaDtor(void* object) {
+  CommandErrorPayload* _this = reinterpret_cast< CommandErrorPayload* >(object);
+  (void)_this;
+}
+void CommandErrorPayload::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void CommandErrorPayload::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const CommandErrorPayload& CommandErrorPayload::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void CommandErrorPayload::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.CommandErrorPayload)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  error_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* CommandErrorPayload::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // string error = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_error();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "tinc.CommandErrorPayload.error"));
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* CommandErrorPayload::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.CommandErrorPayload)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string error = 1;
+  if (this->error().size() > 0) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_error().data(), static_cast<int>(this->_internal_error().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "tinc.CommandErrorPayload.error");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_error(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.CommandErrorPayload)
+  return target;
+}
+
+size_t CommandErrorPayload::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.CommandErrorPayload)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string error = 1;
+  if (this->error().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_error());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void CommandErrorPayload::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.CommandErrorPayload)
+  GOOGLE_DCHECK_NE(&from, this);
+  const CommandErrorPayload* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<CommandErrorPayload>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.CommandErrorPayload)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.CommandErrorPayload)
+    MergeFrom(*source);
+  }
+}
+
+void CommandErrorPayload::MergeFrom(const CommandErrorPayload& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.CommandErrorPayload)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.error().size() > 0) {
+    _internal_set_error(from._internal_error());
+  }
+}
+
+void CommandErrorPayload::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.CommandErrorPayload)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CommandErrorPayload::CopyFrom(const CommandErrorPayload& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.CommandErrorPayload)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CommandErrorPayload::IsInitialized() const {
+  return true;
+}
+
+void CommandErrorPayload::InternalSwap(CommandErrorPayload* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  error_.Swap(&other->error_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata CommandErrorPayload::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void ParameterRequestChoiceElements::InitAsDefaultInstance() {
 }
 class ParameterRequestChoiceElements::_Internal {
@@ -7484,6 +7722,9 @@ template<> PROTOBUF_NOINLINE ::tinc::ConfigureDataPool* Arena::CreateMaybeMessag
 }
 template<> PROTOBUF_NOINLINE ::tinc::Command* Arena::CreateMaybeMessage< ::tinc::Command >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::Command >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::CommandErrorPayload* Arena::CreateMaybeMessage< ::tinc::CommandErrorPayload >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::CommandErrorPayload >(arena);
 }
 template<> PROTOBUF_NOINLINE ::tinc::ParameterRequestChoiceElements* Arena::CreateMaybeMessage< ::tinc::ParameterRequestChoiceElements >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::ParameterRequestChoiceElements >(arena);
