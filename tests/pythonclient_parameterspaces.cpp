@@ -42,7 +42,7 @@ tclient.stop()
 
   auto output = ptest.readResults();
 
-  EXPECT_NE(output.size(), 1);
+  EXPECT_EQ(output.size(), 1);
 
   auto out_ps = output[0];
 
