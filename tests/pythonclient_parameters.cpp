@@ -115,7 +115,7 @@ tclient.stop()
 )";
 
   PythonTester ptest;
-  ptest.pythonExecutable = "C:\\Users\\Andres\\anaconda3\\python";
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
   ptest.runPython(pythonCode);
 
@@ -163,7 +163,7 @@ test_output = [parameter_to_dict(p) for p in tclient.parameters]
 tclient.stop()
 )";
   PythonTester ptest;
-  ptest.pythonExecutable = "C:\\Users\\Andres\\anaconda3\\python";
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
   ptest.runPython(pythonCode);
 
