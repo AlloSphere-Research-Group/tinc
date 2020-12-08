@@ -105,7 +105,11 @@ TEST(PythonClient, ParameterString) {
   p.set("hello");
   std::string pythonCode = R"(
 tclient.request_parameters()
-time.sleep(0.5)
+while not tclient.get_parameter("param", "group"):
+    time.sleep(0.01)
+
+time.sleep(0.2)
+p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
 tclient.stop()
 )";
@@ -150,7 +154,11 @@ TEST(PythonClient, ParameterInt) {
 
   std::string pythonCode = R"(
 tclient.request_parameters()
-time.sleep(0.5)
+while not tclient.get_parameter("param", "group"):
+    time.sleep(0.01)
+
+time.sleep(0.2)
+p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
 tclient.stop()
 )";
