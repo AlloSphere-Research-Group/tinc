@@ -16,11 +16,18 @@ TEST(PythonClient, ParameterFloat) {
 
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
   tserver << p;
+
   p.set(0.5);
 
   std::string pythonCode = R"(
+import time
+
 tclient.request_parameters()
-time.sleep(0.5)
+while not tclient.get_parameter("param", "group"):
+    time.sleep(0.01)
+
+time.sleep(0.2)
+p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
 tclient.stop()
 )";
@@ -94,6 +101,8 @@ TEST(PythonClient, ParameterString) {
 
   al::ParameterString p{"param", "group", "default"};
   tserver << p;
+
+  p.set("hello");
   std::string pythonCode = R"(
 tclient.request_parameters()
 time.sleep(0.5)
@@ -112,7 +121,7 @@ tclient.stop()
 
   auto p1 = output[0];
   EXPECT_EQ(p1["default"], "default");
-  EXPECT_EQ(p1["_value"], "default");
+  EXPECT_EQ(p1["_value"], "hello");
 
   // change value on the serverside
   p.set("value");
@@ -134,7 +143,7 @@ TEST(PythonClient, ParameterInt) {
   EXPECT_TRUE(tserver.start());
 
   al::ParameterInt p{"param", "group", 3, -10, 11};
-  p.setNoCalls(-3);
+  p.set(-3);
   tserver << p;
 
   int counter = 0;

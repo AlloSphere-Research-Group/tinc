@@ -35,8 +35,12 @@ TEST(TincProtocol, ParameterFloat) {
   }
 
   EXPECT_NE(param, nullptr);
-
   auto *paramFloat = static_cast<al::Parameter *>(param);
+
+  while (paramFloat->get() != 0.5f) {
+    al::al_sleep(0.02); // Give time to connect
+  }
+
   EXPECT_FLOAT_EQ(paramFloat->min(), -10);
   EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
   EXPECT_FLOAT_EQ(paramFloat->get(), 0.5);

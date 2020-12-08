@@ -1357,6 +1357,7 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 void TincProtocol::processRequestParameters(al::Socket *dst) {
   for (auto *dim : mParameterSpaceDimensions) {
     sendRegisterMessage(dim, dst, true);
+    sendConfigureMessage(dim, dst, true);
   }
 }
 
@@ -1534,6 +1535,7 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
 
   for (auto dim : ps->getDimensions()) {
     sendRegisterMessage(dim.get(), dst, isResponse);
+    sendConfigureMessage(dim.get(), dst, isResponse);
     sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, isResponse);
   }
 }

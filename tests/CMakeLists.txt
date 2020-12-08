@@ -36,9 +36,9 @@ if(BUILD_PYTHON_TESTS)
   list(PREPEND TEST_SOURCES
     python_common.cpp
     python_common.hpp
-    pythonclient.cpp
-    pythonclient_parameterspaces.cpp
     pythonclient_parameters.cpp
+    pythonclient_parameterspaces.cpp
+#    pythonclient.cpp
     )
 endif(BUILD_PYTHON_TESTS)
 
