@@ -685,7 +685,11 @@ std::string ParameterSpace::resolveFilename(std::string fileTemplate) {
           } else if (representation == "VALUE") {
             resolvedName += std::to_string(dim->getCurrentValue());
           } else if (representation == "INDEX") {
-            resolvedName += std::to_string(dim->getCurrentIndex());
+            auto index = dim->getCurrentIndex();
+            if (index == SIZE_MAX) {
+              index = 0;
+            }
+            resolvedName += std::to_string(index);
           } else {
             std::cerr << "Representation error: " << representation
                       << std::endl;

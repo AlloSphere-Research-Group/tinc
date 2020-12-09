@@ -391,7 +391,11 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    param.setNoCalls(at(0));
+    if (param.get() > max) {
+      param.set(max);
+    } else if (param.get() < min) {
+      param.set(min);
+    }
   } break;
   case al::DiscreteParameterValues::UINT8: {
     auto &param = parameter<al::ParameterInt>();
@@ -407,7 +411,11 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    param.setNoCalls(at(0));
+    if (param.get() > max) {
+      param.set(max);
+    } else if (param.get() < min) {
+      param.set(min);
+    }
   } break;
   case al::DiscreteParameterValues::INT8: {
     auto &param = parameter<al::ParameterInt>();
@@ -423,7 +431,11 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    param.setNoCalls(at(0));
+    if (param.get() > max) {
+      param.set(max);
+    } else if (param.get() < min) {
+      param.set(min);
+    }
   } break;
   case al::DiscreteParameterValues::INT32: {
     auto &param = parameter<al::ParameterInt>();
@@ -439,7 +451,11 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    param.setNoCalls(at(0));
+    if (param.get() > max) {
+      param.set(max);
+    } else if (param.get() < min) {
+      param.set(min);
+    }
   } break;
   case al::DiscreteParameterValues::UINT32: {
     auto &param = parameter<al::ParameterInt>();
@@ -456,7 +472,11 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    param.setNoCalls(at(0));
+    if (param.get() > max) {
+      param.set(max);
+    } else if (param.get() < min) {
+      param.set(min);
+    }
   } break;
     // FIXME complete support for all types
 
