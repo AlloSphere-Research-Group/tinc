@@ -46,6 +46,7 @@
 
 #include "al/ui/al_Parameter.hpp"
 #include "al/ui/al_DiscreteParameterValues.hpp"
+#include "al/io/al_Socket.hpp"
 
 namespace tinc {
 
@@ -61,6 +62,7 @@ namespace tinc {
  */
 class ParameterSpaceDimension {
   friend class ParameterSpace;
+  friend class TincProtocol;
 
 public:
   using Datatype = al::DiscreteParameterValues::Datatype;
@@ -86,9 +88,10 @@ public:
   void setCurrentIndex(size_t index);
   std::string getCurrentId();
 
-  void setSpaceRepresentationType(RepresentationType type) {
+  void setSpaceRepresentationType(RepresentationType type,
+                                  al::Socket *src = nullptr) {
     mRepresentationType = type;
-    onDimensionMetadataChange(this);
+    onDimensionMetadataChange(this, src);
   }
 
   RepresentationType getSpaceRepresentationType() {
@@ -103,7 +106,7 @@ public:
 
   void setFilesystemDimension(bool set = true) {
     mFilesystemDimension = set;
-    onDimensionMetadataChange(this);
+    //    onDimensionMetadataChange(this);
   }
 
   // the parameter instance holds the current value.
@@ -123,25 +126,25 @@ public:
   size_t size();
 
   //  void sort();
-  void clear();
+  void clear(al::Socket *src = nullptr);
 
   float at(size_t index);
   std::string idAt(size_t index);
 
   // Discrete parameter space values
   void setSpaceValues(void *values, size_t count, std::string idprefix = "",
-                      bool propagate = true);
+                      al::Socket *src = nullptr);
   void setSpaceValues(std::vector<float> values, std::string idprefix = "",
-                      bool propagate = true);
+                      al::Socket *src = nullptr);
   void appendSpaceValues(void *values, size_t count, std::string idprefix = "",
-                         bool propagate = true);
+                         al::Socket *src = nullptr);
 
   template <typename SpaceDataType>
   std::vector<SpaceDataType> getSpaceValues() {
     return mSpaceValues.getValues<SpaceDataType>();
   }
 
-  void setSpaceIds(std::vector<std::string> ids, bool propagate = true);
+  void setSpaceIds(std::vector<std::string> ids, al::Socket *src = nullptr);
 
   std::vector<std::string> getSpaceIds();
 
@@ -158,8 +161,9 @@ public:
 
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
-  std::function<void(ParameterSpaceDimension *)> onDimensionMetadataChange = [](
-      ParameterSpaceDimension *) {};
+  std::function<void(ParameterSpaceDimension *, al::Socket *src)>
+      onDimensionMetadataChange = [](ParameterSpaceDimension *,
+                                     al::Socket *src) {};
 
 private:
   // Data

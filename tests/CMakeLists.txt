@@ -23,22 +23,22 @@ set(TEST_SOURCES main.cpp
   parameterspace.cpp
   scriptprocessor.cpp
   tincprotocol.cpp
-  tincprotocol_barrier.cpp
   tincprotocol_parameters.cpp
-  tincprotocol_remote_parameter.cpp
   tincprotocol_parameterspaces.cpp
+  tincprotocol_barrier.cpp
+  tincprotocol_remote_parameter.cpp
   tincprotocol_processors.cpp
   tincprotocol_diskbuffers.cpp
   tincprotocol_datapools.cpp
 )
 
 if(BUILD_PYTHON_TESTS)
-  list(PREPEND TEST_SOURCES
+  list(APPEND TEST_SOURCES
     python_common.cpp
     python_common.hpp
     pythonclient_parameters.cpp
     pythonclient_parameterspaces.cpp
-#    pythonclient.cpp
+    pythonclient.cpp
     )
 endif(BUILD_PYTHON_TESTS)
 

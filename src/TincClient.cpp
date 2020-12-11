@@ -149,10 +149,10 @@ void TincClient::processBarrierUnlock(al::Socket *src,
   mBarrierUnlocks[barrierConsecutive] = src;
 }
 
-bool TincClient::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
+bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                                  al::ValueSource *src) {
   if (!dst) {
-    if (!src || isResponse || mSocket.address() != src->ipAddr ||
+    if (!src || mSocket.address() != src->ipAddr ||
         mSocket.port() != src->port) {
       if (verbose()) {
         std::cout << "Client sending message to " << mSocket.address() << ":"
@@ -161,17 +161,20 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
       return sendProtobufMessage(msg, &mSocket);
     }
   } else {
-    if (isResponse || mSocket.address() != dst->address() ||
-        mSocket.port() != dst->port()) {
+    if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {
       if (verbose()) {
-        std::cout << "Client sending message to " << mSocket.address() << ":"
-                  << mSocket.port() << std::endl;
+        std::cout << "Client sending message to " << dst->address() << ":"
+                  << dst->port() << std::endl;
+        if (dst != &mSocket) {
+          std::cout << "Unexpected socket provided to client: "
+                    << dst->address() << ":" << dst->port() << std::endl;
+        }
       }
-      return sendProtobufMessage(msg, &mSocket);
+      return sendProtobufMessage(msg, dst);
     }
   }
 
-  return true;
+  return false;
 }
 
 bool TincClient::barrier(uint32_t group, float timeoutsec) {

@@ -59,7 +59,7 @@ void ParameterSpace::registerDimension(
 
         //      std::cout << "Updated dimension: " << dimension->getName() <<
         //      std::endl;
-        onDimensionRegister(dim.get(), this);
+        onDimensionRegister(dim.get(), this, nullptr);
         return;
       } else {
         std::cout << "WARNING: Dimension datatype change." << std::endl;
@@ -83,7 +83,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else if (al::Parameter *p =
                  dynamic_cast<al::Parameter *>(dimension->parameterMeta())) {
     auto &param = *p;
@@ -100,7 +100,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else if (al::ParameterInt *p =
                  dynamic_cast<al::ParameterInt *>(dimension->parameterMeta())) {
     auto &param = *p;
@@ -117,7 +117,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else {
     // FIXME implement for all parameter types
     std::cerr << "Support for parameter type not implemented in dimension "

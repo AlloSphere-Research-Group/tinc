@@ -268,11 +268,12 @@ void TincServer::disconnectClient(al::Socket *src) {
   }
 }
 
-bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
+bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
                                  al::ValueSource *src) {
   bool ret = true;
 
   if (!dst) {
+    // Send to all connections, except src
     for (auto connection : mServerConnections) {
       if (!src || connection->address() != src->ipAddr ||
           connection->port() != src->port) {
@@ -283,39 +284,14 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst, bool isResponse,
         ret &= sendProtobufMessage(msg, connection.get());
       }
     }
-    if (isResponse) {
-      std::cerr << __FUNCTION__ << ": Response requested but no socket given"
-                << std::endl;
-    }
   } else {
-    if (!isResponse) {
-      for (auto connection : mServerConnections) {
-        if (connection->address() != dst->address() ||
-            connection->port() != dst->port()) {
-          if (verbose()) {
-            std::cout << "Server sending message to " << connection->address()
-                      << ":" << connection->port() << std::endl;
-          }
-          ret &= sendProtobufMessage(msg, connection.get());
-        }
+    // Send to dst if it is not src
+    if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {
+      if (verbose()) {
+        std::cout << "Server sending message to " << dst->address() << ":"
+                  << dst->port() << std::endl;
       }
-    } else {
-      for (auto connection : mServerConnections) {
-        if (connection->address() == dst->address() &&
-            connection->port() == dst->port()) {
-          if (verbose()) {
-            std::cout << "Server responding to " << connection->address() << ":"
-                      << connection->port() << std::endl;
-          }
-          ret = sendProtobufMessage(msg, connection.get());
-          break;
-        }
-      }
-      if (!ret) {
-        std::cerr << __FUNCTION__
-                  << ": Response requested but unable to send to "
-                  << dst->address() << ":" << dst->port() << std::endl;
-      }
+      ret &= sendProtobufMessage(msg, dst);
     }
   }
 

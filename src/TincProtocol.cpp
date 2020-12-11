@@ -647,13 +647,13 @@ TincMessage createConfigureParameterSpaceRemove(ParameterSpace *ps,
 bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                                            al::ParameterMeta *param,
                                            al::Socket *src) {
-  auto confValue = conf.configurationvalue();
+  auto &confValue = conf.configurationvalue();
   if (!confValue.Is<ParameterValue>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
   }
-  ParameterConfigureType command = conf.configurationkey();
+  const ParameterConfigureType &command = conf.configurationkey();
   ParameterValue v;
   confValue.UnpackTo(&v);
   if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
@@ -825,7 +825,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         std::cerr << "ids size mismatch. ignoring" << std::endl;
         idsIt = sv.ids().end();
       }
-      dim->clear();
+      dim->clear(src);
       if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
         std::vector<float> newValues;
         std::vector<std::string> newIds;
@@ -837,8 +837,8 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues, "", false);
-        dim->setSpaceIds(newIds, false);
+        dim->setSpaceValues(newValues, "", src);
+        dim->setSpaceIds(newIds, src);
         dim->conformSpace();
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT8) {
@@ -852,8 +852,8 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", false);
-        dim->setSpaceIds(newIds, false);
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
         dim->conformSpace();
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::INT32) {
@@ -867,8 +867,8 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", false);
-        dim->setSpaceIds(newIds, false);
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
         dim->conformSpace();
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT32) {
@@ -882,8 +882,8 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", false);
-        dim->setSpaceIds(newIds, false);
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
         dim->conformSpace();
       }
       // FIXME add all types
@@ -898,7 +898,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
       ParameterValue v;
       conf.configurationvalue().UnpackTo(&v);
       dim->setSpaceRepresentationType(
-          (ParameterSpaceDimension::RepresentationType)v.valueint32());
+          (ParameterSpaceDimension::RepresentationType)v.valueint32(), src);
       // TODO ensure correct forwarding to connections
       return true;
 
@@ -912,7 +912,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 
 //// ------------------------------------------------------
 void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
-                                     al::Socket *dst) {
+                                     al::Socket *src) {
   bool registered = false;
   for (auto dim : mParameterSpaceDimensions) {
     if (dim->getName() == pmeta.getName() &&
@@ -975,9 +975,8 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
       connectDimensionCallbacks(*newDim);
 
       // Broadcast registered ParameterSpaceDimension
-      sendRegisterMessage(newDim, dst);
-
-      sendConfigureMessage(newDim, dst);
+      sendRegisterMessage(newDim, nullptr, src);
+      sendConfigureMessage(newDim, nullptr, src);
     }
     // Broadcast registered Parameter
   } else {
@@ -987,7 +986,7 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
   }
 }
 
-void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *dst) {
+void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   bool registered = false;
   for (auto *p : mParameterSpaces) {
     if (p == &ps || p->getId() == ps.getId()) {
@@ -999,48 +998,54 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *dst) {
     mParameterSpaces.push_back(&ps);
 
     // FIXME re-check callback function. something doesn't look right
-    ps.onDimensionRegister = [&](ParameterSpaceDimension *changedDimension,
-                                 ParameterSpace *ps) {
+    ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
+                                    ParameterSpace *ps, al::Socket *src) {
       for (auto dim : ps->getDimensions()) {
         if (dim->getName() == changedDimension->getName()) {
           auto msgs =
               createConfigureParameterSpaceDimensionMessage(changedDimension);
           for (auto &msg : msgs) {
-            sendTincMessage(&msg);
+            sendTincMessage(&msg, src);
           }
           // FIXME check: when does this happen?
           if (dim.get() != changedDimension) {
-            registerParameterSpaceDimension(*changedDimension);
-            sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst);
+            registerParameterSpaceDimension(*changedDimension, src);
+            sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr,
+                                                    src);
           }
 
           break;
         }
         // FIXME register parent PS on every dimension?
         auto msg = createRegisterParameterSpaceMessage(ps);
-        sendTincMessage(&msg);
+        al::ValueSource *vsource = nullptr;
+
+        if (src) {
+          vsource = src->valueSource();
+        }
+        sendTincMessage(&msg, nullptr, vsource);
 
         // FIXME register all dimensions as parameters multiple times?
         for (auto dim : ps->getDimensions()) {
           TincMessage msg =
               createRegisterParameterMessage(dim->parameterMeta());
-          sendTincMessage(&msg);
+          sendTincMessage(&msg, nullptr, vsource);
 
           // FIXME register all dimensions multiple times as well?
           auto msgs = createConfigureParameterSpaceDimensionMessage(dim.get());
           for (auto msg : msgs) {
-            sendTincMessage(&msg);
+            sendTincMessage(&msg, nullptr, vsource);
           }
         }
       }
     };
 
     // Broadcast registered ParameterSpace
-    sendRegisterMessage(&ps, dst);
+    sendRegisterMessage(&ps, nullptr, src);
 
     for (auto dim : ps.getDimensions()) {
-      registerParameterSpaceDimension(*dim);
-      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), dst);
+      registerParameterSpaceDimension(*dim, src);
+      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
     }
   } else {
     std::cerr << __FUNCTION__ << ": Processor " << ps.getId()
@@ -1049,7 +1054,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *dst) {
 }
 
 void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
-                                                   al::Socket *dst) {
+                                                   al::Socket *src) {
   bool registered = false;
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
@@ -1063,14 +1068,14 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     connectDimensionCallbacks(psd);
 
     // Broadcast registered ParameterSpaceDimension
-    sendRegisterMessage(&psd, dst);
+    sendRegisterMessage(&psd, nullptr, src);
   } else {
     std::cerr << __FUNCTION__ << ": ParameterSpaceDimension "
               << psd.getFullAddress() << " already registered." << std::endl;
   }
 }
 
-void TincProtocol::registerProcessor(Processor &processor, al::Socket *dst) {
+void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   bool registered = false;
   for (auto *p : mProcessors) {
     if (p == &processor || p->getId() == processor.getId()) {
@@ -1085,14 +1090,14 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *dst) {
     //    }
 
     // Broadcast registered processor
-    sendRegisterMessage(&processor, dst);
+    sendRegisterMessage(&processor, nullptr, src);
   } else {
     std::cerr << __FUNCTION__ << ": Processor " << processor.getId()
               << " already registered." << std::endl;
   }
 }
 
-void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *dst) {
+void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src) {
   bool registered = false;
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
@@ -1104,14 +1109,14 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *dst) {
     mDiskBuffers.push_back(&db);
 
     // Broadcast registered DiskBuffer
-    sendRegisterMessage(&db, dst);
+    sendRegisterMessage(&db, nullptr, src);
   } else {
     std::cerr << __FUNCTION__ << ": DiskBuffer " << db.getId()
               << " already registered." << std::endl;
   }
 }
 
-void TincProtocol::registerDataPool(DataPool &dp, al::Socket *dst) {
+void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   bool registered = false;
   for (auto *p : mDataPools) {
     if (p == &dp || p->getId() == dp.getId()) {
@@ -1122,38 +1127,21 @@ void TincProtocol::registerDataPool(DataPool &dp, al::Socket *dst) {
   if (!registered) {
     mDataPools.push_back(&dp);
     // FIXME check register order datapool -> ps
-    registerParameterSpace(dp.getParameterSpace());
+    registerParameterSpace(dp.getParameterSpace(), src);
 
+    // FIXME add input source to avoid repropagating
     dp.modified = [&]() {
       auto msg = createConfigureDataPoolMessage(&dp);
       sendTincMessage(&msg);
     };
 
     // Broadcast registered DataPool
-    sendRegisterMessage(&dp, dst);
+    sendRegisterMessage(&dp, nullptr, src);
   } else {
     // FIXME replace entry in mDataPools wiht this one if it is not the same
     // instance
     std::cerr << __FUNCTION__ << ": DataPool " << dp.getId()
               << " already registered." << std::endl;
-  }
-}
-
-void TincProtocol::registerParameterServer(al::ParameterServer &pserver) {
-  bool registered = false;
-  for (auto *p : mParameterServers) {
-    if (p == &pserver) {
-      registered = true;
-      break;
-    }
-  }
-  if (!registered) {
-    mParameterServers.push_back(&pserver);
-    // FIXME are servers meant to be broadcasted?
-    // sendRegisterMessage(pserver, dst);
-  } else {
-    std::cerr << __FUNCTION__ << ": ParameterServer already registered."
-              << std::endl;
   }
 }
 
@@ -1184,11 +1172,6 @@ TincProtocol &TincProtocol::operator<<(AbstractDiskBuffer &db) {
 
 TincProtocol &TincProtocol::operator<<(DataPool &dp) {
   registerDataPool(dp);
-  return *this;
-}
-
-TincProtocol &TincProtocol::operator<<(al::ParameterServer &pserver) {
-  registerParameterServer(pserver);
   return *this;
 }
 
@@ -1257,6 +1240,18 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
+al::ParameterMeta *TincProtocol::getParameter(std::string name,
+                                              std::string group) {
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (dim->getName() == name && dim->getGroup() == group) {
+      return dim->parameterMeta();
+    } else if (group == "" && dim->getFullAddress() == name) {
+      return dim->parameterMeta();
+    }
+  }
+  return nullptr;
+}
+
 void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(&pmeta)) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
@@ -1309,18 +1304,26 @@ void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
 }
 
 void TincProtocol::connectDimensionCallbacks(ParameterSpaceDimension &psd) {
-  psd.onDimensionMetadataChange = [&](
-      ParameterSpaceDimension *changedDimension) {
+  psd.onDimensionMetadataChange = [&](ParameterSpaceDimension *changedDimension,
+                                      al::Socket *src) {
     // FIXME register necessary here?
-    registerParameterSpaceDimension(*changedDimension);
+    registerParameterSpaceDimension(*changedDimension, src);
 
     TincMessage msg =
         createRegisterParameterMessage(changedDimension->parameterMeta());
-    sendTincMessage(&msg);
+    if (src) {
+      sendTincMessage(&msg, nullptr, src->valueSource());
+    } else {
+      sendTincMessage(&msg);
+    }
 
     auto msgs = createConfigureParameterSpaceDimensionMessage(changedDimension);
     for (auto &msg : msgs) {
-      sendTincMessage(&msg);
+      if (src) {
+        sendTincMessage(&msg, nullptr, src->valueSource());
+      } else {
+        sendTincMessage(&msg);
+      }
     }
   };
 }
@@ -1356,32 +1359,32 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 
 void TincProtocol::processRequestParameters(al::Socket *dst) {
   for (auto *dim : mParameterSpaceDimensions) {
-    sendRegisterMessage(dim, dst, true);
-    sendConfigureMessage(dim, dst, true);
+    sendRegisterMessage(dim, dst);
+    sendConfigureMessage(dim, dst);
   }
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
   for (auto ps : mParameterSpaces) {
-    sendRegisterMessage(ps, dst, true);
+    sendRegisterMessage(ps, dst);
   }
 }
 
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
   for (auto *p : mProcessors) {
-    sendRegisterMessage(p, dst, true);
+    sendRegisterMessage(p, dst);
   }
 }
 
 void TincProtocol::processRequestDataPools(al::Socket *dst) {
   for (auto *p : mDataPools) {
-    sendRegisterMessage(p, dst, true);
+    sendRegisterMessage(p, dst);
   }
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
   for (auto *db : mDiskBuffers) {
-    sendRegisterMessage(db, dst, true);
+    sendRegisterMessage(db, dst);
   }
 }
 
@@ -1391,15 +1394,15 @@ bool TincProtocol::readRegisterMessage(int objectType, void *any,
   case ObjectType::PARAMETER:
     return processRegisterParameter(any, src);
   case ObjectType::PROCESSOR:
-    // return sendProcessors(src);
+    return processRegisterProcessor(any, src);
     break;
   case ObjectType::DISK_BUFFER:
     return processRegisterDiskBuffer(any, src);
   case ObjectType::DATA_POOL:
-    // return sendDataPools(src);
+    return processRegisterDataPool(any, src);
     break;
   case ObjectType::PARAMETER_SPACE:
-    // return sendParameterSpace(src);
+    return processRegisterParameterSpace(any, src);
     break;
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
@@ -1423,7 +1426,6 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   auto def = command.defaultvalue();
   auto datatype = command.datatype();
 
-  // ParameterSpaceDimension *param = nullptr;
   al::ParameterMeta *param = nullptr;
   bool registered = false;
   for (auto dim : mParameterSpaceDimensions) {
@@ -1435,6 +1437,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   if (registered) {
     return true;
   }
+  // FIXME all the allocations below leak.
   switch (datatype) {
   case ParameterDataType::PARAMETER_FLOAT:
     param = new al::Parameter(id, group, def.valuefloat());
@@ -1509,46 +1512,55 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processRegisterParameterSpace(al::Message &message,
-                                                 al::Socket *src) {
+bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
-bool TincProtocol::processRegisterProcessor(al::Message &message,
-                                            al::Socket *src) {
+bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
-bool TincProtocol::processRegisterDataPool(al::Message &message,
-                                           al::Socket *src) {
+bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
 bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
 void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
-                                       bool isResponse) {
+                                       al::Socket *src) {
   auto msg = createRegisterParameterSpaceMessage(ps);
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, nullptr, src->valueSource());
+  } else {
+    sendTincMessage(&msg);
+  }
 
   for (auto dim : ps->getDimensions()) {
-    sendRegisterMessage(dim.get(), dst, isResponse);
-    sendConfigureMessage(dim.get(), dst, isResponse);
-    sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, isResponse);
+    sendRegisterMessage(dim.get(), dst, src);
+    sendConfigureMessage(dim.get(), dst, src);
+    sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, src);
   }
 }
 
 void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
-                                       al::Socket *dst, bool isResponse) {
+                                       al::Socket *dst, al::Socket *src) {
 
   TincMessage msg = createRegisterParameterMessage(dim->parameterMeta());
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 }
 
 void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
-                                       bool isResponse) {
+                                       al::Socket *src) {
   // Handle Asynchronous Processors
   if (strcmp(typeid(*p).name(), typeid(ProcessorAsyncWrapper).name()) == 0) {
     p = dynamic_cast<ProcessorAsyncWrapper *>(p)->processor();
@@ -1581,20 +1593,24 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   detailsAny->PackFrom(registerProcMessage);
   msg.set_allocated_details(detailsAny);
 
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 
-  sendConfigureMessage(p, dst, isResponse);
+  sendConfigureMessage(p, dst, src);
 
   if (dynamic_cast<ComputationChain *>(p)) {
     for (auto childProcessor :
          dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendRegisterMessage(childProcessor, dst, isResponse);
+      sendRegisterMessage(childProcessor, dst, src);
     }
   }
 }
 
 void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
-                                       bool isResponse) {
+                                       al::Socket *src) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REGISTER);
   msg.set_objecttype(ObjectType::DATA_POOL);
@@ -1607,15 +1623,19 @@ void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
 
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 
-  sendConfigureMessage(p, dst, isResponse);
+  sendConfigureMessage(p, dst, src);
 
-  sendRegisterMessage(&p->getParameterSpace(), dst, isResponse);
+  sendRegisterMessage(&p->getParameterSpace(), dst, src);
 }
 
 void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
-                                       bool isResponse) {
+                                       al::Socket *src) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REGISTER);
   msg.set_objecttype(ObjectType::DISK_BUFFER);
@@ -1642,9 +1662,13 @@ void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
 
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 
-  sendConfigureMessage(p, dst, isResponse);
+  sendConfigureMessage(p, dst, src);
 }
 
 bool TincProtocol::readConfigureMessage(int objectType, void *any,
@@ -1701,18 +1725,18 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processConfigureParameterSpace(al::Message &message,
-                                                  al::Socket *src) {
+bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
-bool TincProtocol::processConfigureProcessor(al::Message &message,
-                                             al::Socket *src) {
+bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
-bool TincProtocol::processConfigureDataPool(al::Message &message,
-                                            al::Socket *src) {
+bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
+  // FIXME implement
   return true;
 }
 
@@ -1761,20 +1785,24 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
 //                                        al::Socket *dst, bool isResponse) {}
 
 void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
-                                        bool isResponse) {
+                                        al::Socket *src) {
   assert(1 == 0); // Implement!
 }
 
 void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
-                                        al::Socket *dst, bool isResponse) {
+                                        al::Socket *dst, al::Socket *src) {
   auto msgs = createConfigureParameterSpaceDimensionMessage(dim);
   for (auto &msg : msgs) {
-    sendTincMessage(&msg, dst, isResponse);
+    if (src) {
+      sendTincMessage(&msg, dst, src->valueSource());
+    } else {
+      sendTincMessage(&msg, dst);
+    }
   }
 }
 
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
-                                        bool isResponse) {
+                                        al::Socket *src) {
   // if processor is asynchronous
   if (strcmp(typeid(*p).name(), typeid(ProcessorAsyncWrapper).name()) == 0) {
     p = dynamic_cast<ProcessorAsyncWrapper *>(p)->processor();
@@ -1801,40 +1829,61 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     details->PackFrom(confMessage);
     msg.set_allocated_details(details);
 
-    sendTincMessage(&msg, dst, isResponse);
+    if (src) {
+      sendTincMessage(&msg, dst, src->valueSource());
+    } else {
+      sendTincMessage(&msg, dst);
+    }
   }
 
   if (dynamic_cast<ComputationChain *>(p)) {
     for (auto childProcessor :
          dynamic_cast<ComputationChain *>(p)->processors()) {
-      sendConfigureMessage(childProcessor, dst, isResponse);
+      if (src) {
+        sendConfigureMessage(childProcessor, dst, src);
+      } else {
+        sendConfigureMessage(childProcessor, dst);
+      }
     }
   }
 }
 
 void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
-                                        bool isResponse) {
+                                        al::Socket *src) {
   auto msg = createConfigureDataPoolMessage(p);
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 }
 
 void TincProtocol::sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
-                                        bool isResponse) {
+                                        al::Socket *src) {
   // TODO implement
 }
 
 void TincProtocol::sendConfigureParameterSpaceAddDimension(
     ParameterSpace *ps, ParameterSpaceDimension *dim, al::Socket *dst,
-    bool isResponse) {
+    al::Socket *src) {
   auto msg = createConfigureParameterSpaceAdd(ps, dim);
-  sendTincMessage(&msg, dst, isResponse);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 }
 
 void TincProtocol::sendConfigureParameterSpaceRemoveDimension(
     ParameterSpace *ps, ParameterSpaceDimension *dim, al::Socket *dst,
-    bool isResponse) {
+    al::Socket *src) {
   auto msg = createConfigureParameterSpaceRemove(ps, dim);
-  sendTincMessage(&msg, dst, isResponse);
+
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 }
 
 void TincProtocol::sendValueMessage(float value, std::string fullAddress,
@@ -1856,7 +1905,7 @@ void TincProtocol::sendValueMessage(float value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(bool value, std::string fullAddress,
@@ -1878,7 +1927,7 @@ void TincProtocol::sendValueMessage(bool value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(int32_t value, std::string fullAddress,
@@ -1900,7 +1949,7 @@ void TincProtocol::sendValueMessage(int32_t value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(uint64_t value, std::string fullAddress,
@@ -1922,7 +1971,7 @@ void TincProtocol::sendValueMessage(uint64_t value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(std::string value, std::string fullAddress,
@@ -1944,7 +1993,7 @@ void TincProtocol::sendValueMessage(std::string value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(al::Vec3f value, std::string fullAddress,
@@ -1972,7 +2021,7 @@ void TincProtocol::sendValueMessage(al::Vec3f value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(al::Vec4f value, std::string fullAddress,
@@ -2002,7 +2051,7 @@ void TincProtocol::sendValueMessage(al::Vec4f value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
@@ -2032,7 +2081,7 @@ void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
@@ -2068,7 +2117,7 @@ void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
 
-  sendTincMessage(&msg, nullptr, false, src);
+  sendTincMessage(&msg, nullptr, src);
 }
 
 bool TincProtocol::readCommandMessage(int objectType, void *any,
@@ -2228,7 +2277,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
 
         msgDetails->PackFrom(command);
         msg.set_allocated_details(msgDetails);
-        sendTincMessage(&msg, src, true);
+        sendTincMessage(&msg, src);
         return true;
       }
     }
@@ -2265,7 +2314,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         msgDetails->PackFrom(command);
         msg.set_allocated_details(msgDetails);
 
-        sendTincMessage(&msg, src, true);
+        sendTincMessage(&msg, src);
         return true;
       }
     }
@@ -2397,6 +2446,10 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
     std::cerr << __FUNCTION__ << ": Error serializing message" << std::endl;
   }
 
+  if (mVerbose) {
+
+    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
+  }
   auto bytes = dst->send(buffer, size + sizeof(size_t));
   if (bytes != size + sizeof(size_t)) {
     buffer[size + 1] = '\0';

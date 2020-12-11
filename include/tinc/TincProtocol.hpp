@@ -35,7 +35,6 @@
 
 #include "al/io/al_Socket.hpp"
 #include "al/protocol/al_CommandConnection.hpp"
-#include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/DataPool.hpp"
 #include "tinc/DiskBuffer.hpp"
@@ -49,16 +48,68 @@ public:
   // Data pool commands
   enum { CREATE_DATA_SLICE = 0x01 };
 
-  // register parameter to tinc
-  void registerParameter(al::ParameterMeta &param, al::Socket *dst = nullptr);
-  void registerParameterSpace(ParameterSpace &ps, al::Socket *dst = nullptr);
+  /**
+   * @brief register a parameter with this Tinc node
+   * @param param the parameter to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   */
+  void registerParameter(al::ParameterMeta &param, al::Socket *src = nullptr);
+
+  /**
+   * @brief register a parameter space dimencion with this Tinc node
+   * @param ps the parameter space to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   * This is equivalent to registerParameterSpaceDimension() and will internally
+   * wrap the parameter in a dimension.
+   */
   void registerParameterSpaceDimension(ParameterSpaceDimension &psd,
-                                       al::Socket *dst = nullptr);
-  void registerProcessor(Processor &processor, al::Socket *dst = nullptr);
-  void registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *dst = nullptr);
-  void registerDataPool(DataPool &dp, al::Socket *dst = nullptr);
-  // FIXME are parameterservers meant to be sent over network?
-  void registerParameterServer(al::ParameterServer &pserver);
+                                       al::Socket *src = nullptr);
+
+  /**
+   * @brief register a parameter space with this Tinc node
+   * @param psd the parameter space dimension to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   */
+  void registerParameterSpace(ParameterSpace &ps, al::Socket *src = nullptr);
+
+  /**
+   * @brief register a processor with this Tinc node
+   * @param processor the processor to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   */
+  void registerProcessor(Processor &processor, al::Socket *src = nullptr);
+
+  /**
+   * @brief register a disk buffer with this Tinc node
+   * @param db the disk buffer to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   */
+  void registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src = nullptr);
+
+  /**
+   * @brief register a data pool with this Tinc node
+   * @param dp the data pool to register
+   * @param src the source socket of the request
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   */
+  void registerDataPool(DataPool &dp, al::Socket *src = nullptr);
 
   TincProtocol &operator<<(al::ParameterMeta &p);
   TincProtocol &operator<<(ParameterSpace &p);
@@ -66,7 +117,6 @@ public:
   TincProtocol &operator<<(Processor &p);
   TincProtocol &operator<<(AbstractDiskBuffer &db);
   TincProtocol &operator<<(DataPool &dp);
-  TincProtocol &operator<<(al::ParameterServer &pserver);
 
   // Send requests for data
   // FIXME make request automatic with start, or make a requestall?
@@ -76,17 +126,16 @@ public:
   void requestDiskBuffers(al::Socket *dst);
   void requestDataPools(al::Socket *dst);
 
-  // TODO what if same name but different group?
-  al::ParameterMeta *getParameter(std::string name, std::string group = "") {
-    for (auto *dim : mParameterSpaceDimensions) {
-      if (dim->getName() == name && dim->getGroup() == group) {
-        return dim->parameterMeta();
-      } else if (group == "" && dim->getFullAddress() == name) {
-        return dim->parameterMeta();
-      }
-    }
-    return nullptr;
-  }
+  /**
+   * @brief get a parameter from a registered dimension in this Tinc node
+   * @param name name (id) of the parameter
+   * @param group
+   * @return a pointer to the parameter or nullptr if not found
+   *
+   * If group is not provided, the osc address for the parameter will be matched
+   * to name.
+   */
+  al::ParameterMeta *getParameter(std::string name, std::string group = "");
 
   std::vector<ParameterSpaceDimension *> dimensions() {
     // TODO protect possible race conditions.
@@ -125,75 +174,71 @@ protected:
   // Incoming register message
   bool readRegisterMessage(int objectType, void *any, al::Socket *src);
   bool processRegisterParameter(void *any, al::Socket *src);
-  bool processRegisterParameterSpace(al::Message &message, al::Socket *src);
-  bool processRegisterProcessor(al::Message &message, al::Socket *src);
-  bool processRegisterDataPool(al::Message &message, al::Socket *src);
+  bool processRegisterParameterSpace(void *any, al::Socket *src);
+  bool processRegisterProcessor(void *any, al::Socket *src);
+  bool processRegisterDataPool(void *any, al::Socket *src);
   bool processRegisterDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing register message
-  //  void sendRegisterMessage(al::ParameterMeta *param, al::Socket *dst,
-  //                           bool isResponse = false);
   void sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
-                           bool isResponse = false);
+                           al::Socket *src = nullptr);
   void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
-                           bool isResponse = false);
+                           al::Socket *src = nullptr);
   void sendRegisterMessage(Processor *p, al::Socket *dst,
-                           bool isResponse = false);
+                           al::Socket *src = nullptr);
   void sendRegisterMessage(DataPool *p, al::Socket *dst,
-                           bool isResponse = false);
+                           al::Socket *src = nullptr);
   void sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
-                           bool isResponse = false);
+                           al::Socket *src = nullptr);
 
   // Incoming configure message
   bool readConfigureMessage(int objectType, void *any, al::Socket *src);
   bool processConfigureParameter(void *any, al::Socket *src);
-  bool processConfigureParameterSpace(al::Message &message, al::Socket *src);
-  bool processConfigureProcessor(al::Message &message, al::Socket *src);
-  bool processConfigureDataPool(al::Message &message, al::Socket *src);
+  bool processConfigureParameterSpace(void *any, al::Socket *src);
+  bool processConfigureProcessor(void *any, al::Socket *src);
+  bool processConfigureDataPool(void *any, al::Socket *src);
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing configure message (value + details)
-  //  void sendConfigureMessage(al::ParameterMeta *param, al::Socket *dst,
-  //                            bool isResponse = false);
   void sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
-                            bool isResponse = false);
+                            al::Socket *src = nullptr);
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
-                            bool isResponse = false);
+                            al::Socket *src = nullptr);
   void sendConfigureMessage(Processor *p, al::Socket *dst,
-                            bool isResponse = false);
+                            al::Socket *src = nullptr);
   void sendConfigureMessage(DataPool *p, al::Socket *dst,
-                            bool isResponse = false);
+                            al::Socket *src = nullptr);
   void sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
-                            bool isResponse = false);
+                            al::Socket *src = nullptr);
 
   void sendConfigureParameterSpaceAddDimension(ParameterSpace *ps,
                                                ParameterSpaceDimension *dim,
                                                al::Socket *dst,
-                                               bool isResponse = false);
+                                               al::Socket *src = nullptr);
   void sendConfigureParameterSpaceRemoveDimension(ParameterSpace *ps,
                                                   ParameterSpaceDimension *dim,
                                                   al::Socket *dst,
-                                                  bool isResponse = false);
+                                                  al::Socket *src = nullptr);
 
   // Outgoing configure message (only value) for callback functions
   void sendValueMessage(float value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(bool value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(int32_t value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(uint64_t value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(std::string value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(al::Vec3f value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(al::Vec4f value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(al::Color value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
   void sendValueMessage(al::Pose value, std::string fullAddress,
-                        al::ValueSource *src);
+                        al::ValueSource *src = nullptr);
 
   // Incoming command message
   bool readCommandMessage(int objectType, void *any, al::Socket *src);
@@ -208,21 +253,25 @@ protected:
   bool sendProtobufMessage(void *message, al::Socket *dst);
 
   // Send tinc message. Overriden on TincServer or TincClient
+  /**
+   * @brief sendTincMessage
+   * @param msg The encoded message to send
+   * @param dst the socket to send meessage to. If nullptr send to all
+   * @param src information of source. If passed block sending to this location.
+   * @return true on succesful send.
+   */
   virtual bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
-                               bool isResponse = false,
                                al::ValueSource *src = nullptr) {
     std::cerr << __FUNCTION__ << ": Using invalid virtual implementation"
               << std::endl;
     return true;
   }
 
-  //  std::vector<al::ParameterMeta *> mParameters;
   std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
   std::vector<Processor *> mProcessors;
   std::vector<AbstractDiskBuffer *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
-  std::vector<al::ParameterServer *> mParameterServers;
 
   // Dimensions that were allocated by this class to wrap a parameter
   std::vector<ParameterSpaceDimension *> mParameterWrappers;

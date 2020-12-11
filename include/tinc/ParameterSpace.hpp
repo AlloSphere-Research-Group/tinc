@@ -241,8 +241,9 @@ public:
   // When dimension metadata has changed or a new dimension is added
   // Currently allows only one TincServer. Should we provision for more?
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps)> onDimensionRegister =
-      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
+                     ParameterSpace *ps, al::Socket *src)> onDimensionRegister =
+      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps,
+         al::Socket *src = nullptr) {};
 
 protected:
   // FIXME how shoule we support different values types. Use a form of variant

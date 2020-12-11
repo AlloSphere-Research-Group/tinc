@@ -63,9 +63,9 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param)
 
 size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
 
-void ParameterSpaceDimension::clear() {
+void ParameterSpaceDimension::clear(al::Socket *src) {
   mSpaceValues.clear();
-  onDimensionMetadataChange(this);
+  onDimensionMetadataChange(this, src);
 }
 
 float ParameterSpaceDimension::at(size_t index) {
@@ -333,42 +333,34 @@ void ParameterSpaceDimension::stepDecrease() {
 
 void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
                                              std::string idprefix,
-                                             bool propagate) {
+                                             al::Socket *src) {
   // TODO add safety check for types and pointer sizes
   mSpaceValues.clear();
   mSpaceValues.append(values, count, idprefix);
-  if (propagate) {
-    onDimensionMetadataChange(this);
-  }
+  onDimensionMetadataChange(this, src);
 }
 
 void ParameterSpaceDimension::setSpaceValues(std::vector<float> values,
                                              std::string idprefix,
-                                             bool propagate) {
+                                             al::Socket *src) {
   mSpaceValues.clear();
   // TODO add safety check for types and pointer sizes
   mSpaceValues.append(values.data(), values.size(), idprefix);
-  if (propagate) {
-    onDimensionMetadataChange(this);
-  }
+  onDimensionMetadataChange(this, src);
 }
 
 void ParameterSpaceDimension::appendSpaceValues(void *values, size_t count,
                                                 std::string idprefix,
-                                                bool propagate) {
+                                                al::Socket *src) {
   // TODO add safety check for types and pointer sizes
   mSpaceValues.append(values, count, idprefix);
-  if (propagate) {
-    onDimensionMetadataChange(this);
-  }
+  onDimensionMetadataChange(this, src);
 }
 
 void ParameterSpaceDimension::setSpaceIds(std::vector<std::string> ids,
-                                          bool propagate) {
+                                          al::Socket *src) {
   mSpaceValues.setIds(ids);
-  if (propagate) {
-    onDimensionMetadataChange(this);
-  }
+  onDimensionMetadataChange(this, src);
 }
 
 std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
@@ -391,10 +383,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() > max) {
-      param.set(max);
-    } else if (param.get() < min) {
+    if (param.get() < min) {
       param.set(min);
+    } else if (param.get() > max) {
+      param.set(max);
     }
   } break;
   case al::DiscreteParameterValues::UINT8: {
@@ -411,10 +403,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() > max) {
-      param.set(max);
-    } else if (param.get() < min) {
+    if (param.get() < min) {
       param.set(min);
+    } else if (param.get() > max) {
+      param.set(max);
     }
   } break;
   case al::DiscreteParameterValues::INT8: {
@@ -431,10 +423,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() > max) {
-      param.set(max);
-    } else if (param.get() < min) {
+    if (param.get() < min) {
       param.set(min);
+    } else if (param.get() > max) {
+      param.set(max);
     }
   } break;
   case al::DiscreteParameterValues::INT32: {
@@ -451,10 +443,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() > max) {
-      param.set(max);
-    } else if (param.get() < min) {
+    if (param.get() < min) {
       param.set(min);
+    } else if (param.get() > max) {
+      param.set(max);
     }
   } break;
   case al::DiscreteParameterValues::UINT32: {
@@ -472,10 +464,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() > max) {
-      param.set(max);
-    } else if (param.get() < min) {
+    if (param.get() < min) {
       param.set(min);
+    } else if (param.get() > max) {
+      param.set(max);
     }
   } break;
     // FIXME complete support for all types
