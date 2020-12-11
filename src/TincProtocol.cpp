@@ -25,7 +25,8 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
   details.set_group(param->getGroup());
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     details.set_datatype(PARAMETER_FLOAT);
-    details.defaultvalue().New()->set_valuefloat(p->getDefault());
+    auto *def = details.mutable_defaultvalue();
+    def->set_valuefloat(p->getDefault());
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     details.set_datatype(PARAMETER_BOOL);
     auto *def = details.mutable_defaultvalue();
@@ -807,6 +808,8 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
     return false;
   }
+
+  return true;
 }
 
 bool processConfigureParameterMessage(ConfigureParameter &conf,

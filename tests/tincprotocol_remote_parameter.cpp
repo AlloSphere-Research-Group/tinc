@@ -9,20 +9,55 @@
 
 using namespace tinc;
 
-// TEST(TincProtocol, RemoteParameterFloat) {
-//   TincServer tserver;
-//   EXPECT_TRUE(tserver.start());
+TEST(TincProtocol, RemoteParameterFloat) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
 
-//   TincClient tclient;
-//   tclient.start();
-//   al::al_sleep(1.1); // Give time to connect
-//   tclient.isConnected();
+  TincClient tclient;
+  tclient.start();
 
-//   // TODO complete.
+  al::Parameter p{"param", "group", 0.2, -10, 9.9};
 
-//   tclient.stop();
-//   tserver.stop();
-// }
+  // register automatically gets propagated to server
+  tclient << p;
+
+  // change value on clientside
+  p.set(0.5);
+
+  int counter = 0;
+
+  auto *param = tserver.getParameter("param", "group");
+  while (!param) {
+    al::al_sleep(0.5); // Give time to connect
+    param = tserver.getParameter("param", "group");
+    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+    counter++;
+  }
+
+  auto *paramFloat = static_cast<al::Parameter *>(param);
+
+  while (paramFloat->get() != 0.5f)
+    ;
+  { al::al_sleep(0.02); }
+
+  EXPECT_FLOAT_EQ(paramFloat->min(), -10);
+  EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
+  EXPECT_FLOAT_EQ(paramFloat->getDefault(), 0.2);
+
+  // change value on serverside
+  paramFloat->set(5.f);
+  while (p.get() != 5.f) {
+    al::al_sleep(0.02);
+  }
+
+  EXPECT_EQ(p.get(), 5.f);
+
+  tclient.stop();
+  tserver.stop();
+}
 
 TEST(TincProtocol, RemoteParameterBool) {
   TincServer tserver;
@@ -31,7 +66,7 @@ TEST(TincProtocol, RemoteParameterBool) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::ParameterBool p{"param", "group", true};
+  al::ParameterBool p{"param", "group", false};
 
   // register automatically gets propagated to server
   tclient << p;
