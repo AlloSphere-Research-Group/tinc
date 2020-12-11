@@ -153,10 +153,9 @@ public:
     newJson.registerChangeCallback([&](bool value) { generateJson(); });
     newNc.registerChangeCallback([&](bool value) { generateNc(); });
 
-    // Connect TINC server to network
-    tincServer.registerParameterServer(parameterServer());
     // Expose buffers on TINC server
     tincServer << imageBuffer << jsonBuffer << netcdfBuffer;
+    tincServer.start();
   }
 
   void onAnimate(double dt) override {
