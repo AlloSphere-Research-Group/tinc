@@ -853,9 +853,10 @@ class ParameterValue PROTOBUF_FINAL :
     kValueInt32FieldNumber = 3,
     kValueInt64FieldNumber = 5,
     kValueUint64FieldNumber = 6,
+    kValueUint32FieldNumber = 4,
+    kValueBoolFieldNumber = 9,
     kValueInt8FieldNumber = 7,
     kValueUint8FieldNumber = 8,
-    kValueUint32FieldNumber = 4,
   };
   // repeated .tinc.ParameterValue valueList = 20;
   int valuelist_size() const;
@@ -936,6 +937,24 @@ class ParameterValue PROTOBUF_FINAL :
   void _internal_set_valueuint64(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // int32 valueUint32 = 4;
+  void clear_valueuint32();
+  ::PROTOBUF_NAMESPACE_ID::int32 valueuint32() const;
+  void set_valueuint32(::PROTOBUF_NAMESPACE_ID::int32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::int32 _internal_valueuint32() const;
+  void _internal_set_valueuint32(::PROTOBUF_NAMESPACE_ID::int32 value);
+  public:
+
+  // bool valueBool = 9;
+  void clear_valuebool();
+  bool valuebool() const;
+  void set_valuebool(bool value);
+  private:
+  bool _internal_valuebool() const;
+  void _internal_set_valuebool(bool value);
+  public:
+
   // uint64 valueInt8 = 7;
   void clear_valueint8();
   ::PROTOBUF_NAMESPACE_ID::uint64 valueint8() const;
@@ -954,15 +973,6 @@ class ParameterValue PROTOBUF_FINAL :
   void _internal_set_valueuint8(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
-  // int32 valueUint32 = 4;
-  void clear_valueuint32();
-  ::PROTOBUF_NAMESPACE_ID::int32 valueuint32() const;
-  void set_valueuint32(::PROTOBUF_NAMESPACE_ID::int32 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::int32 _internal_valueuint32() const;
-  void _internal_set_valueuint32(::PROTOBUF_NAMESPACE_ID::int32 value);
-  public:
-
   // @@protoc_insertion_point(class_scope:tinc.ParameterValue)
  private:
   class _Internal;
@@ -977,9 +987,10 @@ class ParameterValue PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::int32 valueint32_;
   ::PROTOBUF_NAMESPACE_ID::uint64 valueint64_;
   ::PROTOBUF_NAMESPACE_ID::uint64 valueuint64_;
+  ::PROTOBUF_NAMESPACE_ID::int32 valueuint32_;
+  bool valuebool_;
   ::PROTOBUF_NAMESPACE_ID::uint64 valueint8_;
   ::PROTOBUF_NAMESPACE_ID::uint64 valueuint8_;
-  ::PROTOBUF_NAMESPACE_ID::int32 valueuint32_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
@@ -5085,6 +5096,26 @@ inline void ParameterValue::_internal_set_valueuint8(::PROTOBUF_NAMESPACE_ID::ui
 inline void ParameterValue::set_valueuint8(::PROTOBUF_NAMESPACE_ID::uint64 value) {
   _internal_set_valueuint8(value);
   // @@protoc_insertion_point(field_set:tinc.ParameterValue.valueUint8)
+}
+
+// bool valueBool = 9;
+inline void ParameterValue::clear_valuebool() {
+  valuebool_ = false;
+}
+inline bool ParameterValue::_internal_valuebool() const {
+  return valuebool_;
+}
+inline bool ParameterValue::valuebool() const {
+  // @@protoc_insertion_point(field_get:tinc.ParameterValue.valueBool)
+  return _internal_valuebool();
+}
+inline void ParameterValue::_internal_set_valuebool(bool value) {
+  
+  valuebool_ = value;
+}
+inline void ParameterValue::set_valuebool(bool value) {
+  _internal_set_valuebool(value);
+  // @@protoc_insertion_point(field_set:tinc.ParameterValue.valueBool)
 }
 
 // repeated .tinc.ParameterValue valueList = 20;

@@ -529,6 +529,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valueuint64_),
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valueint8_),
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valueuint8_),
+  PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valuebool_),
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valuelist_),
   PROTOBUF_FIELD_OFFSET(::tinc::ParameterValue, valuestring_),
   ~0u,  // no _has_bits_
@@ -698,29 +699,29 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 0, -1, sizeof(::tinc::TincMessage)},
   { 8, -1, sizeof(::tinc::ObjectId)},
   { 14, -1, sizeof(::tinc::ParameterValue)},
-  { 29, -1, sizeof(::tinc::RegisterProcessor)},
-  { 41, -1, sizeof(::tinc::RegisterDataPool)},
-  { 49, -1, sizeof(::tinc::RegisterDiskBuffer)},
-  { 58, -1, sizeof(::tinc::RegisterParameterSpace)},
-  { 64, -1, sizeof(::tinc::RegisterParameter)},
-  { 73, -1, sizeof(::tinc::ParameterSpaceValues)},
-  { 80, -1, sizeof(::tinc::ConfigureParameter)},
-  { 88, -1, sizeof(::tinc::ConfigureParameterSpace)},
-  { 96, -1, sizeof(::tinc::ConfigureProcessor)},
-  { 104, -1, sizeof(::tinc::ConfigureDiskBuffer)},
-  { 112, -1, sizeof(::tinc::ConfigureDataPool)},
-  { 120, -1, sizeof(::tinc::Command)},
-  { 128, -1, sizeof(::tinc::CommandErrorPayload)},
-  { 134, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
-  { 139, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
-  { 145, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
-  { 150, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
-  { 156, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
-  { 161, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
-  { 167, -1, sizeof(::tinc::DataPoolCommandSlice)},
-  { 174, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
-  { 180, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
-  { 185, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
+  { 30, -1, sizeof(::tinc::RegisterProcessor)},
+  { 42, -1, sizeof(::tinc::RegisterDataPool)},
+  { 50, -1, sizeof(::tinc::RegisterDiskBuffer)},
+  { 59, -1, sizeof(::tinc::RegisterParameterSpace)},
+  { 65, -1, sizeof(::tinc::RegisterParameter)},
+  { 74, -1, sizeof(::tinc::ParameterSpaceValues)},
+  { 81, -1, sizeof(::tinc::ConfigureParameter)},
+  { 89, -1, sizeof(::tinc::ConfigureParameterSpace)},
+  { 97, -1, sizeof(::tinc::ConfigureProcessor)},
+  { 105, -1, sizeof(::tinc::ConfigureDiskBuffer)},
+  { 113, -1, sizeof(::tinc::ConfigureDataPool)},
+  { 121, -1, sizeof(::tinc::Command)},
+  { 129, -1, sizeof(::tinc::CommandErrorPayload)},
+  { 135, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
+  { 140, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
+  { 146, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
+  { 151, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
+  { 157, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
+  { 162, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
+  { 168, -1, sizeof(::tinc::DataPoolCommandSlice)},
+  { 175, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
+  { 181, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
+  { 186, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -758,84 +759,84 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "eType\030\002 \001(\0162\021.tinc.MessageType\022$\n\nobject"
   "Type\030\003 \001(\0162\020.tinc.ObjectType\022%\n\007details\030"
   "\004 \001(\0132\024.google.protobuf.Any\"\026\n\010ObjectId\022"
-  "\n\n\002id\030\001 \001(\t\"\360\001\n\016ParameterValue\022\022\n\nvalueF"
+  "\n\n\002id\030\001 \001(\t\"\203\002\n\016ParameterValue\022\022\n\nvalueF"
   "loat\030\001 \001(\002\022\023\n\013valueDouble\030\002 \001(\001\022\022\n\nvalue"
   "Int32\030\003 \001(\005\022\023\n\013valueUint32\030\004 \001(\005\022\022\n\nvalu"
   "eInt64\030\005 \001(\004\022\023\n\013valueUint64\030\006 \001(\004\022\021\n\tval"
-  "ueInt8\030\007 \001(\004\022\022\n\nvalueUint8\030\010 \001(\004\022\'\n\tvalu"
-  "eList\030\024 \003(\0132\024.tinc.ParameterValue\022\023\n\013val"
-  "ueString\030\036 \001(\t\"\266\001\n\021RegisterProcessor\022\n\n\002"
-  "id\030\001 \001(\t\022!\n\004type\030\002 \001(\0162\023.tinc.ProcessorT"
-  "ype\022\026\n\016inputDirectory\030\003 \001(\t\022\022\n\ninputFile"
-  "s\030\004 \003(\t\022\027\n\017outputDirectory\030\005 \001(\t\022\023\n\013outp"
-  "utFiles\030\006 \003(\t\022\030\n\020runningDirectory\030\007 \001(\t\""
-  "P\n\020RegisterDataPool\022\n\n\002id\030\001 \001(\t\022\030\n\020param"
-  "eterSpaceId\030\002 \001(\t\022\026\n\016cacheDirectory\030\003 \001("
-  "\t\"h\n\022RegisterDiskBuffer\022\n\n\002id\030\001 \001(\t\022\"\n\004t"
-  "ype\030\002 \001(\0162\024.tinc.DiskBufferType\022\024\n\014baseF"
-  "ilename\030\003 \001(\t\022\014\n\004path\030\004 \001(\t\"$\n\026RegisterP"
-  "arameterSpace\022\n\n\002id\030\001 \001(\t\"\205\001\n\021RegisterPa"
-  "rameter\022\n\n\002id\030\001 \001(\t\022\r\n\005group\030\002 \001(\t\022)\n\010da"
-  "taType\030\003 \001(\0162\027.tinc.ParameterDataType\022*\n"
-  "\014defaultValue\030\004 \001(\0132\024.tinc.ParameterValu"
-  "e\"I\n\024ParameterSpaceValues\022\013\n\003ids\030\001 \003(\t\022$"
-  "\n\006values\030\002 \003(\0132\024.tinc.ParameterValue\"\212\001\n"
-  "\022ConfigureParameter\022\n\n\002id\030\001 \001(\t\0226\n\020confi"
-  "gurationKey\030\002 \001(\0162\034.tinc.ParameterConfig"
-  "ureType\0220\n\022configurationValue\030\003 \001(\0132\024.go"
-  "ogle.protobuf.Any\"\224\001\n\027ConfigureParameter"
-  "Space\022\n\n\002id\030\001 \001(\t\022;\n\020configurationKey\030\002 "
-  "\001(\0162!.tinc.ParameterSpaceConfigureType\0220"
-  "\n\022configurationValue\030\003 \001(\0132\024.google.prot"
-  "obuf.Any\"l\n\022ConfigureProcessor\022\n\n\002id\030\001 \001"
-  "(\t\022\030\n\020configurationKey\030\002 \001(\t\0220\n\022configur"
-  "ationValue\030\003 \001(\0132\024.google.protobuf.Any\"\214"
-  "\001\n\023ConfigureDiskBuffer\022\n\n\002id\030\001 \001(\t\0227\n\020co"
-  "nfigurationKey\030\002 \001(\0162\035.tinc.DiskBufferCo"
-  "nfigureType\0220\n\022configurationValue\030\003 \001(\0132"
-  "\024.google.protobuf.Any\"\210\001\n\021ConfigureDataP"
-  "ool\022\n\n\002id\030\001 \001(\t\0225\n\020configurationKey\030\002 \001("
-  "\0162\033.tinc.DataPoolConfigureType\0220\n\022config"
+  "ueInt8\030\007 \001(\004\022\022\n\nvalueUint8\030\010 \001(\004\022\021\n\tvalu"
+  "eBool\030\t \001(\010\022\'\n\tvalueList\030\024 \003(\0132\024.tinc.Pa"
+  "rameterValue\022\023\n\013valueString\030\036 \001(\t\"\266\001\n\021Re"
+  "gisterProcessor\022\n\n\002id\030\001 \001(\t\022!\n\004type\030\002 \001("
+  "\0162\023.tinc.ProcessorType\022\026\n\016inputDirectory"
+  "\030\003 \001(\t\022\022\n\ninputFiles\030\004 \003(\t\022\027\n\017outputDire"
+  "ctory\030\005 \001(\t\022\023\n\013outputFiles\030\006 \003(\t\022\030\n\020runn"
+  "ingDirectory\030\007 \001(\t\"P\n\020RegisterDataPool\022\n"
+  "\n\002id\030\001 \001(\t\022\030\n\020parameterSpaceId\030\002 \001(\t\022\026\n\016"
+  "cacheDirectory\030\003 \001(\t\"h\n\022RegisterDiskBuff"
+  "er\022\n\n\002id\030\001 \001(\t\022\"\n\004type\030\002 \001(\0162\024.tinc.Disk"
+  "BufferType\022\024\n\014baseFilename\030\003 \001(\t\022\014\n\004path"
+  "\030\004 \001(\t\"$\n\026RegisterParameterSpace\022\n\n\002id\030\001"
+  " \001(\t\"\205\001\n\021RegisterParameter\022\n\n\002id\030\001 \001(\t\022\r"
+  "\n\005group\030\002 \001(\t\022)\n\010dataType\030\003 \001(\0162\027.tinc.P"
+  "arameterDataType\022*\n\014defaultValue\030\004 \001(\0132\024"
+  ".tinc.ParameterValue\"I\n\024ParameterSpaceVa"
+  "lues\022\013\n\003ids\030\001 \003(\t\022$\n\006values\030\002 \003(\0132\024.tinc"
+  ".ParameterValue\"\212\001\n\022ConfigureParameter\022\n"
+  "\n\002id\030\001 \001(\t\0226\n\020configurationKey\030\002 \001(\0162\034.t"
+  "inc.ParameterConfigureType\0220\n\022configurat"
+  "ionValue\030\003 \001(\0132\024.google.protobuf.Any\"\224\001\n"
+  "\027ConfigureParameterSpace\022\n\n\002id\030\001 \001(\t\022;\n\020"
+  "configurationKey\030\002 \001(\0162!.tinc.ParameterS"
+  "paceConfigureType\0220\n\022configurationValue\030"
+  "\003 \001(\0132\024.google.protobuf.Any\"l\n\022Configure"
+  "Processor\022\n\n\002id\030\001 \001(\t\022\030\n\020configurationKe"
+  "y\030\002 \001(\t\0220\n\022configurationValue\030\003 \001(\0132\024.go"
+  "ogle.protobuf.Any\"\214\001\n\023ConfigureDiskBuffe"
+  "r\022\n\n\002id\030\001 \001(\t\0227\n\020configurationKey\030\002 \001(\0162"
+  "\035.tinc.DiskBufferConfigureType\0220\n\022config"
   "urationValue\030\003 \001(\0132\024.google.protobuf.Any"
-  "\"`\n\007Command\022\022\n\nmessage_id\030\001 \001(\004\022\032\n\002id\030\002 "
-  "\001(\0132\016.tinc.ObjectId\022%\n\007details\030\003 \001(\0132\024.g"
-  "oogle.protobuf.Any\"$\n\023CommandErrorPayloa"
-  "d\022\r\n\005error\030\001 \001(\t\" \n\036ParameterRequestChoi"
-  "ceElements\"7\n#ParameterRequestChoiceElem"
-  "entsReply\022\020\n\010elements\030\001 \003(\t\"\"\n Parameter"
-  "SpaceRequestCurrentPath\"5\n%ParameterSpac"
-  "eRequestCurrentPathReply\022\014\n\004path\030\001 \001(\t\"\037"
-  "\n\035ParameterSpaceRequestRootPath\"2\n\"Param"
-  "eterSpaceRequestRootPathReply\022\014\n\004path\030\001 "
-  "\001(\t\"8\n\024DataPoolCommandSlice\022\r\n\005field\030\001 \001"
-  "(\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031DataPoolCommand"
-  "SliceReply\022\020\n\010filename\030\001 \001(\t\"\035\n\033DataPool"
-  "CommandCurrentFiles\"5\n DataPoolCommandCu"
-  "rrentFilesReply\022\021\n\tfilenames\030\001 \003(\t*\304\001\n\013M"
-  "essageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022\014\n\010R"
-  "EGISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020\004\022\021\n"
-  "\rCOMMAND_REPLY\020\005\022\010\n\004PING\020b\022\010\n\004PONG\020c\022\023\n\017"
-  "BARRIER_REQUEST\020d\022\024\n\020BARRIER_ACK_LOCK\020e\022"
-  "\022\n\016BARRIER_UNLOCK\020f\022\014\n\007GOODBYE\020\310\001*k\n\nObj"
-  "ectType\022\r\n\tPARAMETER\020\000\022\r\n\tPROCESSOR\020\001\022\017\n"
-  "\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL\020\003\022\023\n\017PARAMET"
-  "ER_SPACE\020\004\022\n\n\006GLOBAL\020\005*3\n\rProcessorType\022"
-  "\016\n\nDATASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021"
-  "ParameterDataType\022\023\n\017PARAMETER_FLOAT\020\000\022\022"
-  "\n\016PARAMETER_BOOL\020\001\022\024\n\020PARAMETER_STRING\020\002"
-  "\022\023\n\017PARAMETER_INT32\020\003\022\023\n\017PARAMETER_VEC3F"
-  "\020\004\022\023\n\017PARAMETER_VEC4F\020\005\022\024\n\020PARAMETER_COL"
-  "ORF\020\006\022\023\n\017PARAMETER_POSED\020\007\022\022\n\016PARAMETER_"
-  "MENU\020\010\022\024\n\020PARAMETER_CHOICE\020\t\022\025\n\021PARAMETE"
-  "R_TRIGGER\020\n*G\n\016DiskBufferType\022\n\n\006BINARY\020"
-  "\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JSON\020\003\022\t\n\005IMA"
-  "GE\020\004*P\n\026ParameterConfigureType\022\t\n\005VALUE\020"
-  "\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_"
-  "TYPE\020\004*F\n\033ParameterSpaceConfigureType\022\021\n"
-  "\rADD_PARAMETER\020\000\022\024\n\020REMOVE_PARAMETER\020\001*+"
-  "\n\027DiskBufferConfigureType\022\020\n\014CURRENT_FIL"
-  "E\020\000*,\n\025DataPoolConfigureType\022\023\n\017SLICE_CA"
-  "CHE_DIR\020\000b\006proto3"
+  "\"\210\001\n\021ConfigureDataPool\022\n\n\002id\030\001 \001(\t\0225\n\020co"
+  "nfigurationKey\030\002 \001(\0162\033.tinc.DataPoolConf"
+  "igureType\0220\n\022configurationValue\030\003 \001(\0132\024."
+  "google.protobuf.Any\"`\n\007Command\022\022\n\nmessag"
+  "e_id\030\001 \001(\004\022\032\n\002id\030\002 \001(\0132\016.tinc.ObjectId\022%"
+  "\n\007details\030\003 \001(\0132\024.google.protobuf.Any\"$\n"
+  "\023CommandErrorPayload\022\r\n\005error\030\001 \001(\t\" \n\036P"
+  "arameterRequestChoiceElements\"7\n#Paramet"
+  "erRequestChoiceElementsReply\022\020\n\010elements"
+  "\030\001 \003(\t\"\"\n ParameterSpaceRequestCurrentPa"
+  "th\"5\n%ParameterSpaceRequestCurrentPathRe"
+  "ply\022\014\n\004path\030\001 \001(\t\"\037\n\035ParameterSpaceReque"
+  "stRootPath\"2\n\"ParameterSpaceRequestRootP"
+  "athReply\022\014\n\004path\030\001 \001(\t\"8\n\024DataPoolComman"
+  "dSlice\022\r\n\005field\030\001 \001(\t\022\021\n\tdimension\030\002 \003(\t"
+  "\"-\n\031DataPoolCommandSliceReply\022\020\n\010filenam"
+  "e\030\001 \001(\t\"\035\n\033DataPoolCommandCurrentFiles\"5"
+  "\n DataPoolCommandCurrentFilesReply\022\021\n\tfi"
+  "lenames\030\001 \003(\t*\304\001\n\013MessageType\022\013\n\007REQUEST"
+  "\020\000\022\n\n\006REMOVE\020\001\022\014\n\010REGISTER\020\002\022\r\n\tCONFIGUR"
+  "E\020\003\022\013\n\007COMMAND\020\004\022\021\n\rCOMMAND_REPLY\020\005\022\010\n\004P"
+  "ING\020b\022\010\n\004PONG\020c\022\023\n\017BARRIER_REQUEST\020d\022\024\n\020"
+  "BARRIER_ACK_LOCK\020e\022\022\n\016BARRIER_UNLOCK\020f\022\014"
+  "\n\007GOODBYE\020\310\001*k\n\nObjectType\022\r\n\tPARAMETER\020"
+  "\000\022\r\n\tPROCESSOR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDAT"
+  "A_POOL\020\003\022\023\n\017PARAMETER_SPACE\020\004\022\n\n\006GLOBAL\020"
+  "\005*3\n\rProcessorType\022\016\n\nDATASCRIPT\020\000\022\t\n\005CH"
+  "AIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021ParameterDataType\022\023\n\017"
+  "PARAMETER_FLOAT\020\000\022\022\n\016PARAMETER_BOOL\020\001\022\024\n"
+  "\020PARAMETER_STRING\020\002\022\023\n\017PARAMETER_INT32\020\003"
+  "\022\023\n\017PARAMETER_VEC3F\020\004\022\023\n\017PARAMETER_VEC4F"
+  "\020\005\022\024\n\020PARAMETER_COLORF\020\006\022\023\n\017PARAMETER_PO"
+  "SED\020\007\022\022\n\016PARAMETER_MENU\020\010\022\024\n\020PARAMETER_C"
+  "HOICE\020\t\022\025\n\021PARAMETER_TRIGGER\020\n*G\n\016DiskBu"
+  "fferType\022\n\n\006BINARY\020\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF"
+  "\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*P\n\026ParameterConf"
+  "igureType\022\t\n\005VALUE\020\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t"
+  "\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020\004*F\n\033ParameterSp"
+  "aceConfigureType\022\021\n\rADD_PARAMETER\020\000\022\024\n\020R"
+  "EMOVE_PARAMETER\020\001*+\n\027DiskBufferConfigure"
+  "Type\022\020\n\014CURRENT_FILE\020\000*,\n\025DataPoolConfig"
+  "ureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
@@ -870,7 +871,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3297,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3316,
   &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 26, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
   file_level_metadata_tinc_5fprotocol_2eproto, 26, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
@@ -1550,8 +1551,8 @@ ParameterValue::ParameterValue(const ParameterValue& from)
       GetArena());
   }
   ::memcpy(&valuedouble_, &from.valuedouble_,
-    static_cast<size_t>(reinterpret_cast<char*>(&valueuint32_) -
-    reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint32_));
+    static_cast<size_t>(reinterpret_cast<char*>(&valueuint8_) -
+    reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint8_));
   // @@protoc_insertion_point(copy_constructor:tinc.ParameterValue)
 }
 
@@ -1559,8 +1560,8 @@ void ParameterValue::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_ParameterValue_tinc_5fprotocol_2eproto.base);
   valuestring_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&valuedouble_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&valueuint32_) -
-      reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint32_));
+      reinterpret_cast<char*>(&valueuint8_) -
+      reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint8_));
 }
 
 ParameterValue::~ParameterValue() {
@@ -1598,8 +1599,8 @@ void ParameterValue::Clear() {
   valuelist_.Clear();
   valuestring_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::memset(&valuedouble_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&valueuint32_) -
-      reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint32_));
+      reinterpret_cast<char*>(&valueuint8_) -
+      reinterpret_cast<char*>(&valuedouble_)) + sizeof(valueuint8_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1664,6 +1665,13 @@ const char* ParameterValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 8:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
           valueuint8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // bool valueBool = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
+          valuebool_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1764,6 +1772,12 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(8, this->_internal_valueuint8(), target);
   }
 
+  // bool valueBool = 9;
+  if (this->valuebool() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(9, this->_internal_valuebool(), target);
+  }
+
   // repeated .tinc.ParameterValue valueList = 20;
   for (unsigned int i = 0,
       n = static_cast<unsigned int>(this->_internal_valuelist_size()); i < n; i++) {
@@ -1843,6 +1857,18 @@ size_t ParameterValue::ByteSizeLong() const {
         this->_internal_valueuint64());
   }
 
+  // int32 valueUint32 = 4;
+  if (this->valueuint32() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
+        this->_internal_valueuint32());
+  }
+
+  // bool valueBool = 9;
+  if (this->valuebool() != 0) {
+    total_size += 1 + 1;
+  }
+
   // uint64 valueInt8 = 7;
   if (this->valueint8() != 0) {
     total_size += 1 +
@@ -1855,13 +1881,6 @@ size_t ParameterValue::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
         this->_internal_valueuint8());
-  }
-
-  // int32 valueUint32 = 4;
-  if (this->valueuint32() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
-        this->_internal_valueuint32());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1914,14 +1933,17 @@ void ParameterValue::MergeFrom(const ParameterValue& from) {
   if (from.valueuint64() != 0) {
     _internal_set_valueuint64(from._internal_valueuint64());
   }
+  if (from.valueuint32() != 0) {
+    _internal_set_valueuint32(from._internal_valueuint32());
+  }
+  if (from.valuebool() != 0) {
+    _internal_set_valuebool(from._internal_valuebool());
+  }
   if (from.valueint8() != 0) {
     _internal_set_valueint8(from._internal_valueint8());
   }
   if (from.valueuint8() != 0) {
     _internal_set_valueuint8(from._internal_valueuint8());
-  }
-  if (from.valueuint32() != 0) {
-    _internal_set_valueuint32(from._internal_valueuint32());
   }
 }
 
@@ -1949,8 +1971,8 @@ void ParameterValue::InternalSwap(ParameterValue* other) {
   valuelist_.InternalSwap(&other->valuelist_);
   valuestring_.Swap(&other->valuestring_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(ParameterValue, valueuint32_)
-      + sizeof(ParameterValue::valueuint32_)
+      PROTOBUF_FIELD_OFFSET(ParameterValue, valueuint8_)
+      + sizeof(ParameterValue::valueuint8_)
       - PROTOBUF_FIELD_OFFSET(ParameterValue, valuedouble_)>(
           reinterpret_cast<char*>(&valuedouble_),
           reinterpret_cast<char*>(&other->valuedouble_));

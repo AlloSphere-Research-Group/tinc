@@ -82,6 +82,7 @@ message ParameterValue {
     uint64 valueUint64 = 6;
     uint64 valueInt8 = 7;
     uint64 valueUint8 = 8;
+    bool valueBool = 9;
     repeated ParameterValue valueList = 20;
     string valueString = 30;
 }

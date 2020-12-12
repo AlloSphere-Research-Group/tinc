@@ -1919,7 +1919,7 @@ void TincProtocol::sendValueMessage(bool value, std::string fullAddress,
 
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
-  val.set_valuefloat(value);
+  val.set_valuebool(value);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
