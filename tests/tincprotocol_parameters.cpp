@@ -15,6 +15,8 @@ TEST(TincProtocol, ParameterFloat) {
 
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
   tserver << p;
+
+  // change value on serverside
   p.set(0.5);
 
   TincClient tclient;
@@ -43,7 +45,15 @@ TEST(TincProtocol, ParameterFloat) {
 
   EXPECT_FLOAT_EQ(paramFloat->min(), -10);
   EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
-  EXPECT_FLOAT_EQ(paramFloat->get(), 0.5);
+  EXPECT_FLOAT_EQ(paramFloat->getDefault(), 0.2);
+
+  // change value on clientside
+  paramFloat->set(5.f);
+  while (p.get() != 5.f) {
+    al::al_sleep(0.02);
+  }
+
+  EXPECT_EQ(p.get(), 5.f);
 
   tclient.stop();
   tserver.stop();
@@ -53,7 +63,7 @@ TEST(TincProtocol, ParameterBool) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  al::ParameterBool p{"param", "group", true};
+  al::ParameterBool p{"param", "group", false};
   tserver << p;
 
   p.set(1.0);
