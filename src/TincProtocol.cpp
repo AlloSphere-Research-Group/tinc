@@ -105,7 +105,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
   } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     details.set_datatype(PARAMETER_TRIGGER);
     auto *def = details.mutable_defaultvalue();
-    def->set_valuefloat(p->getDefault());
+    def->set_valuebool(p->getDefault());
   } else {
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
   }
@@ -214,7 +214,7 @@ void createParameterValueMessage(al::ParameterMeta *param,
     val.set_valueuint64(p->get());
   } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
-    val.set_valuefloat(p->get());
+    val.set_valuebool(p->get());
   } else {
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
   }
@@ -528,8 +528,7 @@ createConfigureParameterMessage(al::ParameterMeta *param) {
                     typeid(al::ParameterChoice).name()) == 0) {
     al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
     return createConfigureParameterChoiceMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) ==
-             0) { // Trigger
+  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
     return createConfigureParameterTriggerMessage(p);
   }
@@ -793,11 +792,10 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::Trigger).name()) == 0) { // Trigger
+  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
     al::Trigger *p = dynamic_cast<al::Trigger *>(param);
     if (command == ParameterConfigureType::VALUE) {
-      p->set(v.valuefloat(), src->valueSource());
+      p->set(v.valuebool(), src->valueSource());
     } else {
       std::cerr << __FUNCTION__
                 << ": Unexpected min/max value for ParameterTrigger"
@@ -921,10 +919,17 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
     if (dim->getName() == pmeta.getName() &&
         dim->getGroup() == pmeta.getGroup()) {
       registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Parameter " << pmeta.getName()
+                  << " (Group: " << pmeta.getGroup() << ") already registered."
+                  << std::endl;
+      }
       if (&pmeta != dim->parameterMeta()) {
-        std::cerr << "ERROR: parameter is already registered but pointer does "
-                     "not match. "
-                  << __FILE__ << " " << __FUNCTION__ << std::endl;
+        // FIXME this will create a new parameter with same id/group
+        std::cerr
+            << __FUNCTION__
+            << ": Parameter is already registered but pointer doesn't match."
+            << std::endl;
       }
       break;
     }
@@ -982,10 +987,6 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
       sendConfigureMessage(newDim, nullptr, src);
     }
     // Broadcast registered Parameter
-  } else {
-    std::cerr << __FUNCTION__ << ": Parameter " << pmeta.getName()
-              << " (Group: " << pmeta.getGroup() << ") already registered."
-              << std::endl;
   }
 }
 
@@ -994,6 +995,10 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   for (auto *p : mParameterSpaces) {
     if (p == &ps || p->getId() == ps.getId()) {
       registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Processor " << ps.getId()
+                  << " already registered." << std::endl;
+      }
       break;
     }
   }
@@ -1050,9 +1055,6 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
       registerParameterSpaceDimension(*dim, src);
       sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
     }
-  } else {
-    std::cerr << __FUNCTION__ << ": Processor " << ps.getId()
-              << " already registered." << std::endl;
   }
 }
 
@@ -1062,6 +1064,11 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
       registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+                  << psd.getFullAddress() << " already registered."
+                  << std::endl;
+      }
       break;
     }
   }
@@ -1072,9 +1079,6 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
 
     // Broadcast registered ParameterSpaceDimension
     sendRegisterMessage(&psd, nullptr, src);
-  } else {
-    std::cerr << __FUNCTION__ << ": ParameterSpaceDimension "
-              << psd.getFullAddress() << " already registered." << std::endl;
   }
 }
 
@@ -1083,6 +1087,10 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   for (auto *p : mProcessors) {
     if (p == &processor || p->getId() == processor.getId()) {
       registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Processor " << processor.getId()
+                  << " already registered." << std::endl;
+      }
       break;
     }
   }
@@ -1094,9 +1102,6 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
 
     // Broadcast registered processor
     sendRegisterMessage(&processor, nullptr, src);
-  } else {
-    std::cerr << __FUNCTION__ << ": Processor " << processor.getId()
-              << " already registered." << std::endl;
   }
 }
 
@@ -1105,6 +1110,10 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src) {
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
       registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": DiskBuffer " << db.getId()
+                  << " already registered." << std::endl;
+      }
       break;
     }
   }
@@ -1113,9 +1122,6 @@ void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src) {
 
     // Broadcast registered DiskBuffer
     sendRegisterMessage(&db, nullptr, src);
-  } else {
-    std::cerr << __FUNCTION__ << ": DiskBuffer " << db.getId()
-              << " already registered." << std::endl;
   }
 }
 
@@ -1124,6 +1130,12 @@ void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   for (auto *p : mDataPools) {
     if (p == &dp || p->getId() == dp.getId()) {
       registered = true;
+      if (mVerbose) {
+        // FIXME replace entry in mDataPools wiht this one if it is not the same
+        // instance
+        std::cout << __FUNCTION__ << ": DataPool " << dp.getId()
+                  << " already registered." << std::endl;
+      }
       break;
     }
   }
@@ -1140,11 +1152,6 @@ void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
 
     // Broadcast registered DataPool
     sendRegisterMessage(&dp, nullptr, src);
-  } else {
-    // FIXME replace entry in mDataPools wiht this one if it is not the same
-    // instance
-    std::cerr << __FUNCTION__ << ": DataPool " << dp.getId()
-              << " already registered." << std::endl;
   }
 }
 

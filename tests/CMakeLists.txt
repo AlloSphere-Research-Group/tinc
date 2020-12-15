@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(TINCTests)
 
+unset(BUILD_PYTHON_TESTS CACHE)
 option(BUILD_PYTHON_TESTS "Build and run test for the C++ interaction with the python client" ON)
 
 # Get and build googletest
@@ -13,7 +14,9 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-set(PYTHON_EXECUTABLE "python" CACHE FILEPATH "Path to the python executable")
+if(BUILD_PYTHON_TESTS)
+  set(PYTHON_EXECUTABLE "python" CACHE FILEPATH "Path to the python executable")
+endif(BUILD_PYTHON_TESTS)
 
 add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
 
