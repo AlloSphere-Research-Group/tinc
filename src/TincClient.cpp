@@ -59,16 +59,18 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REGISTER:
-        // FIXME remove after debugging
-        std::cout << "client register" << std::endl;
+        if (verbose()) {
+          std::cout << "client register received" << std::endl;
+        }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
                     << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
-        // FIXME remove after debugging
-        std::cout << "client configure" << std::endl;
+        if (verbose()) {
+          std::cout << "client configure received" << std::endl;
+        }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
                     << std::endl;

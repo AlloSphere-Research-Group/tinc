@@ -58,27 +58,13 @@ public:
    * This function will block if computation is currently executing and will
    * return after computation is done.
    */
-  std::map<std::string, bool> getResults() {
-    std::unique_lock<std::mutex> lk2(mChainLock);
-    return mResults;
-  }
+  std::map<std::string, bool> getResults();
 
-  ComputationChain &operator<<(Processor &processor) {
-    addProcessor(processor);
-    return *this;
-  }
+  ComputationChain &operator<<(Processor &processor);
 
   template <class ParameterType>
   ComputationChain &
-  registerParameter(al::ParameterWrapper<ParameterType> &param) {
-    mParameters.push_back(&param);
-    configuration[param.getName()] = param.get();
-    param.registerChangeCallback([&](ParameterType value) {
-      configuration[param.getName()] = value;
-      process();
-    });
-    return *this;
-  }
+  registerParameter(al::ParameterWrapper<ParameterType> &param);
 
   template <class ParameterType>
   ComputationChain &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
@@ -98,6 +84,20 @@ private:
   std::mutex mChainLock;
   ChainType mType;
 };
+
+// Implementation
+
+template <class ParameterType>
+ComputationChain &ComputationChain::registerParameter(
+    al::ParameterWrapper<ParameterType> &param) {
+  mParameters.push_back(&param);
+  configuration[param.getName()] = param.get();
+  param.registerChangeCallback([&](ParameterType value) {
+    configuration[param.getName()] = value;
+    process();
+  });
+  return *this;
+}
 
 } // namespace tinc
 

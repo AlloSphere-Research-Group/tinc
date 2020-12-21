@@ -413,17 +413,21 @@ TEST(TincProtocol, RemoteParameterTrigger) {
   EXPECT_EQ(paramTrigger->getDefault(), false);
   EXPECT_EQ(paramTrigger->get(), false);
 
-  // change value on the serverside
+  bool triggeredInServer = false;
+  bool triggeredInClient = false;
+
+  static_cast<al::Trigger *>(param)
+      ->registerChangeCallback([&](bool val) { triggeredInServer = true; });
+
+  // change value on the client side
   p.trigger();
-  al::al_sleep(0.1); // wait for new value
+  al::al_sleep(0.2); // wait for new value
+  EXPECT_EQ(triggeredInServer, true);
 
-  EXPECT_EQ(paramTrigger->get(), true);
-
-  // change value on the clientside
-  paramTrigger->set(false);
-  al::al_sleep(0.1); // wait for new value
-
-  EXPECT_EQ(p.get(), false);
+  p.registerChangeCallback([&](bool val) { triggeredInClient = true; });
+  static_cast<al::Trigger *>(param)->trigger();
+  al::al_sleep(0.2); // wait for new value
+  EXPECT_EQ(triggeredInClient, true);
 
   tclient.stop();
   tserver.stop();

@@ -72,3 +72,13 @@ bool ComputationChain::process(bool forceRecompute) {
   callDoneCallbacks(ret);
   return ret;
 }
+
+std::map<std::string, bool> ComputationChain::getResults() {
+  std::unique_lock<std::mutex> lk2(mChainLock);
+  return mResults;
+}
+
+ComputationChain &tinc::ComputationChain::operator<<(Processor &processor) {
+  addProcessor(processor);
+  return *this;
+}
