@@ -838,9 +838,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues, "", src);
-        dim->setSpaceIds(newIds, src);
-        dim->conformSpace();
+        if (newIds.size() > 0 || newValues.size() > 0) {
+          dim->setSpaceValues(newValues, "", src);
+          dim->setSpaceIds(newIds, src);
+          dim->conformSpace();
+        } else {
+          std::cout << "Warning: got empty parameter space values" << std::endl;
+        }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT8) {
         std::vector<uint8_t> newValues;
@@ -853,9 +857,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-        dim->setSpaceIds(newIds, src);
-        dim->conformSpace();
+        if (newIds.size() > 0 || newValues.size() > 0) {
+          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+          dim->setSpaceIds(newIds, src);
+          dim->conformSpace();
+        } else {
+          std::cout << "Warning: got empty parameter space values" << std::endl;
+        }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::INT32) {
         std::vector<int32_t> newValues;
@@ -868,9 +876,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-        dim->setSpaceIds(newIds, src);
-        dim->conformSpace();
+        if (newIds.size() > 0 || newValues.size() > 0) {
+          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+          dim->setSpaceIds(newIds, src);
+          dim->conformSpace();
+        } else {
+          std::cout << "Warning: got empty parameter space values" << std::endl;
+        }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT32) {
         std::vector<uint32_t> newValues;
@@ -883,9 +895,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-        dim->setSpaceIds(newIds, src);
-        dim->conformSpace();
+        if (newIds.size() > 0 || newValues.size() > 0) {
+          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+          dim->setSpaceIds(newIds, src);
+          dim->conformSpace();
+        } else {
+          std::cout << "Warning: got empty parameter space values" << std::endl;
+        }
       }
       // FIXME add all types
     } else {
