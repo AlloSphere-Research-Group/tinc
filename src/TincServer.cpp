@@ -59,16 +59,18 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REGISTER:
-        // FIXME remove after debugging
-        std::cout << "server register" << std::endl;
+        if (verbose()) {
+          std::cout << "server register received" << std::endl;
+        }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
                     << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
-        // FIXME remove after debugging
-        std::cout << "server configure" << std::endl;
+        if (verbose()) {
+          std::cout << "server configure received" << std::endl;
+        }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
                     << std::endl;
@@ -110,8 +112,9 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
                   << std::endl;
         break;
       case MessageType::GOODBYE:
-        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_UNLOCK in server"
-                  << std::endl;
+        std::cout << __FUNCTION__ << ": Goodbye from " << src->address() << ":"
+                  << src->port() << std::endl;
+        disconnectClient(src);
         break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
