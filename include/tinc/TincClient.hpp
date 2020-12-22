@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera, Kon Hyong Kim
-*/
+ */
 
 #include <deque>
 
@@ -50,6 +50,8 @@ namespace tinc {
 class TincClient : public al::CommandClient, public TincProtocol {
 public:
   TincClient();
+
+  void stop() override;
 
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 

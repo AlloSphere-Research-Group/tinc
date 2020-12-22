@@ -17,6 +17,17 @@ using namespace tinc;
 
 TincClient::TincClient() {}
 
+void TincClient::stop() {
+  TincMessage tincMessage;
+
+  tincMessage.set_messagetype(MessageType::GOODBYE);
+  tincMessage.set_objecttype(ObjectType::GLOBAL);
+
+  sendTincMessage(&tincMessage);
+
+  CommandConnection::stop();
+}
+
 bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
 
   while (message.remainingBytes() > 8) {
@@ -200,8 +211,9 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
     } else if (mBarrierRequests.size() == 0) {
       noCurrentBarriers = true;
     } else {
-      std::cerr << __FUNCTION__ << " ERROR unexpected inconsistent state in "
-                                   "barrier. Aborting barriers"
+      std::cerr << __FUNCTION__
+                << " ERROR unexpected inconsistent state in "
+                   "barrier. Aborting barriers"
                 << std::endl;
       mBarrierRequests.clear();
       mBarrierUnlocks.clear();
