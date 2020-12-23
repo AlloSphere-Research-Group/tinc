@@ -219,10 +219,12 @@ std::string ScriptProcessor::writeJsonConfig() {
     if (c.second.type == VARIANT_STRING) {
       j[c.first] = c.second.valueStr;
 
-    } else if (c.second.type == VARIANT_INT64) {
+    } else if (c.second.type == VARIANT_INT64 ||
+               c.second.type == VARIANT_INT32) {
       j[c.first] = c.second.valueInt64;
 
-    } else if (c.second.type == VARIANT_DOUBLE) {
+    } else if (c.second.type == VARIANT_DOUBLE ||
+               c.second.type == VARIANT_FLOAT) {
       j[c.first] = c.second.valueDouble;
     }
   }
@@ -279,10 +281,12 @@ std::string ScriptProcessor::makeCommandLine() {
 
       break;
     case VARIANT_INT64:
+    case VARIANT_INT32:
       commandLine += flag.second.commandFlag +
                      std::to_string(flag.second.valueInt64) + " ";
       break;
     case VARIANT_DOUBLE:
+    case VARIANT_FLOAT:
       commandLine += flag.second.commandFlag +
                      std::to_string(flag.second.valueDouble) + " ";
 
@@ -352,9 +356,11 @@ bool ScriptProcessor::writeMeta() {
       j[option.first] = option.second.valueStr;
       break;
     case VARIANT_INT64:
+    case VARIANT_INT32:
       j[option.first] = option.second.valueInt64;
       break;
     case VARIANT_DOUBLE:
+    case VARIANT_FLOAT:
       j[option.first] = option.second.valueDouble;
       break;
     }

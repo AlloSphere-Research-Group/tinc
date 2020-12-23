@@ -34,6 +34,7 @@
 */
 
 #include "tinc/IdObject.hpp"
+#include "tinc/ParameterSpaceDimension.hpp"
 
 #include "al/scene/al_PolySynth.hpp"
 
@@ -58,7 +59,9 @@ private:
 
 enum VariantType {
   VARIANT_INT64 = 0,
-  VARIANT_DOUBLE, // The script to be run
+  VARIANT_INT32,
+  VARIANT_DOUBLE,
+  VARIANT_FLOAT,
   VARIANT_STRING
 };
 
@@ -79,8 +82,18 @@ struct VariantValue {
     valueInt64 = value;
   }
 
+  VariantValue(int32_t value) {
+    type = VARIANT_INT32;
+    valueInt64 = value;
+  }
+
   VariantValue(double value) {
     type = VARIANT_DOUBLE;
+    valueDouble = value;
+  }
+
+  VariantValue(float value) {
+    type = VARIANT_FLOAT;
     valueDouble = value;
   }
 
@@ -231,6 +244,28 @@ public:
    */
   std::function<bool(void)> prepareFunction;
 
+  Processor &registerDimension(ParameterSpaceDimension &dim) {
+    auto *param = dim.parameterMeta();
+    if (auto *p = dynamic_cast<al::Parameter *>(param)) {
+      return registerParameter(*p);
+    } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
+      return registerParameter(*p);
+    }  */
+    else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
+      return registerParameter(*p);
+    } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
+      return registerParameter(*p);
+    } else {
+      std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
+                << std::endl;
+    }
+    return *this;
+  }
+
+  Processor &operator<<(ParameterSpaceDimension &dim) {
+    return registerDimension(dim);
+  }
+
   template <class ParameterType>
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
@@ -247,7 +282,7 @@ public:
     return registerParameter(newParam);
   }
 
-  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
+  //  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
 
   /**
    * @brief Current internal configuration key value pairs
