@@ -1006,6 +1006,30 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
   }
 }
 
+void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
+                                                   al::Socket *src) {
+  bool registered = false;
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
+      registered = true;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+                  << psd.getFullAddress() << " already registered."
+                  << std::endl;
+      }
+      break;
+    }
+  }
+  if (!registered) {
+    mParameterSpaceDimensions.push_back(&psd);
+    connectParameterCallbacks(*psd.parameterMeta());
+    connectDimensionCallbacks(psd);
+
+    // Broadcast registered ParameterSpaceDimension
+    sendRegisterMessage(&psd, nullptr, src);
+  }
+}
+
 void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   bool registered = false;
   for (auto *p : mParameterSpaces) {
@@ -1070,30 +1094,6 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   for (auto dim : ps.getDimensions()) {
     registerParameterSpaceDimension(*dim, src);
     sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
-  }
-}
-
-void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
-                                                   al::Socket *src) {
-  bool registered = false;
-  for (auto *dim : mParameterSpaceDimensions) {
-    if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
-      registered = true;
-      if (mVerbose) {
-        std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-                  << psd.getFullAddress() << " already registered."
-                  << std::endl;
-      }
-      break;
-    }
-  }
-  if (!registered) {
-    mParameterSpaceDimensions.push_back(&psd);
-    connectParameterCallbacks(*psd.parameterMeta());
-    connectDimensionCallbacks(psd);
-
-    // Broadcast registered ParameterSpaceDimension
-    sendRegisterMessage(&psd, nullptr, src);
   }
 }
 
