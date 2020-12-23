@@ -13,6 +13,8 @@ TEST(TincProtocol, Connection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
+  al::al_sleep(0.1);
+
   EXPECT_EQ(tserver.connectionCount(), 1);
   EXPECT_TRUE(tclient.isConnected());
 
@@ -35,6 +37,8 @@ TEST(TincProtocol, MultiConnection) {
 
   TincClient tclient4;
   EXPECT_TRUE(tclient4.start());
+
+  al::al_sleep(0.1);
 
   EXPECT_EQ(tserver.connectionCount(), 4);
   EXPECT_TRUE(tclient.isConnected());
