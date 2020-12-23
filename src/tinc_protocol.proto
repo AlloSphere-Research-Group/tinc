@@ -9,8 +9,9 @@ enum MessageType {
   REMOVE = 1;
   REGISTER = 2;
   CONFIGURE = 3;
-  COMMAND = 4;
+  COMMAND = 4; // Commands are synchronous and one to one, so both ends block (or timeout) until COMMAND_REPLY is sent
   COMMAND_REPLY = 5;
+  STATUS = 6;
 
   PING = 98;
   PONG = 99;
@@ -59,6 +60,11 @@ enum DiskBufferType {
     IMAGE = 4;
 }
 
+enum StatusTypes {
+    UNKNOWN = 0;
+    AVAILABLE = 1;
+    BUSY = 2;
+}
 
 /// ################ TincMessage #####################
 message TincMessage {
@@ -194,10 +200,18 @@ message Command {
     google.protobuf.Any details = 3;
 }
 
+message CommandGenericPayload {
+  bytes data = 1;
+}
+
+message CommandGenericAck {
+}
+
 message CommandErrorPayload {
   string error = 1;
 }
 
+// Request ParameterChoice elements
 message ParameterRequestChoiceElements {
 }
 
@@ -205,6 +219,7 @@ message ParameterRequestChoiceElementsReply {
     repeated string elements = 1;
 }
 
+// Request ParameterSpace current path
 message ParameterSpaceRequestCurrentPath {
 }
 
@@ -212,6 +227,7 @@ message ParameterSpaceRequestCurrentPathReply {
     string path = 1;
 }
 
+// Request ParameterSpace root path
 message ParameterSpaceRequestRootPath {
 }
 
@@ -219,6 +235,7 @@ message ParameterSpaceRequestRootPathReply {
     string path = 1;
 }
 
+// Request DataPool slice
 message DataPoolCommandSlice {
     string field = 1;
     repeated string dimension = 2;
@@ -228,9 +245,16 @@ message DataPoolCommandSliceReply {
     string filename = 1;
 }
 
+// Request DataPool current files
 message DataPoolCommandCurrentFiles {
 }
 
 message DataPoolCommandCurrentFilesReply {
     repeated string filenames = 1;
+}
+
+// Status messages
+message StatusMessage {
+    ObjectId id = 1;
+    StatusTypes status = 2;
 }

@@ -116,6 +116,9 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
                     << std::endl;
         }
         break;
+      case MessageType::STATUS:
+        processStatusMessage(&tincMessage);
+        break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
         break;
@@ -149,6 +152,27 @@ void TincClient::processBarrierUnlock(al::Socket *src,
                                       uint64_t barrierConsecutive) {
   std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
   mBarrierUnlocks[barrierConsecutive] = src;
+}
+
+void TincClient::processStatusMessage(void *message) {
+  auto msg = static_cast<TincMessage *>(message);
+  auto details = msg->details();
+  if (details.Is<StatusMessage>()) {
+    StatusMessage statusDetails;
+    details.UnpackTo(&statusDetails);
+    if (msg->objecttype() == ObjectType::GLOBAL) {
+      if (statusDetails.status() == StatusTypes::AVAILABLE) {
+        mServerStatus = TincProtocol::Status::STATUS_AVAILABLE;
+      } else if (statusDetails.status() == StatusTypes::BUSY) {
+        mServerStatus = TincProtocol::Status::STATUS_BUSY;
+      } else {
+        mServerStatus = TincProtocol::Status::STATUS_UNKNOWN;
+      }
+    } else {
+      std::cerr << "ERROR: non global status messages not supported"
+                << std::endl;
+    }
+  }
 }
 
 bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
@@ -274,4 +298,28 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
 
   std::cerr << __FUNCTION__ << " Exit client barrier --------" << std::endl;
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
+}
+
+TincClient::Status TincClient::serverStatus() { return mServerStatus; }
+
+bool TincClient::waitForServer(float timeoutsec) {
+  {
+    std::unique_lock<std::mutex> lk(mBusyCountLock);
+    if (mBusyCount == 0) {
+      return true;
+    }
+  }
+  mWaitForServer = true;
+  auto startTime = std::chrono::high_resolution_clock::now();
+  while (mWaitForServer) {
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(barrierWaitGranularTimeMs));
+    auto now = std::chrono::high_resolution_clock::now();
+    if (timeoutsec > 0.001 &&
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
+                .count() > uint32_t(timeoutsec * 1e3)) {
+      return false;
+    }
+  }
+  return true;
 }

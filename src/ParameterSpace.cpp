@@ -747,22 +747,25 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
             newInnerDimensions;
         if (readDimensionsInNetCDFFile(filename, newInnerDimensions)) {
 
-          for (auto newDim : newDimensions) {
-            if (std::find(innerDimensions.begin(), innerDimensions.end(),
-                          newDim->getName()) == innerDimensions.end()) {
-              innerDimensions.push_back(newDim->getName());
-            }
+          for (auto newDim : newInnerDimensions) {
+            //            if (std::find(innerDimensions.begin(),
+            //            innerDimensions.end(),
+            //                          newDim->getName()) ==
+            //                          innerDimensions.end()) {
+            //              innerDimensions.push_back(newDim->getName());
+            //            }
+            registerDimension(newDim);
           }
         }
       }
     }
     done = incrementIndeces(currentIndeces);
   }
-  for (auto dimName : innerDimensions) {
-    if (!getDimension(dimName)) {
-      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
-    }
-  }
+//  for (auto dimName : innerDimensions) {
+//    if (!getDimension(dimName)) {
+//      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
+//    }
+//  }
 
 #else
   std::cerr << "TINC built without NetCDF support. "

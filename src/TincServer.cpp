@@ -19,6 +19,7 @@ TincServer::TincServer() {}
 
 bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
 
+  markBusy();
   while (message.remainingBytes() > 8) {
     size_t msgSize;
     memcpy(&msgSize, message.data(), sizeof(size_t));
@@ -130,6 +131,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
     std::cout << "Message buffer : " << message.remainingBytes() << std::endl;
   }
 
+  markAvailable();
   return true;
 }
 
@@ -228,6 +230,56 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
   }
   std::cerr << __FUNCTION__ << " Exit server barrier --------" << std::endl;
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
+}
+
+void TincServer::markBusy() {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::STATUS);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  StatusMessage statusMsg;
+  statusMsg.set_status(StatusTypes::BUSY);
+
+  auto *statusDetails = msg.details().New();
+  statusDetails->PackFrom(statusMsg);
+  msg.set_allocated_details(statusDetails);
+  sendTincMessage(&msg);
+  TincProtocol::markBusy();
+}
+
+void TincServer::markAvailable() {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::STATUS);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  StatusMessage statusMsg;
+  statusMsg.set_status(StatusTypes::AVAILABLE);
+
+  auto *statusDetails = msg.details().New();
+  statusDetails->PackFrom(statusMsg);
+  msg.set_allocated_details(statusDetails);
+  sendTincMessage(&msg);
+
+  TincProtocol::markAvailable();
+}
+
+void TincServer::onConnection(al::Socket *newConnection) {
+
+  TincMessage msg;
+  msg.set_messagetype(MessageType::STATUS);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  StatusMessage statusMsg;
+  {
+    std::unique_lock<std::mutex> lk(mBusyCountLock);
+    if (mBusyCount == 0) {
+      statusMsg.set_status(StatusTypes::AVAILABLE);
+    } else {
+      statusMsg.set_status(StatusTypes::BUSY);
+    }
+  }
+
+  auto *statusDetails = msg.details().New();
+  statusDetails->PackFrom(statusMsg);
+  msg.set_allocated_details(statusDetails);
+  sendTincMessage(&msg, newConnection);
 }
 
 std::pair<std::string, uint16_t> TincServer::serverAddress() {

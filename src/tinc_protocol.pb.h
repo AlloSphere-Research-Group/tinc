@@ -49,7 +49,7 @@ struct TableStruct_tinc_5fprotocol_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxiliaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[26]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[29]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -63,6 +63,12 @@ extern CommandDefaultTypeInternal _Command_default_instance_;
 class CommandErrorPayload;
 class CommandErrorPayloadDefaultTypeInternal;
 extern CommandErrorPayloadDefaultTypeInternal _CommandErrorPayload_default_instance_;
+class CommandGenericAck;
+class CommandGenericAckDefaultTypeInternal;
+extern CommandGenericAckDefaultTypeInternal _CommandGenericAck_default_instance_;
+class CommandGenericPayload;
+class CommandGenericPayloadDefaultTypeInternal;
+extern CommandGenericPayloadDefaultTypeInternal _CommandGenericPayload_default_instance_;
 class ConfigureDataPool;
 class ConfigureDataPoolDefaultTypeInternal;
 extern ConfigureDataPoolDefaultTypeInternal _ConfigureDataPool_default_instance_;
@@ -132,6 +138,9 @@ extern RegisterParameterSpaceDefaultTypeInternal _RegisterParameterSpace_default
 class RegisterProcessor;
 class RegisterProcessorDefaultTypeInternal;
 extern RegisterProcessorDefaultTypeInternal _RegisterProcessor_default_instance_;
+class StatusMessage;
+class StatusMessageDefaultTypeInternal;
+extern StatusMessageDefaultTypeInternal _StatusMessage_default_instance_;
 class TincMessage;
 class TincMessageDefaultTypeInternal;
 extern TincMessageDefaultTypeInternal _TincMessage_default_instance_;
@@ -139,6 +148,8 @@ extern TincMessageDefaultTypeInternal _TincMessage_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::tinc::Command* Arena::CreateMaybeMessage<::tinc::Command>(Arena*);
 template<> ::tinc::CommandErrorPayload* Arena::CreateMaybeMessage<::tinc::CommandErrorPayload>(Arena*);
+template<> ::tinc::CommandGenericAck* Arena::CreateMaybeMessage<::tinc::CommandGenericAck>(Arena*);
+template<> ::tinc::CommandGenericPayload* Arena::CreateMaybeMessage<::tinc::CommandGenericPayload>(Arena*);
 template<> ::tinc::ConfigureDataPool* Arena::CreateMaybeMessage<::tinc::ConfigureDataPool>(Arena*);
 template<> ::tinc::ConfigureDiskBuffer* Arena::CreateMaybeMessage<::tinc::ConfigureDiskBuffer>(Arena*);
 template<> ::tinc::ConfigureParameter* Arena::CreateMaybeMessage<::tinc::ConfigureParameter>(Arena*);
@@ -162,6 +173,7 @@ template<> ::tinc::RegisterDiskBuffer* Arena::CreateMaybeMessage<::tinc::Registe
 template<> ::tinc::RegisterParameter* Arena::CreateMaybeMessage<::tinc::RegisterParameter>(Arena*);
 template<> ::tinc::RegisterParameterSpace* Arena::CreateMaybeMessage<::tinc::RegisterParameterSpace>(Arena*);
 template<> ::tinc::RegisterProcessor* Arena::CreateMaybeMessage<::tinc::RegisterProcessor>(Arena*);
+template<> ::tinc::StatusMessage* Arena::CreateMaybeMessage<::tinc::StatusMessage>(Arena*);
 template<> ::tinc::TincMessage* Arena::CreateMaybeMessage<::tinc::TincMessage>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace tinc {
@@ -173,6 +185,7 @@ enum MessageType : int {
   CONFIGURE = 3,
   COMMAND = 4,
   COMMAND_REPLY = 5,
+  STATUS = 6,
   PING = 98,
   PONG = 99,
   BARRIER_REQUEST = 100,
@@ -317,6 +330,32 @@ inline bool DiskBufferType_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, DiskBufferType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<DiskBufferType>(
     DiskBufferType_descriptor(), name, value);
+}
+enum StatusTypes : int {
+  UNKNOWN = 0,
+  AVAILABLE = 1,
+  BUSY = 2,
+  StatusTypes_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
+  StatusTypes_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
+};
+bool StatusTypes_IsValid(int value);
+constexpr StatusTypes StatusTypes_MIN = UNKNOWN;
+constexpr StatusTypes StatusTypes_MAX = BUSY;
+constexpr int StatusTypes_ARRAYSIZE = StatusTypes_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* StatusTypes_descriptor();
+template<typename T>
+inline const std::string& StatusTypes_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, StatusTypes>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function StatusTypes_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    StatusTypes_descriptor(), enum_t_value);
+}
+inline bool StatusTypes_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, StatusTypes* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<StatusTypes>(
+    StatusTypes_descriptor(), name, value);
 }
 enum ParameterConfigureType : int {
   VALUE = 0,
@@ -3196,6 +3235,274 @@ class Command PROTOBUF_FINAL :
 };
 // -------------------------------------------------------------------
 
+class CommandGenericPayload PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.CommandGenericPayload) */ {
+ public:
+  inline CommandGenericPayload() : CommandGenericPayload(nullptr) {}
+  virtual ~CommandGenericPayload();
+
+  CommandGenericPayload(const CommandGenericPayload& from);
+  CommandGenericPayload(CommandGenericPayload&& from) noexcept
+    : CommandGenericPayload() {
+    *this = ::std::move(from);
+  }
+
+  inline CommandGenericPayload& operator=(const CommandGenericPayload& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline CommandGenericPayload& operator=(CommandGenericPayload&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const CommandGenericPayload& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const CommandGenericPayload* internal_default_instance() {
+    return reinterpret_cast<const CommandGenericPayload*>(
+               &_CommandGenericPayload_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    15;
+
+  friend void swap(CommandGenericPayload& a, CommandGenericPayload& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(CommandGenericPayload* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(CommandGenericPayload* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline CommandGenericPayload* New() const final {
+    return CreateMaybeMessage<CommandGenericPayload>(nullptr);
+  }
+
+  CommandGenericPayload* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CommandGenericPayload>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const CommandGenericPayload& from);
+  void MergeFrom(const CommandGenericPayload& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(CommandGenericPayload* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.CommandGenericPayload";
+  }
+  protected:
+  explicit CommandGenericPayload(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kDataFieldNumber = 1,
+  };
+  // bytes data = 1;
+  void clear_data();
+  const std::string& data() const;
+  void set_data(const std::string& value);
+  void set_data(std::string&& value);
+  void set_data(const char* value);
+  void set_data(const void* value, size_t size);
+  std::string* mutable_data();
+  std::string* release_data();
+  void set_allocated_data(std::string* data);
+  private:
+  const std::string& _internal_data() const;
+  void _internal_set_data(const std::string& value);
+  std::string* _internal_mutable_data();
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.CommandGenericPayload)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr data_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class CommandGenericAck PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.CommandGenericAck) */ {
+ public:
+  inline CommandGenericAck() : CommandGenericAck(nullptr) {}
+  virtual ~CommandGenericAck();
+
+  CommandGenericAck(const CommandGenericAck& from);
+  CommandGenericAck(CommandGenericAck&& from) noexcept
+    : CommandGenericAck() {
+    *this = ::std::move(from);
+  }
+
+  inline CommandGenericAck& operator=(const CommandGenericAck& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline CommandGenericAck& operator=(CommandGenericAck&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const CommandGenericAck& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const CommandGenericAck* internal_default_instance() {
+    return reinterpret_cast<const CommandGenericAck*>(
+               &_CommandGenericAck_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    16;
+
+  friend void swap(CommandGenericAck& a, CommandGenericAck& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(CommandGenericAck* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(CommandGenericAck* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline CommandGenericAck* New() const final {
+    return CreateMaybeMessage<CommandGenericAck>(nullptr);
+  }
+
+  CommandGenericAck* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<CommandGenericAck>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const CommandGenericAck& from);
+  void MergeFrom(const CommandGenericAck& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(CommandGenericAck* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.CommandGenericAck";
+  }
+  protected:
+  explicit CommandGenericAck(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // @@protoc_insertion_point(class_scope:tinc.CommandGenericAck)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
 class CommandErrorPayload PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.CommandErrorPayload) */ {
  public:
@@ -3238,7 +3545,7 @@ class CommandErrorPayload PROTOBUF_FINAL :
                &_CommandErrorPayload_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   friend void swap(CommandErrorPayload& a, CommandErrorPayload& b) {
     a.Swap(&b);
@@ -3382,7 +3689,7 @@ class ParameterRequestChoiceElements PROTOBUF_FINAL :
                &_ParameterRequestChoiceElements_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    18;
 
   friend void swap(ParameterRequestChoiceElements& a, ParameterRequestChoiceElements& b) {
     a.Swap(&b);
@@ -3506,7 +3813,7 @@ class ParameterRequestChoiceElementsReply PROTOBUF_FINAL :
                &_ParameterRequestChoiceElementsReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    17;
+    19;
 
   friend void swap(ParameterRequestChoiceElementsReply& a, ParameterRequestChoiceElementsReply& b) {
     a.Swap(&b);
@@ -3658,7 +3965,7 @@ class ParameterSpaceRequestCurrentPath PROTOBUF_FINAL :
                &_ParameterSpaceRequestCurrentPath_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(ParameterSpaceRequestCurrentPath& a, ParameterSpaceRequestCurrentPath& b) {
     a.Swap(&b);
@@ -3782,7 +4089,7 @@ class ParameterSpaceRequestCurrentPathReply PROTOBUF_FINAL :
                &_ParameterSpaceRequestCurrentPathReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    19;
+    21;
 
   friend void swap(ParameterSpaceRequestCurrentPathReply& a, ParameterSpaceRequestCurrentPathReply& b) {
     a.Swap(&b);
@@ -3926,7 +4233,7 @@ class ParameterSpaceRequestRootPath PROTOBUF_FINAL :
                &_ParameterSpaceRequestRootPath_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    20;
+    22;
 
   friend void swap(ParameterSpaceRequestRootPath& a, ParameterSpaceRequestRootPath& b) {
     a.Swap(&b);
@@ -4050,7 +4357,7 @@ class ParameterSpaceRequestRootPathReply PROTOBUF_FINAL :
                &_ParameterSpaceRequestRootPathReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    21;
+    23;
 
   friend void swap(ParameterSpaceRequestRootPathReply& a, ParameterSpaceRequestRootPathReply& b) {
     a.Swap(&b);
@@ -4194,7 +4501,7 @@ class DataPoolCommandSlice PROTOBUF_FINAL :
                &_DataPoolCommandSlice_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    22;
+    24;
 
   friend void swap(DataPoolCommandSlice& a, DataPoolCommandSlice& b) {
     a.Swap(&b);
@@ -4364,7 +4671,7 @@ class DataPoolCommandSliceReply PROTOBUF_FINAL :
                &_DataPoolCommandSliceReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    23;
+    25;
 
   friend void swap(DataPoolCommandSliceReply& a, DataPoolCommandSliceReply& b) {
     a.Swap(&b);
@@ -4508,7 +4815,7 @@ class DataPoolCommandCurrentFiles PROTOBUF_FINAL :
                &_DataPoolCommandCurrentFiles_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    24;
+    26;
 
   friend void swap(DataPoolCommandCurrentFiles& a, DataPoolCommandCurrentFiles& b) {
     a.Swap(&b);
@@ -4632,7 +4939,7 @@ class DataPoolCommandCurrentFilesReply PROTOBUF_FINAL :
                &_DataPoolCommandCurrentFilesReply_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    25;
+    27;
 
   friend void swap(DataPoolCommandCurrentFilesReply& a, DataPoolCommandCurrentFilesReply& b) {
     a.Swap(&b);
@@ -4737,6 +5044,163 @@ class DataPoolCommandCurrentFilesReply PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> filenames_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_tinc_5fprotocol_2eproto;
+};
+// -------------------------------------------------------------------
+
+class StatusMessage PROTOBUF_FINAL :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:tinc.StatusMessage) */ {
+ public:
+  inline StatusMessage() : StatusMessage(nullptr) {}
+  virtual ~StatusMessage();
+
+  StatusMessage(const StatusMessage& from);
+  StatusMessage(StatusMessage&& from) noexcept
+    : StatusMessage() {
+    *this = ::std::move(from);
+  }
+
+  inline StatusMessage& operator=(const StatusMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline StatusMessage& operator=(StatusMessage&& from) noexcept {
+    if (GetArena() == from.GetArena()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const StatusMessage& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StatusMessage* internal_default_instance() {
+    return reinterpret_cast<const StatusMessage*>(
+               &_StatusMessage_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    28;
+
+  friend void swap(StatusMessage& a, StatusMessage& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(StatusMessage* other) {
+    if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(StatusMessage* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StatusMessage* New() const final {
+    return CreateMaybeMessage<StatusMessage>(nullptr);
+  }
+
+  StatusMessage* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<StatusMessage>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const StatusMessage& from);
+  void MergeFrom(const StatusMessage& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StatusMessage* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "tinc.StatusMessage";
+  }
+  protected:
+  explicit StatusMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_tinc_5fprotocol_2eproto);
+    return ::descriptor_table_tinc_5fprotocol_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kIdFieldNumber = 1,
+    kStatusFieldNumber = 2,
+  };
+  // .tinc.ObjectId id = 1;
+  bool has_id() const;
+  private:
+  bool _internal_has_id() const;
+  public:
+  void clear_id();
+  const ::tinc::ObjectId& id() const;
+  ::tinc::ObjectId* release_id();
+  ::tinc::ObjectId* mutable_id();
+  void set_allocated_id(::tinc::ObjectId* id);
+  private:
+  const ::tinc::ObjectId& _internal_id() const;
+  ::tinc::ObjectId* _internal_mutable_id();
+  public:
+  void unsafe_arena_set_allocated_id(
+      ::tinc::ObjectId* id);
+  ::tinc::ObjectId* unsafe_arena_release_id();
+
+  // .tinc.StatusTypes status = 2;
+  void clear_status();
+  ::tinc::StatusTypes status() const;
+  void set_status(::tinc::StatusTypes value);
+  private:
+  ::tinc::StatusTypes _internal_status() const;
+  void _internal_set_status(::tinc::StatusTypes value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:tinc.StatusMessage)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::tinc::ObjectId* id_;
+  int status_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_tinc_5fprotocol_2eproto;
 };
@@ -7496,6 +7960,76 @@ inline void Command::set_allocated_details(PROTOBUF_NAMESPACE_ID::Any* details) 
 
 // -------------------------------------------------------------------
 
+// CommandGenericPayload
+
+// bytes data = 1;
+inline void CommandGenericPayload::clear_data() {
+  data_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline const std::string& CommandGenericPayload::data() const {
+  // @@protoc_insertion_point(field_get:tinc.CommandGenericPayload.data)
+  return _internal_data();
+}
+inline void CommandGenericPayload::set_data(const std::string& value) {
+  _internal_set_data(value);
+  // @@protoc_insertion_point(field_set:tinc.CommandGenericPayload.data)
+}
+inline std::string* CommandGenericPayload::mutable_data() {
+  // @@protoc_insertion_point(field_mutable:tinc.CommandGenericPayload.data)
+  return _internal_mutable_data();
+}
+inline const std::string& CommandGenericPayload::_internal_data() const {
+  return data_.Get();
+}
+inline void CommandGenericPayload::_internal_set_data(const std::string& value) {
+  
+  data_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void CommandGenericPayload::set_data(std::string&& value) {
+  
+  data_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:tinc.CommandGenericPayload.data)
+}
+inline void CommandGenericPayload::set_data(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  data_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:tinc.CommandGenericPayload.data)
+}
+inline void CommandGenericPayload::set_data(const void* value,
+    size_t size) {
+  
+  data_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:tinc.CommandGenericPayload.data)
+}
+inline std::string* CommandGenericPayload::_internal_mutable_data() {
+  
+  return data_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* CommandGenericPayload::release_data() {
+  // @@protoc_insertion_point(field_release:tinc.CommandGenericPayload.data)
+  return data_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void CommandGenericPayload::set_allocated_data(std::string* data) {
+  if (data != nullptr) {
+    
+  } else {
+    
+  }
+  data_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), data,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:tinc.CommandGenericPayload.data)
+}
+
+// -------------------------------------------------------------------
+
+// CommandGenericAck
+
+// -------------------------------------------------------------------
+
 // CommandErrorPayload
 
 // string error = 1;
@@ -8070,9 +8604,122 @@ DataPoolCommandCurrentFilesReply::mutable_filenames() {
   return &filenames_;
 }
 
+// -------------------------------------------------------------------
+
+// StatusMessage
+
+// .tinc.ObjectId id = 1;
+inline bool StatusMessage::_internal_has_id() const {
+  return this != internal_default_instance() && id_ != nullptr;
+}
+inline bool StatusMessage::has_id() const {
+  return _internal_has_id();
+}
+inline void StatusMessage::clear_id() {
+  if (GetArena() == nullptr && id_ != nullptr) {
+    delete id_;
+  }
+  id_ = nullptr;
+}
+inline const ::tinc::ObjectId& StatusMessage::_internal_id() const {
+  const ::tinc::ObjectId* p = id_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::tinc::ObjectId*>(
+      &::tinc::_ObjectId_default_instance_);
+}
+inline const ::tinc::ObjectId& StatusMessage::id() const {
+  // @@protoc_insertion_point(field_get:tinc.StatusMessage.id)
+  return _internal_id();
+}
+inline void StatusMessage::unsafe_arena_set_allocated_id(
+    ::tinc::ObjectId* id) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(id_);
+  }
+  id_ = id;
+  if (id) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tinc.StatusMessage.id)
+}
+inline ::tinc::ObjectId* StatusMessage::release_id() {
+  
+  ::tinc::ObjectId* temp = id_;
+  id_ = nullptr;
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline ::tinc::ObjectId* StatusMessage::unsafe_arena_release_id() {
+  // @@protoc_insertion_point(field_release:tinc.StatusMessage.id)
+  
+  ::tinc::ObjectId* temp = id_;
+  id_ = nullptr;
+  return temp;
+}
+inline ::tinc::ObjectId* StatusMessage::_internal_mutable_id() {
+  
+  if (id_ == nullptr) {
+    auto* p = CreateMaybeMessage<::tinc::ObjectId>(GetArena());
+    id_ = p;
+  }
+  return id_;
+}
+inline ::tinc::ObjectId* StatusMessage::mutable_id() {
+  // @@protoc_insertion_point(field_mutable:tinc.StatusMessage.id)
+  return _internal_mutable_id();
+}
+inline void StatusMessage::set_allocated_id(::tinc::ObjectId* id) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete id_;
+  }
+  if (id) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(id);
+    if (message_arena != submessage_arena) {
+      id = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, id, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  id_ = id;
+  // @@protoc_insertion_point(field_set_allocated:tinc.StatusMessage.id)
+}
+
+// .tinc.StatusTypes status = 2;
+inline void StatusMessage::clear_status() {
+  status_ = 0;
+}
+inline ::tinc::StatusTypes StatusMessage::_internal_status() const {
+  return static_cast< ::tinc::StatusTypes >(status_);
+}
+inline ::tinc::StatusTypes StatusMessage::status() const {
+  // @@protoc_insertion_point(field_get:tinc.StatusMessage.status)
+  return _internal_status();
+}
+inline void StatusMessage::_internal_set_status(::tinc::StatusTypes value) {
+  
+  status_ = value;
+}
+inline void StatusMessage::set_status(::tinc::StatusTypes value) {
+  _internal_set_status(value);
+  // @@protoc_insertion_point(field_set:tinc.StatusMessage.status)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -8154,6 +8801,11 @@ template <> struct is_proto_enum< ::tinc::DiskBufferType> : ::std::true_type {};
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::tinc::DiskBufferType>() {
   return ::tinc::DiskBufferType_descriptor();
+}
+template <> struct is_proto_enum< ::tinc::StatusTypes> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tinc::StatusTypes>() {
+  return ::tinc::StatusTypes_descriptor();
 }
 template <> struct is_proto_enum< ::tinc::ParameterConfigureType> : ::std::true_type {};
 template <>

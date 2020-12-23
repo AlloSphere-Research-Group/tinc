@@ -67,6 +67,7 @@ TEST(TincProtocol, FastTrigger) {
 }
 
 TEST(TincProtocol, BarrierMultiClient) {
+  // FIXME fix support for multiclient barrier
   //  TincServer tserver;
   //  EXPECT_TRUE(tserver.start());
 

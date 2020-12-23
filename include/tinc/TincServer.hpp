@@ -71,6 +71,10 @@ public:
    * @param timeoutsec timeout in seconds
    * @return true if all connections locked and unlock message was sent before
    * the timeout
+   *
+   * This requires clients to explicitly call barrier() . This is used to
+   * syncrhonize applications so they resume execution after all have finished
+   * executing a piece of code
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 
@@ -78,7 +82,12 @@ public:
 
   void disconnectAllClients();
 
+  void markBusy() override;
+  void markAvailable() override;
+
 protected:
+  void onConnection(al::Socket *newConnection) override;
+
   void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive);
   void disconnectClient(al::Socket *src);
 

@@ -1031,12 +1031,8 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
           for (auto &msg : msgs) {
             sendTincMessage(&msg, src);
           }
-          // FIXME check: when does this happen?
-          if (dim.get() != changedDimension) {
-            registerParameterSpaceDimension(*changedDimension, src);
-            sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr,
-                                                    src);
-          }
+          registerParameterSpaceDimension(*changedDimension, src);
+          sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr, src);
 
           break;
         }
@@ -1066,11 +1062,14 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
 
     // Broadcast registered ParameterSpace
     sendRegisterMessage(&ps, nullptr, src);
-
-    for (auto dim : ps.getDimensions()) {
-      registerParameterSpaceDimension(*dim, src);
-      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
-    }
+  }
+  // Even if regeistered, we need to send the dimensions in case they have
+  // changed
+  // FIXME we should remove the remote dimensions that no longer exist in the
+  // parameter space if it was already registered
+  for (auto dim : ps.getDimensions()) {
+    registerParameterSpaceDimension(*dim, src);
+    sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
   }
 }
 
@@ -1276,6 +1275,22 @@ al::ParameterMeta *TincProtocol::getParameter(std::string name,
     }
   }
   return nullptr;
+}
+
+void TincProtocol::markBusy() {
+  std::unique_lock<std::mutex> lk(mBusyCountLock);
+  assert(mBusyCount < UINT32_MAX);
+  mBusyCount++;
+}
+
+void TincProtocol::markAvailable() {
+  std::unique_lock<std::mutex> lk(mBusyCountLock);
+  if (mBusyCount == 0) {
+    std::cerr << __FUNCTION__ << "ERROR: Can't mark as available. Not busy."
+              << std::endl;
+    return;
+  }
+  mBusyCount--;
 }
 
 void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
@@ -1843,9 +1858,11 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     confMessage.set_configurationkey(config.first);
     google::protobuf::Any *configValue = confMessage.configurationvalue().New();
     ParameterValue val;
-    if (config.second.type == VARIANT_DOUBLE) {
+    if (config.second.type == VARIANT_DOUBLE ||
+        config.second.type == VARIANT_FLOAT) {
       val.set_valuedouble(config.second.valueDouble);
-    } else if (config.second.type == VARIANT_INT64) {
+    } else if (config.second.type == VARIANT_INT64 ||
+               config.second.type == VARIANT_INT32) {
       val.set_valueint64(config.second.valueInt64);
     } else if (config.second.type == VARIANT_STRING) {
       val.set_valuestring(config.second.valueStr);

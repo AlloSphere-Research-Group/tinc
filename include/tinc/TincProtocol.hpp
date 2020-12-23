@@ -48,6 +48,12 @@ public:
   // Data pool commands
   enum { CREATE_DATA_SLICE = 0x01 };
 
+  typedef enum {
+    STATUS_UNKNOWN = 0x00,
+    STATUS_AVAILABLE = 0x01,
+    STATUS_BUSY = 0x02
+  } Status;
+
   /**
    * @brief register a parameter with this Tinc node
    * @param param the parameter to register
@@ -158,6 +164,10 @@ public:
   virtual bool barrier(uint32_t group = 0, float timeoutsec = 0.0) = 0;
 
   void setVerbose(bool v) { mVerbose = v; }
+
+  virtual void markBusy();
+
+  virtual void markAvailable();
 
 protected:
   void connectParameterCallbacks(al::ParameterMeta &param);
@@ -278,6 +288,9 @@ protected:
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
+
+  std::mutex mBusyCountLock;
+  uint32_t mBusyCount = 0;
 
   bool mVerbose{false};
 };

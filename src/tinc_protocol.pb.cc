@@ -78,6 +78,14 @@ class CommandDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Command> _instance;
 } _Command_default_instance_;
+class CommandGenericPayloadDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<CommandGenericPayload> _instance;
+} _CommandGenericPayload_default_instance_;
+class CommandGenericAckDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<CommandGenericAck> _instance;
+} _CommandGenericAck_default_instance_;
 class CommandErrorPayloadDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<CommandErrorPayload> _instance;
@@ -122,6 +130,10 @@ class DataPoolCommandCurrentFilesReplyDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DataPoolCommandCurrentFilesReply> _instance;
 } _DataPoolCommandCurrentFilesReply_default_instance_;
+class StatusMessageDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<StatusMessage> _instance;
+} _StatusMessage_default_instance_;
 }  // namespace tinc
 static void InitDefaultsscc_info_Command_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -152,6 +164,34 @@ static void InitDefaultsscc_info_CommandErrorPayload_tinc_5fprotocol_2eproto() {
 
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_CommandErrorPayload_tinc_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_CommandGenericAck_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_CommandGenericAck_default_instance_;
+    new (ptr) ::tinc::CommandGenericAck();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::CommandGenericAck::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_CommandGenericAck_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_CommandGenericAck_tinc_5fprotocol_2eproto}, {}};
+
+static void InitDefaultsscc_info_CommandGenericPayload_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_CommandGenericPayload_default_instance_;
+    new (ptr) ::tinc::CommandGenericPayload();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::CommandGenericPayload::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_CommandGenericPayload_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_CommandGenericPayload_tinc_5fprotocol_2eproto}, {}};
 
 static void InitDefaultsscc_info_ConfigureDataPool_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -482,6 +522,21 @@ static void InitDefaultsscc_info_RegisterProcessor_tinc_5fprotocol_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_RegisterProcessor_tinc_5fprotocol_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_RegisterProcessor_tinc_5fprotocol_2eproto}, {}};
 
+static void InitDefaultsscc_info_StatusMessage_tinc_5fprotocol_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::tinc::_StatusMessage_default_instance_;
+    new (ptr) ::tinc::StatusMessage();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::tinc::StatusMessage::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_StatusMessage_tinc_5fprotocol_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_StatusMessage_tinc_5fprotocol_2eproto}, {
+      &scc_info_ObjectId_tinc_5fprotocol_2eproto.base,}};
+
 static void InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -497,8 +552,8 @@ static void InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TincMessage_tinc_5fprotocol_2eproto}, {
       &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[26];
-static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[9];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_tinc_5fprotocol_2eproto[29];
+static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_tinc_5fprotocol_2eproto[10];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_tinc_5fprotocol_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -632,6 +687,17 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   PROTOBUF_FIELD_OFFSET(::tinc::Command, id_),
   PROTOBUF_FIELD_OFFSET(::tinc::Command, details_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::CommandGenericPayload, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::tinc::CommandGenericPayload, data_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::CommandGenericAck, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::tinc::CommandErrorPayload, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -694,6 +760,13 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_tinc_5fprotocol_2eproto::offse
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::tinc::DataPoolCommandCurrentFilesReply, filenames_),
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::tinc::StatusMessage, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::tinc::StatusMessage, id_),
+  PROTOBUF_FIELD_OFFSET(::tinc::StatusMessage, status_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::tinc::TincMessage)},
@@ -711,17 +784,20 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 105, -1, sizeof(::tinc::ConfigureDiskBuffer)},
   { 113, -1, sizeof(::tinc::ConfigureDataPool)},
   { 121, -1, sizeof(::tinc::Command)},
-  { 129, -1, sizeof(::tinc::CommandErrorPayload)},
-  { 135, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
-  { 140, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
-  { 146, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
-  { 151, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
-  { 157, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
-  { 162, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
-  { 168, -1, sizeof(::tinc::DataPoolCommandSlice)},
-  { 175, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
-  { 181, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
-  { 186, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
+  { 129, -1, sizeof(::tinc::CommandGenericPayload)},
+  { 135, -1, sizeof(::tinc::CommandGenericAck)},
+  { 140, -1, sizeof(::tinc::CommandErrorPayload)},
+  { 146, -1, sizeof(::tinc::ParameterRequestChoiceElements)},
+  { 151, -1, sizeof(::tinc::ParameterRequestChoiceElementsReply)},
+  { 157, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPath)},
+  { 162, -1, sizeof(::tinc::ParameterSpaceRequestCurrentPathReply)},
+  { 168, -1, sizeof(::tinc::ParameterSpaceRequestRootPath)},
+  { 173, -1, sizeof(::tinc::ParameterSpaceRequestRootPathReply)},
+  { 179, -1, sizeof(::tinc::DataPoolCommandSlice)},
+  { 186, -1, sizeof(::tinc::DataPoolCommandSliceReply)},
+  { 192, -1, sizeof(::tinc::DataPoolCommandCurrentFiles)},
+  { 197, -1, sizeof(::tinc::DataPoolCommandCurrentFilesReply)},
+  { 203, -1, sizeof(::tinc::StatusMessage)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -740,6 +816,8 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDiskBuffer_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ConfigureDataPool_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_Command_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_CommandGenericPayload_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_CommandGenericAck_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_CommandErrorPayload_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterRequestChoiceElements_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_ParameterRequestChoiceElementsReply_default_instance_),
@@ -751,6 +829,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandSliceReply_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandCurrentFiles_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_DataPoolCommandCurrentFilesReply_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::tinc::_StatusMessage_default_instance_),
 };
 
 const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
@@ -800,50 +879,58 @@ const char descriptor_table_protodef_tinc_5fprotocol_2eproto[] PROTOBUF_SECTION_
   "igureType\0220\n\022configurationValue\030\003 \001(\0132\024."
   "google.protobuf.Any\"`\n\007Command\022\022\n\nmessag"
   "e_id\030\001 \001(\004\022\032\n\002id\030\002 \001(\0132\016.tinc.ObjectId\022%"
-  "\n\007details\030\003 \001(\0132\024.google.protobuf.Any\"$\n"
-  "\023CommandErrorPayload\022\r\n\005error\030\001 \001(\t\" \n\036P"
-  "arameterRequestChoiceElements\"7\n#Paramet"
-  "erRequestChoiceElementsReply\022\020\n\010elements"
-  "\030\001 \003(\t\"\"\n ParameterSpaceRequestCurrentPa"
-  "th\"5\n%ParameterSpaceRequestCurrentPathRe"
-  "ply\022\014\n\004path\030\001 \001(\t\"\037\n\035ParameterSpaceReque"
-  "stRootPath\"2\n\"ParameterSpaceRequestRootP"
-  "athReply\022\014\n\004path\030\001 \001(\t\"8\n\024DataPoolComman"
-  "dSlice\022\r\n\005field\030\001 \001(\t\022\021\n\tdimension\030\002 \003(\t"
-  "\"-\n\031DataPoolCommandSliceReply\022\020\n\010filenam"
-  "e\030\001 \001(\t\"\035\n\033DataPoolCommandCurrentFiles\"5"
-  "\n DataPoolCommandCurrentFilesReply\022\021\n\tfi"
-  "lenames\030\001 \003(\t*\304\001\n\013MessageType\022\013\n\007REQUEST"
-  "\020\000\022\n\n\006REMOVE\020\001\022\014\n\010REGISTER\020\002\022\r\n\tCONFIGUR"
-  "E\020\003\022\013\n\007COMMAND\020\004\022\021\n\rCOMMAND_REPLY\020\005\022\010\n\004P"
-  "ING\020b\022\010\n\004PONG\020c\022\023\n\017BARRIER_REQUEST\020d\022\024\n\020"
-  "BARRIER_ACK_LOCK\020e\022\022\n\016BARRIER_UNLOCK\020f\022\014"
-  "\n\007GOODBYE\020\310\001*k\n\nObjectType\022\r\n\tPARAMETER\020"
-  "\000\022\r\n\tPROCESSOR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDAT"
-  "A_POOL\020\003\022\023\n\017PARAMETER_SPACE\020\004\022\n\n\006GLOBAL\020"
-  "\005*3\n\rProcessorType\022\016\n\nDATASCRIPT\020\000\022\t\n\005CH"
-  "AIN\020\001\022\007\n\003CPP\020\002*\375\001\n\021ParameterDataType\022\023\n\017"
-  "PARAMETER_FLOAT\020\000\022\022\n\016PARAMETER_BOOL\020\001\022\024\n"
-  "\020PARAMETER_STRING\020\002\022\023\n\017PARAMETER_INT32\020\003"
-  "\022\023\n\017PARAMETER_VEC3F\020\004\022\023\n\017PARAMETER_VEC4F"
-  "\020\005\022\024\n\020PARAMETER_COLORF\020\006\022\023\n\017PARAMETER_PO"
-  "SED\020\007\022\022\n\016PARAMETER_MENU\020\010\022\024\n\020PARAMETER_C"
-  "HOICE\020\t\022\025\n\021PARAMETER_TRIGGER\020\n*G\n\016DiskBu"
-  "fferType\022\n\n\006BINARY\020\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF"
-  "\020\002\022\010\n\004JSON\020\003\022\t\n\005IMAGE\020\004*P\n\026ParameterConf"
-  "igureType\022\t\n\005VALUE\020\000\022\007\n\003MIN\020\001\022\007\n\003MAX\020\002\022\t"
-  "\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020\004*F\n\033ParameterSp"
-  "aceConfigureType\022\021\n\rADD_PARAMETER\020\000\022\024\n\020R"
-  "EMOVE_PARAMETER\020\001*+\n\027DiskBufferConfigure"
-  "Type\022\020\n\014CURRENT_FILE\020\000*,\n\025DataPoolConfig"
-  "ureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006proto3"
+  "\n\007details\030\003 \001(\0132\024.google.protobuf.Any\"%\n"
+  "\025CommandGenericPayload\022\014\n\004data\030\001 \001(\014\"\023\n\021"
+  "CommandGenericAck\"$\n\023CommandErrorPayload"
+  "\022\r\n\005error\030\001 \001(\t\" \n\036ParameterRequestChoic"
+  "eElements\"7\n#ParameterRequestChoiceEleme"
+  "ntsReply\022\020\n\010elements\030\001 \003(\t\"\"\n ParameterS"
+  "paceRequestCurrentPath\"5\n%ParameterSpace"
+  "RequestCurrentPathReply\022\014\n\004path\030\001 \001(\t\"\037\n"
+  "\035ParameterSpaceRequestRootPath\"2\n\"Parame"
+  "terSpaceRequestRootPathReply\022\014\n\004path\030\001 \001"
+  "(\t\"8\n\024DataPoolCommandSlice\022\r\n\005field\030\001 \001("
+  "\t\022\021\n\tdimension\030\002 \003(\t\"-\n\031DataPoolCommandS"
+  "liceReply\022\020\n\010filename\030\001 \001(\t\"\035\n\033DataPoolC"
+  "ommandCurrentFiles\"5\n DataPoolCommandCur"
+  "rentFilesReply\022\021\n\tfilenames\030\001 \003(\t\"N\n\rSta"
+  "tusMessage\022\032\n\002id\030\001 \001(\0132\016.tinc.ObjectId\022!"
+  "\n\006status\030\002 \001(\0162\021.tinc.StatusTypes*\320\001\n\013Me"
+  "ssageType\022\013\n\007REQUEST\020\000\022\n\n\006REMOVE\020\001\022\014\n\010RE"
+  "GISTER\020\002\022\r\n\tCONFIGURE\020\003\022\013\n\007COMMAND\020\004\022\021\n\r"
+  "COMMAND_REPLY\020\005\022\n\n\006STATUS\020\006\022\010\n\004PING\020b\022\010\n"
+  "\004PONG\020c\022\023\n\017BARRIER_REQUEST\020d\022\024\n\020BARRIER_"
+  "ACK_LOCK\020e\022\022\n\016BARRIER_UNLOCK\020f\022\014\n\007GOODBY"
+  "E\020\310\001*k\n\nObjectType\022\r\n\tPARAMETER\020\000\022\r\n\tPRO"
+  "CESSOR\020\001\022\017\n\013DISK_BUFFER\020\002\022\r\n\tDATA_POOL\020\003"
+  "\022\023\n\017PARAMETER_SPACE\020\004\022\n\n\006GLOBAL\020\005*3\n\rPro"
+  "cessorType\022\016\n\nDATASCRIPT\020\000\022\t\n\005CHAIN\020\001\022\007\n"
+  "\003CPP\020\002*\375\001\n\021ParameterDataType\022\023\n\017PARAMETE"
+  "R_FLOAT\020\000\022\022\n\016PARAMETER_BOOL\020\001\022\024\n\020PARAMET"
+  "ER_STRING\020\002\022\023\n\017PARAMETER_INT32\020\003\022\023\n\017PARA"
+  "METER_VEC3F\020\004\022\023\n\017PARAMETER_VEC4F\020\005\022\024\n\020PA"
+  "RAMETER_COLORF\020\006\022\023\n\017PARAMETER_POSED\020\007\022\022\n"
+  "\016PARAMETER_MENU\020\010\022\024\n\020PARAMETER_CHOICE\020\t\022"
+  "\025\n\021PARAMETER_TRIGGER\020\n*G\n\016DiskBufferType"
+  "\022\n\n\006BINARY\020\000\022\010\n\004TEXT\020\001\022\n\n\006NETCDF\020\002\022\010\n\004JS"
+  "ON\020\003\022\t\n\005IMAGE\020\004*3\n\013StatusTypes\022\013\n\007UNKNOW"
+  "N\020\000\022\r\n\tAVAILABLE\020\001\022\010\n\004BUSY\020\002*P\n\026Paramete"
+  "rConfigureType\022\t\n\005VALUE\020\000\022\007\n\003MIN\020\001\022\007\n\003MA"
+  "X\020\002\022\t\n\005SPACE\020\003\022\016\n\nSPACE_TYPE\020\004*F\n\033Parame"
+  "terSpaceConfigureType\022\021\n\rADD_PARAMETER\020\000"
+  "\022\024\n\020REMOVE_PARAMETER\020\001*+\n\027DiskBufferConf"
+  "igureType\022\020\n\014CURRENT_FILE\020\000*,\n\025DataPoolC"
+  "onfigureType\022\023\n\017SLICE_CACHE_DIR\020\000b\006proto"
+  "3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_tinc_5fprotocol_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[26] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tinc_5fprotocol_2eproto_sccs[29] = {
   &scc_info_Command_tinc_5fprotocol_2eproto.base,
   &scc_info_CommandErrorPayload_tinc_5fprotocol_2eproto.base,
+  &scc_info_CommandGenericAck_tinc_5fprotocol_2eproto.base,
+  &scc_info_CommandGenericPayload_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDataPool_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureDiskBuffer_tinc_5fprotocol_2eproto.base,
   &scc_info_ConfigureParameter_tinc_5fprotocol_2eproto.base,
@@ -867,14 +954,15 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_tin
   &scc_info_RegisterParameter_tinc_5fprotocol_2eproto.base,
   &scc_info_RegisterParameterSpace_tinc_5fprotocol_2eproto.base,
   &scc_info_RegisterProcessor_tinc_5fprotocol_2eproto.base,
+  &scc_info_StatusMessage_tinc_5fprotocol_2eproto.base,
   &scc_info_TincMessage_tinc_5fprotocol_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_tinc_5fprotocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_tinc_5fprotocol_2eproto = {
-  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3316,
-  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 26, 1,
+  false, false, descriptor_table_protodef_tinc_5fprotocol_2eproto, "tinc_protocol.proto", 3521,
+  &descriptor_table_tinc_5fprotocol_2eproto_once, descriptor_table_tinc_5fprotocol_2eproto_sccs, descriptor_table_tinc_5fprotocol_2eproto_deps, 29, 1,
   schemas, file_default_instances, TableStruct_tinc_5fprotocol_2eproto::offsets,
-  file_level_metadata_tinc_5fprotocol_2eproto, 26, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
+  file_level_metadata_tinc_5fprotocol_2eproto, 29, file_level_enum_descriptors_tinc_5fprotocol_2eproto, file_level_service_descriptors_tinc_5fprotocol_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -892,6 +980,7 @@ bool MessageType_IsValid(int value) {
     case 3:
     case 4:
     case 5:
+    case 6:
     case 98:
     case 99:
     case 100:
@@ -977,9 +1066,24 @@ bool DiskBufferType_IsValid(int value) {
   }
 }
 
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ParameterConfigureType_descriptor() {
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* StatusTypes_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
   return file_level_enum_descriptors_tinc_5fprotocol_2eproto[5];
+}
+bool StatusTypes_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ParameterConfigureType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[6];
 }
 bool ParameterConfigureType_IsValid(int value) {
   switch (value) {
@@ -996,7 +1100,7 @@ bool ParameterConfigureType_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ParameterSpaceConfigureType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
-  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[6];
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[7];
 }
 bool ParameterSpaceConfigureType_IsValid(int value) {
   switch (value) {
@@ -1010,7 +1114,7 @@ bool ParameterSpaceConfigureType_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DiskBufferConfigureType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
-  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[7];
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[8];
 }
 bool DiskBufferConfigureType_IsValid(int value) {
   switch (value) {
@@ -1023,7 +1127,7 @@ bool DiskBufferConfigureType_IsValid(int value) {
 
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* DataPoolConfigureType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_tinc_5fprotocol_2eproto);
-  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[8];
+  return file_level_enum_descriptors_tinc_5fprotocol_2eproto[9];
 }
 bool DataPoolConfigureType_IsValid(int value) {
   switch (value) {
@@ -5541,6 +5645,375 @@ void Command::InternalSwap(Command* other) {
 
 // ===================================================================
 
+void CommandGenericPayload::InitAsDefaultInstance() {
+}
+class CommandGenericPayload::_Internal {
+ public:
+};
+
+CommandGenericPayload::CommandGenericPayload(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.CommandGenericPayload)
+}
+CommandGenericPayload::CommandGenericPayload(const CommandGenericPayload& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_data().empty()) {
+    data_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from._internal_data(),
+      GetArena());
+  }
+  // @@protoc_insertion_point(copy_constructor:tinc.CommandGenericPayload)
+}
+
+void CommandGenericPayload::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_CommandGenericPayload_tinc_5fprotocol_2eproto.base);
+  data_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+CommandGenericPayload::~CommandGenericPayload() {
+  // @@protoc_insertion_point(destructor:tinc.CommandGenericPayload)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void CommandGenericPayload::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  data_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+}
+
+void CommandGenericPayload::ArenaDtor(void* object) {
+  CommandGenericPayload* _this = reinterpret_cast< CommandGenericPayload* >(object);
+  (void)_this;
+}
+void CommandGenericPayload::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void CommandGenericPayload::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const CommandGenericPayload& CommandGenericPayload::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_CommandGenericPayload_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void CommandGenericPayload::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.CommandGenericPayload)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  data_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* CommandGenericPayload::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // bytes data = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_data();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* CommandGenericPayload::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.CommandGenericPayload)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // bytes data = 1;
+  if (this->data().size() > 0) {
+    target = stream->WriteBytesMaybeAliased(
+        1, this->_internal_data(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.CommandGenericPayload)
+  return target;
+}
+
+size_t CommandGenericPayload::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.CommandGenericPayload)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // bytes data = 1;
+  if (this->data().size() > 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
+        this->_internal_data());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void CommandGenericPayload::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.CommandGenericPayload)
+  GOOGLE_DCHECK_NE(&from, this);
+  const CommandGenericPayload* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<CommandGenericPayload>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.CommandGenericPayload)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.CommandGenericPayload)
+    MergeFrom(*source);
+  }
+}
+
+void CommandGenericPayload::MergeFrom(const CommandGenericPayload& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.CommandGenericPayload)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.data().size() > 0) {
+    _internal_set_data(from._internal_data());
+  }
+}
+
+void CommandGenericPayload::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.CommandGenericPayload)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CommandGenericPayload::CopyFrom(const CommandGenericPayload& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.CommandGenericPayload)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CommandGenericPayload::IsInitialized() const {
+  return true;
+}
+
+void CommandGenericPayload::InternalSwap(CommandGenericPayload* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  data_.Swap(&other->data_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata CommandGenericPayload::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+void CommandGenericAck::InitAsDefaultInstance() {
+}
+class CommandGenericAck::_Internal {
+ public:
+};
+
+CommandGenericAck::CommandGenericAck(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.CommandGenericAck)
+}
+CommandGenericAck::CommandGenericAck(const CommandGenericAck& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  // @@protoc_insertion_point(copy_constructor:tinc.CommandGenericAck)
+}
+
+void CommandGenericAck::SharedCtor() {
+}
+
+CommandGenericAck::~CommandGenericAck() {
+  // @@protoc_insertion_point(destructor:tinc.CommandGenericAck)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void CommandGenericAck::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+}
+
+void CommandGenericAck::ArenaDtor(void* object) {
+  CommandGenericAck* _this = reinterpret_cast< CommandGenericAck* >(object);
+  (void)_this;
+}
+void CommandGenericAck::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void CommandGenericAck::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const CommandGenericAck& CommandGenericAck::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_CommandGenericAck_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void CommandGenericAck::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.CommandGenericAck)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* CommandGenericAck::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* CommandGenericAck::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.CommandGenericAck)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.CommandGenericAck)
+  return target;
+}
+
+size_t CommandGenericAck::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.CommandGenericAck)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void CommandGenericAck::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.CommandGenericAck)
+  GOOGLE_DCHECK_NE(&from, this);
+  const CommandGenericAck* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<CommandGenericAck>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.CommandGenericAck)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.CommandGenericAck)
+    MergeFrom(*source);
+  }
+}
+
+void CommandGenericAck::MergeFrom(const CommandGenericAck& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.CommandGenericAck)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+}
+
+void CommandGenericAck::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.CommandGenericAck)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void CommandGenericAck::CopyFrom(const CommandGenericAck& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.CommandGenericAck)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool CommandGenericAck::IsInitialized() const {
+  return true;
+}
+
+void CommandGenericAck::InternalSwap(CommandGenericAck* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata CommandGenericAck::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void CommandErrorPayload::InitAsDefaultInstance() {
 }
 class CommandErrorPayload::_Internal {
@@ -7697,6 +8170,254 @@ void DataPoolCommandCurrentFilesReply::InternalSwap(DataPoolCommandCurrentFilesR
 }
 
 
+// ===================================================================
+
+void StatusMessage::InitAsDefaultInstance() {
+  ::tinc::_StatusMessage_default_instance_._instance.get_mutable()->id_ = const_cast< ::tinc::ObjectId*>(
+      ::tinc::ObjectId::internal_default_instance());
+}
+class StatusMessage::_Internal {
+ public:
+  static const ::tinc::ObjectId& id(const StatusMessage* msg);
+};
+
+const ::tinc::ObjectId&
+StatusMessage::_Internal::id(const StatusMessage* msg) {
+  return *msg->id_;
+}
+StatusMessage::StatusMessage(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:tinc.StatusMessage)
+}
+StatusMessage::StatusMessage(const StatusMessage& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  if (from._internal_has_id()) {
+    id_ = new ::tinc::ObjectId(*from.id_);
+  } else {
+    id_ = nullptr;
+  }
+  status_ = from.status_;
+  // @@protoc_insertion_point(copy_constructor:tinc.StatusMessage)
+}
+
+void StatusMessage::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_StatusMessage_tinc_5fprotocol_2eproto.base);
+  ::memset(&id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&status_) -
+      reinterpret_cast<char*>(&id_)) + sizeof(status_));
+}
+
+StatusMessage::~StatusMessage() {
+  // @@protoc_insertion_point(destructor:tinc.StatusMessage)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void StatusMessage::SharedDtor() {
+  GOOGLE_DCHECK(GetArena() == nullptr);
+  if (this != internal_default_instance()) delete id_;
+}
+
+void StatusMessage::ArenaDtor(void* object) {
+  StatusMessage* _this = reinterpret_cast< StatusMessage* >(object);
+  (void)_this;
+}
+void StatusMessage::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void StatusMessage::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const StatusMessage& StatusMessage::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_StatusMessage_tinc_5fprotocol_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void StatusMessage::Clear() {
+// @@protoc_insertion_point(message_clear_start:tinc.StatusMessage)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  if (GetArena() == nullptr && id_ != nullptr) {
+    delete id_;
+  }
+  id_ = nullptr;
+  status_ = 0;
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* StatusMessage::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // .tinc.ObjectId id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr = ctx->ParseMessage(_internal_mutable_id(), ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // .tinc.StatusTypes status = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_status(static_cast<::tinc::StatusTypes>(val));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* StatusMessage::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:tinc.StatusMessage)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // .tinc.ObjectId id = 1;
+  if (this->has_id()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        1, _Internal::id(this), target, stream);
+  }
+
+  // .tinc.StatusTypes status = 2;
+  if (this->status() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteEnumToArray(
+      2, this->_internal_status(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:tinc.StatusMessage)
+  return target;
+}
+
+size_t StatusMessage::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:tinc.StatusMessage)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // .tinc.ObjectId id = 1;
+  if (this->has_id()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *id_);
+  }
+
+  // .tinc.StatusTypes status = 2;
+  if (this->status() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_status());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void StatusMessage::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:tinc.StatusMessage)
+  GOOGLE_DCHECK_NE(&from, this);
+  const StatusMessage* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<StatusMessage>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:tinc.StatusMessage)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:tinc.StatusMessage)
+    MergeFrom(*source);
+  }
+}
+
+void StatusMessage::MergeFrom(const StatusMessage& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:tinc.StatusMessage)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.has_id()) {
+    _internal_mutable_id()->::tinc::ObjectId::MergeFrom(from._internal_id());
+  }
+  if (from.status() != 0) {
+    _internal_set_status(from._internal_status());
+  }
+}
+
+void StatusMessage::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:tinc.StatusMessage)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void StatusMessage::CopyFrom(const StatusMessage& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:tinc.StatusMessage)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool StatusMessage::IsInitialized() const {
+  return true;
+}
+
+void StatusMessage::InternalSwap(StatusMessage* other) {
+  using std::swap;
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(StatusMessage, status_)
+      + sizeof(StatusMessage::status_)
+      - PROTOBUF_FIELD_OFFSET(StatusMessage, id_)>(
+          reinterpret_cast<char*>(&id_),
+          reinterpret_cast<char*>(&other->id_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata StatusMessage::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace tinc
 PROTOBUF_NAMESPACE_OPEN
@@ -7745,6 +8466,12 @@ template<> PROTOBUF_NOINLINE ::tinc::ConfigureDataPool* Arena::CreateMaybeMessag
 template<> PROTOBUF_NOINLINE ::tinc::Command* Arena::CreateMaybeMessage< ::tinc::Command >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::Command >(arena);
 }
+template<> PROTOBUF_NOINLINE ::tinc::CommandGenericPayload* Arena::CreateMaybeMessage< ::tinc::CommandGenericPayload >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::CommandGenericPayload >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::CommandGenericAck* Arena::CreateMaybeMessage< ::tinc::CommandGenericAck >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::CommandGenericAck >(arena);
+}
 template<> PROTOBUF_NOINLINE ::tinc::CommandErrorPayload* Arena::CreateMaybeMessage< ::tinc::CommandErrorPayload >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::CommandErrorPayload >(arena);
 }
@@ -7777,6 +8504,9 @@ template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandCurrentFiles* Arena::CreateM
 }
 template<> PROTOBUF_NOINLINE ::tinc::DataPoolCommandCurrentFilesReply* Arena::CreateMaybeMessage< ::tinc::DataPoolCommandCurrentFilesReply >(Arena* arena) {
   return Arena::CreateMessageInternal< ::tinc::DataPoolCommandCurrentFilesReply >(arena);
+}
+template<> PROTOBUF_NOINLINE ::tinc::StatusMessage* Arena::CreateMaybeMessage< ::tinc::StatusMessage >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::tinc::StatusMessage >(arena);
 }
 PROTOBUF_NAMESPACE_CLOSE
 

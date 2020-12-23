@@ -75,6 +75,15 @@ public:
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 
+  Status serverStatus();
+
+  /**
+   * @brief return only when server status is STATUS_AVAILABLE
+   * @param timeoutsec
+   * @return false if timeout instead of STATUS_AVAILABLE
+   */
+  bool waitForServer(float timeoutsec = 0.0);
+
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }
 
@@ -82,11 +91,17 @@ protected:
   void processBarrierRequest(al::Socket *src, uint64_t barrierConsecutive);
   void processBarrierUnlock(al::Socket *src, uint64_t barrierConsecutive);
 
+  void processStatusMessage(void *message);
+
 private:
   // Network barriers
   std::map<uint64_t, al::Socket *> mBarrierRequests;
   std::map<uint64_t, al::Socket *> mBarrierUnlocks;
   std::mutex mBarrierQueuesLock;
+
+  bool mWaitForServer{false};
+
+  Status mServerStatus;
 };
 
 } // namespace tinc
