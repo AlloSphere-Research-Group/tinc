@@ -47,8 +47,11 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient.stop();
+  al::al_sleep(0.1);
   tclient2.stop();
+  al::al_sleep(0.1);
   tclient3.stop();
+  al::al_sleep(0.1);
   tclient4.stop();
   al::al_sleep(0.5);
   EXPECT_EQ(tserver.connectionCount(), 0);

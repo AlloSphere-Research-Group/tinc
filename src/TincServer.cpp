@@ -161,10 +161,14 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
   }
 
   std::vector<al::Socket *> barrierSentRequests;
-  for (auto connection : mServerConnections) {
-    bool ret = sendProtobufMessage(&msg, connection.get());
-    if (ret) {
-      barrierSentRequests.push_back(connection.get());
+
+  {
+    std::unique_lock<std::mutex> lk(mConnectionsLock);
+    for (auto connection : mServerConnections) {
+      bool ret = sendProtobufMessage(&msg, connection.get());
+      if (ret) {
+        barrierSentRequests.push_back(connection.get());
+      }
     }
   }
 
