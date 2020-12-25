@@ -951,58 +951,9 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
     }
   }
   if (!registered) {
-
-    ParameterSpaceDimension *newDim{nullptr};
-
-    if (al::Parameter *p = dynamic_cast<al::Parameter *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterBool *p =
-                   dynamic_cast<al::ParameterBool *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterString *p =
-                   dynamic_cast<al::ParameterString *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterVec3 *p =
-                   dynamic_cast<al::ParameterVec3 *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterVec4 *p =
-                   dynamic_cast<al::ParameterVec4 *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterColor *p =
-                   dynamic_cast<al::ParameterColor *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterPose *p =
-                   dynamic_cast<al::ParameterPose *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterMenu *p =
-                   dynamic_cast<al::ParameterMenu *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::ParameterChoice *p =
-                   dynamic_cast<al::ParameterChoice *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(&pmeta)) {
-      newDim = new ParameterSpaceDimension(&pmeta);
-    } else {
-      std::cerr << __FUNCTION__ << ": Unsupported Parameter type" << std::endl;
-    }
-
-    if (newDim) {
-      // FIXME We allocate here, so we need to destroy on destructor.
-      // mParameterWrappers keeps a list of what needs to be destroyed by this
-      // class
-      mParameterWrappers.push_back(newDim);
-      mParameterSpaceDimensions.push_back(newDim);
-
-      connectParameterCallbacks(*newDim->parameterMeta());
-      connectDimensionCallbacks(*newDim);
-
-      // Broadcast registered ParameterSpaceDimension
-      sendRegisterMessage(newDim, nullptr, src);
-      sendConfigureMessage(newDim, nullptr, src);
-    }
-    // Broadcast registered Parameter
+    mLocalPSDs.emplace_back(
+        std::make_unique<ParameterSpaceDimension>(&pmeta, false));
+    registerParameterSpaceDimension(*mLocalPSDs.back(), src);
   }
 }
 
@@ -1027,6 +978,7 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
 
     // Broadcast registered ParameterSpaceDimension
     sendRegisterMessage(&psd, nullptr, src);
+    sendConfigureMessage(&psd, nullptr, src);
   }
 }
 
@@ -1483,26 +1435,21 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   switch (datatype) {
   case ParameterDataType::PARAMETER_FLOAT:
     param = new al::Parameter(id, group, def.valuefloat());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_BOOL:
     param = new al::ParameterBool(id, group, def.valuefloat());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_STRING:
     param = new al::ParameterString(id, group, def.valuestring());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_INT32:
     param = new al::ParameterInt(id, group, def.valueint32());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_VEC3F: {
     al::Vec3f value(def.valuelist(0).valuefloat(),
                     def.valuelist(1).valuefloat(),
                     def.valuelist(2).valuefloat());
     param = new al::ParameterVec3(id, group, value);
-    registerParameter(*param, src);
     break;
   }
   case ParameterDataType::PARAMETER_VEC4F: {
@@ -1510,7 +1457,6 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
         def.valuelist(0).valuefloat(), def.valuelist(1).valuefloat(),
         def.valuelist(2).valuefloat(), def.valuelist(3).valuefloat());
     param = new al::ParameterVec4(id, group, value);
-    registerParameter(*param, src);
     break;
   }
   case ParameterDataType::PARAMETER_COLORF: {
@@ -1518,7 +1464,6 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
         def.valuelist(0).valuefloat(), def.valuelist(1).valuefloat(),
         def.valuelist(2).valuefloat(), def.valuelist(3).valuefloat());
     param = new al::ParameterColor(id, group, value);
-    registerParameter(*param, src);
     break;
   }
   case ParameterDataType::PARAMETER_POSED: {
@@ -1528,20 +1473,16 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
         {def.valuelist(3).valuedouble(), def.valuelist(4).valuedouble(),
          def.valuelist(5).valuedouble(), def.valuelist(6).valuedouble()});
     param = new al::ParameterPose(id, group, value);
-    registerParameter(*param, src);
     break;
   }
   case ParameterDataType::PARAMETER_MENU:
     param = new al::ParameterMenu(id, group, def.valueint32());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_CHOICE:
     param = new al::ParameterChoice(id, group, def.valueuint64());
-    registerParameter(*param, src);
     break;
   case ParameterDataType::PARAMETER_TRIGGER:
     param = new al::Trigger(id, group);
-    registerParameter(*param, src);
     break;
   default:
     std::cerr << __FUNCTION__ << ": Invalid ParameterDataType" << std::endl;
@@ -1549,8 +1490,13 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   }
 
   if (param) {
+    mLocalPSDs.emplace_back(
+        std::make_unique<ParameterSpaceDimension>(param, true));
+    registerParameterSpaceDimension(*mLocalPSDs.back(), src);
+    delete param;
     return true;
   }
+
   return false;
 }
 
@@ -1574,6 +1520,17 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
   return true;
 }
 
+void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
+                                       al::Socket *dst, al::Socket *src) {
+
+  TincMessage msg = createRegisterParameterMessage(dim->parameterMeta());
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
+}
+
 void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
                                        al::Socket *src) {
   auto msg = createRegisterParameterSpaceMessage(ps);
@@ -1583,21 +1540,11 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
     sendTincMessage(&msg);
   }
 
+  // FIXME make sure functions that invoke this handles dimensions
   for (auto dim : ps->getDimensions()) {
     sendRegisterMessage(dim.get(), dst, src);
     sendConfigureMessage(dim.get(), dst, src);
     sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, src);
-  }
-}
-
-void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
-                                       al::Socket *dst, al::Socket *src) {
-
-  TincMessage msg = createRegisterParameterMessage(dim->parameterMeta());
-  if (src) {
-    sendTincMessage(&msg, dst, src->valueSource());
-  } else {
-    sendTincMessage(&msg, dst);
   }
 }
 
@@ -1823,14 +1770,6 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   return false;
 }
 
-// void TincProtocol::sendConfigureMessage(al::ParameterMeta *param,
-//                                        al::Socket *dst, bool isResponse) {}
-
-void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
-                                        al::Socket *src) {
-  assert(1 == 0); // Implement!
-}
-
 void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
                                         al::Socket *dst, al::Socket *src) {
   auto msgs = createConfigureParameterSpaceDimensionMessage(dim);
@@ -1841,6 +1780,11 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
       sendTincMessage(&msg, dst);
     }
   }
+}
+
+void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
+                                        al::Socket *src) {
+  assert(1 == 0); // Implement!
 }
 
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,

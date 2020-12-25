@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera, Kon Hyong Kim
-*/
+ */
 
 #include "al/io/al_Socket.hpp"
 #include "al/protocol/al_CommandConnection.hpp"
@@ -190,9 +190,9 @@ protected:
   bool processRegisterDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing register message
-  void sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
-                           al::Socket *src = nullptr);
   void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                           al::Socket *src = nullptr);
+  void sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
                            al::Socket *src = nullptr);
   void sendRegisterMessage(Processor *p, al::Socket *dst,
                            al::Socket *src = nullptr);
@@ -210,9 +210,9 @@ protected:
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
 
   // Outgoing configure message (value + details)
-  void sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
-                            al::Socket *src = nullptr);
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                            al::Socket *src = nullptr);
+  void sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                             al::Socket *src = nullptr);
   void sendConfigureMessage(Processor *p, al::Socket *dst,
                             al::Socket *src = nullptr);
@@ -283,8 +283,8 @@ protected:
   std::vector<AbstractDiskBuffer *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
-  // Dimensions that were allocated by this class to wrap a parameter
-  std::vector<ParameterSpaceDimension *> mParameterWrappers;
+  // Dimensions that were allocated by this class
+  std::vector<std::unique_ptr<ParameterSpaceDimension>> mLocalPSDs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
