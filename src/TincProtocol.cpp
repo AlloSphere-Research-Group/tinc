@@ -1467,17 +1467,18 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   auto def = command.defaultvalue();
   auto datatype = command.datatype();
 
-  al::ParameterMeta *param = nullptr;
-  bool registered = false;
   for (auto dim : mParameterSpaceDimensions) {
     if (dim->getName() == id && dim->getGroup() == group) {
-      registered = true;
-      break;
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Parameter " << id
+                  << " (Group: " << group << ") already registered."
+                  << std::endl;
+      }
+      return true;
     }
   }
-  if (registered) {
-    return true;
-  }
+
+  al::ParameterMeta *param = nullptr;
   // FIXME all the allocations below leak.
   switch (datatype) {
   case ParameterDataType::PARAMETER_FLOAT:
@@ -2490,7 +2491,6 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   }
 
   if (mVerbose) {
-
     std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
   }
   auto bytes = dst->send(buffer, size + sizeof(size_t));

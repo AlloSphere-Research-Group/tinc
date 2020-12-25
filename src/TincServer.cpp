@@ -61,7 +61,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         if (verbose()) {
-          std::cout << "server register received" << std::endl;
+          std::cout << "Server received Register message" << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
@@ -70,7 +70,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::CONFIGURE:
         if (verbose()) {
-          std::cout << "server configure received" << std::endl;
+          std::cout << "Server received Configure message" << std::endl;
         }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
@@ -78,7 +78,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::COMMAND:
-        std::cout << "server command" << std::endl;
+        std::cout << "Server received Command message" << std::endl;
         if (!readCommandMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Command message"
                     << std::endl;
@@ -113,8 +113,10 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
                   << std::endl;
         break;
       case MessageType::GOODBYE:
-        std::cout << __FUNCTION__ << ": Goodbye from " << src->address() << ":"
-                  << src->port() << std::endl;
+        if (verbose()) {
+          std::cout << "Goodbye from " << src->address() << ":" << src->port()
+                    << std::endl;
+        }
         disconnectClient(src);
         break;
       default:
@@ -128,7 +130,8 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
   }
 
   if (verbose()) {
-    std::cout << "Message buffer : " << message.remainingBytes() << std::endl;
+    std::cout << "Server message buffer : " << message.remainingBytes()
+              << std::endl;
   }
 
   markAvailable();

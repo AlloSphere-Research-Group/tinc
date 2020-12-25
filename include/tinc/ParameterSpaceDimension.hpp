@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #ifdef AL_WINDOWS
 #define NOMINMAX
@@ -44,9 +44,9 @@
 #include <utility>
 #include <vector>
 
-#include "al/ui/al_Parameter.hpp"
-#include "al/ui/al_DiscreteParameterValues.hpp"
 #include "al/io/al_Socket.hpp"
+#include "al/ui/al_DiscreteParameterValues.hpp"
+#include "al/ui/al_Parameter.hpp"
 
 namespace tinc {
 
@@ -70,9 +70,7 @@ public:
 
   ParameterSpaceDimension(std::string name, std::string group = "",
                           Datatype dataType = Datatype::FLOAT);
-
-  //
-  ParameterSpaceDimension(al::ParameterMeta *param);
+  ParameterSpaceDimension(al::ParameterMeta *param, bool makeInternal = false);
 
   ~ParameterSpaceDimension();
 
@@ -162,8 +160,8 @@ public:
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
   std::function<void(ParameterSpaceDimension *, al::Socket *src)>
-      onDimensionMetadataChange = [](ParameterSpaceDimension *,
-                                     al::Socket *src) {};
+      onDimensionMetadataChange =
+          [](ParameterSpaceDimension *, al::Socket *src) {};
 
 private:
   // Data

@@ -67,6 +67,7 @@ TEST(TincProtocol, ParameterBool) {
   tserver << p;
 
   p.set(1.0);
+
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 

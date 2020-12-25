@@ -71,7 +71,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         if (verbose()) {
-          std::cout << "client register received" << std::endl;
+          std::cout << "Client received Register message" << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
@@ -80,7 +80,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::CONFIGURE:
         if (verbose()) {
-          std::cout << "client configure received" << std::endl;
+          std::cout << "Client received Configure message" << std::endl;
         }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
@@ -142,7 +142,8 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
   }
 
   if (verbose()) {
-    std::cout << "Message buffer : " << message.remainingBytes() << std::endl;
+    std::cout << "Client message buffer : " << message.remainingBytes()
+              << std::endl;
   }
 
   return true;

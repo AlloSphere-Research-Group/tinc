@@ -29,12 +29,10 @@ ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
     return ParameterSpaceDimension::Datatype::FLOAT;
   } else if (dynamic_cast<al::ParameterBool *>(param)) {
     return ParameterSpaceDimension::Datatype::FLOAT;
-  } else if (dynamic_cast<al::ParameterInt *>(param)) {
-    return ParameterSpaceDimension::Datatype::INT32;
-  } else if (dynamic_cast<al::ParameterMenu *>(param)) {
-    return ParameterSpaceDimension::Datatype::INT32;
   } else if (dynamic_cast<al::ParameterString *>(param)) {
     return ParameterSpaceDimension::Datatype::STRING;
+  } else if (dynamic_cast<al::ParameterInt *>(param)) {
+    return ParameterSpaceDimension::Datatype::INT32;
   } else if (dynamic_cast<al::ParameterVec3 *>(param)) {
     return ParameterSpaceDimension::Datatype::FLOAT;
   } else if (dynamic_cast<al::ParameterVec4 *>(param)) {
@@ -55,10 +53,49 @@ ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
   return ParameterSpaceDimension::Datatype::FLOAT;
 }
 
-ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param)
+ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
+                                                 bool makeInternal)
     : mSpaceValues(dataTypeForParam(param)) {
-  mParamInternal = false;
-  mParameterValue = param;
+  mParamInternal = makeInternal;
+  if (makeInternal) {
+    if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
+      mParameterValue = new al::Parameter(*p);
+    } else if (al::ParameterBool *p =
+                   dynamic_cast<al::ParameterBool *>(param)) {
+      mParameterValue = new al::ParameterBool(*p);
+    } else if (al::ParameterString *p =
+                   dynamic_cast<al::ParameterString *>(param)) {
+      mParameterValue = new al::ParameterString(*p);
+    } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
+      mParameterValue = new al::ParameterInt(*p);
+    } else if (al::ParameterVec3 *p =
+                   dynamic_cast<al::ParameterVec3 *>(param)) {
+      mParameterValue = new al::ParameterVec3(*p);
+    } else if (al::ParameterVec4 *p =
+                   dynamic_cast<al::ParameterVec4 *>(param)) {
+      mParameterValue = new al::ParameterVec4(*p);
+    } else if (al::ParameterColor *p =
+                   dynamic_cast<al::ParameterColor *>(param)) {
+      mParameterValue = new al::ParameterColor(*p);
+    } else if (al::ParameterPose *p =
+                   dynamic_cast<al::ParameterPose *>(param)) {
+      mParameterValue = new al::ParameterPose(*p);
+    } else if (al::ParameterMenu *p =
+                   dynamic_cast<al::ParameterMenu *>(param)) {
+      mParameterValue =
+          new al::ParameterMenu(p->getName(), p->getGroup(), p->getDefault());
+      dynamic_cast<al::ParameterMenu *>(mParameterValue)->set(p->get());
+    } else if (al::ParameterChoice *p =
+                   dynamic_cast<al::ParameterChoice *>(param)) {
+      mParameterValue = new al::ParameterChoice(*p);
+    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
+      mParameterValue = new al::Trigger(*p);
+    } else {
+      std::cerr << __FUNCTION__ << ": Unsupported Parameter Type" << std::endl;
+    }
+  } else {
+    mParameterValue = param;
+  }
 }
 
 size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
