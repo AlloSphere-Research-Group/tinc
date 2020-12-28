@@ -4,6 +4,7 @@
 #include "al/graphics/al_Mesh.hpp"
 #include "al/types/al_Color.hpp"
 #include "al/math/al_Vec.hpp"
+#include "al/ui/al_Parameter.hpp"
 
 #include "SceneObject.hpp"
 
@@ -18,8 +19,8 @@ public:
   void onProcess(al::Graphics &g) override;
 
   // TODO make parameter?
-  float trajectoryWidth = 0.35f;
-  float alpha = 0.8f;
+  al::Parameter trajectoryWidth;
+  al::Parameter alpha;
 
 private:
   al::VAOMesh mTrajectoryMesh;

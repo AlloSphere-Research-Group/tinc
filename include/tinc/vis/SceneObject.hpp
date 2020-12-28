@@ -17,11 +17,12 @@ public:
   void registerWithTincServer(TincServer &server);
 
   bool writeJson(nlohmann::json &newJsonData) {
-    return buffer.writeJson(newJsonData);
+    return mBuffer.writeJson(newJsonData);
   }
 
 protected:
-  JsonDiskBuffer buffer;
+  JsonDiskBuffer mBuffer;
+  std::vector<al::ParameterMeta *> mParameters;
 };
 
 } // namespace tinc

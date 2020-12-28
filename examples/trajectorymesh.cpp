@@ -2,6 +2,8 @@
 
 #include "al/app/al_App.hpp"
 #include "al/math/al_Random.hpp"
+#include "al/ui/al_ControlGUI.hpp"
+
 using namespace tinc;
 
 class MyApp : public al::App {
@@ -22,9 +24,18 @@ class MyApp : public al::App {
     return true;
   }
 
+  void onCreate() override {
+    // Move back so we can see the scene
+    nav().set(al::Pose{{0, 0, 4}});
+    // Disable keyboard navigation
+    navControl().disable();
+    // Register trajectory parameters with GUI
+    displayText.set("Press any key to generate display");
+    gui << trajectory.alpha << trajectory.trajectoryWidth << displayText;
+    gui.init();
+  }
+
   void onAnimate(double dt) override {
-    trajectory.trajectoryWidth = 0.03f;
-    trajectory.alpha = 0.3f;
     // We must call the update(0 function to make sure we process any new buffer
     // data here. It must be done in the graphics thread (i.e. onAnimate() or
     // onDraw() as this writes the mesh to the GPU, which can only happen there.
@@ -40,10 +51,13 @@ class MyApp : public al::App {
     g.depthTesting(true);
     // Draw the trajectory mesh
     trajectory.onProcess(g);
+    gui.draw(g);
   }
 
 private:
   TrajectoryRender trajectory{"trajectory", "buffer_file.json"};
+  al::ControlGUI gui;
+  al::ParameterString displayText{"text"};
 };
 
 int main() {
