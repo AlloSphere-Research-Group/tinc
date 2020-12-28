@@ -63,9 +63,21 @@ public:
     return ret;
   }
 
+  bool writePixels(unsigned char *newData, int width, int height,
+                   std::string filename = "") {
+
+    if (filename.size() == 0) {
+      filename = getCurrentFileName();
+    }
+    al::Image::saveImage(filename, newData, width, height);
+
+    return updateData(filename);
+  };
+
 protected:
   bool parseFile(std::ifstream &file,
                  std::shared_ptr<al::Image> newData) override {
+    // TODO implement
     return true;
   }
 };

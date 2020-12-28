@@ -45,9 +45,31 @@ public:
                  std::string path = "", uint16_t size = 2)
       : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
+  bool writeJson(nlohmann::json &newData, std::string filename = "") {
+    // output to json file on disk
+    if (filename.size() == 0) {
+      filename = getCurrentFileName();
+    }
+
+    std::ofstream of(filename, std::ofstream::out);
+    if (of.good()) {
+      of << newData.dump(2);
+      of.close();
+      if (!of.good()) {
+        std::cout << "Error writing json file." << std::endl;
+        return false;
+      }
+    } else {
+      std::cout << "Error creating json file" << std::endl;
+      return false;
+    }
+
+    return updateData(filename);
+  }
+
 protected:
-  virtual bool parseFile(std::ifstream &file,
-                         std::shared_ptr<nlohmann::json> newData) {
+  bool parseFile(std::ifstream &file,
+                 std::shared_ptr<nlohmann::json> newData) override {
 
     //    try {
     *newData = nlohmann::json::parse(file);

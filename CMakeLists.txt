@@ -7,7 +7,6 @@ option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
 
 set(TINC_SRC
 
-    ${CMAKE_CURRENT_LIST_DIR}/src/AtomRenderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ComputationChain.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/CppProcessor.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
@@ -24,13 +23,17 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/TincServer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
+
+
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/AtomRenderer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/SceneObject.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/TrajectoryRender.cpp
   )
 
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/AbstractDiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/AtomRenderer.hpp
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/ComputationChain.hpp
     ${TINC_INCLUDE_PATH}/tinc/CppProcessor.hpp
@@ -53,7 +56,11 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/TincServer.hpp
     ${TINC_INCLUDE_PATH}/tinc/VASPReader.hpp
 
+    ${TINC_INCLUDE_PATH}/tinc/vis/AtomRenderer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/SceneObject.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/TrajectoryRender.hpp
 )
+
 
 add_library(tinc ${TINC_SRC} ${TINC_HEADERS})
 

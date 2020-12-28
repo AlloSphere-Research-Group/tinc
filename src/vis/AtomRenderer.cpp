@@ -1,7 +1,7 @@
 #include "al/graphics/al_Shader.hpp"
 #include "al/graphics/al_Shapes.hpp"
 
-#include "tinc/AtomRenderer.hpp"
+#include "tinc/vis/AtomRenderer.hpp"
 
 using namespace tinc;
 

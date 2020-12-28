@@ -36,7 +36,6 @@ public:
 
   // Functions to generate random data into buffers
   void generateImage() {
-    auto imageName = imageBuffer.getCurrentFileName();
 
     // generating example image
     std::vector<unsigned char> pix;
@@ -47,15 +46,12 @@ public:
       pix.push_back(c.b);
     }
 
-    al::Image::saveImage(imageName, pix.data(), 3, 3);
-
     // update the buffer with the new data
-    imageBuffer.updateData(imageName);
-    reportText.set(std::string("Created " + imageName));
+    imageBuffer.writePixels(pix.data(), 3, 3);
+    reportText.set(std::string("Created " + imageBuffer.getCurrentFileName()));
   }
 
   void generateJson() {
-    auto jsonName = jsonBuffer.getCurrentFileName();
 
     // generating example json data
     json exampleJson;
@@ -65,23 +61,9 @@ public:
     exampleJson["int"] = 5;
     exampleJson["double"] = 1.2345;
 
-    // output to json file on disk
-    std::ofstream of(jsonName, std::ofstream::out);
-    if (of.good()) {
-      of << exampleJson.dump(2);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
-        return;
-      }
-    } else {
-      std::cout << "Error creating json file" << std::endl;
-      return;
-    }
-
     // update the buffer with the new data
-    jsonBuffer.updateData(jsonName);
-    reportText.set(std::string("Created " + jsonName));
+    jsonBuffer.writeJson(exampleJson);
+    reportText.set(std::string("Created " + jsonBuffer.getCurrentFileName()));
   }
 
   void generateNc() {
