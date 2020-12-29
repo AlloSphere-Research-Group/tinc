@@ -106,6 +106,9 @@ void TrajectoryRender::update(double dt) {
       al::Vec3f orthogonalVec =
           thisMovement.cross({0, 0, 1}).normalize(trajectoryWidth);
 
+      al::Vec3f orthogonalVec2 =
+          thisMovement.cross({0, 1, 0}).normalize(trajectoryWidth);
+
       unsigned int previousSize = mTrajectoryMesh.vertices().size();
       // TODO put back undoing wrapping of atom
       //    if (thisMovement.mag() >
@@ -135,6 +138,29 @@ void TrajectoryRender::update(double dt) {
       mTrajectoryMesh.index(previousSize + 2);
       mTrajectoryMesh.index(previousSize + 3);
       mTrajectoryMesh.index(previousSize + 1);
+
+      //////////////////////////
+
+      previousSize = mTrajectoryMesh.vertices().size();
+      mTrajectoryMesh.color(c);
+      mTrajectoryMesh.vertex(previousPoint - orthogonalVec2);
+      mTrajectoryMesh.color(c);
+      mTrajectoryMesh.vertex(previousPoint + thisMovement -
+                             orthogonalVec2 * 0.2f);
+      mTrajectoryMesh.color(c);
+      mTrajectoryMesh.vertex(previousPoint + orthogonalVec2);
+      mTrajectoryMesh.color(c);
+      mTrajectoryMesh.vertex(previousPoint + thisMovement +
+                             orthogonalVec2 * 0.2f);
+
+      mTrajectoryMesh.index(previousSize);
+      mTrajectoryMesh.index(previousSize + 1);
+      mTrajectoryMesh.index(previousSize + 2);
+
+      mTrajectoryMesh.index(previousSize + 2);
+      mTrajectoryMesh.index(previousSize + 3);
+      mTrajectoryMesh.index(previousSize + 1);
+
       previousPoint = previousPoint + thisMovement;
       counter--;
     }
