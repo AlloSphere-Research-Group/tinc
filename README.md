@@ -19,7 +19,7 @@ with:
     
 If you use a binary installation, make sure you download a netCDF version that includes *hdf5 AND DAP* support.
 
-Or you can use the *./build_deps.sh script on *nix platforms.
+Or you can use the *./build_deps.sh script on *nix platforms. You will need ninja and curl installed for these scripts to work.
 
 
 ## Acknowledgements
