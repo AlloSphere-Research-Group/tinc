@@ -1,5 +1,5 @@
-#ifndef NETCDFDISKBUFFER_HPP
-#define NETCDFDISKBUFFER_HPP
+#ifndef DISKBUFFERNETCDF_HPP
+#define DISKBUFFERNETCDF_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -64,13 +64,13 @@ struct NC_Dimension {
 // TODO we should have the option to check if there is already a file on disk
 // and start with that data.
 
-class NetCDFDiskBufferDouble : public DiskBuffer<std::vector<double>> {
+class DiskBufferNetCDFDouble : public DiskBuffer<std::vector<double>> {
 public:
-  NetCDFDiskBufferDouble(std::string id, std::string fileName = "",
+  DiskBufferNetCDFDouble(std::string id, std::string fileName = "",
                          std::string path = "", uint16_t size = 2)
       : DiskBuffer<std::vector<double>>(id, fileName, path, size) {
 #ifndef TINC_HAS_NETCDF
-    std::cerr << "ERROR: NetCDFDiskBufferDouble built wihtout NetCDF support"
+    std::cerr << "ERROR: DiskBufferNetCDFDouble built wihtout NetCDF support"
               << std::endl;
     assert(0 == 1);
 #endif
@@ -147,4 +147,4 @@ protected:
 
 } // namespace tinc
 
-#endif // NETCDFDISKBUFFER_HPP
+#endif // DISKBUFFERNETCDF_HPP

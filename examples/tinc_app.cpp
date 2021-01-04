@@ -1,8 +1,8 @@
 #include "tinc/DataPool.hpp"
 #include "tinc/CppProcessor.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferImage.hpp"
 #include "tinc/GUI.hpp"
 
 #include "al/app/al_App.hpp"

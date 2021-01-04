@@ -105,7 +105,7 @@ public:
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    */
-  void registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src = nullptr);
+  void registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src = nullptr);
 
   /**
    * @brief register a data pool with this Tinc node
@@ -121,7 +121,7 @@ public:
   TincProtocol &operator<<(ParameterSpace &p);
   TincProtocol &operator<<(ParameterSpaceDimension &psd);
   TincProtocol &operator<<(Processor &p);
-  TincProtocol &operator<<(AbstractDiskBuffer &db);
+  TincProtocol &operator<<(DiskBufferAbstract &db);
   TincProtocol &operator<<(DataPool &dp);
 
   // Send requests for data
@@ -198,7 +198,7 @@ protected:
                            al::Socket *src = nullptr);
   void sendRegisterMessage(DataPool *p, al::Socket *dst,
                            al::Socket *src = nullptr);
-  void sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
+  void sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
                            al::Socket *src = nullptr);
 
   // Incoming configure message
@@ -218,7 +218,7 @@ protected:
                             al::Socket *src = nullptr);
   void sendConfigureMessage(DataPool *p, al::Socket *dst,
                             al::Socket *src = nullptr);
-  void sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
+  void sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
                             al::Socket *src = nullptr);
 
   void sendConfigureParameterSpaceAddDimension(ParameterSpace *ps,
@@ -280,7 +280,7 @@ protected:
   std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
   std::vector<Processor *> mProcessors;
-  std::vector<AbstractDiskBuffer *> mDiskBuffers;
+  std::vector<DiskBufferAbstract *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
   // Dimensions that were allocated by this class

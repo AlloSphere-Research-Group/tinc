@@ -65,7 +65,7 @@ void TrajectoryRender::update(double dt) {
         } */ else {
           std::cerr
               << __FUNCTION__
-              << "Unexpected data shape for TrajectoryRender JsonDiskBuffer"
+              << "Unexpected data shape for TrajectoryRender DiskBufferJson"
               << std::endl;
         }
       } else if (point.size() == 2 || point.size() == 3) {
@@ -83,7 +83,7 @@ void TrajectoryRender::update(double dt) {
         } else {
           std::cerr
               << __FUNCTION__
-              << "Unexpected data shape for TrajectoryRender JsonDiskBuffer"
+              << "Unexpected data shape for TrajectoryRender DiskBufferJson"
               << std::endl;
         }
         if (point.size() == 3) {
@@ -98,7 +98,7 @@ void TrajectoryRender::update(double dt) {
         }
       } else {
         std::cerr << __FUNCTION__
-                  << "Unexpected data shape for TrajectoryRender JsonDiskBuffer"
+                  << "Unexpected data shape for TrajectoryRender DiskBufferJson"
                   << std::endl;
       }
 

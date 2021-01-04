@@ -1,8 +1,8 @@
 #include "tinc/ComputationChain.hpp"
 #include "tinc/CppProcessor.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/TincClient.hpp"
 
@@ -1072,7 +1072,7 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   }
 }
 
-void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src) {
+void TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   bool registered = false;
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
@@ -1142,7 +1142,7 @@ TincProtocol &TincProtocol::operator<<(Processor &p) {
   return *this;
 }
 
-TincProtocol &TincProtocol::operator<<(AbstractDiskBuffer &db) {
+TincProtocol &TincProtocol::operator<<(DiskBufferAbstract &db) {
   registerDiskBuffer(db);
   return *this;
 }
@@ -1623,7 +1623,7 @@ void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
   sendRegisterMessage(&p->getParameterSpace(), dst, src);
 }
 
-void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
+void TincProtocol::sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
                                        al::Socket *src) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REGISTER);
@@ -1634,11 +1634,11 @@ void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
 
   DiskBufferType type = DiskBufferType::BINARY;
 
-  if (strcmp(typeid(p).name(), typeid(NetCDFDiskBufferDouble).name()) == 0) {
+  if (strcmp(typeid(p).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
     type = DiskBufferType::NETCDF;
   } else if (strcmp(typeid(p).name(), typeid(ImageDiskBuffer).name()) == 0) {
     type = DiskBufferType::IMAGE;
-  } else if (strcmp(typeid(p).name(), typeid(JsonDiskBuffer).name()) == 0) {
+  } else if (strcmp(typeid(p).name(), typeid(DiskBufferJson).name()) == 0) {
     type = DiskBufferType::JSON;
   }
   details.set_type(type);
@@ -1846,7 +1846,7 @@ void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
   }
 }
 
-void TincProtocol::sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
+void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
                                         al::Socket *src) {
   // TODO implement
 }

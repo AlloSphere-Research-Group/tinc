@@ -33,18 +33,18 @@ set(TINC_SRC
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(TINC_HEADERS
-    ${TINC_INCLUDE_PATH}/tinc/AbstractDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/ComputationChain.hpp
     ${TINC_INCLUDE_PATH}/tinc/CppProcessor.hpp
     ${TINC_INCLUDE_PATH}/tinc/DataPool.hpp
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferAbstract.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferImage.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferJson.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDF.hpp
     ${TINC_INCLUDE_PATH}/tinc/GUI.hpp
     ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ImageDiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/JsonDiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/NetCDFDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpace.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceDimension.hpp
     ${TINC_INCLUDE_PATH}/tinc/PeriodicTask.hpp

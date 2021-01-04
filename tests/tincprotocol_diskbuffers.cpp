@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
 #include "tinc/DiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
 
@@ -20,8 +20,8 @@ TEST(TincProtocol, DiskBuffers) {
 
   // TODO create disk buffers of different types
   ImageDiskBuffer imageBuffer{"image", "test.png"};
-  // JsonDiskBuffer jsonBuffer{"json", "test.json"};
-  // NetCDFDiskBufferDouble netcdfBuffer{"nc", "test.nc"};
+  // DiskBufferJson jsonBuffer{"json", "test.json"};
+  // DiskBufferNetCDFDouble netcdfBuffer{"nc", "test.nc"};
 
   auto imageName = imageBuffer.getCurrentFileName();
 

@@ -2,7 +2,7 @@
 #include "al/graphics/al_Image.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/ImageDiskBuffer.hpp"
+#include "tinc/DiskBufferImage.hpp"
 #include "tinc/TincServer.hpp"
 
 using namespace al;

@@ -43,12 +43,12 @@
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/BufferManager.hpp"
-#include "tinc/AbstractDiskBuffer.hpp"
+#include "tinc/DiskBufferAbstract.hpp"
 
 namespace tinc {
 
 template <class DataType>
-class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
+class DiskBuffer : public BufferManager<DataType>, public DiskBufferAbstract {
 public:
   DiskBuffer(std::string id = "", std::string fileName = "",
              std::string path = "", uint16_t size = 2);

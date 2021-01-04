@@ -1,6 +1,5 @@
-#ifndef ABSTRACTDISKBUFFER_HPP
-#define ABSTRACTDISKBUFFER_HPP
-
+#ifndef DISKBUFFERJSON_HPP
+#define DISKBUFFERJSON_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -34,35 +33,56 @@
  * authors: Andres Cabrera
 */
 
-#include "tinc/IdObject.hpp"
-#include "al/ui/al_Parameter.hpp"
+#include "tinc/DiskBuffer.hpp"
 
-#include <string>
+#include "nlohmann/json.hpp"
 
 namespace tinc {
 
-/**
- * @brief Base pure virtual class that defines the DiskBuffer interface
- */
-class AbstractDiskBuffer : public IdObject {
-  public:
-  // Careful, this is not thread safe. Needs to be called synchronously to any
-  // process functions
-  std::string getCurrentFileName() { return m_fileName; }
+class DiskBufferJson : public DiskBuffer<nlohmann::json> {
+public:
+  DiskBufferJson(std::string id = "", std::string fileName = "",
+                 std::string path = "", uint16_t size = 2)
+      : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
-  virtual bool updateData(std::string filename) = 0;
+  bool writeJson(nlohmann::json &newData, std::string filename = "") {
+    // output to json file on disk
+    if (filename.size() == 0) {
+      filename = getCurrentFileName();
+    }
 
-  std::string getBaseFileName() { return m_fileName; }
+    std::ofstream of(filename, std::ofstream::out);
+    if (of.good()) {
+      of << newData.dump(2);
+      of.close();
+      if (!of.good()) {
+        std::cout << "Error writing json file." << std::endl;
+        return false;
+      }
+    } else {
+      std::cout << "Error creating json file" << std::endl;
+      return false;
+    }
 
-  void setPath(std::string path) { m_path = path; }
-  std::string getPath() { return m_path; }
+    return updateData(filename);
+  }
 
-  protected:
-  std::string m_fileName;
-  std::string m_path;
-  std::shared_ptr<al::ParameterString> m_trigger;
+protected:
+  bool parseFile(std::ifstream &file,
+                 std::shared_ptr<nlohmann::json> newData) override {
+
+    //    try {
+    *newData = nlohmann::json::parse(file);
+
+    return true;
+    //    } catch () {
+    //      std::cerr << "ERROR: parsing file. Increase cache on writing side."
+    //                << std::endl;
+    //      return false;
+    //    }
+  }
 };
 
 } // namespace tinc
 
-#endif // ABSTRACTDISKBUFFER_HPP
+#endif // DISKBUFFERJSON_HPP

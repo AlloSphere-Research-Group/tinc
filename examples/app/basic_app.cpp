@@ -45,7 +45,10 @@ struct TincApp : DistributedApp {
     gui.draw(g);
   }
 
-  void onExit() { gui.cleanup(); }
+  void onExit() {
+    tserv.stop();
+    gui.cleanup();
+  }
 };
 
 int main() {
