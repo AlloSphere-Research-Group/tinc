@@ -1,5 +1,5 @@
-#include "tinc/ComputationChain.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"
@@ -1561,11 +1561,11 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   RegisterProcessor registerProcMessage;
   registerProcMessage.set_id(p->getId());
-  if (strcmp(typeid(*p).name(), typeid(ScriptProcessor).name()) == 0) {
+  if (strcmp(typeid(*p).name(), typeid(ProcessorScript).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::DATASCRIPT);
-  } else if (strcmp(typeid(*p).name(), typeid(ComputationChain).name()) == 0) {
+  } else if (strcmp(typeid(*p).name(), typeid(ProcessorGraph).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::CHAIN);
-  } else if (strcmp(typeid(*p).name(), typeid(CppProcessor).name()) == 0) {
+  } else if (strcmp(typeid(*p).name(), typeid(ProcessorCpp).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::CPP);
   }
 
@@ -1590,9 +1590,9 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   sendConfigureMessage(p, dst, src);
 
-  if (dynamic_cast<ComputationChain *>(p)) {
+  if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->processors()) {
       sendRegisterMessage(childProcessor, dst, src);
     }
   }
@@ -1824,9 +1824,9 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     }
   }
 
-  if (dynamic_cast<ComputationChain *>(p)) {
+  if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->processors()) {
       if (src) {
         sendConfigureMessage(childProcessor, dst, src);
       } else {

@@ -1,4 +1,4 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
 #include "tinc/GUI.hpp"
 

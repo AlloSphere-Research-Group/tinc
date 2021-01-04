@@ -34,19 +34,19 @@
 */
 
 #include "tinc/ProcessorAsyncWrapper.hpp"
-#include "tinc/ScriptProcessor.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include <mutex>
 #include <thread>
 
 namespace tinc {
 
-class ComputationChain : public Processor {
+class ProcessorGraph : public Processor {
 public:
   typedef enum { PROCESS_SERIAL, PROCESS_ASYNC } ChainType;
-  ComputationChain(ChainType type = PROCESS_SERIAL, std::string id = "")
+  ProcessorGraph(ChainType type = PROCESS_SERIAL, std::string id = "")
       : Processor(id), mType(type) {}
-  ComputationChain(std::string id) : Processor(id), mType(PROCESS_SERIAL) {}
+  ProcessorGraph(std::string id) : Processor(id), mType(PROCESS_SERIAL) {}
 
   void addProcessor(Processor &chain);
 
@@ -60,14 +60,14 @@ public:
    */
   std::map<std::string, bool> getResults();
 
-  ComputationChain &operator<<(Processor &processor);
+  ProcessorGraph &operator<<(Processor &processor);
 
   template <class ParameterType>
-  ComputationChain &
+  ProcessorGraph &
   registerParameter(al::ParameterWrapper<ParameterType> &param);
 
   template <class ParameterType>
-  ComputationChain &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
+  ProcessorGraph &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
     return registerParameter(newParam);
   }
   /**
@@ -88,7 +88,7 @@ private:
 // Implementation
 
 template <class ParameterType>
-ComputationChain &ComputationChain::registerParameter(
+ProcessorGraph &ProcessorGraph::registerParameter(
     al::ParameterWrapper<ParameterType> &param) {
   mParameters.push_back(&param);
   configuration[param.getName()] = param.get();

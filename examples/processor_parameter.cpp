@@ -1,8 +1,8 @@
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/ComputationChain.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -12,7 +12,7 @@ using namespace tinc;
 
 struct MyApp : public App {
 
-  CppProcessor process{"Process"};
+  ProcessorCpp process{"Process"};
 
   Parameter value{"value", "", 0.0, "", 0.0, 1.0};
   ControlGUI gui;

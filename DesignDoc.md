@@ -16,11 +16,8 @@ This document is for enumerating the purpose and details of the Tinc software to
 Tinc is built on top of the allolib software platform and provides additional modules:
 
 - Data Processing Tools:
-  - Processor.hpp
-  - CppProcessor.hpp
-  - ScriptProcessor.hpp
-  - ProcessorAsyncWrapper.hpp
-  - ComputationChain.hpp
+  - Processor*.hpp
+  - ProcessorGraph.hpp
 
 - Interactive Parameter Spaces:
   - ParameterSpace.hpp

@@ -39,9 +39,9 @@
 
 namespace tinc {
 
-class CppProcessor : public Processor {
+class ProcessorCpp : public Processor {
 public:
-  CppProcessor(std::string id = "");
+  ProcessorCpp(std::string id = "");
 
   bool process(bool forceRecompute = true) override;
 

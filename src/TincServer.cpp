@@ -1,6 +1,6 @@
 #include "tinc/TincServer.hpp"
-#include "tinc/ComputationChain.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"

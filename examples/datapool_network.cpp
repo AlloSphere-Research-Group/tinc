@@ -1,5 +1,5 @@
 #include "tinc/DataPool.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
 #include "tinc/GUI.hpp"
 

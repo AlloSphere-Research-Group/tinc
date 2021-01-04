@@ -2,7 +2,7 @@
 
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 #include "al/system/al_Time.hpp"
 using namespace tinc;
@@ -15,7 +15,7 @@ TEST(TincProtocol, StatusWaitForServer) {
   EXPECT_TRUE(tclient.start());
 
   int sharedValue = 0;
-  CppProcessor proc{"proc"};
+  ProcessorCpp proc{"proc"};
   ParameterSpaceDimension dim{"dim"};
 
   proc.processingFunction = [&]() { return true; };

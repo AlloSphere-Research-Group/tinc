@@ -66,15 +66,15 @@ namespace tinc {
  * In the /home/sweet/home directory.
  *
  */
-class ScriptProcessor : public Processor {
+class ProcessorScript : public Processor {
 public:
   // TODO change constructor to match Processor constructor
-  ScriptProcessor(std::string id = "") : Processor(id) {}
+  ProcessorScript(std::string id = "") : Processor(id) {}
 
-  virtual ~ScriptProcessor() {}
+  virtual ~ProcessorScript() {}
 
   // Copy constructor
-  ScriptProcessor(ScriptProcessor &p)
+  ProcessorScript(ProcessorScript &p)
       : Processor(p), mScriptCommand(p.mScriptCommand),
         mScriptName(p.mScriptName) {}
 

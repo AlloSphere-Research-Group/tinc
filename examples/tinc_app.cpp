@@ -1,5 +1,5 @@
 #include "tinc/DataPool.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferImage.hpp"
@@ -26,7 +26,7 @@ struct MyApp : public al::App {
   tinc::DataPool dp{ps};
 
   al::Parameter procParameter{"procParam", "", 0.0, -10.0, 10.0};
-  tinc::CppProcessor processor;
+  tinc::ProcessorCpp processor;
   float computedValue{0};
 
   tinc::ImageDiskBuffer dataBuffer{"graph", "output.png"};

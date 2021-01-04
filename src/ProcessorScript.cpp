@@ -1,5 +1,5 @@
 
-#include "tinc/ScriptProcessor.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include "nlohmann/json.hpp"
 
@@ -33,9 +33,9 @@ using namespace tinc;
 
 constexpr auto DATASCRIPT_META_FORMAT_VERSION = 0;
 
-std::string ScriptProcessor::scriptFile(bool fullPath) { return mScriptName; }
+std::string ProcessorScript::scriptFile(bool fullPath) { return mScriptName; }
 
-std::string ScriptProcessor::inputFile(bool fullPath, int index) {
+std::string ProcessorScript::inputFile(bool fullPath, int index) {
   std::string inputName;
   if (mInputFileNames.size() > index) {
     inputName = mInputFileNames[index];
@@ -48,7 +48,7 @@ std::string ScriptProcessor::inputFile(bool fullPath, int index) {
   }
 }
 
-std::string ScriptProcessor::outputFile(bool fullPath, int index) {
+std::string ProcessorScript::outputFile(bool fullPath, int index) {
   std::string outputName;
   if (mOutputFileNames.size() > index) {
     outputName = mOutputFileNames[index];
@@ -60,7 +60,7 @@ std::string ScriptProcessor::outputFile(bool fullPath, int index) {
   }
 }
 
-bool ScriptProcessor::process(bool forceRecompute) {
+bool ProcessorScript::process(bool forceRecompute) {
   if (!enabled) {
     return true;
   }
@@ -97,7 +97,7 @@ bool ScriptProcessor::process(bool forceRecompute) {
   return ok;
 }
 
-std::string ScriptProcessor::sanitizeName(std::string output_name) {
+std::string ProcessorScript::sanitizeName(std::string output_name) {
   std::replace(output_name.begin(), output_name.end(), '/', '_');
   std::replace(output_name.begin(), output_name.end(), '.', '_');
   std::replace(output_name.begin(), output_name.end(), ':', '_');
@@ -105,7 +105,7 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
   return output_name;
 }
 
-// bool ScriptProcessor::processAsync(bool noWait,
+// bool ProcessorScript::processAsync(bool noWait,
 //                                   std::function<void(bool)> doneCallback) {
 //  std::lock_guard<std::mutex> lk(mProcessingLock);
 
@@ -144,7 +144,7 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
 //  return true;
 //}
 
-// bool ScriptProcessor::processAsync(std::map<std::string, std::string>
+// bool ProcessorScript::processAsync(std::map<std::string, std::string>
 // options,
 //                                   bool noWait,
 //                                   std::function<void(bool)> doneCallback) {
@@ -187,7 +187,7 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
 //  return true;
 //}
 
-// bool ScriptProcessor::runningAsync() {
+// bool ProcessorScript::runningAsync() {
 //  if (mNumAsyncProcesses > 0) {
 //    return true;
 //  } else {
@@ -195,7 +195,7 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
 //  }
 //}
 
-// bool ScriptProcessor::waitForAsyncDone() {
+// bool ProcessorScript::waitForAsyncDone() {
 //  bool ok = true;
 //  for (auto &t : mAsyncThreads) {
 //    t.join();
@@ -203,7 +203,7 @@ std::string ScriptProcessor::sanitizeName(std::string output_name) {
 //  return ok;
 //}
 
-std::string ScriptProcessor::writeJsonConfig() {
+std::string ProcessorScript::writeJsonConfig() {
   using json = nlohmann::json;
   json j;
 
@@ -252,7 +252,7 @@ std::string ScriptProcessor::writeJsonConfig() {
   return jsonFilename;
 }
 
-void ScriptProcessor::parametersToConfig(nlohmann::json &j) {
+void ProcessorScript::parametersToConfig(nlohmann::json &j) {
 
   for (al::ParameterMeta *param : mParameters) {
     // TODO should we use full address or group + name?
@@ -272,7 +272,7 @@ void ScriptProcessor::parametersToConfig(nlohmann::json &j) {
   }
 }
 
-std::string ScriptProcessor::makeCommandLine() {
+std::string ProcessorScript::makeCommandLine() {
   std::string commandLine = mScriptCommand + " ";
   for (auto &flag : configuration) {
     switch (flag.second.type) {
@@ -296,11 +296,11 @@ std::string ScriptProcessor::makeCommandLine() {
   return commandLine;
 }
 
-bool ScriptProcessor::runCommand(const std::string &command) {
+bool ProcessorScript::runCommand(const std::string &command) {
   PushDirectory p(mRunningDirectory, mVerbose);
 
   if (mVerbose) {
-    std::cout << "ScriptProcessor command: " << command << std::endl;
+    std::cout << "ProcessorScript command: " << command << std::endl;
   }
   std::array<char, 128> buffer{0};
   std::string output;
@@ -333,7 +333,7 @@ bool ScriptProcessor::runCommand(const std::string &command) {
   return returnValue == 0;
 }
 
-bool ScriptProcessor::writeMeta() {
+bool ProcessorScript::writeMeta() {
 
   nlohmann::json j;
 
@@ -387,7 +387,7 @@ bool ScriptProcessor::writeMeta() {
   return true;
 }
 
-al_sec ScriptProcessor::modified(const char *path) const {
+al_sec ProcessorScript::modified(const char *path) const {
   struct stat s;
   if (::stat(path, &s) == 0) {
     // const auto& t = s.st_mtim;
@@ -397,7 +397,7 @@ al_sec ScriptProcessor::modified(const char *path) const {
   return 0.;
 }
 
-bool ScriptProcessor::needsRecompute() {
+bool ProcessorScript::needsRecompute() {
   std::ifstream metaFileStream;
   metaFileStream.open(metaFilename(), std::ofstream::in);
 
@@ -442,7 +442,7 @@ bool ScriptProcessor::needsRecompute() {
   return false;
 }
 
-std::string ScriptProcessor::metaFilename() {
+std::string ProcessorScript::metaFilename() {
   std::string outPath = getOutputDirectory();
   std::string outName = outputFile(false);
   std::string metafilename =

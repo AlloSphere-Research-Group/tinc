@@ -1,10 +1,10 @@
-#include "tinc/ComputationChain.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 #include <iostream>
 
 using namespace tinc;
 
-void ComputationChain::addProcessor(Processor &chain) {
+void ProcessorGraph::addProcessor(Processor &chain) {
   std::unique_lock<std::mutex> lk(mChainLock);
   switch (mType) {
   case PROCESS_ASYNC:
@@ -19,7 +19,7 @@ void ComputationChain::addProcessor(Processor &chain) {
   }
 }
 
-bool ComputationChain::process(bool forceRecompute) {
+bool ProcessorGraph::process(bool forceRecompute) {
   mResults.clear();
   if (!enabled) {
     // TODO should callbacks be called if disabled?
@@ -73,12 +73,12 @@ bool ComputationChain::process(bool forceRecompute) {
   return ret;
 }
 
-std::map<std::string, bool> ComputationChain::getResults() {
+std::map<std::string, bool> ProcessorGraph::getResults() {
   std::unique_lock<std::mutex> lk2(mChainLock);
   return mResults;
 }
 
-ComputationChain &tinc::ComputationChain::operator<<(Processor &processor) {
+ProcessorGraph &tinc::ProcessorGraph::operator<<(Processor &processor) {
   addProcessor(processor);
   return *this;
 }
