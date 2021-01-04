@@ -25,16 +25,24 @@ Tinc is built on top of the allolib software platform and provides additional mo
 - Interactive Parameter Spaces:
   - ParameterSpace.hpp
   - ParameterSpaceDimension.hpp
-  - ...
 
 - Distributed Client Server Model:
   - TincServer.hpp
   - TincClient.hpp
   - TincProtocol.hpp
-  - ...
+  
+- Data management
+  - DiskBuffer*.hpp
+  - DataPool.hpp
 
-- Utils:
-  -
+- Visualization and UI:
+  - GUI.hpp
+  - vis/AtomRenderer.hpp
+  - vis/SceneObject.hpp
+  - vis/TrajectoryRender.hpp
+
+- Data I/O:
+  - VASPReader.hpp
 
 
 ## Tinc Communication Protocols
