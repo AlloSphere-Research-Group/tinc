@@ -260,14 +260,12 @@ void ProcessorScript::parametersToConfig(nlohmann::json &j) {
     if (param->getGroup().size() > 0) {
       name = param->getGroup() + "/" + name;
     }
-    if ((strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0)) {
-      j[name] = dynamic_cast<al::Parameter *>(param)->get();
-    } else if ((strcmp(typeid(*param).name(),
-                       typeid(al::ParameterString).name()) == 0)) {
-      j[name] = dynamic_cast<al::ParameterString *>(param)->get();
-    } else if ((strcmp(typeid(*param).name(),
-                       typeid(al::ParameterInt).name()) == 0)) {
-      j[name] = dynamic_cast<al::ParameterInt *>(param)->get();
+    if (auto p = dynamic_cast<al::Parameter *>(param)) {
+      j[name] = p->get();
+    } else if (auto p = dynamic_cast<al::ParameterString *>(param)) {
+      j[name] = p->get();
+    } else if (auto p = dynamic_cast<al::ParameterInt *>(param)) {
+      j[name] = p->get();
     }
   }
 }
