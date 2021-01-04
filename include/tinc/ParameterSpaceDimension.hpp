@@ -68,30 +68,93 @@ public:
   using Datatype = al::DiscreteParameterValues::Datatype;
   typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } RepresentationType;
 
+  /**
+   * @brief ParameterSpaceDimension
+   * @param name
+   * @param group
+   * @param dataType
+   *
+   * Dimensions can have names and belong to groups.
+   */
   ParameterSpaceDimension(std::string name, std::string group = "",
                           Datatype dataType = Datatype::FLOAT);
+  /**
+   * @brief construct a ParameterSpaceDimension from a ParameterMeta *
+   * @param param
+   * @param makeInternal
+   */
   ParameterSpaceDimension(al::ParameterMeta *param, bool makeInternal = false);
 
   ~ParameterSpaceDimension();
 
+  /**
+   * @brief Get the name of the dimension
+   * @return the name
+   */
   std::string getName();
+
+  /**
+   * @brief returns the dimension's group
+   * @return group name
+   */
   std::string getGroup();
+
+  /**
+   * @brief Get OSC address for dimension
+   * @return OSC address
+   *
+   * OSC address joins group and parameter name as: /group/name
+   * This serves as a unique identifier for dimensions within a parameter space
+   */
   std::string getFullAddress();
 
-  // Access to current
+  // ---- Data access
+  // FIXME we need to address different types
+  /**
+   * Get current value as a float
+   */
   float getCurrentValue();
+  /**
+   * Set current value from float
+   */
   void setCurrentValue(float value);
 
+  /**
+   * @brief get index of current value in parameter space
+   * @return index
+   */
   size_t getCurrentIndex();
+  /**
+   * @brief Set current index
+   */
   void setCurrentIndex(size_t index);
+
+  /**
+   * @brief get current id
+   * @return id
+   *
+   * If there are no ids defined, or the current value is invalid, an empty
+   * string is returned.
+   */
   std::string getCurrentId();
 
+  /**
+   * @brief set representation type for dimension.
+   * @param type
+   * @param src
+   *
+   * This determines the preferred representation for the dimension, for example
+   * in gui objects.
+   */
   void setSpaceRepresentationType(RepresentationType type,
                                   al::Socket *src = nullptr) {
     mRepresentationType = type;
     onDimensionMetadataChange(this, src);
   }
 
+  /**
+   * Get current representation type
+   */
   RepresentationType getSpaceRepresentationType() {
     return mRepresentationType;
   }
@@ -107,26 +170,51 @@ public:
     //    onDimensionMetadataChange(this);
   }
 
-  // the parameter instance holds the current value.
-  // You can set values for parameter space through this function
-  // Register notifications and create GUIs/ network synchronization
-  // Through this instance.
+  /**
+   * The parameter instance holds the current value.
+   * You can set values for the internal parameter through this function,
+   * register notifications and create GUIs/ network synchronization.
+   */
   template <typename ParameterType> ParameterType &parameter() {
     return *static_cast<ParameterType *>(mParameterValue);
   }
 
   al::ParameterMeta *parameterMeta() { return mParameterValue; }
 
-  // Move current position in parameter space
+  /**
+   * Step to the nearest index that increments the paramter value. This could
+   * result in an increase or decrease of the index.
+   * Requires that the space is sorted in ascending or descending order.
+   */
   void stepIncrement();
+  /**
+   * Step to the nearest index that decrements the paramter value. This could
+   * result in an increase or decrease of the index.
+   * Requires that the space is sorted in ascending or descending order.
+   */
   void stepDecrease();
 
+  /**
+   *  Size of the defined values in the parameter space
+   */
   size_t size();
 
+  // FIXME implement sort
   //  void sort();
+  /**
+   * @brief Clear the parameter space
+   * @param src
+   */
   void clear(al::Socket *src = nullptr);
 
+  /**
+   * Get value at index 'index' as float
+   */
   float at(size_t index);
+
+  /**
+   * Get id at index
+   */
   std::string idAt(size_t index);
 
   // Discrete parameter space values
@@ -153,21 +241,27 @@ public:
   size_t getIndexForValue(float value);
 
   // Set limits from internal data and sort
+  /**
+   * @brief Adjust range according to current values in parameter space
+   *
+   * The minimum and maximum value are stored separately from the values
+   * the parameter can take, so you must set them manually or use this function.
+   */
   void conformSpace();
 
-  void addConnectedParameterSpace(ParameterSpaceDimension *paramSpace);
-
+  // TODO do we need deepCopy?
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
+  /**
+   * This function is called whenever dimension metadata cahnges, to notify
+   * connected clients. 'src' provides the socket that originated the change, to
+   * avoid resending the change to that socket.
+   */
   std::function<void(ParameterSpaceDimension *, al::Socket *src)>
-      onDimensionMetadataChange =
-          [](ParameterSpaceDimension *, al::Socket *src) {};
+      onDimensionMetadataChange = [](ParameterSpaceDimension *,
+                                     al::Socket *src) {};
 
 private:
-  // Data
-  //  std::vector<float> mValues;
-  //  std::vector<std::string> mIds;
-
   // Used to store discretization values of parameters
   al::DiscreteParameterValues mSpaceValues;
 

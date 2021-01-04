@@ -50,11 +50,18 @@ public:
   ParameterSpace(std::string id = std::string()) { setId(id); }
   ~ParameterSpace();
 
+  /**
+   * @brief Get a registered ParameterSpaceDimension by name
+   * @param name
+   * @return the dimension or nullptr if not found
+   */
   std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);
 
   /**
    * @brief create and register a new dimension for this parameter space
    * @param name dimension name
+   * @param type representation type for the value
+   * @param datatype data type
    * @return the newly created dimension.
    */
   std::shared_ptr<ParameterSpaceDimension>
@@ -64,8 +71,16 @@ public:
                al::DiscreteParameterValues::Datatype datatype =
                    al::DiscreteParameterValues::FLOAT);
 
+  /**
+   * @brief Register an existing dimension with the parameter space
+   * @param dimension dimension to register
+   */
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
+  /**
+   * @brief remove dimension form list of registered dimensions
+   * @param dimensionName
+   */
   void removeDimension(std::string dimensionName);
 
   /**
@@ -120,10 +135,18 @@ public:
   void sweep(Processor &processor, std::vector<std::string> dimensionNames = {},
              bool recompute = false);
 
+  /**
+   * @brief Run a parameter sweep asynchronously (non-blocking)
+   *
+   * This function's parameters are identical to sweep()
+   */
   void sweepAsync(Processor &processor,
                   std::vector<std::string> dimensionNames = {},
                   bool recompute = false);
-
+  /**
+   * @brief Interrupts an asynchronous parameter sweep after current computation
+   * is done
+   */
   void stopSweep();
 
   /**
