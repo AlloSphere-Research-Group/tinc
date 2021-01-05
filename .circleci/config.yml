@@ -23,7 +23,7 @@ jobs:
           name: Installing dependencies
           command: |
             apt-get update
-            apt-get install -y sudo build-essential cmake git ninja-build libnetcdf-dev libglew-dev libglu1-mesa-dev xorg-dev libasound2-dev python3 python3-pip python3-protobuf python3-netcdf4
+            apt-get install -y sudo build-essential cmake git ninja-build libnetcdf-dev libglew-dev libglu1-mesa-dev xorg-dev libasound2-dev python3 python3-pip python3-protobuf python3-netcdf4 lcov
             rm -rf /var/lib/apt/lists/*
             pip install numpy matplotlib filelock
       - checkout
@@ -44,4 +44,17 @@ jobs:
       - run:
           name: Run tests
           command: ./bin/tinc_tests
+      - run:
+          name: Code coverage report
+          command: |
+            for filename in `find . | egrep '\.cpp'`;
+            do
+              gcov-5 -n -o . $filename > /dev/null;
+            done
+            # Create lcov report
+            lcov --capture --directory . --output-file coverage.info
+            lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter system-files
+            lcov --list coverage.info # debug info
+            # Uploading report to CodeCov
+            bash <(curl -s https://codecov.io/bash) -f coverage.info || echo "Codecov did not collect coverage reports"
 
