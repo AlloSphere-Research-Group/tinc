@@ -35,7 +35,7 @@ jobs:
           command: |
             mkdir -p build
             cd build
-            cmake .. -DTINC_BUILD_TESTS=ON
+            cmake .. -DTINC_BUILD_TESTS=ON -DTINC_CODE_COVERAGE=ON
       - run:
           name: Cmake build
           command: |
