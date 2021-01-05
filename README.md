@@ -1,4 +1,4 @@
-[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/devel.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc)
+[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/devel.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc) [![codecov](https://codecov.io/gh/AlloSphere-Research-Group/tinc/branch/main/graph/badge.svg?token=0Y3PBQORDU)](https://codecov.io/gh/AlloSphere-Research-Group/tinc)
 
 # TINC (Toolkit for Interactive Computation)
 This repository contains the TINC library.
