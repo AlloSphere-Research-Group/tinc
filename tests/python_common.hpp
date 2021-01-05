@@ -1,17 +1,17 @@
 #ifndef PYTHON_COMMON_H
 #define PYTHON_COMMON_H
 
-#include <string>
-#include <fstream>
 #include <cstdlib>
+#include <fstream>
 #include <iostream>
+#include <string>
 
 #include "nlohmann/json.hpp"
 
 #ifdef _WINDOWS
-#include <windows.h>
-#include <tchar.h>
 #include <stdio.h>
+#include <tchar.h>
+#include <windows.h>
 #endif
 
 using json = nlohmann::json;

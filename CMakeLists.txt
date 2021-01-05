@@ -4,6 +4,7 @@ project(TINC)
 
 option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
 option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
+option(TINC_CODE_COVERAGE "Enable Code coverage for tests" OFF)
 
 set(TINC_SRC
 
@@ -80,7 +81,7 @@ include(ExternalProject)
 ExternalProject_Add(
   protobufProject
   PREFIX external/protobuf
-  URL https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz
+  URL https://github.com/protocolbuffers/protobuf/archive/v3.6.1.tar.gz
   BINARY_DIR ${TINC_ROOT}/external/protobuf-build-${CMAKE_BUILD_TYPE}
   SOURCE_DIR ${TINC_ROOT}/external/protobuf
   CMAKE_CACHE_ARGS
@@ -207,5 +208,12 @@ endif(TINC_BUILD_EXAMPLES)
 
 if(TINC_BUILD_TESTS)
   message("Building TINC Tests")
+  
+  if (TINC_CODE_COVERAGE)
+    message("Building code coverage for tests")
+    set_target_properties(tinc PROPERTIES COMPILE_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+    target_link_libraries(tinc PUBLIC gcov)
+  endif()
+  
   add_subdirectory(tests)
 endif(TINC_BUILD_TESTS)
