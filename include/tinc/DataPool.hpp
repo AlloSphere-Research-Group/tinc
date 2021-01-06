@@ -36,13 +36,22 @@
 #include "tinc/ParameterSpace.hpp"
 
 namespace tinc {
-
+/**
+ * @brief The DataPool class gathers data files across directories that span a
+ * parameter space
+ *
+ * The parameter space and its current values determine where the files in the
+ * data pool are found. This class is useful to manage data files that are the
+ * result of parameter sweeps, generating the same type of file in different
+ * directories, where each directory represents a sample of the parameter space.
+ */
 class DataPool : public IdObject {
 public:
   DataPool(std::string id, ParameterSpace &ps,
            std::string sliceCacheDir = std::string());
 
   DataPool(ParameterSpace &ps, std::string sliceCacheDir = std::string());
+
   /**
    * @brief registerDataFile
    * @param filename
@@ -53,9 +62,35 @@ public:
     mDataFilenames[filename] = dimensionInFile;
   }
 
+  /**
+   * @brief Get parameter space that controls this data pool
+   * @return the parameter space
+   */
   ParameterSpace &getParameterSpace() { return *mParameterSpace; }
 
+  /**
+   * @brief Extract a slice of data
+   * @param field name of the field to extract
+   * @param sliceDimension dimension that can change across the slice
+   * @return filename of the extracted slice
+   *
+   * The slice will be created as a NetCDF4 file with a single variable called
+   * "data" that spans a dimension "values". The result will be a one
+   * dimensional slice containing the values of the "field" across all values
+   * for "sliceDimension" that must be registered in the parameter space.
+   */
   std::string createDataSlice(std::string field, std::string sliceDimension);
+
+  /**
+   * @brief Extract a slice of data
+   * @param field name of the field to extract
+   * @param sliceDimensions dimensions that can change across the slice
+   * @return filename of the extracted slice
+   *
+   * The output is a multidimensional slice of the data for the "field" values.
+   * The number of dimensions of the result is the size of sliceDimensions
+   */
+  // FIXME implement multidimensional slicing
   std::string createDataSlice(std::string field,
                               std::vector<std::string> sliceDimensions);
 
@@ -78,13 +113,18 @@ public:
   size_t readDataSlice(std::string field, std::string sliceDimension,
                        void *data, size_t maxLen);
 
+  /**
+   * @brief getCacheDirectory
+   * @return cache directory
+   */
   std::string getCacheDirectory() { return mSliceCacheDirectory; }
 
   void setCacheDirectory(std::string cacheDirectory);
 
-  /** Replace this function when the parameter space path function is not
-  * adequate.
-  */
+  /**
+   *  Replace this function when the parameter space runningPaths() function is
+   * not adequate.
+   */
   std::function<std::vector<std::string>()> getAllPaths = [&]() {
     return mParameterSpace->runningPaths();
   };

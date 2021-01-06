@@ -51,14 +51,17 @@
 namespace tinc {
 
 /**
- * @brief The ParameterSpaceDimension class maps parameter values to string ids
+ * @brief The ParameterSpaceDimension class provides a discrete dimension with
+ *possible values
  *
- * This allows mapping continuous parameters to string ids, for example
- * for mapping to directory structures
- * A parameter space groups discrete dimensions together that represent the
- * possible values or states parameters can take. The paramter space class also
- * holds a "current" value in this parameter space.
+ * It allows mapping a discrete set of parameter values to string ids, for
+ * example for mapping values to filesystem names.
+ * A ParameterSpaceDimension groups the possible values or states parameters can
+ * take. It also holds a "current" value in this parameter space.
  *
+ *In NetCDF parlance, a ParameterSpaceDimension encapsulates both a variable and
+ *a dimension. As it deals both with the shape and the values of the parameter
+ *space.
  */
 class ParameterSpaceDimension {
   friend class ParameterSpace;
@@ -87,6 +90,12 @@ public:
 
   ~ParameterSpaceDimension();
 
+  // disallow copy constructor
+  ParameterSpaceDimension(const ParameterSpaceDimension &other) = delete;
+  // disallow copy assignment
+  ParameterSpaceDimension &
+  operator=(const ParameterSpaceDimension &other) = delete;
+
   /**
    * @brief Get the name of the dimension
    * @return the name
@@ -109,7 +118,6 @@ public:
   std::string getFullAddress();
 
   // ---- Data access
-  // FIXME we need to address different types
   /**
    * Get current value as a float
    */
@@ -199,8 +207,8 @@ public:
    */
   size_t size();
 
-  // FIXME implement sort
-  //  void sort();
+  void sort();
+
   /**
    * @brief Clear the parameter space
    * @param src
@@ -218,6 +226,7 @@ public:
   std::string idAt(size_t index);
 
   // Discrete parameter space values
+  // FIXME improve these setters
   void setSpaceValues(void *values, size_t count, std::string idprefix = "",
                       al::Socket *src = nullptr);
   void setSpaceValues(std::vector<float> values, std::string idprefix = "",
@@ -240,7 +249,6 @@ public:
 
   size_t getIndexForValue(float value);
 
-  // Set limits from internal data and sort
   /**
    * @brief Adjust range according to current values in parameter space
    *
@@ -249,7 +257,15 @@ public:
    */
   void conformSpace();
 
-  // TODO do we need deepCopy?
+  /**
+   * @brief provide a deep copy of the parameter space
+   * @return the copy
+   *
+   * This is useful when you need to capture the state of a
+   * ParameterSpaceDimension.
+   *
+   * Note that currently callbacks for parameters are not being copied.
+   */
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
   /**

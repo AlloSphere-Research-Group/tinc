@@ -44,11 +44,20 @@
 #include <vector>
 
 namespace tinc {
-
+/**
+ * @brief The ParameterSpace class contains a set of ParameterSpaceDimensions
+ * and organizes access to them
+ *
+ *
+ */
 class ParameterSpace : public IdObject {
 public:
   ParameterSpace(std::string id = std::string()) { setId(id); }
   ~ParameterSpace();
+  // disallow copy constructor
+  ParameterSpace(const ParameterSpace &other) = delete;
+  // disallow copy assignment
+  ParameterSpace &operator=(const ParameterSpace &other) = delete;
 
   /**
    * @brief Get a registered ParameterSpaceDimension by name
@@ -250,7 +259,6 @@ public:
    * processor configurations from here, as this function will not be called,
    * except when a particular dimension has changed
    */
-  // FIXME we need to account for other parameter types not only float
   std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps)> onValueChange =
       [](float /*oldValue*/, ParameterSpaceDimension * /*changedDimension*/,
@@ -269,8 +277,6 @@ public:
          al::Socket *src = nullptr) {};
 
 protected:
-  // FIXME how shoule we support different values types. Use a form of variant
-  // type?
   /**
  * @brief update current position to value in dimension ps
  * @param oldValue You should pass the previous value here.
