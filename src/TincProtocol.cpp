@@ -1001,51 +1001,29 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                     ParameterSpace *ps, al::Socket *src) {
       for (auto dim : ps->getDimensions()) {
+        // check if dimension already exists
         if (dim->getName() == changedDimension->getName()) {
-          auto msgs =
-              createConfigureParameterSpaceDimensionMessage(changedDimension);
-          for (auto &msg : msgs) {
-            sendTincMessage(&msg, src);
-          }
+          // FIXME dimension pointer gets stored in 2 places
+          // review cases where this redundancy is needed
+          // (connecting callbacks, etc)
+
+          // connects callbacks, sends register + configure messages
           registerParameterSpaceDimension(*changedDimension, src);
           sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr, src);
-
           break;
-        }
-        // FIXME register parent PS on every dimension?
-        auto msg = createRegisterParameterSpaceMessage(ps);
-        al::ValueSource *vsource = nullptr;
-
-        if (src) {
-          vsource = src->valueSource();
-        }
-        sendTincMessage(&msg, nullptr, vsource);
-
-        // FIXME register all dimensions as parameters multiple times?
-        for (auto dim : ps->getDimensions()) {
-          TincMessage msg =
-              createRegisterParameterMessage(dim->parameterMeta());
-          sendTincMessage(&msg, nullptr, vsource);
-
-          // FIXME register all dimensions multiple times as well?
-          auto msgs = createConfigureParameterSpaceDimensionMessage(dim.get());
-          for (auto msg : msgs) {
-            sendTincMessage(&msg, nullptr, vsource);
-          }
         }
       }
     };
 
+    // register PSDs attached to the ParameterSpace
+    for (auto dim : ps.getDimensions()) {
+      registerParameterSpaceDimension(*dim, src);
+      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
+    }
+
     // Broadcast registered ParameterSpace
     sendRegisterMessage(&ps, nullptr, src);
-  }
-  // Even if regeistered, we need to send the dimensions in case they have
-  // changed
-  // FIXME we should remove the remote dimensions that no longer exist in the
-  // parameter space if it was already registered
-  for (auto dim : ps.getDimensions()) {
-    registerParameterSpaceDimension(*dim, src);
-    sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
+    sendConfigureMessage(&ps, nullptr, src);
   }
 }
 
@@ -1360,6 +1338,7 @@ void TincProtocol::processRequestParameters(al::Socket *dst) {
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
   for (auto ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
+    sendConfigureMessage(ps, dst);
   }
 }
 
@@ -1502,6 +1481,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
 
 bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
   // FIXME implement
+  std::cerr << __FUNCTION__ << ": not implemented" << std::endl;
   return true;
 }
 
@@ -1674,8 +1654,7 @@ bool TincProtocol::readConfigureMessage(int objectType, void *any,
     //    return sendDataPools(src);
     break;
   case ObjectType::PARAMETER_SPACE:
-    //    return sendParameterSpace(src);
-    break;
+    return processConfigureParameterSpace(any, src);
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
     break;
@@ -1716,6 +1695,7 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
 
 bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
   // FIXME implement
+  std::cerr << __FUNCTION__ << ": not implemented" << std::endl;
   return true;
 }
 
@@ -1785,6 +1765,7 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
 void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                                         al::Socket *src) {
   assert(1 == 0); // Implement!
+  // consider moving configure msg sending from sendregmsg(ps) to here
 }
 
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,

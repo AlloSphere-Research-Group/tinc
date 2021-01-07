@@ -13,9 +13,9 @@
 
 using namespace tinc;
 
-TEST(TincProtocol, DiskBuffers) {
+TEST(DiskBuffer, Connection) {
   TincServer tserver;
-  tserver.setVerbose(true);
+  // tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   // TODO create disk buffers of different types
@@ -43,7 +43,7 @@ TEST(TincProtocol, DiskBuffers) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-  tclient.setVerbose(true);
+  // tclient.setVerbose(true);
 
   bool timeout = false;
   int counter = 0;

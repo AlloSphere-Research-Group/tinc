@@ -46,6 +46,15 @@ tclient.stop()
   EXPECT_FLOAT_EQ(p1["maximum"], 9.9);
   EXPECT_FLOAT_EQ(p1["_value"], 0.5);
 
+  int counter = 0;
+  while (tserver.connectionCount() > 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "timeout" << std::endl;
+      break;
+    }
+  }
+
   tserver.stop();
 }
 
@@ -103,6 +112,7 @@ TEST(PythonClient, ParameterString) {
   tserver << p;
 
   p.set("hello");
+
   std::string pythonCode = R"(
 tclient.request_parameters()
 while not tclient.get_parameter("param", "group"):
@@ -127,15 +137,14 @@ tclient.stop()
   EXPECT_EQ(p1["default"], "default");
   EXPECT_EQ(p1["_value"], "hello");
 
-  // change value on the serverside
-  p.set("value");
-  al::al_sleep(0.1); // wait for new value
-
-  ptest.runPython(pythonCode);
-  output = ptest.readResults();
-
-  p1 = output[0];
-  EXPECT_EQ(p1["_value"], "value");
+  int counter = 0;
+  while (tserver.connectionCount() > 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "timeout" << std::endl;
+      break;
+    }
+  }
 
   // TODO change value on the clientside
 
@@ -149,8 +158,6 @@ TEST(PythonClient, ParameterInt) {
   al::ParameterInt p{"param", "group", 3, -10, 11};
   p.set(-3);
   tserver << p;
-
-  int counter = 0;
 
   std::string pythonCode = R"(
 tclient.request_parameters()
@@ -178,16 +185,14 @@ tclient.stop()
   EXPECT_FLOAT_EQ(p1["default"], 3);
   EXPECT_FLOAT_EQ(p1["_value"], -3);
 
-  // change value on the serverside
-  p.set(4);
-  al::al_sleep(0.1); // wait for new value
-
-  ptest.runPython(pythonCode);
-  output = ptest.readResults();
-
-  p1 = output[0];
-
-  EXPECT_FLOAT_EQ(p1["_value"], 4);
+  int counter = 0;
+  while (tserver.connectionCount() > 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "timeout" << std::endl;
+      break;
+    }
+  }
 
   // TODO change value on the clientside
   tserver.stop();

@@ -6,7 +6,7 @@
 #include "al/system/al_Time.hpp"
 using namespace tinc;
 
-TEST(TincProtocol, SingleBarrier) {
+TEST(Barrier, SingleBarrier) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -26,7 +26,7 @@ TEST(TincProtocol, SingleBarrier) {
   tserver.stop();
 }
 
-TEST(TincProtocol, ClientFirst) {
+TEST(Barrier, ClientFirst) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -44,7 +44,7 @@ TEST(TincProtocol, ClientFirst) {
   tserver.stop();
 }
 
-TEST(TincProtocol, FastTrigger) {
+TEST(Barrier, FastTrigger) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -66,7 +66,7 @@ TEST(TincProtocol, FastTrigger) {
   tserver.stop();
 }
 
-TEST(TincProtocol, BarrierMultiClient) {
+TEST(Barrier, MultiClient) {
   // FIXME fix support for multiclient barrier
   //  TincServer tserver;
   //  EXPECT_TRUE(tserver.start());

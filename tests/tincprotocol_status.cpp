@@ -1,13 +1,13 @@
 #include "gtest/gtest.h"
 
+#include "tinc/CppProcessor.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/CppProcessor.hpp"
 
 #include "al/system/al_Time.hpp"
 using namespace tinc;
 
-TEST(TincProtocol, StatusWaitForServer) {
+TEST(Status, WaitForServer) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 

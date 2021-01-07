@@ -15,7 +15,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 if(BUILD_PYTHON_TESTS)
-  set(PYTHON_EXECUTABLE "python" CACHE FILEPATH "Path to the python executable")
+  set(PYTHON_EXECUTABLE "python3" CACHE FILEPATH "Path to the python executable" FORCE)
 endif(BUILD_PYTHON_TESTS)
 
 add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
@@ -23,26 +23,23 @@ add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
 set(TEST_SOURCES main.cpp
-  tincprotocol_status.cpp
-  parameterspace.cpp
-  scriptprocessor.cpp
   tincprotocol.cpp
   tincprotocol_parameters.cpp
   tincprotocol_parameterspaces.cpp
-  tincprotocol_barrier.cpp
-  tincprotocol_remote_parameter.cpp
   tincprotocol_processors.cpp
   tincprotocol_diskbuffers.cpp
   tincprotocol_datapools.cpp
+  tincprotocol_barrier.cpp
+  tincprotocol_status.cpp
 )
 
 if(BUILD_PYTHON_TESTS)
   list(APPEND TEST_SOURCES
     python_common.cpp
     python_common.hpp
+    pythonclient.cpp
     pythonclient_parameters.cpp
     pythonclient_parameterspaces.cpp
-    pythonclient.cpp
     )
 endif(BUILD_PYTHON_TESTS)
 

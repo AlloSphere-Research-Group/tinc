@@ -26,9 +26,11 @@ TEST(PythonClient, ParameterSpaces) {
   tserver << ps;
 
   std::string pythonCode = R"(
+#tclient.debug = True
 tclient.request_parameter_spaces()
 time.sleep(0.5)
-test_output = [parameter_space_to_dict(ps) for ps in tclient.parameter_spaces]
+test_output = [parameter_space_to_dict(ps) for ps in
+tclient.parameter_spaces]
 
 tclient.stop()
 )";
@@ -64,6 +66,7 @@ tclient.stop()
 
 TEST(PythonClient, ParameterSpacesRT) {
   TincServer tserver;
+  // tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   ParameterSpace ps{"param_space"};
@@ -73,7 +76,7 @@ TEST(PythonClient, ParameterSpacesRT) {
   tserver << ps;
 
   std::string pythonCode = R"(
-tclient.debug = True
+#tclient.debug = True
 time.sleep(0.3)
 tclient.request_parameter_spaces()
 while len(tclient.parameter_spaces) == 0 :
@@ -88,12 +91,13 @@ while not tclient.parameter_spaces[0].get_parameter('ps_dim_reply'):
 ps.get_parameter('ps_dim_reply').value = 10.0
 
 # Connect ps_dim to ps_dim_reply
-ps.get_parameter("ps_dim").register_callback(lambda value: ps.get_parameter('ps_dim_reply').set_value(value * 2))
+ps.get_parameter("ps_dim").register_callback(lambda value:
+ps.get_parameter('ps_dim_reply').set_value(value * 2))
 
 while tclient.get_parameter("ps_dim").value != 100:
     time.sleep(0.05)
 
-ps.get_parameter("ps_dim").value = 50
+time.sleep(0.05)
 
 tclient.stop()
 )";
@@ -103,19 +107,41 @@ tclient.stop()
   std::thread th([&]() { ptest.runPython(pythonCode); });
 
   // Python will send 10.0 on ps_dim_reply when ready
+  int counter = 0;
   while (ps_dim_reply->getCurrentValue() != 10.0) {
     al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
   }
+
   ps_dim->setCurrentValue(1.0);
   al::al_sleep(0.05);
-  EXPECT_FLOAT_EQ(ps_dim_reply->getCurrentValue(), 2.0);
-  ps_dim->setCurrentValue(2.0);
-  al::al_sleep(0.05);
-  EXPECT_FLOAT_EQ(ps_dim_reply->getCurrentValue(), 4.0);
-  ps_dim->setCurrentValue(100);
-  th.join();
 
-  EXPECT_FLOAT_EQ(ps_dim->getCurrentValue(), 50.0);
+  counter = 0;
+  while (ps_dim_reply->getCurrentValue() != 2.0) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+  EXPECT_FLOAT_EQ(ps_dim_reply->getCurrentValue(), 2.0);
+
+  ps_dim->setCurrentValue(100);
+
+  counter = 0;
+  while (tserver.connectionCount() > 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  if (th.joinable())
+    th.join();
 
   tserver.stop();
 }
