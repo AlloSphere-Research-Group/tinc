@@ -170,24 +170,26 @@ public:
   virtual void markAvailable();
 
 protected:
+  // Register CBs
   void connectParameterCallbacks(al::ParameterMeta &param);
   void connectDimensionCallbacks(ParameterSpaceDimension &psd);
+
   // Incoming request message
   void readRequestMessage(int objectType, std::string objectId,
                           al::Socket *src);
   void processRequestParameters(al::Socket *dst);
   void processRequestParameterSpaces(al::Socket *dst);
   void processRequestProcessors(al::Socket *dst);
-  void processRequestDataPools(al::Socket *dst);
   void processRequestDiskBuffers(al::Socket *dst);
+  void processRequestDataPools(al::Socket *dst);
 
   // Incoming register message
   bool readRegisterMessage(int objectType, void *any, al::Socket *src);
   bool processRegisterParameter(void *any, al::Socket *src);
   bool processRegisterParameterSpace(void *any, al::Socket *src);
   bool processRegisterProcessor(void *any, al::Socket *src);
-  bool processRegisterDataPool(void *any, al::Socket *src);
   bool processRegisterDiskBuffer(void *any, al::Socket *src);
+  bool processRegisterDataPool(void *any, al::Socket *src);
 
   // Outgoing register message
   void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
@@ -196,9 +198,9 @@ protected:
                            al::Socket *src = nullptr);
   void sendRegisterMessage(Processor *p, al::Socket *dst,
                            al::Socket *src = nullptr);
-  void sendRegisterMessage(DataPool *p, al::Socket *dst,
-                           al::Socket *src = nullptr);
   void sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
+                           al::Socket *src = nullptr);
+  void sendRegisterMessage(DataPool *p, al::Socket *dst,
                            al::Socket *src = nullptr);
 
   // Incoming configure message
@@ -206,8 +208,8 @@ protected:
   bool processConfigureParameter(void *any, al::Socket *src);
   bool processConfigureParameterSpace(void *any, al::Socket *src);
   bool processConfigureProcessor(void *any, al::Socket *src);
-  bool processConfigureDataPool(void *any, al::Socket *src);
   bool processConfigureDiskBuffer(void *any, al::Socket *src);
+  bool processConfigureDataPool(void *any, al::Socket *src);
 
   // Outgoing configure message (value + details)
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,

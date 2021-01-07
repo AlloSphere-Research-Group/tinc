@@ -9,7 +9,7 @@
 
 using namespace tinc;
 
-TEST(TincProtocol, DataPools) {
+TEST(DataPool, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 

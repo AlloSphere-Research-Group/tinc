@@ -49,7 +49,6 @@ def parameter_space_to_dict(ps):
 
 from tinc_client import *
 tclient = TincClient()
-tclient.debug = True
 
 time.sleep(0.5)
 test_output = {}
