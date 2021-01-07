@@ -76,8 +76,7 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.onValueChange = [&](float /*value*/,
-                           ParameterSpaceDimension * /*changedDimension*/,
+    ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
       std::string name =
           "out_" + ps->getDimension("dim1")->getCurrentId() + "_" +

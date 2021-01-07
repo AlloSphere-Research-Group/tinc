@@ -75,9 +75,8 @@ void ParameterSpace::registerDimension(
       float oldValue = param.get();
       param.setNoCalls(value);
 
-      this->updateParameterSpace(oldValue, dimension.get());
-      this->updateComputationSettings(oldValue, dimension.get(), this);
-      this->onValueChange(oldValue, dimension.get(), this);
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
       param.setNoCalls(oldValue);
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
@@ -92,9 +91,8 @@ void ParameterSpace::registerDimension(
       float oldValue = param.get();
       param.setNoCalls(value);
 
-      this->updateParameterSpace(oldValue, dimension.get());
-      this->updateComputationSettings(oldValue, dimension.get(), this);
-      this->onValueChange(oldValue, dimension.get(), this);
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
       param.setNoCalls(oldValue);
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
@@ -109,9 +107,8 @@ void ParameterSpace::registerDimension(
       int32_t oldValue = param.get();
       param.setNoCalls(value);
 
-      this->updateParameterSpace(oldValue, dimension.get());
-      this->updateComputationSettings(oldValue, dimension.get(), this);
-      this->onValueChange(oldValue, dimension.get(), this);
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
       param.setNoCalls(oldValue);
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
@@ -996,8 +993,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
   return true;
 }
 
-void ParameterSpace::updateParameterSpace(float oldValue,
-                                          ParameterSpaceDimension *ps) {
+void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
   if (mSpecialDirs.size() == 0) {
     return; // No need to check
   }

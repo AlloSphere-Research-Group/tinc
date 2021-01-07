@@ -254,20 +254,25 @@ public:
   /**
    * @brief callback when the value in any particular dimension changes.
    *
+   * You can get the new and previous values through changedDimension.
+   * The values are contained within the parameterMeta() object and you will
+   * need to cast to the appropriate type, for example:
+@code
+    float previous = dynamic_cast<Parameter
+*>(changedDimension->parameterMeta())
+              ->getPrevious();
+    float newValue = dynamic_cast<Parameter
+*>(changedDimension->parameterMeta())
+              ->get();
+@endcode
    * You should use this callback whenever you need to know the specific
    * dimension that has changed. For this reason, you should not update
    * processor configurations from here, as this function will not be called,
-   * except when a particular dimension has changed
+   * except when a particular dimension has changed.
    */
-  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
+  std::function<void(ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps)> onValueChange =
-      [](float /*oldValue*/, ParameterSpaceDimension * /*changedDimension*/,
-         ParameterSpace *ps) {};
-
-  std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps)> updateComputationSettings =
-      [](float oldValue, ParameterSpaceDimension *changedDimension,
-         ParameterSpace *ps) {};
+      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
   // When dimension metadata has changed or a new dimension is added
   // Currently allows only one TincServer. Should we provision for more?
@@ -279,13 +284,12 @@ public:
 protected:
   /**
  * @brief update current position to value in dimension ps
- * @param oldValue You should pass the previous value here.
  * @param ps
  *
  * This function checks if new dataset directory needs a reload of
  * parameter_space.nc and processes the parameter space changes
  */
-  void updateParameterSpace(float oldValue, ParameterSpaceDimension *ps);
+  void updateParameterSpace(ParameterSpaceDimension *ps);
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
 

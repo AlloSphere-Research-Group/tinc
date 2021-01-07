@@ -118,8 +118,7 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.onValueChange = [&](float oldValue,
-                           ParameterSpaceDimension *changedDimension,
+    ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
       processor.setRunningDirectory(ps->currentRunPath());
       processor.process();
