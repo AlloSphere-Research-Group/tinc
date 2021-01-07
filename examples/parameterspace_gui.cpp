@@ -1,6 +1,6 @@
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ParameterGUI.hpp"

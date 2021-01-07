@@ -3,7 +3,7 @@
 #include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferImage.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"

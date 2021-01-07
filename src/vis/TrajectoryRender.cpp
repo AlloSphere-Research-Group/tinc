@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+using namespace tinc;
+
 TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
                                    std::string path, uint16_t size)
     : SceneObject(id, filename, path, size),
@@ -14,7 +16,6 @@ TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
     mBuffer.doneWriting(mBuffer.get());
   });
   alpha.registerChangeCallback([&](float value) {
-    // Force a reload
     // Force a reload. New value will be in in update()
     mBuffer.doneWriting(mBuffer.get());
   });

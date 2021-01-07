@@ -8,7 +8,7 @@
 
 #include "SceneObject.hpp"
 
-using namespace tinc;
+namespace tinc {
 
 class TrajectoryRender : public SceneObject {
 public:
@@ -18,7 +18,6 @@ public:
   void update(double dt) override;
   void onProcess(al::Graphics &g) override;
 
-  // TODO make parameter?
   al::Parameter trajectoryWidth;
   al::Parameter alpha;
 
@@ -26,4 +25,5 @@ private:
   al::VAOMesh mTrajectoryMesh;
 };
 
+} // namespace tinc
 #endif // TRAJECTORYRENDER_H

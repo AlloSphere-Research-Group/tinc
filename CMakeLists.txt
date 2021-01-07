@@ -10,7 +10,6 @@ set(TINC_SRC
 
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/GUI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
@@ -27,6 +26,7 @@ set(TINC_SRC
 
 
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/AtomRenderer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/GUI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/SceneObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/TrajectoryRender.cpp
   )
@@ -42,7 +42,6 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferImage.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferJson.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDF.hpp
-    ${TINC_INCLUDE_PATH}/tinc/GUI.hpp
     ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpace.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceDimension.hpp
@@ -58,6 +57,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/VASPReader.hpp
 
     ${TINC_INCLUDE_PATH}/tinc/vis/AtomRenderer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/GUI.hpp
     ${TINC_INCLUDE_PATH}/tinc/vis/SceneObject.hpp
     ${TINC_INCLUDE_PATH}/tinc/vis/TrajectoryRender.hpp
 )

@@ -1,7 +1,7 @@
 #include "tinc/DataPool.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"

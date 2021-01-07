@@ -5,7 +5,7 @@
 
 #include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferJson.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/vis/GUI.hpp"
 
 using namespace tinc;
 
