@@ -1,0 +1,45 @@
+{
+    "tincMetaVersionMajor": 1,
+    "tincMetaVersionMinor": 0,
+    "entries": [
+        {
+            "timestamp": {
+                "start": "2012-04-23T18:25:43.511Z",
+                "end": "2012-04-23T18:25:43.511Z"
+            },
+            "filenames": [
+                "filename.data"
+            ],
+            "userInfo": {
+                "userName": "Name",
+                "userHash": "HASH",
+                "ip": "00.00.00.00",
+                "port": "00.00.00.00",
+                "server": true
+            },
+            "sourceInfo": {
+                "type": "InMemoryCpp",
+                "commandLineArguments": "",
+                "hash": "",
+                "arguments": [
+                    {
+                        "id": "param_id",
+                        "value": "XX"
+                    },
+                    {
+                        "id": "param_id2",
+                        "value": "XX"
+                    }
+                ],
+                "dependencies": [
+                    {
+                        "id": "param_id",
+                        "value": "XX"
+                    }
+                ]
+            },
+            "cacheHits": 20,
+            "stale": false
+        }
+    ]
+}
