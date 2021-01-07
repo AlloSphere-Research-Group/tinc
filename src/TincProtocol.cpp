@@ -1,9 +1,9 @@
-#include "tinc/ProcessorGraph.hpp"
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 #include "tinc/TincClient.hpp"
 
 #include <iostream>
@@ -553,16 +553,16 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
   return confMessages;
 }
 
-TincMessage createConfigureDataPoolMessage(DataPool *p) {
+TincMessage createConfigureDataPoolMessage(DataPool *dp) {
   TincMessage msg;
   msg.set_messagetype(MessageType::CONFIGURE);
   msg.set_objecttype(ObjectType::DATA_POOL);
   ConfigureDataPool confMessage;
-  confMessage.set_id(p->getId());
+  confMessage.set_id(dp->getId());
   confMessage.set_configurationkey(DataPoolConfigureType::SLICE_CACHE_DIR);
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
-  val.set_valuestring(p->getCacheDirectory());
+  val.set_valuestring(dp->getCacheDirectory());
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
   auto details = msg.details().New();
@@ -967,10 +967,11 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     // register PSDs attached to the ParameterSpace
     for (auto dim : ps.getDimensions()) {
       registerParameterSpaceDimension(*dim, src);
-      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
     }
 
     // Broadcast registered ParameterSpace
+    // FIXME if the parameter was not registered above, this will send
+    // register/config message for the parameter twice here
     sendRegisterMessage(&ps, nullptr, src);
     sendConfigureMessage(&ps, nullptr, src);
   }
@@ -996,6 +997,7 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
 
     // Broadcast registered processor
     sendRegisterMessage(&processor, nullptr, src);
+    sendConfigureMessage(&processor, nullptr, src);
   }
 }
 
@@ -1016,6 +1018,7 @@ void TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
 
     // Broadcast registered DiskBuffer
     sendRegisterMessage(&db, nullptr, src);
+    sendConfigureMessage(&db, nullptr, src);
   }
 }
 
@@ -1046,6 +1049,7 @@ void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
 
     // Broadcast registered DataPool
     sendRegisterMessage(&dp, nullptr, src);
+    sendConfigureMessage(&dp, nullptr, src);
   }
 }
 
@@ -1294,18 +1298,21 @@ void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
   for (auto *p : mProcessors) {
     sendRegisterMessage(p, dst);
-  }
-}
-
-void TincProtocol::processRequestDataPools(al::Socket *dst) {
-  for (auto *p : mDataPools) {
-    sendRegisterMessage(p, dst);
+    sendConfigureMessage(p, dst);
   }
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
   for (auto *db : mDiskBuffers) {
     sendRegisterMessage(db, dst);
+    sendConfigureMessage(db, dst);
+  }
+}
+
+void TincProtocol::processRequestDataPools(al::Socket *dst) {
+  for (auto *dp : mDataPools) {
+    sendRegisterMessage(dp, dst);
+    sendConfigureMessage(dp, dst);
   }
 }
 
@@ -1359,7 +1366,6 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   }
 
   al::ParameterMeta *param = nullptr;
-  // FIXME all the allocations below leak.
   switch (datatype) {
   case ParameterDataType::PARAMETER_FLOAT:
     param = new al::Parameter(id, group, def.valuefloat());
@@ -1439,12 +1445,12 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src) {
   return true;
 }
 
-bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
   // FIXME implement
   return true;
 }
 
-bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
   // FIXME implement
   return true;
 }
@@ -1469,10 +1475,8 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
     sendTincMessage(&msg);
   }
 
-  // FIXME make sure functions that invoke this handles dimensions
   for (auto dim : ps->getDimensions()) {
     sendRegisterMessage(dim.get(), dst, src);
-    sendConfigureMessage(dim.get(), dst, src);
     sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, src);
   }
 }
@@ -1517,8 +1521,6 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
     sendTincMessage(&msg, dst);
   }
 
-  sendConfigureMessage(p, dst, src);
-
   if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
          dynamic_cast<ProcessorGraph *>(p)->processors()) {
@@ -1527,53 +1529,28 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   }
 }
 
-void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
-                                       al::Socket *src) {
-  TincMessage msg;
-  msg.set_messagetype(MessageType::REGISTER);
-  msg.set_objecttype(ObjectType::DATA_POOL);
-
-  RegisterDataPool details;
-  details.set_id(p->getId());
-  details.set_parameterspaceid(p->getParameterSpace().getId());
-  details.set_cachedirectory(p->getCacheDirectory());
-  google::protobuf::Any *detailsAny = msg.details().New();
-  detailsAny->PackFrom(details);
-  msg.set_allocated_details(detailsAny);
-
-  if (src) {
-    sendTincMessage(&msg, dst, src->valueSource());
-  } else {
-    sendTincMessage(&msg, dst);
-  }
-
-  sendConfigureMessage(p, dst, src);
-
-  sendRegisterMessage(&p->getParameterSpace(), dst, src);
-}
-
-void TincProtocol::sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
+void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
                                        al::Socket *src) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REGISTER);
   msg.set_objecttype(ObjectType::DISK_BUFFER);
 
   RegisterDiskBuffer details;
-  details.set_id(p->getId());
+  details.set_id(db->getId());
 
   DiskBufferType type = DiskBufferType::BINARY;
 
-  if (strcmp(typeid(p).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
+  if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
     type = DiskBufferType::NETCDF;
-  } else if (strcmp(typeid(p).name(), typeid(ImageDiskBuffer).name()) == 0) {
+  } else if (strcmp(typeid(db).name(), typeid(ImageDiskBuffer).name()) == 0) {
     type = DiskBufferType::IMAGE;
-  } else if (strcmp(typeid(p).name(), typeid(DiskBufferJson).name()) == 0) {
+  } else if (strcmp(typeid(db).name(), typeid(DiskBufferJson).name()) == 0) {
     type = DiskBufferType::JSON;
   }
   details.set_type(type);
-  details.set_basefilename(p->getBaseFileName());
+  details.set_basefilename(db->getBaseFileName());
   // TODO prepend node's root directory
-  std::string path = al::File::currentPath() + p->getPath();
+  std::string path = al::File::currentPath() + db->getPath();
   details.set_path(path);
 
   google::protobuf::Any *detailsAny = msg.details().New();
@@ -1585,8 +1562,29 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
   } else {
     sendTincMessage(&msg, dst);
   }
+}
 
-  sendConfigureMessage(p, dst, src);
+void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
+                                       al::Socket *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REGISTER);
+  msg.set_objecttype(ObjectType::DATA_POOL);
+
+  RegisterDataPool details;
+  details.set_id(dp->getId());
+  details.set_parameterspaceid(dp->getParameterSpace().getId());
+  details.set_cachedirectory(dp->getCacheDirectory());
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
+
+  sendRegisterMessage(&dp->getParameterSpace(), dst, src);
 }
 
 bool TincProtocol::readConfigureMessage(int objectType, void *any,
@@ -1653,11 +1651,6 @@ bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
   return true;
 }
 
-bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
-  // FIXME implement
-  return true;
-}
-
 bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureDiskBuffer>()) {
@@ -1699,6 +1692,11 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   return false;
 }
 
+bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
+  // FIXME implement
+  return true;
+}
+
 void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
                                         al::Socket *dst, al::Socket *src) {
   auto msgs = createConfigureParameterSpaceDimensionMessage(dim);
@@ -1713,8 +1711,10 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
 
 void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                                         al::Socket *src) {
-  assert(1 == 0); // Implement!
-  // consider moving configure msg sending from sendregmsg(ps) to here
+  // FIXME currently no config message needs to be sent for PS itself
+  for (auto dim : ps->getDimensions()) {
+    sendConfigureMessage(dim.get(), dst, src);
+  }
 }
 
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
@@ -1766,6 +1766,11 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
   }
 }
 
+void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
+                                        al::Socket *src) {
+  // TODO implement
+}
+
 void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
                                         al::Socket *src) {
   auto msg = createConfigureDataPoolMessage(p);
@@ -1774,11 +1779,6 @@ void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
   } else {
     sendTincMessage(&msg, dst);
   }
-}
-
-void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
-                                        al::Socket *src) {
-  // TODO implement
 }
 
 void TincProtocol::sendConfigureParameterSpaceAddDimension(
