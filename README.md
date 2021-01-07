@@ -1,4 +1,4 @@
-[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/devel.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc)
+[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/devel.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc) [![codecov](https://codecov.io/gh/AlloSphere-Research-Group/tinc/branch/main/graph/badge.svg?token=0Y3PBQORDU)](https://codecov.io/gh/AlloSphere-Research-Group/tinc)
 
 # TINC (Toolkit for Interactive Computation)
 This repository contains the TINC library.
@@ -19,7 +19,7 @@ with:
     
 If you use a binary installation, make sure you download a netCDF version that includes *hdf5 AND DAP* support.
 
-Or you can use the *./build_deps.sh script on *nix platforms.
+Or you can use the *./build_deps.sh script on *nix platforms. You will need ninja and curl installed for these scripts to work.
 
 
 ## Acknowledgements

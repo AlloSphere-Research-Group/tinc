@@ -4,7 +4,7 @@
 #include "al/graphics/al_Graphics.hpp"
 #include "al/scene/al_DynamicScene.hpp"
 
-#include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/DiskBufferJson.hpp"
 #include "tinc/TincServer.hpp"
 
 namespace tinc {
@@ -21,7 +21,7 @@ public:
   }
 
 protected:
-  JsonDiskBuffer mBuffer;
+  DiskBufferJson mBuffer;
   std::vector<al::ParameterMeta *> mParameters;
 };
 

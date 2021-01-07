@@ -1,5 +1,5 @@
-#ifndef JSONDISKBUFFER_HPP
-#define JSONDISKBUFFER_HPP
+#ifndef DISKBUFFERABSTRACT_HPP
+#define DISKBUFFERABSTRACT_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -33,56 +33,35 @@
  * authors: Andres Cabrera
 */
 
-#include "tinc/DiskBuffer.hpp"
+#include "tinc/IdObject.hpp"
+#include "al/ui/al_Parameter.hpp"
 
-#include "nlohmann/json.hpp"
+#include <string>
 
 namespace tinc {
 
-class JsonDiskBuffer : public DiskBuffer<nlohmann::json> {
+/**
+ * @brief Base pure virtual class that defines the DiskBuffer interface
+ */
+class DiskBufferAbstract : public IdObject {
 public:
-  JsonDiskBuffer(std::string id = "", std::string fileName = "",
-                 std::string path = "", uint16_t size = 2)
-      : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
+  // Careful, this is not thread safe. Needs to be called synchronously to any
+  // process functions
+  std::string getCurrentFileName() { return m_fileName; }
 
-  bool writeJson(nlohmann::json &newData, std::string filename = "") {
-    // output to json file on disk
-    if (filename.size() == 0) {
-      filename = getCurrentFileName();
-    }
+  virtual bool updateData(std::string filename) = 0;
 
-    std::ofstream of(filename, std::ofstream::out);
-    if (of.good()) {
-      of << newData.dump(2);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
-        return false;
-      }
-    } else {
-      std::cout << "Error creating json file" << std::endl;
-      return false;
-    }
+  std::string getBaseFileName() { return m_fileName; }
 
-    return updateData(filename);
-  }
+  void setPath(std::string path) { m_path = path; }
+  std::string getPath() { return m_path; }
 
 protected:
-  bool parseFile(std::ifstream &file,
-                 std::shared_ptr<nlohmann::json> newData) override {
-
-    //    try {
-    *newData = nlohmann::json::parse(file);
-
-    return true;
-    //    } catch () {
-    //      std::cerr << "ERROR: parsing file. Increase cache on writing side."
-    //                << std::endl;
-    //      return false;
-    //    }
-  }
+  std::string m_fileName;
+  std::string m_path;
+  std::shared_ptr<al::ParameterString> m_trigger;
 };
 
 } // namespace tinc
 
-#endif // JSONDISKBUFFER_HPP
+#endif // DISKBUFFERABSTRACT_HPP

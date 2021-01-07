@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
 
@@ -15,7 +15,7 @@ TEST(Status, WaitForServer) {
   EXPECT_TRUE(tclient.start());
 
   int sharedValue = 0;
-  CppProcessor proc{"proc"};
+  ProcessorCpp proc{"proc"};
   ParameterSpaceDimension dim{"dim"};
 
   proc.processingFunction = [&]() { return true; };

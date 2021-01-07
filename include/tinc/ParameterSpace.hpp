@@ -44,17 +44,33 @@
 #include <vector>
 
 namespace tinc {
-
+/**
+ * @brief The ParameterSpace class contains a set of ParameterSpaceDimensions
+ * and organizes access to them
+ *
+ *
+ */
 class ParameterSpace : public IdObject {
 public:
   ParameterSpace(std::string id = std::string()) { setId(id); }
   ~ParameterSpace();
+  // disallow copy constructor
+  ParameterSpace(const ParameterSpace &other) = delete;
+  // disallow copy assignment
+  ParameterSpace &operator=(const ParameterSpace &other) = delete;
 
+  /**
+   * @brief Get a registered ParameterSpaceDimension by name
+   * @param name
+   * @return the dimension or nullptr if not found
+   */
   std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);
 
   /**
    * @brief create and register a new dimension for this parameter space
    * @param name dimension name
+   * @param type representation type for the value
+   * @param datatype data type
    * @return the newly created dimension.
    */
   std::shared_ptr<ParameterSpaceDimension>
@@ -64,8 +80,16 @@ public:
                al::DiscreteParameterValues::Datatype datatype =
                    al::DiscreteParameterValues::FLOAT);
 
+  /**
+   * @brief Register an existing dimension with the parameter space
+   * @param dimension dimension to register
+   */
   void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
+  /**
+   * @brief remove dimension form list of registered dimensions
+   * @param dimensionName
+   */
   void removeDimension(std::string dimensionName);
 
   /**
@@ -120,10 +144,18 @@ public:
   void sweep(Processor &processor, std::vector<std::string> dimensionNames = {},
              bool recompute = false);
 
+  /**
+   * @brief Run a parameter sweep asynchronously (non-blocking)
+   *
+   * This function's parameters are identical to sweep()
+   */
   void sweepAsync(Processor &processor,
                   std::vector<std::string> dimensionNames = {},
                   bool recompute = false);
-
+  /**
+   * @brief Interrupts an asynchronous parameter sweep after current computation
+   * is done
+   */
   void stopSweep();
 
   /**
@@ -227,7 +259,6 @@ public:
    * processor configurations from here, as this function will not be called,
    * except when a particular dimension has changed
    */
-  // FIXME we need to account for other parameter types not only float
   std::function<void(float oldValue, ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps)> onValueChange =
       [](float /*oldValue*/, ParameterSpaceDimension * /*changedDimension*/,
@@ -246,8 +277,6 @@ public:
          al::Socket *src = nullptr) {};
 
 protected:
-  // FIXME how shoule we support different values types. Use a form of variant
-  // type?
   /**
  * @brief update current position to value in dimension ps
  * @param oldValue You should pass the previous value here.

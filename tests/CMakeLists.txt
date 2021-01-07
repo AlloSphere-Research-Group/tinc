@@ -59,3 +59,8 @@ target_link_libraries(tinc_tests PUBLIC tinc gtest)
 target_compile_definitions(tinc_tests PUBLIC
   "-DTINC_TESTS_SOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\""
   "-DPYTHON_EXECUTABLE=\"${PYTHON_EXECUTABLE}\"")
+
+if (TINC_CODE_COVERAGE)
+  set_target_properties(tinc_tests PROPERTIES COMPILE_FLAGS "-fPIE -g -O0 -Wall -fprofile-arcs -ftest-coverage")
+  target_link_libraries(tinc_tests PUBLIC gcov)
+endif()

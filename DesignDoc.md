@@ -16,25 +16,30 @@ This document is for enumerating the purpose and details of the Tinc software to
 Tinc is built on top of the allolib software platform and provides additional modules:
 
 - Data Processing Tools:
-  - Processor.hpp
-  - CppProcessor.hpp
-  - ScriptProcessor.hpp
-  - ProcessorAsyncWrapper.hpp
-  - ComputationChain.hpp
+  - Processor*.hpp
+  - ProcessorGraph.hpp
 
 - Interactive Parameter Spaces:
   - ParameterSpace.hpp
   - ParameterSpaceDimension.hpp
-  - ...
 
 - Distributed Client Server Model:
   - TincServer.hpp
   - TincClient.hpp
   - TincProtocol.hpp
-  - ...
+  
+- Data management
+  - DiskBuffer*.hpp
+  - DataPool.hpp
 
-- Utils:
-  -
+- Visualization and UI:
+  - GUI.hpp
+  - vis/AtomRenderer.hpp
+  - vis/SceneObject.hpp
+  - vis/TrajectoryRender.hpp
+
+- Data I/O:
+  - VASPReader.hpp
 
 
 ## Tinc Communication Protocols

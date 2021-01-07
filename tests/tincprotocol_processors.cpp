@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "tinc/ScriptProcessor.hpp"
+#include "tinc/ProcessorScript.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
 
@@ -31,8 +31,8 @@ TEST(Processor, Connection) {
   tserver.stop();
 }
 
-TEST(ScriptProcessor, ConstructorCopy) {
-  ScriptProcessor proc;
+TEST(ProcessorScript, ConstructorCopy) {
+  ProcessorScript proc;
   proc.inputFile("_in_");
   proc.outputFile("_out_");
   proc.scriptFile("_script_");
@@ -43,7 +43,7 @@ TEST(ScriptProcessor, ConstructorCopy) {
   proc.setOutputDirectory("_outdir_");
   proc.setRunningDirectory("_rundir_");
 
-  ScriptProcessor procCopy = proc;
+  ProcessorScript procCopy = proc;
 
   EXPECT_EQ(procCopy.inputFile(), proc.inputFile());
   EXPECT_EQ(procCopy.scriptFile(), proc.scriptFile());

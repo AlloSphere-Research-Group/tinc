@@ -1,6 +1,6 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
-#include "tinc/ScriptProcessor.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/graphics/al_Font.hpp"
@@ -22,7 +22,7 @@ using namespace tinc;
 
 struct MyApp : public App {
   ParameterSpace ps;
-  ScriptProcessor processor;
+  ProcessorScript processor;
   ControlGUI gui;
 
   std::string displayText;

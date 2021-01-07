@@ -1,6 +1,5 @@
-#ifndef ABSTRACTDISKBUFFER_HPP
-#define ABSTRACTDISKBUFFER_HPP
-
+#ifndef CPPPROCESSOR_HPP
+#define CPPPROCESSOR_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -34,35 +33,23 @@
  * authors: Andres Cabrera
 */
 
-#include "tinc/IdObject.hpp"
-#include "al/ui/al_Parameter.hpp"
+#include "tinc/Processor.hpp"
 
-#include <string>
+#include <functional>
 
 namespace tinc {
 
-/**
- * @brief Base pure virtual class that defines the DiskBuffer interface
- */
-class AbstractDiskBuffer : public IdObject {
-  public:
-  // Careful, this is not thread safe. Needs to be called synchronously to any
-  // process functions
-  std::string getCurrentFileName() { return m_fileName; }
+class ProcessorCpp : public Processor {
+public:
+  ProcessorCpp(std::string id = "");
 
-  virtual bool updateData(std::string filename) = 0;
+  bool process(bool forceRecompute = true) override;
 
-  std::string getBaseFileName() { return m_fileName; }
+  std::function<bool(void)> processingFunction;
 
-  void setPath(std::string path) { m_path = path; }
-  std::string getPath() { return m_path; }
-
-  protected:
-  std::string m_fileName;
-  std::string m_path;
-  std::shared_ptr<al::ParameterString> m_trigger;
+private:
 };
 
 } // namespace tinc
 
-#endif // ABSTRACTDISKBUFFER_HPP
+#endif // CPPPROCESSOR_HPP

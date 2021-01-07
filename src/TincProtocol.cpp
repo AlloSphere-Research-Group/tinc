@@ -1,8 +1,8 @@
-#include "tinc/ComputationChain.hpp"
-#include "tinc/CppProcessor.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/TincClient.hpp"
 
@@ -137,24 +137,16 @@ void createParameterValueMessage(al::ParameterMeta *param,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
 
   ParameterValue val;
-  if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+  if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     val.set_valuefloat(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) ==
-             0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+  } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     val.set_valuefloat(p->get());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { // al::Parameter
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+  } else if (al::ParameterString *p =
+                 dynamic_cast<al::ParameterString *>(param)) {
     val.set_valuestring(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+  } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
     val.set_valueint32(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) {
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+  } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     al::Vec3f v = p->get();
     auto *member = val.add_valuelist();
     member->set_valuefloat(v[0]);
@@ -162,9 +154,7 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(v[1]);
     member = val.add_valuelist();
     member->set_valuefloat(v[2]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) {
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+  } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
     al::Vec4f v = p->get();
     auto *member = val.add_valuelist();
     member->set_valuefloat(v[0]);
@@ -174,9 +164,8 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(v[2]);
     member = val.add_valuelist();
     member->set_valuefloat(v[3]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) { // al::ParameterColor
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+  } else if (al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(
+                 param)) { // al::ParameterColor
     al::Color c = p->get();
     auto *member = val.add_valuelist();
     member->set_valuefloat(c.r);
@@ -186,9 +175,7 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(c.b);
     member = val.add_valuelist();
     member->set_valuefloat(c.a);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) {
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+  } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
     al::Pose pose = p->get();
     auto *member = val.add_valuelist();
     member->set_valuedouble(pose.pos()[0]);
@@ -204,16 +191,12 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuedouble(pose.quat()[2]);
     member = val.add_valuelist();
     member->set_valuedouble(pose.quat()[3]);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) {
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+  } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
     val.set_valueint32(p->get());
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) == 0) {
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+  } else if (al::ParameterChoice *p =
+                 dynamic_cast<al::ParameterChoice *>(param)) {
     val.set_valueuint64(p->get());
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+  } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     val.set_valuebool(p->get());
   } else {
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
@@ -489,47 +472,30 @@ createConfigureParameterTriggerMessage(al::Trigger *param) {
 
 std::vector<TincMessage>
 createConfigureParameterMessage(al::ParameterMeta *param) {
-  if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+  if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     return createConfigureParameterFloatMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) ==
-             0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+  } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     return createConfigureParameterFloatMessage(p);
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { //
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+  } else if (al::ParameterString *p =
+                 dynamic_cast<al::ParameterString *>(param)) {
     return createConfigureParameterStringMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+  } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
     return createConfigureParameterIntMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) {
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+  } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     return createConfigureParameterVec3Message(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) {
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+  } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
     return createConfigureParameterVec4Message(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) {
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+  } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(param)) {
     return createConfigureParameterColorMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) {
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+  } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
     return createConfigureParameterPoseMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) {
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+  } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
     return createConfigureParameterMenuMessage(p);
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) == 0) {
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+  } else if (al::ParameterChoice *p =
+                 dynamic_cast<al::ParameterChoice *>(param)) {
     return createConfigureParameterChoiceMessage(p);
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+  } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     return createConfigureParameterTriggerMessage(p);
   }
 
@@ -656,8 +622,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
   const ParameterConfigureType &command = conf.configurationkey();
   ParameterValue v;
   confValue.UnpackTo(&v);
-  if (strcmp(typeid(*param).name(), typeid(al::Parameter).name()) == 0) {
-    al::Parameter *p = dynamic_cast<al::Parameter *>(param);
+  if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
@@ -665,9 +630,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     } else if (command == ParameterConfigureType::MAX) {
       p->max(v.valuefloat());
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterBool).name()) ==
-             0) {
-    al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param);
+  } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
@@ -675,9 +638,8 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     } else if (command == ParameterConfigureType::MAX) {
       p->max(v.valuefloat());
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterString).name()) == 0) { //
-    al::ParameterString *p = dynamic_cast<al::ParameterString *>(param);
+  } else if (al::ParameterString *p =
+                 dynamic_cast<al::ParameterString *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuestring(), src->valueSource());
     } else {
@@ -686,9 +648,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterInt).name()) ==
-             0) {
-    al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param);
+  } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valueint32(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
@@ -696,9 +656,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     } else if (command == ParameterConfigureType::MAX) {
       p->max(v.valueint32());
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec3).name()) ==
-             0) {
-    al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param);
+  } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       if (v.valuelist_size() != 3) {
         std::cerr << __FUNCTION__
@@ -714,9 +672,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << ": Unexpected min/max value for ParameterVec3" << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterVec4).name()) ==
-             0) {
-    al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param);
+  } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       if (v.valuelist_size() != 4) {
         std::cerr << __FUNCTION__
@@ -732,9 +688,8 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << ": Unexpected min/max value for ParameterVec4" << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterColor).name()) ==
-             0) {
-    al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(param);
+  } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       if (v.valuelist_size() != 4) {
         std::cerr << __FUNCTION__
@@ -750,9 +705,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << ": Unexpected min/max value for ParameterColor" << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterPose).name()) ==
-             0) {
-    al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param);
+  } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       if (v.valuelist_size() != 7) {
         std::cerr << __FUNCTION__
@@ -771,9 +724,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << ": Unexpected min/max value for ParameterPose" << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::ParameterMenu).name()) ==
-             0) {
-    al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param);
+  } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valueint32(), src->valueSource());
     } else {
@@ -781,9 +732,8 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << ": Unexpected min/max value for ParameterMenu" << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(),
-                    typeid(al::ParameterChoice).name()) == 0) {
-    al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(param);
+  } else if (al::ParameterChoice *p =
+                 dynamic_cast<al::ParameterChoice *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valueuint64(), src->valueSource());
     } else {
@@ -792,8 +742,7 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                 << std::endl;
       return false;
     }
-  } else if (strcmp(typeid(*param).name(), typeid(al::Trigger).name()) == 0) {
-    al::Trigger *p = dynamic_cast<al::Trigger *>(param);
+  } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuebool(), src->valueSource());
     } else {
@@ -1050,7 +999,7 @@ void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   }
 }
 
-void TincProtocol::registerDiskBuffer(AbstractDiskBuffer &db, al::Socket *src) {
+void TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   bool registered = false;
   for (auto *p : mDiskBuffers) {
     if (p == &db || p->getId() == db.getId()) {
@@ -1120,7 +1069,7 @@ TincProtocol &TincProtocol::operator<<(Processor &p) {
   return *this;
 }
 
-TincProtocol &TincProtocol::operator<<(AbstractDiskBuffer &db) {
+TincProtocol &TincProtocol::operator<<(DiskBufferAbstract &db) {
   registerDiskBuffer(db);
   return *this;
 }
@@ -1541,11 +1490,11 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   RegisterProcessor registerProcMessage;
   registerProcMessage.set_id(p->getId());
-  if (strcmp(typeid(*p).name(), typeid(ScriptProcessor).name()) == 0) {
+  if (strcmp(typeid(*p).name(), typeid(ProcessorScript).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::DATASCRIPT);
-  } else if (strcmp(typeid(*p).name(), typeid(ComputationChain).name()) == 0) {
+  } else if (strcmp(typeid(*p).name(), typeid(ProcessorGraph).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::CHAIN);
-  } else if (strcmp(typeid(*p).name(), typeid(CppProcessor).name()) == 0) {
+  } else if (strcmp(typeid(*p).name(), typeid(ProcessorCpp).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::CPP);
   }
 
@@ -1570,9 +1519,9 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   sendConfigureMessage(p, dst, src);
 
-  if (dynamic_cast<ComputationChain *>(p)) {
+  if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->processors()) {
       sendRegisterMessage(childProcessor, dst, src);
     }
   }
@@ -1603,7 +1552,7 @@ void TincProtocol::sendRegisterMessage(DataPool *p, al::Socket *dst,
   sendRegisterMessage(&p->getParameterSpace(), dst, src);
 }
 
-void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
+void TincProtocol::sendRegisterMessage(DiskBufferAbstract *p, al::Socket *dst,
                                        al::Socket *src) {
   TincMessage msg;
   msg.set_messagetype(MessageType::REGISTER);
@@ -1614,11 +1563,11 @@ void TincProtocol::sendRegisterMessage(AbstractDiskBuffer *p, al::Socket *dst,
 
   DiskBufferType type = DiskBufferType::BINARY;
 
-  if (strcmp(typeid(p).name(), typeid(NetCDFDiskBufferDouble).name()) == 0) {
+  if (strcmp(typeid(p).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
     type = DiskBufferType::NETCDF;
   } else if (strcmp(typeid(p).name(), typeid(ImageDiskBuffer).name()) == 0) {
     type = DiskBufferType::IMAGE;
-  } else if (strcmp(typeid(p).name(), typeid(JsonDiskBuffer).name()) == 0) {
+  } else if (strcmp(typeid(p).name(), typeid(DiskBufferJson).name()) == 0) {
     type = DiskBufferType::JSON;
   }
   details.set_type(type);
@@ -1805,9 +1754,9 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     }
   }
 
-  if (dynamic_cast<ComputationChain *>(p)) {
+  if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ComputationChain *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->processors()) {
       if (src) {
         sendConfigureMessage(childProcessor, dst, src);
       } else {
@@ -1827,7 +1776,7 @@ void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
   }
 }
 
-void TincProtocol::sendConfigureMessage(AbstractDiskBuffer *p, al::Socket *dst,
+void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
                                         al::Socket *src) {
   // TODO implement
 }
@@ -2152,10 +2101,9 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     for (auto *ps : mParameterSpaces) {
       for (auto dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
-          if (strcmp(typeid(*dim->parameterMeta()).name(),
-                     typeid(al::ParameterChoice).name()) == 0) {
-            elements = dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())
-                           ->getElements();
+          if (al::ParameterChoice *p =
+                  dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())) {
+            elements = p->getElements();
             break;
           }
         }
@@ -2163,10 +2111,9 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     }
     for (auto dim : mParameterSpaceDimensions) {
       if (dim->getFullAddress() == id) {
-        if (strcmp(typeid(*dim->parameterMeta()).name(),
-                   typeid(al::ParameterChoice).name()) == 0) {
-          elements = dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())
-                         ->getElements();
+        if (al::ParameterChoice *p =
+                dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())) {
+          elements = p->getElements();
           break;
         }
       }

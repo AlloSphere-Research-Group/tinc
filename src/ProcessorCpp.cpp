@@ -1,10 +1,10 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 using namespace tinc;
 
-CppProcessor::CppProcessor(std::string id) : Processor(id) {}
+ProcessorCpp::ProcessorCpp(std::string id) : Processor(id) {}
 
-bool CppProcessor::process(bool forceRecompute) {
+bool ProcessorCpp::process(bool forceRecompute) {
   PushDirectory dir(mRunningDirectory, mVerbose);
   if (!enabled) {
     return true;

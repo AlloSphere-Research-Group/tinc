@@ -1,4 +1,4 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
 
 #include "al/io/al_File.hpp"
@@ -27,7 +27,7 @@ int main() {
   ps.registerDimension(dimension2);
   ps.registerDimension(inner_param);
 
-  tinc::CppProcessor processor;
+  tinc::ProcessorCpp processor;
 
   processor.setOutputFileNames({"output.txt"});
 

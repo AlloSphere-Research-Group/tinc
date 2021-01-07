@@ -4,7 +4,7 @@
 //#include "al/ui/al_ParameterGUI.hpp"
 
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/DiskBufferJson.hpp"
 #include "tinc/GUI.hpp"
 
 using namespace tinc;

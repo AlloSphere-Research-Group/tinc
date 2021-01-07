@@ -1,5 +1,5 @@
-#ifndef CPPPROCESSOR_HPP
-#define CPPPROCESSOR_HPP
+#ifndef DISKBUFFERJSON_HPP
+#define DISKBUFFERJSON_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -33,23 +33,56 @@
  * authors: Andres Cabrera
 */
 
-#include "tinc/Processor.hpp"
+#include "tinc/DiskBuffer.hpp"
 
-#include <functional>
+#include "nlohmann/json.hpp"
 
 namespace tinc {
 
-class CppProcessor : public Processor {
+class DiskBufferJson : public DiskBuffer<nlohmann::json> {
 public:
-  CppProcessor(std::string id = "");
+  DiskBufferJson(std::string id = "", std::string fileName = "",
+                 std::string path = "", uint16_t size = 2)
+      : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
-  bool process(bool forceRecompute = true) override;
+  bool writeJson(nlohmann::json &newData, std::string filename = "") {
+    // output to json file on disk
+    if (filename.size() == 0) {
+      filename = getCurrentFileName();
+    }
 
-  std::function<bool(void)> processingFunction;
+    std::ofstream of(filename, std::ofstream::out);
+    if (of.good()) {
+      of << newData.dump(2);
+      of.close();
+      if (!of.good()) {
+        std::cout << "Error writing json file." << std::endl;
+        return false;
+      }
+    } else {
+      std::cout << "Error creating json file" << std::endl;
+      return false;
+    }
 
-private:
+    return updateData(filename);
+  }
+
+protected:
+  bool parseFile(std::ifstream &file,
+                 std::shared_ptr<nlohmann::json> newData) override {
+
+    //    try {
+    *newData = nlohmann::json::parse(file);
+
+    return true;
+    //    } catch () {
+    //      std::cerr << "ERROR: parsing file. Increase cache on writing side."
+    //                << std::endl;
+    //      return false;
+    //    }
+  }
 };
 
 } // namespace tinc
 
-#endif // CPPPROCESSOR_HPP
+#endif // DISKBUFFERJSON_HPP

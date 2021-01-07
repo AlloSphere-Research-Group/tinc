@@ -1,5 +1,5 @@
 #include "tinc/DataPool.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -27,7 +27,7 @@ int main() {
   ps.cleanDataDirectories();
 
   // Make a simple processor to generate data in the parameter space
-  tinc::CppProcessor dataCreator;
+  tinc::ProcessorCpp dataCreator;
   dataCreator.processingFunction = [&]() {
     // Append values into the file
     json j;

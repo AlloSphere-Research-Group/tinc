@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera, Kon Hyong Kim, Keehong Youn
-*/
+ */
 
 #include "al/graphics/al_Graphics.hpp"
 
@@ -91,11 +91,11 @@ class AtomRenderer {
 public:
   al::BoundingBoxData dataBoundary;
 
-  al::Parameter mAtomMarkerSize{"AtomMarkerSize", "", 0.4, "", 0.0, 5.0};
+  al::Parameter mAtomMarkerSize{"AtomMarkerSize", "", 0.4, 0.0, 5.0};
   al::ParameterBool mShowRadius{"ShowAtomRadius", "", 1};
 
   // Increase layer separation (Z- axis scaling) in perspectiveView
-  al::Parameter mLayerSeparation{"LayerSeparation", "", 0, "", 0, 3};
+  al::Parameter mLayerSeparation{"LayerSeparation", "", 0, 0, 3};
   al::ParameterChoice mShowAtoms{"ShowAtoms"};
 
   al::ShaderProgram instancing_shader;
@@ -243,13 +243,13 @@ public:
                                        al::Vec3f(0.0f, 0.0, 0.0)};
   al::ParameterVec3 mSlicingPlaneNormal{"SliceNormal", "",
                                         al::Vec3f(0.0f, 0.0f, 1.0)};
-  al::Parameter mSlicingPlaneThickness{
-      "SlicingPlaneThickness", "", 3.0, "", 0.0f, 30.0f};
+  al::Parameter mSlicingPlaneThickness{"SlicingPlaneThickness", "", 3.0, 0.0f,
+                                       30.0f};
 
-  al::Parameter mSliceRotationPitch{
-      "SliceRotationPitch", "SliceAngles", 0.0, "", -M_PI, M_PI};
-  al::Parameter mSliceRotationRoll{"SliceRotationRoll", "SliceAngles", 0.0, "",
-                                   -M_PI / 2.0,         M_PI / 2.0};
+  al::Parameter mSliceRotationPitch{"SliceRotationPitch", "SliceAngles", 0.0,
+                                    -M_PI, M_PI};
+  al::Parameter mSliceRotationRoll{"SliceRotationRoll", "SliceAngles", 0.0,
+                                   -M_PI / 2.0, M_PI / 2.0};
 
   virtual void init() override;
 

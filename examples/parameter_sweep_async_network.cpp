@@ -1,4 +1,4 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
 
 #include "al/app/al_App.hpp"
@@ -15,7 +15,7 @@ using namespace tinc;
 struct MyApp : public App {
 
   ParameterSpace ps;
-  CppProcessor processor;
+  ProcessorCpp processor;
 
   ControlGUI gui;
 

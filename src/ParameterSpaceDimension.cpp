@@ -100,6 +100,11 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
 
 size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
 
+void ParameterSpaceDimension::sort() {
+
+  // FIXME implement sort
+}
+
 void ParameterSpaceDimension::clear(al::Socket *src) {
   mSpaceValues.clear();
   onDimensionMetadataChange(this, src);

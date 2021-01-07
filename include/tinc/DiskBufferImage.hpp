@@ -1,5 +1,5 @@
-#ifndef IMAGEDISKBUFFER_HPP
-#define IMAGEDISKBUFFER_HPP
+#ifndef DISKBUFFERIMAGE_HPP
+#define DISKBUFFERIMAGE_HPP
 
 /*
  * Copyright 2020 AlloSphere Research Group
@@ -84,4 +84,4 @@ protected:
 
 } // namespace tinc
 
-#endif // IMAGEDISKBUFFER_HPP
+#endif // DISKBUFFERIMAGE_HPP

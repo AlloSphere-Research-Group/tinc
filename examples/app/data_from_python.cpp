@@ -2,7 +2,7 @@
 #include "al/graphics/al_Font.hpp"
 
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/DiskBufferJson.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -10,8 +10,8 @@ using namespace tinc;
 struct TincApp : DistributedApp {
   TincServer tserv;
 
-  JsonDiskBuffer backgroundBuffer{"background", "background.json"};
-  JsonDiskBuffer dataBuffer{"sine_data", "output.json"};
+  DiskBufferJson backgroundBuffer{"background", "background.json"};
+  DiskBufferJson dataBuffer{"sine_data", "output.json"};
 
   // Local data that will be filled from disk buffer
   std::string textString;
