@@ -998,10 +998,10 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
     return; // No need to check
   }
 
-  if (ps->isFilesystemDimension()) {
+  if (isFilesystemDimension(ps->getName())) {
     std::map<std::string, size_t> indeces;
     for (auto dimension : mDimensions) {
-      if (dimension->isFilesystemDimension()) {
+      if (isFilesystemDimension(dimension->getName())) {
         indeces[dimension->getName()] = dimension->getCurrentIndex();
       }
     }

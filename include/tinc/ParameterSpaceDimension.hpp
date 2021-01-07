@@ -167,17 +167,6 @@ public:
     return mRepresentationType;
   }
 
-  // This dimension affects the filesystem. All filesystem dimension in a
-  // parameter space must have the smae size
-  // TODO this member should be removed. This should be handled by
-  // ParameterSpace instead
-  bool isFilesystemDimension() { return mFilesystemDimension; }
-
-  void setFilesystemDimension(bool set = true) {
-    mFilesystemDimension = set;
-    //    onDimensionMetadataChange(this);
-  }
-
   /**
    * The parameter instance holds the current value.
    * You can set values for the internal parameter through this function,

@@ -48,7 +48,11 @@ namespace tinc {
  * @brief The ParameterSpace class contains a set of ParameterSpaceDimensions
  * and organizes access to them
  *
- *
+ * Parameter spaces can be linked to specific directories in the file system.
+ * This can be useful to locate data according to paramter values. For example
+ * when the data is a result of a parameter sweep that generated multiple
+ * directories. See setCurrentPathTemplate() and generateRelativeRunPath for
+ * more information.
  */
 class ParameterSpace : public IdObject {
 public:
@@ -210,17 +214,39 @@ public:
    */
   std::string rootPath;
 
-  // To map names provided to getDimension() to internal data names
-  // You can also use this map to display user friendly names when displaying
-  // parameters
+  /**
+   * @brief map names provided to getDimension() to internal data names
+   *
+   * You can also use this map to display user friendly names when displaying
+   * parameters
+   */
   std::map<std::string, std::string> parameterNameMap;
 
+  /**
+   * @brief Set path template
+   * @param pathTemplate
+   *
+   * By default, the generateRelativePath() function will use this template to
+   * generate the path, but this path might be ignored if it is not used in the
+   * new generateRelativeRunPath() function.
+   * You must either call this function or set a generateRelativeRunPath
+   * function to have the parameter space linked to a location in the
+   * filesystem.
+   *
+   * See resolveFilename() for information on how the template is resolved.
+   */
   void setCurrentPathTemplate(std::string pathTemplate) {
     mCurrentPathTemplate = pathTemplate;
   }
 
   /**
-   * Only override this function if using a path template is insufficient.
+   * @brief function that generated relative paths according to current values.
+   *
+   * You must either set this function or use setCurrentPathTemplate() to have
+   * the parameter space linked to a location in the filesystem.
+   * Only override this function if using a path template is insufficient. If
+   * this function is replaced, the path template will have noeffect unless it
+   * is specifically used in the new function.
    */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
@@ -244,8 +270,8 @@ public:
    * where %%ParameterValue%% will be replaced by the current value (in the
    * correct representation as ID, VALUE or INDEX) of the dimension whose id is
    * "ParameterValue". You can specify a different representation than the one
-   * set
-   * for the ParameterSpaceDimension by adding it following a ':'. For example:
+   * set for the ParameterSpaceDimension by adding it following a ':'. For
+   * example:
    * "value_%%ParameterValue:INDEX%%" will replace "%%ParameterValue:INDEX%%"
    * with the current index for ParameterValue.
    */
@@ -274,8 +300,11 @@ public:
                      ParameterSpace *ps)> onValueChange =
       [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
-  // When dimension metadata has changed or a new dimension is added
   // Currently allows only one TincServer. Should we provision for more?
+  /**
+   * This callback is called when dimension metadata has changed or a
+   * dimension is added
+   */
   std::function<void(ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps, al::Socket *src)> onDimensionRegister =
       [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps,
