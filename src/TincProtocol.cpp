@@ -1435,8 +1435,31 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
-  // FIXME implement
-  std::cerr << __FUNCTION__ << ": not implemented" << std::endl;
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterParameterSpace>()) {
+    std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RegisterParameterSpace command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+
+  for (auto dim : mParameterSpaceDimensions) {
+    if (dim->getName() == id) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": ParameterSpace " << id
+                  << " already registered." << std::endl;
+      }
+      return true;
+    }
+  }
+
+  mLocalPSs.emplace_back(std::make_unique<ParameterSpace>(id));
+
+  registerParameterSpaceDimension(*mLocalPSs.back(), src);
+
   return true;
 }
 

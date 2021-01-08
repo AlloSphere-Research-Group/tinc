@@ -287,6 +287,7 @@ protected:
 
   // Dimensions that were allocated by this class
   std::vector<std::unique_ptr<ParameterSpaceDimension>> mLocalPSDs;
+  std::vector<std::unique_ptr<ParameterSpace>> mLocalPSs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
