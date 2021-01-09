@@ -35,6 +35,7 @@
 
 #include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
+#include "tinc/VariantValue.hpp"
 
 #include "al/scene/al_PolySynth.hpp"
 
@@ -55,78 +56,6 @@ private:
   bool mVerbose;
 
   static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
-};
-
-enum VariantType {
-  VARIANT_INT64 = 0,
-  VARIANT_INT32,
-  VARIANT_DOUBLE,
-  VARIANT_FLOAT,
-  VARIANT_STRING
-};
-
-struct VariantValue {
-
-  VariantValue() {}
-  VariantValue(std::string value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-  VariantValue(const char *value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-
-  VariantValue(int64_t value) {
-    type = VARIANT_INT64;
-    valueInt64 = value;
-  }
-
-  VariantValue(int32_t value) {
-    type = VARIANT_INT32;
-    valueInt64 = value;
-  }
-
-  VariantValue(double value) {
-    type = VARIANT_DOUBLE;
-    valueDouble = value;
-  }
-
-  VariantValue(float value) {
-    type = VARIANT_FLOAT;
-    valueDouble = value;
-  }
-
-  //  ~VariantValue()
-  //  {
-  //      delete[] cstring;  // deallocate
-  //  }
-
-  //  VariantValue(const VariantValue& other) // copy constructor
-  //      : VariantValue(other.cstring)
-  //  {}
-
-  //  VariantValue(VariantValue&& other) noexcept // move constructor
-  //      : cstring(std::exchange(other.cstring, nullptr))
-  //  {}
-
-  //  VariantValue& operator=(const VariantValue& other) // copy assignment
-  //  {
-  //      return *this = VariantValue(other);
-  //  }
-
-  //  VariantValue& operator=(VariantValue&& other) noexcept // move assignment
-  //  {
-  //      std::swap(cstring, other.cstring);
-  //      return *this;
-  //  }
-
-  std::string commandFlag; // A prefix to the flag (e.g. -o)
-
-  VariantType type;
-  std::string valueStr;
-  int64_t valueInt64;
-  double valueDouble;
 };
 
 /**
