@@ -131,7 +131,7 @@ void CacheManager::writeToDisk() {
   } else {
     std::cerr << "ERROR: Can't create cache file: " << mCachePath.filePath()
               << std::endl;
-    throw std::exception("Can't create cache file");
+    throw std::runtime_error("Can't create cache file");
   }
 }
 
