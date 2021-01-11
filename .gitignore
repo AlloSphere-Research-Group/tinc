@@ -1,6 +1,6 @@
 cookbook/bin
 examples/bin
-doc/html
+doc/doc/html
 external/protobuf
 external/protobuf-build/
 external/protobuf-build-*/
