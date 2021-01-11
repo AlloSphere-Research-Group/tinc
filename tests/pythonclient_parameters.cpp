@@ -29,6 +29,13 @@ while not tclient.get_parameter("param", "group"):
 time.sleep(0.2)
 p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
+
+q = tclient.create_parameter(Parameter, "remoteParam", "remoteGroup", -11.1, 12.2, None, 8.8, None)
+
+q.set_value(4.4)
+
+time.sleep(0.2)
+
 tclient.stop()
 )";
 
@@ -47,10 +54,28 @@ tclient.stop()
   EXPECT_FLOAT_EQ(p1["_value"], 0.5);
 
   int counter = 0;
+  while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  auto *q = tserver.getParameter("remoteParam", "remoteGroup");
+  EXPECT_NE(q, nullptr);
+
+  auto *remoteFloat = static_cast<al::Parameter *>(q);
+  EXPECT_EQ(remoteFloat->min(), -11.1f);
+  EXPECT_EQ(remoteFloat->max(), 12.2f);
+  EXPECT_EQ(remoteFloat->getDefault(), 8.8f);
+  EXPECT_EQ(remoteFloat->get(), 4.4f);
+
+  counter = 0;
   while (tserver.connectionCount() > 0) {
     al::al_sleep(0.05);
     if (counter++ > 50) {
-      std::cerr << "timeout" << std::endl;
+      std::cerr << "Timeout" << std::endl;
       break;
     }
   }
@@ -121,6 +146,13 @@ while not tclient.get_parameter("param", "group"):
 time.sleep(0.2)
 p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
+
+q = tclient.create_parameter(ParameterString, "remoteParam", "remoteGroup", None, None, None, "defaultString", None)
+
+q.set_value("remoteValue")
+
+time.sleep(0.2)
+
 tclient.stop()
 )";
 
@@ -138,10 +170,26 @@ tclient.stop()
   EXPECT_EQ(p1["_value"], "hello");
 
   int counter = 0;
+  while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  auto *q = tserver.getParameter("remoteParam", "remoteGroup");
+  EXPECT_NE(q, nullptr);
+
+  auto *remoteString = static_cast<al::ParameterString *>(q);
+  EXPECT_EQ(remoteString->getDefault(), "defaultString");
+  EXPECT_EQ(remoteString->get(), "remoteValue");
+
+  counter = 0;
   while (tserver.connectionCount() > 0) {
     al::al_sleep(0.05);
     if (counter++ > 50) {
-      std::cerr << "timeout" << std::endl;
+      std::cerr << "Timeout" << std::endl;
       break;
     }
   }
@@ -167,6 +215,13 @@ while not tclient.get_parameter("param", "group"):
 time.sleep(0.2)
 p =  tclient.get_parameter("param", "group")
 test_output = [parameter_to_dict(p) for p in tclient.parameters]
+
+q = tclient.create_parameter(ParameterInt, "remoteParam", "remoteGroup", -11, 12, None, 8, None)
+
+q.set_value(4)
+
+time.sleep(0.2)
+
 tclient.stop()
 )";
   PythonTester ptest;
@@ -186,10 +241,28 @@ tclient.stop()
   EXPECT_FLOAT_EQ(p1["_value"], -3);
 
   int counter = 0;
+  while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  auto *q = tserver.getParameter("remoteParam", "remoteGroup");
+  EXPECT_NE(q, nullptr);
+
+  auto *remoteInt = static_cast<al::ParameterInt *>(q);
+  EXPECT_EQ(remoteInt->min(), -11);
+  EXPECT_EQ(remoteInt->max(), 12);
+  EXPECT_EQ(remoteInt->getDefault(), 8);
+  EXPECT_EQ(remoteInt->get(), 4);
+
+  counter = 0;
   while (tserver.connectionCount() > 0) {
     al::al_sleep(0.05);
     if (counter++ > 50) {
-      std::cerr << "timeout" << std::endl;
+      std::cerr << "Timeout" << std::endl;
       break;
     }
   }
