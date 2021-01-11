@@ -150,6 +150,10 @@ public:
    */
   std::string getRunningDirectory() { return mRunningDirectory; }
 
+  void registerStartCallback(std::function<void(void)> func) {
+    mStartCallbacks.push_back(func);
+  }
+
   void registerDoneCallback(std::function<void(bool)> func) {
     mDoneCallbacks.push_back(func);
   }
@@ -173,23 +177,7 @@ public:
    */
   std::function<bool(void)> prepareFunction;
 
-  Processor &registerDimension(ParameterSpaceDimension &dim) {
-    auto *param = dim.parameterMeta();
-    if (auto *p = dynamic_cast<al::Parameter *>(param)) {
-      return registerParameter(*p);
-    } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
-      return registerParameter(*p);
-    }  */
-    else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
-      return registerParameter(*p);
-    } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
-      return registerParameter(*p);
-    } else {
-      std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
-                << std::endl;
-    }
-    return *this;
-  }
+  Processor &registerDimension(ParameterSpaceDimension &dim);
 
   Processor &operator<<(ParameterSpaceDimension &dim) {
     return registerDimension(dim);
@@ -211,8 +199,6 @@ public:
     return registerParameter(newParam);
   }
 
-  //  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
-
   /**
    * @brief Current internal configuration key value pairs
    *
@@ -231,6 +217,12 @@ protected:
 
   std::vector<al::ParameterMeta *> mParameters;
 
+  void callStartCallbacks() {
+    for (auto cb : mStartCallbacks) {
+      cb();
+    }
+  }
+
   void callDoneCallbacks(bool result) {
     for (auto cb : mDoneCallbacks) {
       cb(result);
@@ -239,6 +231,7 @@ protected:
   std::mutex mProcessLock;
 
 private:
+  std::vector<std::function<void()>> mStartCallbacks;
   std::vector<std::function<void(bool)>> mDoneCallbacks;
 };
 

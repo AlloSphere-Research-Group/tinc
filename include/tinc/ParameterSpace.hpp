@@ -36,6 +36,7 @@
 #include "tinc/ParameterSpaceDimension.hpp"
 #include "tinc/Processor.hpp"
 #include "tinc/IdObject.hpp"
+#include "tinc/CacheManager.hpp"
 
 #include <functional>
 #include <memory>
@@ -138,6 +139,14 @@ public:
    * @return true when no more indeces to process
    */
   bool incrementIndeces(std::map<std::string, size_t> &currentIndeces);
+
+  /**
+   * @brief run the process providing the current values.
+   * @param processor processor to run
+   * @param recompute force recompute if true
+   * @return return value from the processor
+   */
+  bool runProcess(Processor &processor, bool recompute = false);
 
   /**
    * @brief sweep the parameter space across all or specified dimensions
@@ -277,6 +286,15 @@ public:
    */
   std::string resolveFilename(std::string fileTemplate);
 
+  void enableCache(std::string cachePath) {
+    if (mCacheManager) {
+      std::cout
+          << "Warning cache already enabled. Overwriting previous settings"
+          << std::endl;
+    }
+    mCacheManager = std::make_shared<CacheManager>(cachePath);
+  }
+
   /**
    * @brief callback when the value in any particular dimension changes.
    *
@@ -332,6 +350,8 @@ protected:
 
   // Subdirectories that have a parameter space file in them.
   std::map<std::string, std::string> mSpecialDirs;
+
+  std::shared_ptr<CacheManager> mCacheManager;
 
 private:
   std::mutex mSpaceLock;

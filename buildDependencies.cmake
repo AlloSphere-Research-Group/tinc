@@ -24,11 +24,11 @@ set_target_properties(nlohmann_json_schema_validator PROPERTIES
 
 # link allolib to project
 target_link_libraries(tinc PUBLIC al nlohmann_json_schema_validator)
-target_include_directories(tinc PUBLIC ${TINC_INCLUDE_PATH})
+target_include_directories(tinc PUBLIC ${TINC_INCLUDE_PATH} external/json-schema-validator/src external/PicoSHA2)
 
 # For some reason the includes from allolib are not being passed to tinc. this does it manually
 get_target_property(AL_INCLUDE_DIRS al INCLUDE_DIRECTORIES)
-target_include_directories(tinc PUBLIC ${AL_INCLUDE_DIRS} external/json-schema-validator/src)
+target_include_directories(tinc PUBLIC ${AL_INCLUDE_DIRS})
 
 set(TINC_DEPS_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/external/usr/")
 

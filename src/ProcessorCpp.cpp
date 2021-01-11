@@ -5,6 +5,7 @@ using namespace tinc;
 ProcessorCpp::ProcessorCpp(std::string id) : Processor(id) {}
 
 bool ProcessorCpp::process(bool forceRecompute) {
+  callStartCallbacks();
   PushDirectory dir(mRunningDirectory, mVerbose);
   if (!enabled) {
     return true;
@@ -13,7 +14,10 @@ bool ProcessorCpp::process(bool forceRecompute) {
     std::cerr << "ERROR preparing processor: " << mId << std::endl;
     return false;
   }
-  bool ret = processingFunction();
+  bool ret = true;
+  if (forceRecompute) {
+    ret = processingFunction();
+  }
   callDoneCallbacks(ret);
   return ret;
 }

@@ -1,10 +1,14 @@
 #include "gtest/gtest.h"
 
+#include "tinc/ParameterSpace.hpp"
+#include "tinc/ParameterSpaceDimension.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/CacheManager.hpp"
 #include "al/io/al_File.hpp"
 
 #include <ctime>
 #include <chrono>
+#include <fstream>
 
 using namespace tinc;
 
@@ -129,4 +133,70 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.type,
             VARIANT_STRING);
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.valueStr, "hello");
+}
+
+TEST(Cache, ParameterSpace) {
+  if (al::File::exists("cache_parameterspace.json")) {
+    al::File::remove("cache_parameterspace.json");
+  }
+
+  // Make a ParameterSpace
+  ParameterSpace ps;
+  auto dim1 = ps.newDimension("dim1");
+  auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
+  auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
+
+  float values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
+  dim2->setSpaceValues(values, 5, "xx");
+
+  float dim3Values[6];
+  std::vector<std::string> ids;
+  for (int i = 0; i < 6; i++) {
+    dim3Values[i] = i * 0.01;
+    ids.push_back("id" + std::to_string(i));
+  }
+  dim3->setSpaceValues(dim3Values, 6);
+  dim3->setSpaceIds(ids);
+
+  dim1->setCurrentValue(0.5);
+  dim2->setCurrentValue(0.2);
+  dim3->setCurrentValue(0.02);
+
+  ps.enableCache("cache_parameterspace.json");
+
+  // Create a processor;
+  ProcessorCpp processor;
+  processor.setOutputFileNames({"cache_ps.txt"});
+  processor.processingFunction = [&]() {
+    // Compute a value
+    float value = processor.configuration["dim1"].valueDouble *
+                      processor.configuration["dim2"].valueDouble +
+                  processor.configuration["dim3"].valueDouble;
+
+    auto filenames = processor.getOutputFileNames();
+
+    al::al_sleep(3); // Sleep for 3 seconds.
+    // Write it to file
+    std::ofstream f(filenames[0]);
+    f << std::to_string(value);
+    f.close();
+    return true;
+  };
+
+  // Run the processor through the parameter space
+  ps.runProcess(processor);
+
+  // Try different values
+  dim1->setCurrentValue(0.4);
+  dim2->setCurrentValue(0.1);
+  dim3->setCurrentValue(0.03);
+
+  ps.runProcess(processor);
+
+  // Try values already used to use cache.
+  dim1->setCurrentValue(0.5);
+  dim2->setCurrentValue(0.2);
+  dim3->setCurrentValue(0.02);
+
+  ps.runProcess(processor);
 }
