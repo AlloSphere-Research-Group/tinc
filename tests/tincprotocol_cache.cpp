@@ -52,6 +52,26 @@ TEST(Cache, ReadWriteEntry) {
   sourceInfo.hash = "SourceHash";
   sourceInfo.commandLineArguments = "args and args";
 
+  SourceArgument arg_int;
+  arg_int.id = "int";
+  arg_int.value = 450;
+  sourceInfo.arguments.push_back(arg_int);
+
+  SourceArgument arg_float;
+  arg_float.id = "float";
+  arg_float.value = 4.05;
+  sourceInfo.arguments.push_back(arg_float);
+
+  SourceArgument arg_string;
+  arg_string.id = "string";
+  arg_string.value = "hello";
+  sourceInfo.arguments.push_back(arg_string);
+
+  // Add dependencies
+  sourceInfo.dependencies.push_back(arg_int);
+  sourceInfo.dependencies.push_back(arg_float);
+  sourceInfo.dependencies.push_back(arg_string);
+
   entry.sourceInfo = sourceInfo;
 
   cmanage.appendEntry(entry);
@@ -79,4 +99,34 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].sourceInfo.type, "SourceType");
   EXPECT_EQ(entries[0].sourceInfo.hash, "SourceHash");
   EXPECT_EQ(entries[0].sourceInfo.commandLineArguments, "args and args");
+
+  EXPECT_EQ(entries[0].sourceInfo.arguments.size(), 3);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).id, "int");
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value.type, VARIANT_INT64);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value.valueInt64, 450);
+
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).id, "float");
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).value.type, VARIANT_DOUBLE);
+  EXPECT_FLOAT_EQ(entries[0].sourceInfo.arguments.at(1).value.valueDouble,
+                  4.05);
+
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).id, "string");
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value.type, VARIANT_STRING);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value.valueStr, "hello");
+
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.size(), 3);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).id, "int");
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value.type, VARIANT_INT64);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value.valueInt64, 450);
+
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).id, "float");
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).value.type,
+            VARIANT_DOUBLE);
+  EXPECT_FLOAT_EQ(entries[0].sourceInfo.dependencies.at(1).value.valueDouble,
+                  4.05);
+
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).id, "string");
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.type,
+            VARIANT_STRING);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.valueStr, "hello");
 }

@@ -10,6 +10,7 @@
 
 using namespace tinc;
 
+// To regenerate this file run update_schema_cpp.sh
 #include "tinc_cache_schema.cpp"
 
 CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
@@ -80,9 +81,30 @@ void CacheManager::updateFromDisk() {
           entry["sourceInfo"]["commandLineArguments"];
       e.sourceInfo.hash = entry["sourceInfo"]["hash"];
 
-      // TODO load arguments and dependencies
-      e.sourceInfo.arguments = {};
-      e.sourceInfo.dependencies = {};
+      for (auto arg : entry["sourceInfo"]["arguments"]) {
+        SourceArgument newArg;
+        newArg.id = arg["id"];
+        if (arg["value"].is_number_float()) {
+          newArg.value = arg["value"].get<double>();
+        } else if (arg["value"].is_number_integer()) {
+          newArg.value = arg["value"].get<int64_t>();
+        } else if (arg["value"].is_string()) {
+          newArg.value = arg["value"].get<std::string>();
+        }
+        e.sourceInfo.arguments.push_back(newArg);
+      }
+      for (auto arg : entry["sourceInfo"]["dependencies"]) {
+        SourceArgument newArg;
+        newArg.id = arg["id"];
+        if (arg["value"].is_number_float()) {
+          newArg.value = arg["value"].get<double>();
+        } else if (arg["value"].is_number_integer()) {
+          newArg.value = arg["value"].get<int64_t>();
+        } else if (arg["value"].is_string()) {
+          newArg.value = arg["value"].get<std::string>();
+        }
+        e.sourceInfo.dependencies.push_back(newArg);
+      }
       mEntries.push_back(e);
     }
 
@@ -124,6 +146,38 @@ void CacheManager::writeToDisk() {
       entry["sourceInfo"]["hash"] = e.sourceInfo.hash;
       entry["sourceInfo"]["arguments"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["dependencies"] = std::vector<nlohmann::json>();
+      for (auto arg : e.sourceInfo.arguments) {
+        nlohmann::json newArg;
+        newArg["id"] = arg.id;
+        if (arg.value.type == VARIANT_DOUBLE ||
+            arg.value.type == VARIANT_FLOAT) {
+          newArg["value"] = arg.value.valueDouble;
+        } else if (arg.value.type == VARIANT_INT32 ||
+                   arg.value.type == VARIANT_INT64) {
+          newArg["value"] = arg.value.valueInt64;
+        } else if (arg.value.type == VARIANT_STRING) {
+          newArg["value"] = arg.value.valueStr;
+        } else {
+          newArg["value"] = nlohmann::json();
+        }
+        entry["sourceInfo"]["arguments"].push_back(newArg);
+      }
+      for (auto arg : e.sourceInfo.dependencies) {
+        nlohmann::json newArg;
+        newArg["id"] = arg.id;
+        if (arg.value.type == VARIANT_DOUBLE ||
+            arg.value.type == VARIANT_FLOAT) {
+          newArg["value"] = arg.value.valueDouble;
+        } else if (arg.value.type == VARIANT_INT32 ||
+                   arg.value.type == VARIANT_INT64) {
+          newArg["value"] = arg.value.valueInt64;
+        } else if (arg.value.type == VARIANT_STRING) {
+          newArg["value"] = arg.value.valueStr;
+        } else {
+          newArg["value"] = nlohmann::json();
+        }
+        entry["sourceInfo"]["dependencies"].push_back(newArg);
+      }
 
       j["entries"].push_back(entry);
     }
