@@ -6,10 +6,20 @@ option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
 option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
 option(TINC_CODE_COVERAGE "Enable Code coverage for tests" OFF)
 
+add_custom_command(
+  OUTPUT foo.hh
+  COMMAND
+  DEPENDS ${SOURCE_FILES} /tmp/bin/create_foo_hh main.cpp
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+
 set(TINC_SRC
 
+    ${CMAKE_CURRENT_LIST_DIR}/src/CacheManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DistributedPath.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
@@ -21,6 +31,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/TincClient.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincProtocol.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincServer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/VariantValue.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
 
@@ -35,6 +46,7 @@ set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
+    ${TINC_INCLUDE_PATH}/tinc/CacheManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/DataPool.hpp
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
@@ -42,6 +54,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferImage.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferJson.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDF.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DistributedPath.hpp
     ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpace.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceDimension.hpp
@@ -54,6 +67,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/TincClient.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincProtocol.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincServer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/VariantValue.hpp
     ${TINC_INCLUDE_PATH}/tinc/VASPReader.hpp
 
     ${TINC_INCLUDE_PATH}/tinc/vis/AtomRenderer.hpp

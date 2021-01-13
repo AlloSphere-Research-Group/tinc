@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://allosphere.ucsb.edu/tinc_cache_schema.json",
+  "$id": "http://allosphere.ucsb.edu/tinc-schema/1.0/tinc_cache_schema.json",
   "title": "TINC Cache Metadata",
   "description": "Schema for TINC metadata",
   "type": "object",
@@ -55,7 +55,7 @@
                 "type": "string"
               },
               "port": {
-                "type": "string"
+                "type": "integer"
               },
               "server": {
                 "type": "boolean"
@@ -68,6 +68,9 @@
               "type": {
                 "type": "string",
                 "_comment_type": "/*InMemoryCpp, InMemoryPython, Commandline, Script*/"
+              },
+              "tincId": {
+                "type": "string"
               },
               "commandLineArguments": {
                 "type": "string"

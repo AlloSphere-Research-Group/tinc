@@ -27,6 +27,7 @@ bool ProcessorGraph::process(bool forceRecompute) {
     return true;
   }
 
+  callStartCallbacks();
   std::unique_lock<std::mutex> lk(mProcessLock);
   std::unique_lock<std::mutex> lk2(mChainLock);
   if (prepareFunction && !prepareFunction()) {

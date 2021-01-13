@@ -73,6 +73,7 @@ bool ProcessorScript::process(bool forceRecompute) {
               << "' missing script name or script command." << std::endl;
     return false;
   }
+  callStartCallbacks();
   std::unique_lock<std::mutex> lk(mProcessingLock);
 
   auto jsonFilename = writeJsonConfig();

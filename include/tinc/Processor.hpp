@@ -35,6 +35,7 @@
 
 #include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
+#include "tinc/VariantValue.hpp"
 
 #include "al/scene/al_PolySynth.hpp"
 
@@ -55,78 +56,6 @@ private:
   bool mVerbose;
 
   static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
-};
-
-enum VariantType {
-  VARIANT_INT64 = 0,
-  VARIANT_INT32,
-  VARIANT_DOUBLE,
-  VARIANT_FLOAT,
-  VARIANT_STRING
-};
-
-struct VariantValue {
-
-  VariantValue() {}
-  VariantValue(std::string value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-  VariantValue(const char *value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-
-  VariantValue(int64_t value) {
-    type = VARIANT_INT64;
-    valueInt64 = value;
-  }
-
-  VariantValue(int32_t value) {
-    type = VARIANT_INT32;
-    valueInt64 = value;
-  }
-
-  VariantValue(double value) {
-    type = VARIANT_DOUBLE;
-    valueDouble = value;
-  }
-
-  VariantValue(float value) {
-    type = VARIANT_FLOAT;
-    valueDouble = value;
-  }
-
-  //  ~VariantValue()
-  //  {
-  //      delete[] cstring;  // deallocate
-  //  }
-
-  //  VariantValue(const VariantValue& other) // copy constructor
-  //      : VariantValue(other.cstring)
-  //  {}
-
-  //  VariantValue(VariantValue&& other) noexcept // move constructor
-  //      : cstring(std::exchange(other.cstring, nullptr))
-  //  {}
-
-  //  VariantValue& operator=(const VariantValue& other) // copy assignment
-  //  {
-  //      return *this = VariantValue(other);
-  //  }
-
-  //  VariantValue& operator=(VariantValue&& other) noexcept // move assignment
-  //  {
-  //      std::swap(cstring, other.cstring);
-  //      return *this;
-  //  }
-
-  std::string commandFlag; // A prefix to the flag (e.g. -o)
-
-  VariantType type;
-  std::string valueStr;
-  int64_t valueInt64;
-  double valueDouble;
 };
 
 /**
@@ -221,13 +150,16 @@ public:
    */
   std::string getRunningDirectory() { return mRunningDirectory; }
 
+  void registerStartCallback(std::function<void(void)> func) {
+    mStartCallbacks.push_back(func);
+  }
+
   void registerDoneCallback(std::function<void(bool)> func) {
     mDoneCallbacks.push_back(func);
   }
 
   void verbose(bool verbose = true) { mVerbose = verbose; }
 
-  std::string id;
   bool ignoreFail{false}; ///< If set to true, processor chains will continue
                           ///< even if this processor fails. Has no effect if
                           ///< running asychronously
@@ -244,23 +176,7 @@ public:
    */
   std::function<bool(void)> prepareFunction;
 
-  Processor &registerDimension(ParameterSpaceDimension &dim) {
-    auto *param = dim.parameterMeta();
-    if (auto *p = dynamic_cast<al::Parameter *>(param)) {
-      return registerParameter(*p);
-    } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
-      return registerParameter(*p);
-    }  */
-    else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
-      return registerParameter(*p);
-    } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
-      return registerParameter(*p);
-    } else {
-      std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
-                << std::endl;
-    }
-    return *this;
-  }
+  Processor &registerDimension(ParameterSpaceDimension &dim);
 
   Processor &operator<<(ParameterSpaceDimension &dim) {
     return registerDimension(dim);
@@ -282,8 +198,6 @@ public:
     return registerParameter(newParam);
   }
 
-  //  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
-
   /**
    * @brief Current internal configuration key value pairs
    *
@@ -302,6 +216,12 @@ protected:
 
   std::vector<al::ParameterMeta *> mParameters;
 
+  void callStartCallbacks() {
+    for (auto cb : mStartCallbacks) {
+      cb();
+    }
+  }
+
   void callDoneCallbacks(bool result) {
     for (auto cb : mDoneCallbacks) {
       cb(result);
@@ -310,6 +230,7 @@ protected:
   std::mutex mProcessLock;
 
 private:
+  std::vector<std::function<void()>> mStartCallbacks;
   std::vector<std::function<void(bool)>> mDoneCallbacks;
 };
 

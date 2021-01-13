@@ -98,6 +98,24 @@ void Processor::setRunningDirectory(std::string directory) {
   }
 }
 
+Processor &Processor::registerDimension(ParameterSpaceDimension &dim) {
+  auto *param = dim.parameterMeta();
+  if (auto *p = dynamic_cast<al::Parameter *>(param)) {
+    return registerParameter(*p);
+  } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
+      return registerParameter(*p);
+    }  */
+  else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
+    return registerParameter(*p);
+  } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
+    return registerParameter(*p);
+  } else {
+    std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
+              << std::endl;
+  }
+  return *this;
+}
+
 void Processor::setOutputFileNames(std::vector<std::string> outputFiles) {
   mOutputFileNames.clear();
   for (auto fileName : outputFiles) {
