@@ -160,7 +160,6 @@ public:
 
   void verbose(bool verbose = true) { mVerbose = verbose; }
 
-  std::string id;
   bool ignoreFail{false}; ///< If set to true, processor chains will continue
                           ///< even if this processor fails. Has no effect if
                           ///< running asychronously

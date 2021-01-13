@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include "al/io/al_File.hpp"
 
@@ -29,8 +30,91 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
   if (!al::File::exists(mCachePath.filePath())) {
     writeToDisk();
   } else {
-    updateFromDisk();
+    try {
+      updateFromDisk();
+    } catch (std::exception &e) {
+      std::string backupFilename = mCachePath.filePath() + ".old";
+      size_t count = 0;
+      while (al::File::exists(mCachePath.filePath() + std::to_string(count))) {
+        count++;
+      }
+      if (!al::File::copy(mCachePath.filePath(),
+                          mCachePath.filePath() + std::to_string(count))) {
+        std::cerr << "Cache invalid and backup failed." << std::endl;
+        throw std::exception();
+      }
+      std::cerr << "Invalid cache format. Ignoring old cache." << std::endl;
+    }
   }
+}
+
+void CacheManager::appendEntry(CacheEntry &entry) {
+  std::unique_lock<std::mutex> lk(mCacheLock);
+  mEntries.push_back(entry);
+}
+
+std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
+                                                 bool verifyHash) {
+  std::unique_lock<std::mutex> lk(mCacheLock);
+  for (const auto &entry : mEntries) {
+    if (entry.sourceInfo.commandLineArguments ==
+            sourceInfo.commandLineArguments &&
+        entry.sourceInfo.tincId == sourceInfo.tincId &&
+        entry.sourceInfo.type == sourceInfo.type) {
+      auto entryArguments = entry.sourceInfo.arguments;
+      bool argsMatch = false;
+      if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size()) {
+        size_t matchCount = 0;
+        for (const auto &sourceArg : sourceInfo.arguments) {
+          for (auto arg = entryArguments.begin(); arg != entryArguments.end();
+               arg++) {
+            if (sourceArg.id == arg->id) {
+              if (sourceArg.value.type == arg->value.type) {
+                if (sourceArg.value.type == VARIANT_DOUBLE ||
+                    sourceArg.value.type == VARIANT_FLOAT) {
+                  if (sourceArg.value.valueDouble == arg->value.valueDouble) {
+                    entryArguments.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else if (sourceArg.value.type == VARIANT_INT32 ||
+                           sourceArg.value.type == VARIANT_INT64) {
+                  if (sourceArg.value.valueInt64 == arg->value.valueInt64) {
+                    entryArguments.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else if (sourceArg.value.type == VARIANT_STRING) {
+                  if (sourceArg.value.valueStr == arg->value.valueStr) {
+                    entryArguments.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else {
+                  std::cerr << "ERROR: Unsupported type for argument value"
+                            << std::endl;
+                }
+              } else {
+                std::cout << "ERROR: type mismatch for argument in cache. "
+                             "Ignoring cache"
+                          << std::endl;
+                continue;
+              }
+            }
+          }
+        }
+        if (matchCount == sourceInfo.arguments.size() &&
+            entryArguments.size() == 0) {
+          return entry.filenames;
+        }
+      } else {
+        // TODO develop mechanisms to recover stale cache
+        std::cout << "Warning, cache entry found, but argument size mismatch"
+                  << std::endl;
+      }
+    }
+  }
+  return {};
 }
 
 std::string CacheManager::cacheDirectory() { return mCachePath.path(); }
@@ -77,6 +161,7 @@ void CacheManager::updateFromDisk() {
       e.userInfo.server = entry["userInfo"]["server"];
 
       e.sourceInfo.type = entry["sourceInfo"]["type"];
+      e.sourceInfo.tincId = entry["sourceInfo"]["tincId"];
       e.sourceInfo.commandLineArguments =
           entry["sourceInfo"]["commandLineArguments"];
       e.sourceInfo.hash = entry["sourceInfo"]["hash"];
@@ -141,6 +226,7 @@ void CacheManager::writeToDisk() {
       entry["userInfo"]["server"] = e.userInfo.server;
 
       entry["sourceInfo"]["type"] = e.sourceInfo.type;
+      entry["sourceInfo"]["tincId"] = e.sourceInfo.tincId;
       entry["sourceInfo"]["commandLineArguments"] =
           e.sourceInfo.commandLineArguments;
       entry["sourceInfo"]["hash"] = e.sourceInfo.hash;
@@ -182,6 +268,7 @@ void CacheManager::writeToDisk() {
       j["entries"].push_back(entry);
     }
     o << j << std::endl;
+    o.close();
   } else {
     std::cerr << "ERROR: Can't create cache file: " << mCachePath.filePath()
               << std::endl;
@@ -189,8 +276,18 @@ void CacheManager::writeToDisk() {
   }
 }
 
-void CacheManager::tinc_schema_format_checker(const std::string &format,
-                                              const std::string &value) {
+std::string CacheManager::dump() {
+  writeToDisk();
+  std::unique_lock<std::mutex> lk(mCacheLock);
+  std::ifstream f(mCachePath.filePath());
+  std::stringstream ss;
+
+  ss << f.rdbuf();
+  return ss.str();
+}
+
+void CacheManager::tincSchemaFormatChecker(const std::string &format,
+                                           const std::string &value) {
   if (format == "date-time") {
     // TODO validate date time
     return;

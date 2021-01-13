@@ -29,6 +29,8 @@ struct SourceArgument {
 
 struct SourceInfo {
   std::string type;
+  std::string
+      tincId; // TODO add heuristics to match source even if id has changed.
   std::string commandLineArguments;
   std::string hash;
   std::vector<SourceArgument> arguments;
@@ -49,20 +51,52 @@ class CacheManager {
 public:
   CacheManager(DistributedPath cachePath = DistributedPath("tinc_cache.json"));
 
+  /**
+   * @brief append cache entry
+   * @param the CacheEntry entry
+   */
+  void appendEntry(CacheEntry &entry);
+
+  /**
+   * @brief Get all in memory entries
+   * @return vector of CacheEntry objects
+   */
+  std::vector<CacheEntry> entries() { return mEntries; };
+
+  std::vector<std::string> findCache(const SourceInfo &sourceInfo,
+                                     bool verifyHash = true);
+  /**
+   * @brief Clear all cached files, and cache information.
+   */
   void clearCache() {
     throw "Mot implemented yet.";
     // TODO implement clear cache
   }
 
-  void appendEntry(CacheEntry &entry) { mEntries.push_back(entry); }
-
-  std::vector<CacheEntry> entries() { return mEntries; };
-
+  /**
+   * @brief Get full cache path
+   */
   std::string cacheDirectory();
 
+  /**
+   * @brief Read and validate cache file from disk
+   *
+   * This replaces the current in memory cache, so make sure you call
+   * writeToDisk() first if you want to store in memory cache.
+   */
   void updateFromDisk();
+
+  /**
+   * @brief Write the current in memory cache to disk
+   *
+   * This will overwrite the cache metadata file on disk
+   */
   void writeToDisk();
 
+  /**
+   * @brief Read cache metadata
+   * @return the json metadata as a string
+   */
   std::string dump();
 
 protected:
@@ -72,11 +106,12 @@ protected:
   // In memory cache
   std::vector<CacheEntry> mEntries;
 
-  static void tinc_schema_format_checker(const std::string &format,
-                                         const std::string &value);
+  // Function to add validators for special types like date-time
+  static void tincSchemaFormatChecker(const std::string &format,
+                                      const std::string &value);
 
   nlohmann::json_schema::json_validator mValidator{nullptr,
-                                                   tinc_schema_format_checker};
+                                                   tincSchemaFormatChecker};
 };
 }
 

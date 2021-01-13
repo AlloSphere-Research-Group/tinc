@@ -292,7 +292,15 @@ public:
           << "Warning cache already enabled. Overwriting previous settings"
           << std::endl;
     }
-    mCacheManager = std::make_shared<CacheManager>(cachePath);
+    cachePath = al::File::conformDirectory(cachePath);
+    if (!al::File::isDirectory(cachePath)) {
+      if (!al::Dir::make(cachePath)) {
+        std::cerr << "ERROR creating cache directory: " << cachePath
+                  << std::endl;
+      }
+    }
+    mCacheManager = std::make_shared<CacheManager>(
+        DistributedPath{std::string("tinc_cache.json"), cachePath});
   }
 
   /**

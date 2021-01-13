@@ -53,6 +53,7 @@ TEST(Cache, ReadWriteEntry) {
 
   SourceInfo sourceInfo;
   sourceInfo.type = "SourceType";
+  sourceInfo.tincId = "ProcessorId";
   sourceInfo.hash = "SourceHash";
   sourceInfo.commandLineArguments = "args and args";
 
@@ -101,6 +102,7 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].userInfo.port, 12345);
 
   EXPECT_EQ(entries[0].sourceInfo.type, "SourceType");
+  EXPECT_EQ(entries[0].sourceInfo.tincId, "ProcessorId");
   EXPECT_EQ(entries[0].sourceInfo.hash, "SourceHash");
   EXPECT_EQ(entries[0].sourceInfo.commandLineArguments, "args and args");
 
@@ -136,8 +138,8 @@ TEST(Cache, ReadWriteEntry) {
 }
 
 TEST(Cache, ParameterSpace) {
-  if (al::File::exists("cache_parameterspace.json")) {
-    al::File::remove("cache_parameterspace.json");
+  if (al::File::exists("cache/tinc_cache.json")) {
+    al::File::remove("cache/tinc_cache.json");
   }
 
   // Make a ParameterSpace
@@ -162,10 +164,8 @@ TEST(Cache, ParameterSpace) {
   dim2->setCurrentValue(0.2);
   dim3->setCurrentValue(0.02);
 
-  ps.enableCache("cache_parameterspace.json");
-
   // Create a processor;
-  ProcessorCpp processor;
+  ProcessorCpp processor("TincProcessor");
   processor.setOutputFileNames({"cache_ps.txt"});
   processor.processingFunction = [&]() {
     // Compute a value
@@ -182,6 +182,8 @@ TEST(Cache, ParameterSpace) {
     f.close();
     return true;
   };
+
+  ps.enableCache("cache");
 
   // Run the processor through the parameter space
   ps.runProcess(processor);

@@ -69,6 +69,9 @@
                 "type": "string",
                 "_comment_type": "/*InMemoryCpp, InMemoryPython, Commandline, Script*/"
               },
+              "tincId": {
+                "type": "string"
+              },
               "commandLineArguments": {
                 "type": "string"
               },
