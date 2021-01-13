@@ -6,27 +6,24 @@
 #include <fstream>
 
 int main() {
-  auto dimension1 = std::make_shared<tinc::ParameterSpaceDimension>("dim1");
-  auto dimension2 = std::make_shared<tinc::ParameterSpaceDimension>("dim2");
-  auto inner_param =
-      std::make_shared<tinc::ParameterSpaceDimension>("inner_param");
-
-  dimension1->setSpaceValues({0.1, 0.2, 0.3, 0.4, 0.5});
-  dimension1->setSpaceIds({"A", "B", "C", "D", "E"});
-  dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
-
-  dimension2->setSpaceValues({10.1, 10.2, 10.3, 10.4, 10.5});
-  dimension2->setSpaceRepresentationType(tinc::ParameterSpaceDimension::INDEX);
-
-  inner_param->setSpaceValues({1, 2, 3, 4, 5});
-  inner_param->setSpaceRepresentationType(tinc::ParameterSpaceDimension::VALUE);
-
   tinc::ParameterSpace ps;
 
-  ps.registerDimension(dimension1);
-  ps.registerDimension(dimension2);
-  ps.registerDimension(inner_param);
+  // Create dimensions
+  auto dimension1 = ps.newDimension("dim1", tinc::ParameterSpaceDimension::ID);
+  auto dimension2 =
+      ps.newDimension("dim2", tinc::ParameterSpaceDimension::INDEX);
+  auto inner_param =
+      ps.newDimension("inner_param", tinc::ParameterSpaceDimension::VALUE);
 
+  // Set possible values for dimensions
+  dimension1->setSpaceValues({0.1, 0.2, 0.3, 0.4, 0.5});
+  dimension1->setSpaceIds({"A", "B", "C", "D", "E"});
+
+  dimension2->setSpaceValues({10.1, 10.2, 10.3, 10.4, 10.5});
+
+  inner_param->setSpaceValues({1, 2, 3, 4, 5});
+
+  // Write paramter space information to netcdf file.
   if (!ps.writeToNetCDF()) {
     std::cerr << "Error writing NetCDF file" << std::endl;
   }
@@ -34,6 +31,8 @@ int main() {
   // Now load the parameter space from disk
   tinc::ParameterSpace ps2;
 
+  // Because they share the same root directory, the parameter spaces will share
+  // the same dimensions
   ps2.readFromNetCDF();
 
   for (auto dimensionName : ps2.dimensionNames()) {

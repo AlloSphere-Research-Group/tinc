@@ -190,7 +190,7 @@ public:
   /**
    * @brief Load parameter space dimensions from disk file
    * @param ncFile
-   * @return
+   * @return true if reading was succesful
    *
    * The file is loaded relative to 'rootPath'. Dimension found in the file are
    * added to the current parameter space if a dimension with that name already
@@ -199,9 +199,9 @@ public:
   bool readFromNetCDF(std::string ncFile = "parameter_space.nc");
 
   /**
-   * @brief write parameter sapce dimensions to netCDF file.
+   * @brief write parameter space dimensions to netCDF file.
    * @param fileName
-   * @return
+   * @return true if writing was succesful
    */
   bool writeToNetCDF(std::string fileName = "parameter_space.nc");
 

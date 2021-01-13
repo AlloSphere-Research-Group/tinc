@@ -10,6 +10,7 @@ std::string IdObject::getId() {
   if (mId.size() == 0) {
     mId = al::demangle(typeid(*this).name()) + "@" +
           std::to_string((uint64_t) this);
+    std::cout << "Warning. Processor given temporary id: " << mId << std::endl;
   }
   return mId;
 }
