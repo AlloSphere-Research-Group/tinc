@@ -361,7 +361,7 @@ protected:
   std::shared_ptr<CacheManager> mCacheManager;
 
 private:
-  std::mutex mSpaceLock;
+  std::mutex mDimensionsLock;
 };
 } // namespace tinc
 

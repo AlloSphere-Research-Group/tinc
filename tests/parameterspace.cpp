@@ -20,9 +20,15 @@ TEST(ParameterSpace, Basic) {
   EXPECT_EQ(dimensionNames.at(0), "dim1");
   EXPECT_EQ(dimensionNames.at(1), "dim2");
   EXPECT_EQ(dimensionNames.at(2), "dim3");
+
+  ps.removeDimension("dim1");
+
+  EXPECT_EQ(ps.dimensionNames().size(), 2);
   ps.clear();
 
   EXPECT_EQ(ps.getDimensions().size(), 0);
+
+  EXPECT_EQ(ps.getDimension("no_dim"), nullptr);
 }
 
 TEST(ParameterSpace, DimensionValues) {
@@ -66,6 +72,36 @@ TEST(ParameterSpace, DimensionReregister) {
   EXPECT_EQ(newDim1->size(), 4);
   EXPECT_EQ(newDim1->getSpaceIds(),
             std::vector<std::string>({"A", "B", "C", "C", "E"}));
+}
+
+TEST(ParameterSpace, DimensionTypes) {
+  ParameterSpace ps;
+
+  //  auto stringDim = ps.newDimension("stringDim",
+  //  ParameterSpaceDimension::VALUE,
+  //                                   al::DiscreteParameterValues::STRING);
+  //  auto doubleDim = ps.newDimension("doubleDim",
+  //  ParameterSpaceDimension::VALUE,
+  //                                   al::DiscreteParameterValues::DOUBLE);
+  auto float8Dim = ps.newDimension("floatDim", ParameterSpaceDimension::VALUE,
+                                   al::DiscreteParameterValues::FLOAT);
+  //  auto int64Dim = ps.newDimension("int64Dim",
+  //  ParameterSpaceDimension::VALUE,
+  //                                  al::DiscreteParameterValues::INT64);
+  auto int32Dim = ps.newDimension("int32Dim", ParameterSpaceDimension::VALUE,
+                                  al::DiscreteParameterValues::INT32);
+  auto int8Dim = ps.newDimension("int8Dim", ParameterSpaceDimension::VALUE,
+                                 al::DiscreteParameterValues::INT8);
+  //  auto uint64Dim = ps.newDimension("uint64Dim",
+  //  ParameterSpaceDimension::VALUE,
+  //                                   al::DiscreteParameterValues::UINT64);
+  //  auto uint32Dim = ps.newDimension("uint32Dim",
+  //  ParameterSpaceDimension::VALUE,
+  //                                   al::DiscreteParameterValues::UINT32);
+  auto uint8Dim = ps.newDimension("uint8Dim", ParameterSpaceDimension::VALUE,
+                                  al::DiscreteParameterValues::UINT8);
+
+  EXPECT_EQ(ps.getDimensions().size(), 4);
 }
 
 TEST(ParameterSpace, DimensionAlias) {
@@ -112,6 +148,9 @@ TEST(ParameterSpace, FilenameTemplate) {
 
   name = ps.resolveFilename("file_%%dim2:ID%%_%%dim3:ID%%");
   EXPECT_EQ(name, "file_xx0.200000_id2");
+
+  name = ps.resolveFilename("file_%%dim2:INDEX%%_%%dim3:INDEX%%");
+  EXPECT_EQ(name, "file_1_2");
 }
 
 TEST(ParameterSpace, RunningPaths) {
@@ -146,6 +185,10 @@ TEST(ParameterSpace, ReadWriteNetCDF) {
   auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
   auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
 
+  // TODO fix support for int32
+  //  auto dim4 = ps.newDimension("dim4", ParameterSpaceDimension::ID,
+  //                              al::DiscreteParameterValues::INT32);
+
   float dim1Values[5] = {0.1, 0.2, 0.3, 0.4};
   dim1->setSpaceValues(dim1Values, 4);
 
@@ -155,12 +198,29 @@ TEST(ParameterSpace, ReadWriteNetCDF) {
   float dim3Values[6] = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6};
   dim3->setSpaceValues(dim3Values, 6);
 
+  //  int32_t dim4Values[] = {10, 20, 30, 40, 50, 60, 70, 80};
+  //  dim4->setSpaceValues(dim4Values, sizeof dim4Values);
+
   ps.writeToNetCDF("parameter_space_testing.nc");
   ps.clear();
 
   EXPECT_EQ(ps.getDimensions().size(), 0);
 
+  // Load from netcdf file
   ps.readFromNetCDF("parameter_space_testing.nc");
 
   EXPECT_EQ(ps.getDimensions().size(), 3);
+
+  // Check values match
+  auto values = ps.getDimension("dim1")->getSpaceValues<float>();
+  EXPECT_EQ(values, std::vector<float>({0.1, 0.2, 0.3, 0.4}));
+
+  values = ps.getDimension("dim2")->getSpaceValues<float>();
+  EXPECT_EQ(values, std::vector<float>({0.1, 0.2, 0.3, 0.4, 0.5}));
+
+  values = ps.getDimension("dim3")->getSpaceValues<float>();
+  EXPECT_EQ(values, std::vector<float>({1.1, 1.2, 1.3, 1.4, 1.5, 1.6}));
+
+  //  auto intValues = ps.getDimension("dim4")->getSpaceValues<int32_t>();
+  //  EXPECT_EQ(values, std::vector<float>({10, 20, 30, 40, 50, 60, 70, 80}));
 }

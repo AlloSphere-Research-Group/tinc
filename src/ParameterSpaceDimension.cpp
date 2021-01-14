@@ -17,8 +17,8 @@ ParameterSpaceDimension::ParameterSpaceDimension(
     mParameterValue = new al::Parameter(name, group);
     break;
   case Datatype::UINT8:
+  case Datatype::INT8:
   case Datatype::INT32:
-  case Datatype::UINT32:
     mParameterValue = new al::ParameterInt(name, group);
     break;
   }

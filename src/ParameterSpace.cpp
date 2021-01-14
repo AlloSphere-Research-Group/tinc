@@ -26,7 +26,7 @@ ParameterSpace::~ParameterSpace() { stopSweep(); }
 std::shared_ptr<ParameterSpaceDimension>
 ParameterSpace::getDimension(std::string name) {
 
-  std::unique_lock<std::mutex> lk(mSpaceLock);
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   if (parameterNameMap.find(name) != parameterNameMap.end()) {
     name = parameterNameMap[name];
   }
@@ -51,7 +51,7 @@ ParameterSpace::newDimension(std::string name,
 
 std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> dimension) {
-  std::unique_lock<std::mutex> lk(mSpaceLock);
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   for (auto dim : getDimensions()) {
     if (dim->getName() == dimension->getName()) {
       // FIXME check data type
@@ -130,8 +130,9 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
 }
 
 void ParameterSpace::removeDimension(std::string dimensionName) {
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   auto it = mDimensions.begin();
-  while ((*it)->getName() != dimensionName && it < mDimensions.end()) {
+  while ((*it)->getName() != dimensionName && it != mDimensions.end()) {
     it++;
   }
   if (it != mDimensions.end()) {
@@ -171,19 +172,17 @@ std::vector<std::string> ParameterSpace::runningPaths() {
 
 std::string ParameterSpace::currentRunPath() {
   std::map<std::string, size_t> indeces;
-  {
-    std::unique_lock<std::mutex> lk(mSpaceLock);
-    for (auto ps : mDimensions) {
-      //      if (ps->isFilesystemDimension()) {
-      indeces[ps->getName()] = ps->getCurrentIndex();
-      //      }
-    }
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
+  for (auto ps : mDimensions) {
+    //      if (ps->isFilesystemDimension()) {
+    indeces[ps->getName()] = ps->getCurrentIndex();
+    //      }
   }
   return generateRelativeRunPath(indeces, this);
 }
 
 std::vector<std::string> ParameterSpace::dimensionNames() {
-  std::unique_lock<std::mutex> lk(mSpaceLock);
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   std::vector<std::string> dimensionNames;
   for (auto dim : mDimensions) {
     dimensionNames.push_back(dim->getName());
@@ -210,7 +209,7 @@ bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
 }
 
 void ParameterSpace::clear() {
-  std::unique_lock<std::mutex> lk(mSpaceLock);
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   mDimensions.clear();
   mSpecialDirs.clear();
 }
@@ -237,7 +236,7 @@ bool ParameterSpace::runProcess(Processor &processor, bool recompute) {
     // TODO allow fine grained options of what directory to set
     processor.setRunningDirectory(path);
   }
-  std::unique_lock<std::mutex> lk(mSpaceLock);
+  std::unique_lock<std::mutex> lk(mDimensionsLock);
   for (auto dim : mDimensions) {
     if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
       processor.configuration[dim->getName()] = dim->getCurrentValue();
@@ -428,7 +427,7 @@ void ParameterSpace::sweep(Processor &processor,
 
   while (mSweepRunning) {
     {
-      std::unique_lock<std::mutex> lk(mSpaceLock);
+      std::unique_lock<std::mutex> lk(mDimensionsLock);
       for (auto dim : mDimensions) {
         if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
           processor.configuration[dim->getName()] = dim->getCurrentValue();
@@ -487,7 +486,7 @@ void ParameterSpace::sweepAsync(Processor &processor,
   }
   mAsyncPSCopy = std::make_shared<ParameterSpace>();
   {
-    std::unique_lock<std::mutex> lk(mSpaceLock);
+    std::unique_lock<std::mutex> lk(mDimensionsLock);
     for (auto dim : ParameterSpace::mDimensions) {
       auto dimCopy = dim->deepCopy();
       mAsyncPSCopy->registerDimension(dimCopy);
