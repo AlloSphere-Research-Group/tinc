@@ -4,7 +4,7 @@
 
 namespace tinc {
 
-namespace gui {
+namespace vis {
 
 void drawControl(tinc::ParameterSpaceDimension *dim) {
   ImGui::PushID(dim);

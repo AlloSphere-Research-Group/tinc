@@ -42,7 +42,7 @@
 namespace tinc {
 
 // This namespace is used for fundtions that require an active ImGui Panel
-namespace gui {
+namespace vis {
 
 void drawControl(ParameterSpaceDimension *dim);
 

@@ -68,7 +68,7 @@ struct MyApp : public al::App {
   void prepareGui() {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space");
-    tinc::gui::drawControls(ps);
+    tinc::vis::drawControls(ps);
     al::ParameterGUI::draw(&procParameter);
     ImGui::Text("Computed value: %f", computedValue);
     al::ParameterGUI::endPanel();

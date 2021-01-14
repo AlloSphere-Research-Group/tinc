@@ -39,10 +39,10 @@ struct MyApp : public al::App {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Spaces");
     for (auto *ps : tserv.parameterSpaces()) {
-      tinc::gui::drawControls(*ps);
+      tinc::vis::drawControls(*ps);
     }
     ImGui::Text("Current path: %s", ps.currentRunPath().c_str());
-    tinc::gui::drawTincServerInfo(tserv);
+    tinc::vis::drawTincServerInfo(tserv);
     al::ParameterGUI::endPanel();
     al::imguiEndFrame();
   }

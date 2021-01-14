@@ -46,7 +46,7 @@ class MyApp : public al::App {
 
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space", 0, 0, 640, 150);
-    tinc::gui::drawControls(ps);
+    tinc::vis::drawControls(ps);
     al::ParameterGUI::endPanel();
 
     al::imguiEndFrame();

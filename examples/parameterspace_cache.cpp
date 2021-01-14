@@ -74,7 +74,7 @@ public:
   void onAnimate(double /*dt*/) override {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space", 0, 0, 640, 150);
-    tinc::gui::drawControls(ps);
+    tinc::vis::drawControls(ps);
     al::ParameterGUI::draw(&text);
     al::ParameterGUI::endPanel();
 

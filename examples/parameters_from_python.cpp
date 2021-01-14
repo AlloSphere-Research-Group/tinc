@@ -22,7 +22,7 @@ struct TincApp : al::App {
     ImGui::Begin("Remote Controls");
     for (auto *dim : tserv.dimensions()) {
 
-      gui::drawControl(dim);
+      vis::drawControl(dim);
       std::cout << dim->getName() << " size: " << dim->size() << std::endl;
     }
     ImGui::End();
