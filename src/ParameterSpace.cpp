@@ -49,7 +49,7 @@ ParameterSpace::newDimension(std::string name,
   return newDim;
 }
 
-void ParameterSpace::registerDimension(
+std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> dimension) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
   for (auto dim : getDimensions()) {
@@ -57,6 +57,7 @@ void ParameterSpace::registerDimension(
       // FIXME check data type
       if (dim->mSpaceValues.getDataType() ==
           dimension->mSpaceValues.getDataType()) {
+        dim->mSpaceValues.clear();
         dim->mSpaceValues.append(dimension->mSpaceValues.getValuesPtr(),
                                  dimension->mSpaceValues.size());
         dim->mSpaceValues.setIds(dimension->mSpaceValues.getIds());
@@ -65,7 +66,7 @@ void ParameterSpace::registerDimension(
         //      std::cout << "Updated dimension: " << dimension->getName() <<
         //      std::endl;
         onDimensionRegister(dim.get(), this, nullptr);
-        return;
+        return dim;
       } else {
         std::cout << "WARNING: Dimension datatype change." << std::endl;
       }
@@ -125,6 +126,7 @@ void ParameterSpace::registerDimension(
     std::cerr << "Support for parameter type not implemented in dimension "
               << __FILE__ << ":" << __LINE__ << std::endl;
   }
+  return dimension;
 }
 
 void ParameterSpace::removeDimension(std::string dimensionName) {
@@ -149,15 +151,15 @@ std::vector<std::string> ParameterSpace::runningPaths() {
 
   std::map<std::string, size_t> currentIndeces;
   for (auto dimension : mDimensions) {
-    currentIndeces[dimension->getName()] = 0;
+    if (isFilesystemDimension(dimension->getName())) {
+      currentIndeces[dimension->getName()] = 0;
+    }
   }
   bool done = false;
   while (!done) {
     done = true;
-    auto path = al::File::conformPathToOS(rootPath) + currentRunPath();
-    // TODO write more efficient way to determine if a dimension affects the
-    // filesystem. Perhaps analyze before running this loop to prune dimensions
-    // that don't affect the filesystem
+    auto path = al::File::conformPathToOS(rootPath) +
+                generateRelativeRunPath(currentIndeces, this);
     if (path.size() > 0 &&
         std::find(paths.begin(), paths.end(), path) == paths.end()) {
       paths.push_back(path);
@@ -191,7 +193,7 @@ std::vector<std::string> ParameterSpace::dimensionNames() {
 
 bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
   auto dim = getDimension(dimensionName);
-  if (dim) {
+  if (dim && dim->size() > 1) {
     // This should be enough of a check, or should we check all possible
     // values?
     std::map<std::string, size_t> indeces;
@@ -203,6 +205,7 @@ bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
       return true;
     }
   }
+  // TODO what if the template contains the dimension name,
   return false;
 }
 
@@ -818,7 +821,9 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
   return true;
 }
 
-std::string ParameterSpace::resolveFilename(std::string fileTemplate) {
+std::string
+ParameterSpace::resolveFilename(std::string fileTemplate,
+                                std::map<std::string, size_t> indeces) {
   std::string resolvedName;
   size_t currentPos = 0;
   size_t beginPos = fileTemplate.find("%%", currentPos);
@@ -834,39 +839,75 @@ std::string ParameterSpace::resolveFilename(std::string fileTemplate) {
         token = token.substr(0, representationSeparation);
       }
       bool replaced = false;
-      for (auto dim : getDimensions()) {
-        if (dim->getName() == token) {
-          if (representation.size() == 0) {
-            switch (dim->getSpaceRepresentationType()) {
-            case ParameterSpaceDimension::ID:
-              representation = "ID";
-              break;
-            case ParameterSpaceDimension::VALUE:
-              representation = "VALUE";
-              break;
-            case ParameterSpaceDimension::INDEX:
-              representation = "INDEX";
-              break;
-            }
+      auto indexOverride = indeces.find(token);
+      if (indexOverride != indeces.end()) {
+        // Use provided index instead of current values
+        auto &index = indexOverride->second;
+        auto dim = getDimension(indexOverride->first);
+        if (representation.size() == 0) {
+          switch (dim->getSpaceRepresentationType()) {
+          case ParameterSpaceDimension::ID:
+            representation = "ID";
+            break;
+          case ParameterSpaceDimension::VALUE:
+            representation = "VALUE";
+            break;
+          case ParameterSpaceDimension::INDEX:
+            representation = "INDEX";
+            break;
           }
-          if (representation == "ID") {
-            resolvedName += dim->getCurrentId();
-          } else if (representation == "VALUE") {
-            resolvedName += std::to_string(dim->getCurrentValue());
-          } else if (representation == "INDEX") {
-            auto index = dim->getCurrentIndex();
-            if (index == SIZE_MAX) {
-              index = 0;
-            }
-            resolvedName += std::to_string(index);
-          } else {
-            std::cerr << "Representation error: " << representation
-                      << std::endl;
-          }
-
-          replaced = true;
-          break;
         }
+        if (representation == "ID") {
+          resolvedName += dim->idAt(index);
+        } else if (representation == "VALUE") {
+          resolvedName += std::to_string(dim->at(index));
+        } else if (representation == "INDEX") {
+          resolvedName += std::to_string(index);
+        } else {
+          std::cerr << "Representation error: " << representation << std::endl;
+        }
+
+        replaced = true;
+      } else {
+        // Use current value
+        for (auto dim : getDimensions()) {
+          if (dim->getName() == token) {
+            if (representation.size() == 0) {
+              switch (dim->getSpaceRepresentationType()) {
+              case ParameterSpaceDimension::ID:
+                representation = "ID";
+                break;
+              case ParameterSpaceDimension::VALUE:
+                representation = "VALUE";
+                break;
+              case ParameterSpaceDimension::INDEX:
+                representation = "INDEX";
+                break;
+              }
+            }
+            if (representation == "ID") {
+              resolvedName += dim->getCurrentId();
+            } else if (representation == "VALUE") {
+              resolvedName += std::to_string(dim->getCurrentValue());
+            } else if (representation == "INDEX") {
+              auto index = dim->getCurrentIndex();
+              if (index == SIZE_MAX) {
+                index = 0;
+              }
+              resolvedName += std::to_string(index);
+            } else {
+              std::cerr << "Representation error: " << representation
+                        << std::endl;
+            }
+
+            replaced = true;
+            break;
+          }
+        }
+      }
+      if (!replaced) {
+        std::cerr << __FILE__ << "ERROR: Template token not matched:" << token
+                  << std::endl;
       }
     }
     currentPos = endPos + 2;
@@ -879,6 +920,21 @@ std::string ParameterSpace::resolveFilename(std::string fileTemplate) {
     }
   }
   return resolvedName;
+}
+
+void ParameterSpace::enableCache(std::string cachePath) {
+  if (mCacheManager) {
+    std::cout << "Warning cache already enabled. Overwriting previous settings"
+              << std::endl;
+  }
+  cachePath = al::File::conformDirectory(cachePath);
+  if (!al::File::isDirectory(cachePath)) {
+    if (!al::Dir::make(cachePath)) {
+      std::cerr << "ERROR creating cache directory: " << cachePath << std::endl;
+    }
+  }
+  mCacheManager = std::make_shared<CacheManager>(
+      DistributedPath{std::string("tinc_cache.json"), cachePath});
 }
 
 bool ParameterSpace::readFromNetCDF(std::string ncFile) {

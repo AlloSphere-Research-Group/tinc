@@ -88,8 +88,14 @@ public:
   /**
    * @brief Register an existing dimension with the parameter space
    * @param dimension dimension to register
+   * @return pointer to the registered dimension
+   *
+   * If the dimension was already registered, the data from the incoming
+   * dimension is copied to the existing dimension and the existing dimension is
+   * returned.
    */
-  void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
+  std::shared_ptr<ParameterSpaceDimension>
+  registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
 
   /**
    * @brief remove dimension form list of registered dimensions
@@ -260,7 +266,7 @@ public:
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
                                     ParameterSpace *ps) {
-        std::string path = ps->resolveFilename(mCurrentPathTemplate);
+        std::string path = ps->resolveFilename(mCurrentPathTemplate, indeces);
         return al::File::conformPathToOS(path);
       };
 
@@ -273,6 +279,7 @@ public:
   /**
    * @brief resolve filename template according to current parameter values
    * @param fileTemplate
+   * @param indeces map of indeces that override current values.
    * @return resolved string
    *
    * You can use %% to delimit dimension names, e.g. "value_%%ParameterValue%%"
@@ -284,24 +291,16 @@ public:
    * "value_%%ParameterValue:INDEX%%" will replace "%%ParameterValue:INDEX%%"
    * with the current index for ParameterValue.
    */
-  std::string resolveFilename(std::string fileTemplate);
+  std::string resolveFilename(std::string fileTemplate,
+                              std::map<std::string, size_t> indeces = {});
 
-  void enableCache(std::string cachePath) {
-    if (mCacheManager) {
-      std::cout
-          << "Warning cache already enabled. Overwriting previous settings"
-          << std::endl;
-    }
-    cachePath = al::File::conformDirectory(cachePath);
-    if (!al::File::isDirectory(cachePath)) {
-      if (!al::Dir::make(cachePath)) {
-        std::cerr << "ERROR creating cache directory: " << cachePath
-                  << std::endl;
-      }
-    }
-    mCacheManager = std::make_shared<CacheManager>(
-        DistributedPath{std::string("tinc_cache.json"), cachePath});
-  }
+  /**
+   * @brief Enable caching for the parameter space
+   * @param cachePath
+   *
+   * Caching will be used when calling runProcess() and sweep()
+   */
+  void enableCache(std::string cachePath);
 
   /**
    * @brief callback when the value in any particular dimension changes.
