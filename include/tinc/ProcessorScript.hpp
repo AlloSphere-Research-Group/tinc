@@ -135,19 +135,16 @@ public:
    */
   static std::string sanitizeName(std::string output_name);
 
-  //  // TODO remove these async calls
-  //  bool processAsync(bool noWait = false,
-  //                    std::function<void(bool)> doneCallback = nullptr);
-
-  //  bool processAsync(std::map<std::string, std::string> options,
-  //                    bool noWait = false,
-  //                    std::function<void(bool)> doneCallback = nullptr);
-
-  //  bool runningAsync();
-
-  //  bool waitForAsyncDone();
-
-  //  void maxAsyncProcesses(int num) { mMaxAsyncProcesses = num; }
+  /**
+   * @brief Enable simple scipt caching
+   * @param use
+   *
+   * This caching is a simpel but brittle caching mechanism. Whenever possible
+   * use the caching provided by ParameterSpace. For this caching to work, you
+   * will need to ensure that every run produces a unique and reproducible
+   * filename.
+   */
+  void useCache(bool use = true);
 
 protected:
   std::string writeJsonConfig();
@@ -166,6 +163,8 @@ private:
   std::condition_variable mAsyncDoneTrigger;
   std::mutex mAsyncDoneTriggerLock;
 
+  bool mUseCache{false};
+
   std::string makeCommandLine();
 
   bool runCommand(const std::string &command);
@@ -180,10 +179,5 @@ private:
 };
 
 } // namespace tinc
-
-//#ifdef AL_WINDOWS
-//#undef popen
-//#undef pclose
-//#endif
 
 #endif // DATASCRIPT_HPP
