@@ -222,12 +222,19 @@ public:
       std::vector<std::shared_ptr<ParameterSpaceDimension>> &newDimensions);
 
   /**
-   * @brief Filesystem root path for parameter space
+   * @brief Get root path for the parameter space
+   * @return
    *
-   * This root path is where the root parameter space should be localted and
-   * should contain all data directories
+   * Path constructed thgouth the path template and the
+   * generateRelativeRunPath() should be relative to this path.
    */
-  std::string rootPath;
+  std::string getRootPath();
+
+  /**
+   * @brief Set the parameter space's root path
+   * @param rootPath
+   */
+  void setRootPath(std::string rootPath);
 
   /**
    * @brief map names provided to getDimension() to internal data names
@@ -297,8 +304,10 @@ public:
   /**
    * @brief Enable caching for the parameter space
    * @param cachePath
+   * @param rootPath
    *
    * Caching will be used when calling runProcess() and sweep()
+   * You should use cachePath as a relative path to rootPath
    */
   void enableCache(std::string cachePath);
 
@@ -359,6 +368,14 @@ protected:
   std::map<std::string, std::string> mSpecialDirs;
 
   std::shared_ptr<CacheManager> mCacheManager;
+
+  /**
+   * @brief Filesystem root path for parameter space
+   *
+   * This root path is where the root parameter space should be localted and
+   * should contain all data directories
+   */
+  std::string mRootPath;
 
 private:
   std::mutex mDimensionsLock;

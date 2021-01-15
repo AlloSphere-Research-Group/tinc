@@ -27,7 +27,7 @@ int main() {
   ps.registerDimension(dimension2);
   ps.registerDimension(inner_param);
 
-  ps.rootPath = "subdir_data/";
+  ps.setRootPath("subdir_data/");
   ps.createDataDirectories();
 
   if (!ps.writeToNetCDF()) {
@@ -43,7 +43,7 @@ int main() {
 
   subdirps.registerDimension(dimension2b);
 
-  subdirps.rootPath = "subdir_data/B/";
+  subdirps.setRootPath("subdir_data/B/");
   subdirps.createDataDirectories();
 
   if (!subdirps.writeToNetCDF()) {
@@ -52,7 +52,7 @@ int main() {
 
   // Now load to confirm the variation in the subdirectory is picked up.
   tinc::ParameterSpace ps2;
-  ps2.rootPath = "subdir_data/";
+  ps2.setRootPath("subdir_data/");
   ps2.readFromNetCDF();
 
   ps2.getDimension("dim1")->setCurrentIndex(0);

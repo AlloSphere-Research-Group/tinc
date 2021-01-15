@@ -159,7 +159,7 @@ std::vector<std::string> ParameterSpace::runningPaths() {
   bool done = false;
   while (!done) {
     done = true;
-    auto path = al::File::conformPathToOS(rootPath) +
+    auto path = al::File::conformPathToOS(mRootPath) +
                 generateRelativeRunPath(currentIndeces, this);
     if (path.size() > 0 &&
         std::find(paths.begin(), paths.end(), path) == paths.end()) {
@@ -819,6 +819,18 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
   return true;
 }
+std::string ParameterSpace::getRootPath() { return mRootPath; }
+
+void ParameterSpace::setRootPath(std::string rootPath) {
+  if (mCacheManager && rootPath != mRootPath) {
+    std::cout << __FILE__
+              << "WARNING: Root path changed for parameter space. But cache "
+                 "enabled. You must call enableCache() to adjust root path "
+                 "for cache"
+              << std::endl;
+  }
+  mRootPath = rootPath;
+}
 
 std::string
 ParameterSpace::resolveFilename(std::string fileTemplate,
@@ -933,13 +945,13 @@ void ParameterSpace::enableCache(std::string cachePath) {
     }
   }
   mCacheManager = std::make_shared<CacheManager>(
-      DistributedPath{std::string("tinc_cache.json"), cachePath});
+      DistributedPath{std::string("tinc_cache.json"), cachePath, mRootPath});
 }
 
 bool ParameterSpace::readFromNetCDF(std::string ncFile) {
 #ifdef TINC_HAS_NETCDF
   std::vector<std::shared_ptr<ParameterSpaceDimension>> newDimensions;
-  std::string filename = al::File::conformPathToOS(rootPath) + ncFile;
+  std::string filename = al::File::conformPathToOS(mRootPath) + ncFile;
   if (!readDimensionsInNetCDFFile(filename, newDimensions)) {
     return false;
   }
@@ -964,7 +976,7 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
     std::string subPath;
     while (std::getline(ss, item, AL_FILE_DELIMITER)) {
       subPath += item + AL_FILE_DELIMITER_STR;
-      if (al::File::exists(al::File::conformPathToOS(rootPath) + subPath +
+      if (al::File::exists(al::File::conformPathToOS(mRootPath) + subPath +
                            ncFile)) {
         mSpecialDirs[subPath] = ncFile;
         std::vector<std::shared_ptr<ParameterSpaceDimension>>
@@ -1082,7 +1094,7 @@ bool writeNetCDFValues(int datagrpid,
 bool ParameterSpace::writeToNetCDF(std::string fileName) {
   int retval;
   int ncid;
-  fileName = al::File::conformPathToOS(rootPath) + fileName;
+  fileName = al::File::conformPathToOS(mRootPath) + fileName;
 
   if ((retval = nc_create(fileName.c_str(), NC_CLOBBER | NC_NETCDF4, &ncid))) {
     return false;
@@ -1274,7 +1286,7 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
       // the future through caching
       std::vector<std::shared_ptr<ParameterSpaceDimension>> newDimensions;
       std::string filename =
-          al::File::conformPathToOS(rootPath) + "parameter_space.nc";
+          al::File::conformPathToOS(mRootPath) + "parameter_space.nc";
       if (!readDimensionsInNetCDFFile(filename, newDimensions)) {
         std::cerr << "ERROR reading root parameter space" << std::endl;
       }
@@ -1290,10 +1302,10 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
       while (newIt != oldPathComponents.end()) {
         subPath += *newIt + AL_FILE_DELIMITER_STR;
         if (mSpecialDirs.find(subPath) != mSpecialDirs.end() &&
-            al::File::exists(al::File::conformPathToOS(rootPath) + subPath +
+            al::File::exists(al::File::conformPathToOS(mRootPath) + subPath +
                              mSpecialDirs[subPath])) {
           std::cout << "Loading parameter space at " << subPath << std::endl;
-          readDimensionsInNetCDFFile(al::File::conformPathToOS(rootPath) +
+          readDimensionsInNetCDFFile(al::File::conformPathToOS(mRootPath) +
                                          subPath + mSpecialDirs[subPath],
                                      newDimensions);
         }

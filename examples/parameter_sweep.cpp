@@ -51,7 +51,7 @@ int main() {
     return true;
   };
 
-  ps.rootPath = "data/";
+  ps.setRootPath("data/");
 
   // Now sweep the parameter space
   ps.sweep(processor);
