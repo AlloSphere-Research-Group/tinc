@@ -244,7 +244,7 @@ std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
 std::vector<std::string> DataPool::getCurrentFiles() {
   std::vector<std::string> files;
   std::string path = al::File::conformPathToOS(mParameterSpace->getRootPath()) +
-                     mParameterSpace->currentRunPath();
+                     mParameterSpace->currentRelativeRunPath();
   for (auto f : mDataFilenames) {
     files.push_back(path + f.first);
   }
