@@ -26,6 +26,9 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
     std::cerr << "Validation of schema failed, here is why: " << e.what()
               << "\n";
   }
+  if (!al::File::exists(mCachePath.rootPath + mCachePath.relativePath)) {
+    al::Dir::make(mCachePath.rootPath + mCachePath.relativePath);
+  }
 
   if (!al::File::exists(mCachePath.filePath())) {
     writeToDisk();
