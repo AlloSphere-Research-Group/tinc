@@ -170,13 +170,15 @@ std::vector<std::string> ParameterSpace::runningPaths() {
   return paths;
 }
 
-std::string ParameterSpace::currentRunPath() {
+std::string ParameterSpace::currentRelativeRunPath() {
   std::map<std::string, size_t> indeces;
-  std::unique_lock<std::mutex> lk(mDimensionsLock);
-  for (auto ps : mDimensions) {
-    //      if (ps->isFilesystemDimension()) {
-    indeces[ps->getName()] = ps->getCurrentIndex();
-    //      }
+  {
+    std::unique_lock<std::mutex> lk(mDimensionsLock);
+    for (auto ps : mDimensions) {
+      //      if (ps->isFilesystemDimension()) {
+      indeces[ps->getName()] = ps->getCurrentIndex();
+      //      }
+    }
   }
   return generateRelativeRunPath(indeces, this);
 }
@@ -441,7 +443,7 @@ void ParameterSpace::sweep(Processor &processor,
       }
     }
 
-    auto path = currentRunPath();
+    auto path = currentRelativeRunPath();
     if (path.size() > 0) {
       // TODO allow fine grained options of what directory to set
       processor.setRunningDirectory(path);
@@ -917,7 +919,7 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
         }
       }
       if (!replaced) {
-        std::cerr << __FILE__ << "ERROR: Template token not matched:" << token
+        std::cerr << __FILE__ << " ERROR: Template token not matched:" << token
                   << std::endl;
       }
     }
@@ -1252,7 +1254,7 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
       oldPathComponents.push_back(std::move(item));
     }
 
-    auto newPath = currentRunPath();
+    auto newPath = currentRelativeRunPath();
     std::stringstream ss2(newPath);
     std::vector<std::string> newPathComponents;
     while (std::getline(ss2, item, AL_FILE_DELIMITER)) {

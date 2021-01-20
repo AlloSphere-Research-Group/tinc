@@ -29,7 +29,7 @@ using namespace tinc;
  * In this case, the python script has been written to work on the data
  * contained in each directory, for this reason, on the parameter space change
  * callback there is the line:
- * processor.setRunningDirectory(ps.currentRunPath()); That sets the path to be
+ * processor.setRunningDirectory(ps.currentRelativeRunPath()); That sets the path to be
  * the current one. This is not necessary for the sweep as the sweep function
  * will do this internally. The function sweepAsync is used instead of sweep()
  * so that the GUI remains responsive even while the sweep is being completed.
@@ -131,9 +131,9 @@ struct MyApp : public App {
     // Whenever the parameter space point changes, this function is called
     ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
-      processor.setRunningDirectory(ps->currentRunPath());
+      processor.setRunningDirectory(ps->currentRelativeRunPath());
       processor.process();
-      Image img(ps->currentRunPath() + processor.getOutputFileNames()[0]);
+      Image img(ps->currentRelativeRunPath() + processor.getOutputFileNames()[0]);
       graphTex.resize(img.width(), img.height());
       graphTex.submit(img.array().data(), GL_RGBA, GL_UNSIGNED_BYTE);
 

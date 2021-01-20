@@ -120,9 +120,10 @@ struct MyApp : public App {
     // Whenever the parameter space point changes, this function is called
     ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
-      processor.setRunningDirectory(ps->currentRunPath());
+      processor.setRunningDirectory(ps->currentRelativeRunPath());
       processor.process();
-      textureFile.set(ps->currentRunPath() + processor.getOutputFileNames()[0]);
+      textureFile.set(ps->currentRelativeRunPath() +
+                      processor.getOutputFileNames()[0]);
 
       return true;
     };

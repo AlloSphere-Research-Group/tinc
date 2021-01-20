@@ -119,7 +119,7 @@ public:
    *
    * Generated according to generateRelativePath()
    */
-  std::string currentRunPath();
+  std::string currentRelativeRunPath();
 
   /**
    * @brief Returns the names of all dimensions

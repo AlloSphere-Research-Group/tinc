@@ -9,7 +9,7 @@
 
 using namespace tinc;
 
-TEST(Parameter, Float) {
+TEST(ProtocolParameter, Float) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -59,7 +59,7 @@ TEST(Parameter, Float) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteFloat) {
+TEST(ProtocolParameter, RemoteFloat) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -109,7 +109,7 @@ TEST(Parameter, RemoteFloat) {
   tserver.stop();
 }
 
-TEST(Parameter, Bool) {
+TEST(ProtocolParameter, Bool) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -157,7 +157,7 @@ TEST(Parameter, Bool) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteBool) {
+TEST(ProtocolParameter, RemoteBool) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -196,7 +196,7 @@ TEST(Parameter, RemoteBool) {
   tserver.stop();
 }
 
-TEST(Parameter, String) {
+TEST(ProtocolParameter, String) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -242,7 +242,7 @@ TEST(Parameter, String) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteString) {
+TEST(ProtocolParameter, RemoteString) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -278,7 +278,7 @@ TEST(Parameter, RemoteString) {
   tserver.stop();
 }
 
-TEST(Parameter, Int) {
+TEST(ProtocolParameter, Int) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -327,7 +327,7 @@ TEST(Parameter, Int) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteInt) {
+TEST(ProtocolParameter, RemoteInt) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -365,7 +365,7 @@ TEST(Parameter, RemoteInt) {
   tserver.stop();
 }
 
-TEST(Parameter, Vec3) {
+TEST(ProtocolParameter, Vec3) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -411,7 +411,7 @@ TEST(Parameter, Vec3) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteVec3) {
+TEST(ProtocolParameter, RemoteVec3) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -447,7 +447,7 @@ TEST(Parameter, RemoteVec3) {
   tserver.stop();
 }
 
-TEST(Parameter, Vec4) {
+TEST(ProtocolParameter, Vec4) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -492,7 +492,7 @@ TEST(Parameter, Vec4) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteVec4) {
+TEST(ProtocolParameter, RemoteVec4) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -528,7 +528,7 @@ TEST(Parameter, RemoteVec4) {
   tserver.stop();
 }
 
-TEST(Parameter, Color) {
+TEST(ProtocolParameter, Color) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -574,7 +574,7 @@ TEST(Parameter, Color) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteColor) {
+TEST(ProtocolParameter, RemoteColor) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -610,7 +610,7 @@ TEST(Parameter, RemoteColor) {
   tserver.stop();
 }
 
-TEST(Parameter, Pose) {
+TEST(ProtocolParameter, Pose) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -662,7 +662,7 @@ TEST(Parameter, Pose) {
   tserver.stop();
 }
 
-TEST(Parameter, RemotePose) {
+TEST(ProtocolParameter, RemotePose) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -704,7 +704,7 @@ TEST(Parameter, RemotePose) {
 
 // FIXME do we share the elements too
 // FIXME set min max based on element size?
-TEST(Parameter, Menu) {
+TEST(ProtocolParameter, Menu) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -750,7 +750,7 @@ TEST(Parameter, Menu) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteMenu) {
+TEST(ProtocolParameter, RemoteMenu) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -786,7 +786,7 @@ TEST(Parameter, RemoteMenu) {
   tserver.stop();
 }
 
-TEST(Parameter, Choice) {
+TEST(ProtocolParameter, Choice) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -836,7 +836,7 @@ TEST(Parameter, Choice) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteChoice) {
+TEST(ProtocolParameter, RemoteChoice) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -874,7 +874,7 @@ TEST(Parameter, RemoteChoice) {
 }
 
 // FIXME why is ParamterBool float but Trigger bool?
-TEST(Parameter, Trigger) {
+TEST(ProtocolParameter, Trigger) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -920,7 +920,7 @@ TEST(Parameter, Trigger) {
   tserver.stop();
 }
 
-TEST(Parameter, RemoteTrigger) {
+TEST(ProtocolParameter, RemoteTrigger) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -943,8 +943,8 @@ TEST(Parameter, RemoteTrigger) {
   bool triggeredInServer = false;
   bool triggeredInClient = false;
 
-  static_cast<al::Trigger *>(param)->registerChangeCallback(
-      [&](bool val) { triggeredInServer = true; });
+  static_cast<al::Trigger *>(param)
+      ->registerChangeCallback([&](bool val) { triggeredInServer = true; });
 
   // change value on the client side
   p.trigger();

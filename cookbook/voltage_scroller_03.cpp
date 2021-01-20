@@ -129,9 +129,9 @@ struct MyApp : public App {
     // Whenever the parameter space point changes, this function is called
     ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
-      processor.setRunningDirectory(ps->currentRunPath());
+      processor.setRunningDirectory(ps->currentRelativeRunPath());
       processor.process();
-      Image img(ps->currentRunPath() + processor.getOutputFileNames()[0]);
+      Image img(ps->currentRelativeRunPath() + processor.getOutputFileNames()[0]);
       graphTex.resize(img.width(), img.height());
       graphTex.submit(img.array().data(), GL_RGBA, GL_UNSIGNED_BYTE);
 
