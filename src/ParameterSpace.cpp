@@ -264,157 +264,12 @@ bool ParameterSpace::runProcess(
   for (auto &arg : args) {
     processor.configuration[arg.first] = arg.second;
   }
-  std::time_t startTime =
-      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-
-  CacheEntry entry;
-
-  if (mCacheManager) {
-    // Create sourceInfo section for cache entr
-
-    entry.sourceInfo.type = al::demangle(typeid(processor).name());
-    entry.sourceInfo.tincId = processor.getId();
-    entry.sourceInfo.hash = "";                 // FIXME
-    entry.sourceInfo.commandLineArguments = ""; // FIXME
-
-    for (auto dim : mDimensions) {
-      SourceArgument arg;
-      arg.id = dim->getName();
-      auto *param = dim->parameterMeta();
-      if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
-      } else if (al::ParameterBool *p =
-                     dynamic_cast<al::ParameterBool *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
-      } else if (al::ParameterString *p =
-                     dynamic_cast<al::ParameterString *>(param)) {
-        arg.value.valueStr = p->get();
-        arg.value.type = VARIANT_STRING;
-      } else if (al::ParameterInt *p =
-                     dynamic_cast<al::ParameterInt *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
-      }
-      // TODO implement support for all types
-      /*else if (al::ParameterVec3 *p =
-                     dynamic_cast<al::ParameterVec3 *>(param)) {
-          mParameterValue = new al::ParameterVec3(*p);
-        } else if (al::ParameterVec4 *p =
-                     dynamic_cast<al::ParameterVec4 *>(param)) {
-          mParameterValue = new al::ParameterVec4(*p);
-        } else if (al::ParameterColor *p =
-                     dynamic_cast<al::ParameterColor *>(param)) {
-          mParameterValue = new al::ParameterColor(*p);
-        } else if (al::ParameterPose *p =
-                     dynamic_cast<al::ParameterPose *>(param)) {
-          mParameterValue = new al::ParameterPose(*p);
-        } */
-      else if (al::ParameterMenu *p =
-                   dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
-      } else if (al::ParameterChoice *p =
-                     dynamic_cast<al::ParameterChoice *>(param)) {
-        assert(p->get() < INT64_MAX);
-        // TODO safeguard against possible overflow.
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
-      } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.value.valueInt64 = p->get() ? 1 : 0;
-        arg.value.type = VARIANT_INT64;
-      } else {
-        std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
-                  << std::endl;
-      }
-      entry.sourceInfo.arguments.push_back(arg);
-    }
-    auto cacheFiles = mCacheManager->findCache(entry.sourceInfo);
-
-    // TODO caching is currently done by copying. There should also be an option
-    // for in-place caching.
-    if (cacheFiles.size() > 0) {
-      auto outputFiles = processor.getOutputFileNames();
-      if (outputFiles.size() != cacheFiles.size()) {
-        recompute = true;
-        std::cout << "Warning processor output files and cache files mismatch"
-                  << std::endl;
-      } else {
-        for (size_t i = 0; i < cacheFiles.size(); i++) {
-          if (!al::File::copy(
-                  mCacheManager->cacheDirectory() + cacheFiles.at(i),
-                  processor.getOutputDirectory() + outputFiles.at(i))) {
-            std::cerr << "ERROR restoring cache from"
-                      << mCacheManager->cacheDirectory() + cacheFiles.at(i)
-                      << " to "
-                      << processor.getOutputDirectory() + outputFiles.at(i)
-                      << std::endl;
-          }
-          std::cout << "Cache restored from: "
-                    << mCacheManager->cacheDirectory() + cacheFiles.at(i)
-                    << std::endl;
-        }
-      }
-    } else {
-      recompute = true;
-    }
-  }
-  bool ret = processor.process(recompute);
-
-  if (mCacheManager) {
-    std::vector<std::string> cacheFilenames;
-
-    for (auto filename : processor.getOutputFileNames()) {
-      std::string parameterPrefix;
-      for (auto dim : mDimensions) {
-        parameterPrefix += "%%" + dim->getName() + "%%_";
-      }
-      parameterPrefix = resolveFilename(parameterPrefix);
-      std::string cacheFilename =
-          mCacheManager->cacheDirectory() + parameterPrefix + filename;
-      if (al::File::exists(cacheFilename)) {
-        // FIXME handle case when file exists.
-      }
-      if (!al::File::copy(processor.getOutputDirectory() + filename,
-                          cacheFilename)) {
-        std::cerr << "ERROR creating cache file " << cacheFilename
-                  << " Cache entry not created. " << std::endl;
-        return ret;
-      }
-      cacheFilenames.push_back(parameterPrefix + filename);
-    }
-
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&startTime), "%FT%T%z");
-    entry.timestampStart = ss.str();
-    // Leave end timestamp for last
-    //    entry.cacheHits = 23;
-    entry.filenames = cacheFilenames;
-    entry.stale = false; // FIXME
-
-    entry.userInfo.userName = "User";    // FIXME
-    entry.userInfo.userHash = "UserHas"; // FIXME
-    entry.userInfo.ip = "localhost";     // FIXME
-    entry.userInfo.port = 12345;         // FIXME
-    entry.userInfo.server = true;        // FIXME
-
-    std::time_t endTime =
-        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-
-    ss.clear();
-    ss.seekp(0);
-    ss << std::put_time(std::localtime(&endTime), "%FT%T%z");
-    entry.timestampEnd = ss.str();
-
-    mCacheManager->appendEntry(entry);
-    mCacheManager->writeToDisk();
-  }
-  return ret;
+  return executeProcess(processor, recompute);
 }
 
 void ParameterSpace::sweep(Processor &processor,
                            std::vector<std::string> dimensionNames_,
+                           std::map<std::string, VariantValue> dependencies,
                            bool recompute) {
   uint64_t sweepCount = 0;
   uint64_t sweepTotal = 1;
@@ -443,28 +298,35 @@ void ParameterSpace::sweep(Processor &processor,
   }
 
   while (mSweepRunning) {
+    std::map<std::string, VariantValue> args;
     {
       std::unique_lock<std::mutex> lk(mDimensionsLock);
       for (auto dim : mDimensions) {
         if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
-          processor.configuration[dim->getName()] = dim->getCurrentValue();
+          args[dim->getName()] = dim->getCurrentValue();
         } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
-          processor.configuration[dim->getName()] = dim->getCurrentId();
+          args[dim->getName()] = dim->getCurrentId();
         } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
           assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-          processor.configuration[dim->getName()] =
-              (int64_t)dim->getCurrentIndex();
+          args[dim->getName()] = (int64_t)dim->getCurrentIndex();
         }
       }
     }
-
-    auto path = currentRelativeRunPath();
+    for (auto &arg : args) {
+      processor.configuration[arg.first] = arg.second;
+    }
+    // Dependencies override values from the parameter space
+    for (auto &dep : dependencies) {
+      processor.configuration[dep.first] = dep.second;
+    }
+    auto path =
+        al::File::conformDirectory(mRootPath) + currentRelativeRunPath();
     if (path.size() > 0) {
       // TODO allow fine grained options of what directory to set
       processor.setRunningDirectory(path);
     }
     sweepCount++;
-    if (!processor.process(recompute) && !processor.ignoreFail) {
+    if (!executeProcess(processor, recompute) && !processor.ignoreFail) {
       std::cerr << "Processor failed in parameter sweep. Aborting" << std::endl;
       break;
     } else {
@@ -490,7 +352,9 @@ void ParameterSpace::sweep(Processor &processor,
   }
   // Put back previous value
   for (auto previousIndex : previousIndeces) {
-    getDimension(previousIndex.first)->setCurrentIndex(previousIndex.second);
+    if (previousIndex.second != SIZE_MAX) {
+      getDimension(previousIndex.first)->setCurrentIndex(previousIndex.second);
+    }
   }
   mSweepRunning = false;
 }
@@ -514,7 +378,7 @@ void ParameterSpace::sweepAsync(Processor &processor,
     mAsyncPSCopy->mCurrentPathTemplate = mCurrentPathTemplate;
   }
   mAsyncProcessingThread = std::make_unique<std::thread>([=, &processor]() {
-    mAsyncPSCopy->sweep(processor, dimensions, recompute);
+    mAsyncPSCopy->sweep(processor, dimensions, {}, recompute);
   });
 }
 
@@ -845,6 +709,9 @@ void ParameterSpace::setRootPath(std::string rootPath) {
                  "enabled. You must call enableCache() to adjust root path "
                  "for cache"
               << std::endl;
+  }
+  if (!al::File::isDirectory(rootPath)) {
+    al::Dir::make(rootPath);
   }
   mRootPath = rootPath;
 }
@@ -1334,4 +1201,158 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
       }
     }
   }
+}
+
+bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
+  std::time_t startTime =
+      std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+  CacheEntry entry;
+
+  // TODO this is overriding args passed
+  if (mCacheManager) {
+    // Create sourceInfo section for cache entr
+
+    entry.sourceInfo.type = al::demangle(typeid(processor).name());
+    entry.sourceInfo.tincId = processor.getId();
+    entry.sourceInfo.hash = "";                 // FIXME
+    entry.sourceInfo.commandLineArguments = ""; // FIXME
+
+    for (auto dim : mDimensions) {
+      SourceArgument arg;
+      arg.id = dim->getName();
+      auto *param = dim->parameterMeta();
+      if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
+        arg.value.valueDouble = p->get();
+        arg.value.type = VARIANT_DOUBLE;
+      } else if (al::ParameterBool *p =
+                     dynamic_cast<al::ParameterBool *>(param)) {
+        arg.value.valueDouble = p->get();
+        arg.value.type = VARIANT_DOUBLE;
+      } else if (al::ParameterString *p =
+                     dynamic_cast<al::ParameterString *>(param)) {
+        arg.value.valueStr = p->get();
+        arg.value.type = VARIANT_STRING;
+      } else if (al::ParameterInt *p =
+                     dynamic_cast<al::ParameterInt *>(param)) {
+        arg.value.valueInt64 = p->get();
+        arg.value.type = VARIANT_INT64;
+      }
+      // TODO implement support for all types
+      /*else if (al::ParameterVec3 *p =
+                     dynamic_cast<al::ParameterVec3 *>(param)) {
+          mParameterValue = new al::ParameterVec3(*p);
+        } else if (al::ParameterVec4 *p =
+                     dynamic_cast<al::ParameterVec4 *>(param)) {
+          mParameterValue = new al::ParameterVec4(*p);
+        } else if (al::ParameterColor *p =
+                     dynamic_cast<al::ParameterColor *>(param)) {
+          mParameterValue = new al::ParameterColor(*p);
+        } else if (al::ParameterPose *p =
+                     dynamic_cast<al::ParameterPose *>(param)) {
+          mParameterValue = new al::ParameterPose(*p);
+        } */
+      else if (al::ParameterMenu *p =
+                   dynamic_cast<al::ParameterMenu *>(param)) {
+        arg.value.valueInt64 = p->get();
+        arg.value.type = VARIANT_INT64;
+      } else if (al::ParameterChoice *p =
+                     dynamic_cast<al::ParameterChoice *>(param)) {
+        assert(p->get() < INT64_MAX);
+        // TODO safeguard against possible overflow.
+        arg.value.valueInt64 = p->get();
+        arg.value.type = VARIANT_INT64;
+      } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
+        arg.value.valueInt64 = p->get() ? 1 : 0;
+        arg.value.type = VARIANT_INT64;
+      } else {
+        std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
+                  << std::endl;
+      }
+      entry.sourceInfo.arguments.push_back(arg);
+    }
+    auto cacheFiles = mCacheManager->findCache(entry.sourceInfo);
+
+    // TODO caching is currently done by copying. There should also be an option
+    // for in-place caching.
+    if (cacheFiles.size() > 0) {
+      auto outputFiles = processor.getOutputFileNames();
+      if (outputFiles.size() != cacheFiles.size()) {
+        recompute = true;
+        std::cout << "Warning processor output files and cache files mismatch"
+                  << std::endl;
+      } else {
+        for (size_t i = 0; i < cacheFiles.size(); i++) {
+          if (!al::File::copy(
+                  mCacheManager->cacheDirectory() + cacheFiles.at(i),
+                  processor.getOutputDirectory() + outputFiles.at(i))) {
+            std::cerr << "ERROR restoring cache from"
+                      << mCacheManager->cacheDirectory() + cacheFiles.at(i)
+                      << " to "
+                      << processor.getOutputDirectory() + outputFiles.at(i)
+                      << std::endl;
+          }
+          std::cout << "Cache restored from: "
+                    << mCacheManager->cacheDirectory() + cacheFiles.at(i)
+                    << std::endl;
+        }
+      }
+    } else {
+      recompute = true;
+    }
+  } else {
+    // Always recompute if not caching
+    recompute = true;
+  }
+  bool ret = processor.process(recompute);
+
+  if (mCacheManager) {
+    std::vector<std::string> cacheFilenames;
+
+    for (auto filename : processor.getOutputFileNames()) {
+      std::string parameterPrefix;
+      for (auto dim : mDimensions) {
+        parameterPrefix += "%%" + dim->getName() + "%%_";
+      }
+      parameterPrefix = resolveFilename(parameterPrefix);
+      std::string cacheFilename =
+          mCacheManager->cacheDirectory() + parameterPrefix + filename;
+      if (al::File::exists(cacheFilename)) {
+        // FIXME handle case when file exists.
+      }
+      if (!al::File::copy(processor.getOutputDirectory() + filename,
+                          cacheFilename)) {
+        std::cerr << "ERROR creating cache file " << cacheFilename
+                  << " Cache entry not created. " << std::endl;
+        return ret;
+      }
+      cacheFilenames.push_back(parameterPrefix + filename);
+    }
+
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&startTime), "%FT%T%z");
+    entry.timestampStart = ss.str();
+    // Leave end timestamp for last
+    //    entry.cacheHits = 23;
+    entry.filenames = cacheFilenames;
+    entry.stale = false; // FIXME
+
+    entry.userInfo.userName = "User";    // FIXME
+    entry.userInfo.userHash = "UserHas"; // FIXME
+    entry.userInfo.ip = "localhost";     // FIXME
+    entry.userInfo.port = 12345;         // FIXME
+    entry.userInfo.server = true;        // FIXME
+
+    std::time_t endTime =
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+    ss.clear();
+    ss.seekp(0);
+    ss << std::put_time(std::localtime(&endTime), "%FT%T%z");
+    entry.timestampEnd = ss.str();
+
+    mCacheManager->appendEntry(entry);
+    mCacheManager->writeToDisk();
+  }
+  return ret;
 }

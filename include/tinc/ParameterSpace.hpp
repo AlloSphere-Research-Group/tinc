@@ -170,6 +170,7 @@ public:
    * @param recompute force recompute if true
    */
   void sweep(Processor &processor, std::vector<std::string> dimensionNames = {},
+             std::map<std::string, VariantValue> dependencies = {},
              bool recompute = false);
 
   /**
@@ -363,6 +364,8 @@ protected:
  * parameter_space.nc and processes the parameter space changes
  */
   void updateParameterSpace(ParameterSpaceDimension *ps);
+
+  bool executeProcess(Processor &processor, bool recompute);
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
 

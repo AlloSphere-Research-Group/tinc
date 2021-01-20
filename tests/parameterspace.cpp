@@ -2,6 +2,7 @@
 
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 #include "al/system/al_Time.hpp"
 
@@ -223,4 +224,88 @@ TEST(ParameterSpace, ReadWriteNetCDF) {
 
   //  auto intValues = ps.getDimension("dim4")->getSpaceValues<int32_t>();
   //  EXPECT_EQ(values, std::vector<float>({10, 20, 30, 40, 50, 60, 70, 80}));
+}
+
+TEST(ParameterSpace, DataDirectories) {
+  ParameterSpace ps;
+  auto dim1 = ps.newDimension("dim1");
+  auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
+  auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
+
+  float dim1Values[5] = {0.1, 0.2, 0.3, 0.4};
+  dim1->setSpaceValues(dim1Values, 4);
+
+  float dim2Values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
+  dim2->setSpaceValues(dim2Values, 5, "xx");
+
+  float dim3Values[6];
+  std::vector<std::string> ids;
+  for (int i = 0; i < 6; i++) {
+    dim3Values[i] = i * 0.01;
+    ids.push_back("id" + std::to_string(i));
+  }
+  dim3->setSpaceValues(dim3Values, 6);
+  dim3->setSpaceIds(ids);
+
+  ps.setCurrentPathTemplate("file_%%dim1%%_%%dim2%%");
+
+  ps.cleanDataDirectories();
+  for (auto path : ps.runningPaths()) {
+    al::Dir::removeRecursively(path); // delete in case it's not a fresh run
+    EXPECT_FALSE(al::File::isDirectory(path));
+  }
+  ps.createDataDirectories();
+  for (auto path : ps.runningPaths()) {
+    EXPECT_TRUE(al::File::isDirectory(path));
+  }
+
+  ps.cleanDataDirectories();
+  for (auto path : ps.runningPaths()) {
+    al::Dir::removeRecursively(path);
+    EXPECT_FALSE(al::File::isDirectory(path));
+  }
+}
+
+TEST(ParameterSpace, Sweep) {
+  ParameterSpace ps;
+  auto dim1 = ps.newDimension("dim1");
+  auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
+  auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
+
+  float dim1Values[5] = {0.1, 0.2, 0.3, 0.4};
+  dim1->setSpaceValues(dim1Values, 4);
+
+  float dim2Values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
+  dim2->setSpaceValues(dim2Values, 5, "xx");
+
+  float dim3Values[6];
+  std::vector<std::string> ids;
+  for (int i = 0; i < 6; i++) {
+    dim3Values[i] = i * 0.01;
+    ids.push_back("id" + std::to_string(i));
+  }
+  dim3->setSpaceValues(dim3Values, 6);
+  dim3->setSpaceIds(ids);
+
+  ps.setCurrentPathTemplate("file_%%dim1%%_%%dim2%%");
+
+  ProcessorCpp proc("proc");
+
+  proc.processingFunction = [&]() {
+    al::File f("out_" + proc.configuration["dim3"].valueStr + ".txt", "w",
+               true);
+    std::string text = std::to_string(proc.configuration["dim1"].valueDouble) +
+                       "_" +
+                       std::to_string(proc.configuration["dim2"].valueDouble) +
+                       "_" + proc.configuration["dim3"].valueStr;
+    f.write(text);
+    return true;
+  };
+  ps.setRootPath("ps_test");
+  ps.createDataDirectories();
+  ps.sweep(proc);
+
+  for (auto path : ps.runningPaths()) {
+    //    EXPECT_FALSE(al::File::isDirectory(path));
+  }
 }
