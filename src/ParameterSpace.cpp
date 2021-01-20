@@ -231,23 +231,38 @@ bool ParameterSpace::incrementIndeces(
   return true;
 }
 
-bool ParameterSpace::runProcess(Processor &processor, bool recompute) {
+bool ParameterSpace::runProcess(
+    Processor &processor, std::map<std::string, VariantValue> args,
+    std::map<std::string, VariantValue> dependencies, bool recompute) {
 
-  auto path = currentRunPath();
+  auto path = currentRelativeRunPath();
   if (path.size() > 0) {
     // TODO allow fine grained options of what directory to set
     processor.setRunningDirectory(path);
   }
+  // First set the current values in the parameter space
   std::unique_lock<std::mutex> lk(mDimensionsLock);
   for (auto dim : mDimensions) {
-    if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
-      processor.configuration[dim->getName()] = dim->getCurrentValue();
-    } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
-      processor.configuration[dim->getName()] = dim->getCurrentId();
-    } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
-      assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-      processor.configuration[dim->getName()] = (int64_t)dim->getCurrentIndex();
+    if (args.find(dim->getName()) == args.end()) {
+      if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
+        processor.configuration[dim->getName()] = dim->getCurrentValue();
+      } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
+        processor.configuration[dim->getName()] = dim->getCurrentId();
+      } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
+        assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
+        processor.configuration[dim->getName()] =
+            (int64_t)dim->getCurrentIndex();
+      }
     }
+  }
+  // Then set dependencies. Dependencies and arguments override values in the
+  // parameter space. Although that is not meant to be their use.
+  for (auto &dep : dependencies) {
+    processor.configuration[dep.first] = dep.second;
+  }
+  // Then set the provided arguments
+  for (auto &arg : args) {
+    processor.configuration[arg.first] = arg.second;
   }
   std::time_t startTime =
       std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());

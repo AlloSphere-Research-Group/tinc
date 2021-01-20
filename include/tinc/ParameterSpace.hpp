@@ -147,12 +147,21 @@ public:
   bool incrementIndeces(std::map<std::string, size_t> &currentIndeces);
 
   /**
-   * @brief run the process providing the current values.
+   * @brief run a Processor with information and caching from the parameter
+   * space
    * @param processor processor to run
+   * @param args additional or override arguments to pass to the processor
+   * @param dependencies processor to run
    * @param recompute force recompute if true
    * @return return value from the processor
+   *
+   * The args map can provide additional configuration arguments to the
+   * processor or can replace the current value of a parameter with that name
    */
-  bool runProcess(Processor &processor, bool recompute = false);
+  bool runProcess(Processor &processor,
+                  std::map<std::string, VariantValue> args = {},
+                  std::map<std::string, VariantValue> dependencies = {},
+                  bool recompute = false);
 
   /**
    * @brief sweep the parameter space across all or specified dimensions
@@ -257,6 +266,7 @@ public:
    *
    * See resolveFilename() for information on how the template is resolved.
    */
+  // FIXME implement sending path template across network
   void setCurrentPathTemplate(std::string pathTemplate) {
     mCurrentPathTemplate = pathTemplate;
   }
