@@ -71,15 +71,13 @@ protected:
   bool parseFile(std::ifstream &file,
                  std::shared_ptr<nlohmann::json> newData) override {
 
-    //    try {
-    *newData = nlohmann::json::parse(file);
-
-    return true;
-    //    } catch () {
-    //      std::cerr << "ERROR: parsing file. Increase cache on writing side."
-    //                << std::endl;
-    //      return false;
-    //    }
+    try {
+      *newData = nlohmann::json::parse(file);
+      return true;
+    } catch (std::exception &e) {
+      std::cerr << "ERROR: parsing json file" << std::endl;
+      return false;
+    }
   }
 };
 
