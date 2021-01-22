@@ -133,13 +133,23 @@ public:
   void requestDataPools(al::Socket *dst);
 
   /**
+   * @brief get a registered dimension in this Tinc node
+   * @param name name (id) of the dimension
+   * @param group
+   * @return a pointer to the dimension or nullptr if not found
+   *
+   * If group is empty, the first matching name in any group is returned
+   */
+  ParameterSpaceDimension *getDimension(std::string name,
+                                        std::string group = "");
+
+  /**
    * @brief get a parameter from a registered dimension in this Tinc node
    * @param name name (id) of the parameter
    * @param group
    * @return a pointer to the parameter or nullptr if not found
    *
-   * If group is not provided, the osc address for the parameter will be matched
-   * to name.
+   * If group is empty, the first matching name in any group is returned
    */
   al::ParameterMeta *getParameter(std::string name, std::string group = "");
 

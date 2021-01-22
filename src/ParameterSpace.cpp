@@ -24,15 +24,17 @@ using namespace tinc;
 ParameterSpace::~ParameterSpace() { stopSweep(); }
 
 std::shared_ptr<ParameterSpaceDimension>
-ParameterSpace::getDimension(std::string name) {
+ParameterSpace::getDimension(std::string name, std::string group) {
 
   std::unique_lock<std::mutex> lk(mDimensionsLock);
   if (parameterNameMap.find(name) != parameterNameMap.end()) {
     name = parameterNameMap[name];
   }
   for (auto ps : getDimensions()) {
-    if (ps->parameterMeta()->getName() == name) {
-      return ps;
+    if (group.size() == 0 || group == ps->parameterMeta()->getGroup()) {
+      if (ps->parameterMeta()->getName() == name) {
+        return ps;
+      }
     }
   }
   return nullptr;

@@ -67,9 +67,11 @@ public:
   /**
    * @brief Get a registered ParameterSpaceDimension by name
    * @param name
+   * @param group
    * @return the dimension or nullptr if not found
    */
-  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);
+  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name,
+                                                        std::string group = "");
 
   /**
    * @brief create and register a new dimension for this parameter space

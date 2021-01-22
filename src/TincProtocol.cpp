@@ -1148,12 +1148,30 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
+ParameterSpaceDimension *TincProtocol::getDimension(std::string name,
+                                                    std::string group) {
+  for (auto dim : mParameterSpaceDimensions) {
+    if (dim->getName() == name && dim->getGroup() == group) {
+      return dim;
+    } else if (group == "" && dim->getFullAddress() == name) {
+      return dim;
+    }
+  }
+  for (auto *ps : mParameterSpaces) {
+    auto dim = ps->getDimension(name, group);
+    if (dim) {
+      return dim.get();
+    }
+  }
+  return nullptr;
+}
+
 al::ParameterMeta *TincProtocol::getParameter(std::string name,
                                               std::string group) {
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == name && dim->getGroup() == group) {
       return dim->parameterMeta();
-    } else if (group == "" && dim->getFullAddress() == name) {
+    } else if (group == "" && dim->getName() == name) {
       return dim->parameterMeta();
     }
   }
