@@ -82,6 +82,74 @@ tclient.stop()
 
   tserver.stop();
 }
+TEST(PythonClient, DimensionFloatSpace) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpaceDimension p{"param", "group"};
+  float values[] = {1.2, 1.3, 1.4, 1.5};
+  p.setSpaceValues(values, 4);
+  p.setSpaceIds({"A", "B", "C", "D"});
+
+  tserver << p;
+
+  std::string pythonCode = R"(
+import time
+
+tclient.request_parameters()
+while not tclient.get_parameter("param", "group"):
+    time.sleep(0.01)
+
+time.sleep(0.2)
+p =  tclient.get_parameter("param", "group")
+test_output = [parameter_to_dict(p) for p in tclient.parameters]
+
+q = tclient.create_parameter(Parameter, "remoteParam", "remoteGroup")
+q.values = [0.2, 0.3, 0.4, 0.5]
+q.ids = ["a", "b","c", "d"]
+
+time.sleep(0.1)
+tclient.stop()
+)";
+
+  PythonTester ptest;
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
+  ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
+  ptest.runPython(pythonCode);
+
+  auto output = ptest.readResults();
+
+  EXPECT_NE(output, 1);
+
+  auto p1 = output[0];
+  std::vector<float> expected = {1.2, 1.3, 1.4, 1.5};
+  EXPECT_EQ(p1["_values"], expected);
+  std::vector<std::string> expectedIds = {"A", "B", "C", "D"};
+  EXPECT_EQ(p1["_ids"], expectedIds);
+
+  int counter = 0;
+  while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  al::al_sleep(0.2); // GIve time for space values to arrive.
+
+  auto *dim = tserver.getDimension("remoteParam", "remoteGroup");
+  EXPECT_NE(dim, nullptr);
+
+  auto remoteValues = dim->getSpaceValues<float>();
+  EXPECT_EQ(remoteValues, (std::vector<float>{0.2, 0.3, 0.4, 0.5}));
+
+  auto remoteIds = dim->getSpaceIds();
+  auto expectedRemoteIds = std::vector<std::string>{"a", "b", "c", "d"};
+  EXPECT_EQ(remoteIds, expectedRemoteIds);
+
+  tserver.stop();
+}
 
 // TEST(PythonClient, ParameterBool) {
 //  TincServer tserver;

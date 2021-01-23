@@ -11,6 +11,8 @@
 using namespace tinc;
 
 TEST(PythonClient, Connection) {
+  std::cout << "Tests compiled to use python: " << PYTHON_EXECUTABLE
+            << std::endl;
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 

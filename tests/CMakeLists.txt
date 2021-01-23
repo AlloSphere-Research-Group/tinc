@@ -15,7 +15,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 if(BUILD_PYTHON_TESTS)
-  set(PYTHON_EXECUTABLE "python3" CACHE FILEPATH "Path to the python executable" FORCE)
+  set(PYTHON_EXECUTABLE "python3" CACHE FILEPATH "Path to the python executable")
 endif(BUILD_PYTHON_TESTS)
 
 add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)

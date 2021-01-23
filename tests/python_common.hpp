@@ -29,6 +29,8 @@ import sys
 
 def parameter_to_dict(p):
     d = p.__dict__.copy()
+    d["_values"] = list(d["_values"])
+    d["_ids"] = list(d["_ids"])
     try:
         del d["_interactive_widget"]
         del d["_data_type"]
@@ -58,7 +60,11 @@ test_output = {}
 import json
 
 with open('python_test_out.json', 'w') as outfile:
-    json.dump(test_output, outfile)
+    try:
+        json.dump(test_output, outfile)
+    except TypeError as e:
+        print(test_output)
+        raise e
 
 tclient.stop()
 )";

@@ -87,12 +87,13 @@ ps = tclient.get_parameter_space("param_space")
 while not tclient.parameter_spaces[0].get_parameter('ps_dim_reply'):
     time.sleep(0.1)
 
-# Notify I'm ready:
-ps.get_parameter('ps_dim_reply').value = 10.0
-
 # Connect ps_dim to ps_dim_reply
 ps.get_parameter("ps_dim").register_callback(lambda value:
 ps.get_parameter('ps_dim_reply').set_value(value * 2))
+
+# Notify I'm ready:
+ps.get_parameter('ps_dim_reply').value = 10.0
+
 
 while tclient.get_parameter("ps_dim").value != 100:
     time.sleep(0.05)
