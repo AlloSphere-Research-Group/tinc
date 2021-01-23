@@ -1218,6 +1218,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
     entry.sourceInfo.type = al::demangle(typeid(processor).name());
     entry.sourceInfo.tincId = processor.getId();
     entry.sourceInfo.hash = "";                 // FIXME
+    entry.sourceInfo.fileDependencies = {};     // FIXME
     entry.sourceInfo.commandLineArguments = ""; // FIXME
 
     for (auto dim : mDimensions) {
@@ -1330,6 +1331,13 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       }
       cacheFilenames.push_back(parameterPrefix + filename);
     }
+
+    for (auto filename : processor.getInputFileNames()) {
+      DistributedPath dep(filename); // TODO enrich meta data
+      entry.sourceInfo.fileDependencies.push_back(dep);
+    }
+
+    entry.sourceInfo.workingPath = DistributedPath(); // FIXME
 
     std::stringstream ss;
     ss << std::put_time(std::localtime(&startTime), "%FT%T%z");

@@ -167,6 +167,11 @@ void CacheManager::updateFromDisk() {
       e.sourceInfo.tincId = entry["sourceInfo"]["tincId"];
       e.sourceInfo.commandLineArguments =
           entry["sourceInfo"]["commandLineArguments"];
+
+      e.sourceInfo.workingPath.relativePath =
+          entry["sourceInfo"]["workingPath"]["relativePath"];
+      e.sourceInfo.workingPath.rootPath =
+          entry["sourceInfo"]["workingPath"]["rootPath"];
       e.sourceInfo.hash = entry["sourceInfo"]["hash"];
 
       for (auto arg : entry["sourceInfo"]["arguments"]) {
@@ -192,6 +197,11 @@ void CacheManager::updateFromDisk() {
           newArg.value = arg["value"].get<std::string>();
         }
         e.sourceInfo.dependencies.push_back(newArg);
+      }
+      for (auto arg : entry["sourceInfo"]["fileDependencies"]) {
+        DistributedPath newArg(arg["filename"], arg["relativePath"],
+                               arg["rootPath"]);
+        e.sourceInfo.fileDependencies.push_back(newArg);
       }
       mEntries.push_back(e);
     }
@@ -232,9 +242,16 @@ void CacheManager::writeToDisk() {
       entry["sourceInfo"]["tincId"] = e.sourceInfo.tincId;
       entry["sourceInfo"]["commandLineArguments"] =
           e.sourceInfo.commandLineArguments;
+
+      // TODO validate working path
+      entry["sourceInfo"]["workingPath"]["relativePath"] =
+          e.sourceInfo.workingPath.relativePath;
+      entry["sourceInfo"]["workingPath"]["rootPath"] =
+          e.sourceInfo.workingPath.rootPath;
       entry["sourceInfo"]["hash"] = e.sourceInfo.hash;
       entry["sourceInfo"]["arguments"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["dependencies"] = std::vector<nlohmann::json>();
+      entry["sourceInfo"]["fileDependencies"] = std::vector<nlohmann::json>();
       for (auto arg : e.sourceInfo.arguments) {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
@@ -266,6 +283,13 @@ void CacheManager::writeToDisk() {
           newArg["value"] = nlohmann::json();
         }
         entry["sourceInfo"]["dependencies"].push_back(newArg);
+      }
+      for (auto arg : e.sourceInfo.fileDependencies) {
+        nlohmann::json newArg;
+        newArg["fileName"] = arg.filename;
+        newArg["relativePath"] = arg.relativePath;
+        newArg["rootPath"] = arg.rootPath;
+        entry["sourceInfo"]["fileDependencies"].push_back(newArg);
       }
 
       j["entries"].push_back(entry);

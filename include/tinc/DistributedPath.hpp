@@ -39,7 +39,7 @@ namespace tinc {
 
 class DistributedPath {
 public:
-  DistributedPath(std::string filename,
+  DistributedPath(std::string filename = std::string(),
                   std::string relativePath = std::string(),
                   std::string rootPath = std::string());
 

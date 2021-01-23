@@ -32,9 +32,11 @@ struct SourceInfo {
   std::string
       tincId; // TODO add heuristics to match source even if id has changed.
   std::string commandLineArguments;
+  DistributedPath workingPath{""};
   std::string hash;
   std::vector<SourceArgument> arguments;
   std::vector<SourceArgument> dependencies;
+  std::vector<DistributedPath> fileDependencies;
 };
 
 struct CacheEntry {

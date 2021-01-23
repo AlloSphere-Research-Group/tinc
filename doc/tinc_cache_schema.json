@@ -75,6 +75,18 @@
               "commandLineArguments": {
                 "type": "string"
               },
+              "workingPath": {
+                "type": "object",
+                "properties": {
+                  "relativePath": {
+                    "type": "string"
+                  },
+                  "rootPath": {
+                    "type": "string"
+                  }
+                },
+                "_comment_type": "path for execution"
+              },
               "hash": {
                 "type": "string",
                 "_comment_hash": "/* needs richer details for cpp, python and script */"
@@ -101,6 +113,31 @@
                       "type": "string"
                     },
                     "value": {}
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "fileDependencies": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "file": {
+                      "type": "object",
+                      "properties": {
+                        "relativePath": {
+                          "type": "string"
+                        },
+                        "rootPath": {
+                          "type": "string"
+                        },
+                        "filename": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "modified": {},
+                    "size": {}
                   },
                   "additionalProperties": false
                 }
