@@ -199,11 +199,19 @@ public:
   /**
    * @brief Prepare data directoires, leaving them empty if they had any
    * contents
-   * @return
+   * @return true if all directories could be cleaned and recreated.
    *
    * Use this function with extreme care, as it can be very destructive!!
    */
   bool cleanDataDirectories();
+
+  /**
+   * @brief Remove all directories related to this parameter space
+   * @return true if all directories could be cleaned and recreated.
+   *
+   * Use this function with extreme care, as it can be very destructive!!
+   */
+  bool removeDataDirectories();
 
   /**
    * @brief Load parameter space dimensions from disk file

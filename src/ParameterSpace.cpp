@@ -396,14 +396,20 @@ bool ParameterSpace::createDataDirectories() {
 }
 
 bool ParameterSpace::cleanDataDirectories() {
+  return removeDataDirectories() && createDataDirectories();
+}
+
+bool ParameterSpace::removeDataDirectories() {
   for (auto path : runningPaths()) {
-    if (al::File::isDirectory(path)) {
-      if (!al::Dir::removeRecursively(path)) {
+    auto fullpath = getRootPath() + path;
+    if (al::File::isDirectory(fullpath)) {
+      if (!al::Dir::removeRecursively(fullpath)) {
         return false;
       }
     }
   }
-  return createDataDirectories();
+  return true;
+  ;
 }
 
 void ParameterSpace::stopSweep() {
@@ -705,7 +711,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 std::string ParameterSpace::getRootPath() { return mRootPath; }
 
 void ParameterSpace::setRootPath(std::string rootPath) {
-  if (mCacheManager && rootPath != mRootPath) {
+  if (mCacheManager && rootPath != mRootPath &&
+      al::File::conformDirectory(rootPath) != mRootPath) {
     std::cout << __FILE__
               << "WARNING: Root path changed for parameter space. But cache "
                  "enabled. You must call enableCache() to adjust root path "
@@ -715,7 +722,7 @@ void ParameterSpace::setRootPath(std::string rootPath) {
   if (!al::File::isDirectory(rootPath)) {
     al::Dir::make(rootPath);
   }
-  mRootPath = rootPath;
+  mRootPath = al::File::conformDirectory(rootPath);
 }
 
 std::string
