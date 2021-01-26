@@ -20,12 +20,28 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
         dim->setCurrentIndex(v);
       }
       ImGui::SameLine();
+      if (ImGui::Button("-")) {
+        dim->stepDecrease();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("+")) {
+        dim->stepIncrement();
+      }
+      ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
     } else if (dim->getSpaceRepresentationType() ==
                ParameterSpaceDimension::INDEX) {
       int v = dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
         dim->setCurrentIndex(v);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("-")) {
+        dim->stepDecrease();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("+")) {
+        dim->stepIncrement();
       }
       ImGui::SameLine();
       ImGui::Text("%s", dim->getCurrentId().c_str());
@@ -60,6 +76,14 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
                                    dim->parameter<al::ParameterInt>().max());
         value = intValue;
       }
+      ImGui::SameLine();
+      if (ImGui::Button("-")) {
+        dim->stepDecrease();
+      }
+      ImGui::SameLine();
+      if (ImGui::Button("+")) {
+        dim->stepIncrement();
+      }
       // FIXME don't force change to float, use original type.
       size_t newIndex = dim->getIndexForValue(value);
       if (changed) {
@@ -67,14 +91,6 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
           dim->setCurrentIndex(newIndex);
         }
       }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("-")) {
-      dim->stepDecrease();
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("+")) {
-      dim->stepIncrement();
     }
   } else {
     // do nothing
