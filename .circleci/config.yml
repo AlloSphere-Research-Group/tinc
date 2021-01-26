@@ -42,8 +42,11 @@ jobs:
             cd build
             cmake --build . -j7
       - run:
-          name: Run tests
+          name: Run Cpp tests
           command: ./bin/tinc_tests
+      - run:
+          name: Run Python tests
+          command: python3 tinc-python/tinc-python/tests/unit_tests.py
       - run:
           name: Code coverage report
           command: |
