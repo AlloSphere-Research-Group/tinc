@@ -156,8 +156,10 @@ public:
    */
   void setSpaceRepresentationType(RepresentationType type,
                                   al::Socket *src = nullptr) {
-    mRepresentationType = type;
-    onDimensionMetadataChange(this, src);
+    if (mRepresentationType != type) {
+      mRepresentationType = type;
+      onDimensionMetadataChange(this, src);
+    }
   }
 
   /**
