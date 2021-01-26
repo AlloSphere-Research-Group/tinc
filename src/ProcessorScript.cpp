@@ -87,6 +87,7 @@ bool ProcessorScript::process(bool forceRecompute) {
     ok = runCommand(command);
     if (ok) {
       writeMeta();
+      readJsonConfig(jsonFilename);
     }
   } else {
     if (mVerbose) {
@@ -114,9 +115,10 @@ std::string ProcessorScript::writeJsonConfig() {
 
   j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
   j["__output_dir"] = getOutputDirectory();
-  j["__output_name"] = outputFile(false);
+  j["__output_names"] = getOutputFileNames();
   j["__input_dir"] = getInputDirectory();
-  j["__input_name"] = inputFile(false);
+  j["__input_names"] = getInputFileNames();
+  j["__verbose"] = mVerbose;
 
   parametersToConfig(j);
 
@@ -155,6 +157,45 @@ std::string ProcessorScript::writeJsonConfig() {
     }
   }
   return jsonFilename;
+}
+
+bool ProcessorScript::readJsonConfig(std::string filename) {
+  using json = nlohmann::json;
+  json j;
+  {
+    PushDirectory p(mRunningDirectory, mVerbose);
+    std::ifstream f(filename);
+    if (!f.good()) {
+      std::cerr << __FILE__
+                << "Error: can't open json config file: " << filename
+                << std::endl;
+      return false;
+    }
+
+    f >> j;
+  }
+  try {
+    if (j["__tinc_metadata_version"].get<int>() ==
+        DATASCRIPT_META_FORMAT_VERSION) {
+      setOutputDirectory(j["__output_dir"].get<std::string>());
+      setOutputFileNames(j["__output_names"].get<std::vector<std::string>>());
+      setInputDirectory(j["__input_dir"].get<std::string>());
+      setInputFileNames(j["__input_names"].get<std::vector<std::string>>());
+      // We can ignore ["__verbose"] on read
+    } else {
+      std::cerr << "ERROR: Unexpected __tinc_metadata_version in json config"
+                << std::endl;
+    }
+  } catch (std::exception &e) {
+    std::cerr << "ERROR parsing json config file. Changes in python not "
+                 "completely applied."
+              << std::endl;
+    return false;
+  }
+  if (mVerbose) {
+    std::cout << "Read json config: " << filename << std::endl;
+  }
+  return true;
 }
 
 void ProcessorScript::parametersToConfig(nlohmann::json &j) {
@@ -246,10 +287,10 @@ bool ProcessorScript::writeMeta() {
   j["__running_directory"] = getRunningDirectory();
   // TODO add support for multiple input and output files.
   j["__output_dir"] = getOutputDirectory();
-  j["__output_name"] = outputFile(false);
+  j["__output_names"] = getOutputFileNames();
   j["__input_dir"] = getInputDirectory();
   j["__input_modified"] = modified(inputFile().c_str());
-  j["__input_name"] = inputFile(false);
+  j["__input_names"] = getInputFileNames();
 
   // TODO add date and other important information.
 

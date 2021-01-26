@@ -149,6 +149,10 @@ public:
 protected:
   std::string writeJsonConfig();
 
+  // Read configuration from disk. The python script can write configuration to
+  // override the configuration provided
+  bool readJsonConfig(std::string filename);
+
   void parametersToConfig(nlohmann::json &j);
 
 private:
