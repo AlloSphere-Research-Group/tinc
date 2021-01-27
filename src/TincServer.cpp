@@ -15,7 +15,10 @@
 
 using namespace tinc;
 
-TincServer::TincServer() {}
+TincServer::TincServer() {
+  mVersion = TINC_PROTOCOL_VERSION;
+  mRevision = TINC_PROTOCOL_REVISION;
+}
 
 bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
 

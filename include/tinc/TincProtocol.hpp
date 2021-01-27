@@ -43,6 +43,9 @@
 
 namespace tinc {
 
+static const uint16_t TINC_PROTOCOL_VERSION = 1;
+static const uint16_t TINC_PROTOCOL_REVISION = 0;
+
 class TincProtocol {
 public:
   // Data pool commands

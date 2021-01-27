@@ -8,9 +8,11 @@ using namespace tinc;
 
 TEST(TincProtocol, Connection) {
   TincServer tserver;
+  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   TincClient tclient;
+  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
 
   al::al_sleep(0.1);

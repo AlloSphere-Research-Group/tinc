@@ -15,7 +15,10 @@
 
 using namespace tinc;
 
-TincClient::TincClient() {}
+TincClient::TincClient() {
+  mVersion = TINC_PROTOCOL_VERSION;
+  mRevision = TINC_PROTOCOL_REVISION;
+}
 
 void TincClient::stop() {
   TincMessage tincMessage;
@@ -236,9 +239,8 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
     } else if (mBarrierRequests.size() == 0) {
       noCurrentBarriers = true;
     } else {
-      std::cerr << __FUNCTION__
-                << " ERROR unexpected inconsistent state in "
-                   "barrier. Aborting barriers"
+      std::cerr << __FUNCTION__ << " ERROR unexpected inconsistent state in "
+                                   "barrier. Aborting barriers"
                 << std::endl;
       mBarrierRequests.clear();
       mBarrierUnlocks.clear();
