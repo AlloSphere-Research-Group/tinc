@@ -126,13 +126,13 @@ struct MyApp : public App {
     defineParameterSpace();
     initializeComputation();
 
-    parameterServer() << ps.getDimension("dim1")->parameterMeta()
-                      << ps.getDimension("dim2")->parameterMeta()
-                      << ps.getDimension("inner_param")->parameterMeta();
+    parameterServer() << ps.getDimension("dim1")->getParameterMeta()
+                      << ps.getDimension("dim2")->getParameterMeta()
+                      << ps.getDimension("inner_param")->getParameterMeta();
 
-    gui << ps.getDimension("dim1")->parameterMeta()
-        << ps.getDimension("dim2")->parameterMeta()
-        << ps.getDimension("inner_param")->parameterMeta();
+    gui << ps.getDimension("dim1")->getParameterMeta()
+        << ps.getDimension("dim2")->getParameterMeta()
+        << ps.getDimension("inner_param")->getParameterMeta();
     gui.init();
 
     // Now sweep the parameter space asynchronously

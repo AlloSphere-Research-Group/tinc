@@ -27,14 +27,14 @@ public:
         ps.newDimension("inner_param", tinc::ParameterSpaceDimension::VALUE);
 
     // Set possible values for dimensions
-    dimension1->setSpaceValues({0.1, 0.2, 0.3, 0.4, 0.5});
+    dimension1->setSpaceValues<float>({0.1, 0.2, 0.3, 0.4, 0.5});
     dimension1->setSpaceIds({"A", "B", "C", "D", "E"});
     dimension1->conformSpace();
 
-    dimension2->setSpaceValues({10.1, 10.2, 10.3, 10.4, 10.5});
+    dimension2->setSpaceValues<float>({10.1, 10.2, 10.3, 10.4, 10.5});
     dimension2->conformSpace();
 
-    inner_param->setSpaceValues({1, 2, 3, 4, 5});
+    inner_param->setSpaceValues<float>({1, 2, 3, 4, 5});
     inner_param->conformSpace();
 
     // Enable caching

@@ -99,7 +99,7 @@ void Processor::setRunningDirectory(std::string directory) {
 }
 
 Processor &Processor::registerDimension(ParameterSpaceDimension &dim) {
-  auto *param = dim.parameterMeta();
+  auto *param = dim.getParameterMeta();
   if (auto *p = dynamic_cast<al::Parameter *>(param)) {
     return registerParameter(*p);
   } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {

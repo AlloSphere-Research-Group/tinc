@@ -136,9 +136,9 @@ struct MyApp : public App {
     defineParameterSpace();
     initializeComputation();
 
-    gui << ps.getDimension("dim1")->parameterMeta();
-    gui << ps.getDimension("dim2")->parameterMeta();
-    gui << ps.getDimension("inner_param")->parameterMeta();
+    gui << ps.getDimension("dim1")->getParameterMeta();
+    gui << ps.getDimension("dim2")->getParameterMeta();
+    gui << ps.getDimension("inner_param")->getParameterMeta();
     gui.init();
 
     // Now sweep the parameter space asynchronously

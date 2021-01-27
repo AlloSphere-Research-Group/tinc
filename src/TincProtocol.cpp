@@ -507,7 +507,7 @@ std::vector<TincMessage>
 createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
 
   std::vector<TincMessage> confMessages =
-      createConfigureParameterMessage(dim->parameterMeta());
+      createConfigureParameterMessage(dim->getParameterMeta());
 
   if (dim->size() > 0) {
     TincMessage msg;
@@ -872,7 +872,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
       return false;
     }
   }
-  al::ParameterMeta *param = dim->parameterMeta();
+  al::ParameterMeta *param = dim->getParameterMeta();
   return processConfigureParameterValueMessage(conf, param, src);
 }
 
@@ -889,7 +889,7 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
                   << " (Group: " << pmeta.getGroup() << ") already registered."
                   << std::endl;
       }
-      if (&pmeta != dim->parameterMeta()) {
+      if (&pmeta != dim->getParameterMeta()) {
         // FIXME this will create a new parameter with same id/group
         std::cerr
             << __FUNCTION__
@@ -922,7 +922,7 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
   }
   if (!registered) {
     mParameterSpaceDimensions.push_back(&psd);
-    connectParameterCallbacks(*psd.parameterMeta());
+    connectParameterCallbacks(*psd.getParameterMeta());
     connectDimensionCallbacks(psd);
 
     // Broadcast registered ParameterSpaceDimension
@@ -1170,9 +1170,9 @@ al::ParameterMeta *TincProtocol::getParameter(std::string name,
                                               std::string group) {
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == name && dim->getGroup() == group) {
-      return dim->parameterMeta();
+      return dim->getParameterMeta();
     } else if (group == "" && dim->getName() == name) {
-      return dim->parameterMeta();
+      return dim->getParameterMeta();
     }
   }
   return nullptr;
@@ -1252,7 +1252,7 @@ void TincProtocol::connectDimensionCallbacks(ParameterSpaceDimension &psd) {
     registerParameterSpaceDimension(*changedDimension, src);
 
     TincMessage msg =
-        createRegisterParameterMessage(changedDimension->parameterMeta());
+        createRegisterParameterMessage(changedDimension->getParameterMeta());
     if (src) {
       sendTincMessage(&msg, nullptr, src->valueSource());
     } else {
@@ -1476,7 +1476,7 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
 void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
                                        al::Socket *dst, al::Socket *src) {
 
-  TincMessage msg = createRegisterParameterMessage(dim->parameterMeta());
+  TincMessage msg = createRegisterParameterMessage(dim->getParameterMeta());
   if (src) {
     sendTincMessage(&msg, dst, src->valueSource());
   } else {
@@ -2119,8 +2119,8 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     for (auto *ps : mParameterSpaces) {
       for (auto dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
-          if (al::ParameterChoice *p =
-                  dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())) {
+          if (al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(
+                  dim->getParameterMeta())) {
             elements = p->getElements();
             break;
           }
@@ -2130,7 +2130,7 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
     for (auto dim : mParameterSpaceDimensions) {
       if (dim->getFullAddress() == id) {
         if (al::ParameterChoice *p =
-                dynamic_cast<al::ParameterChoice *>(dim->parameterMeta())) {
+                dynamic_cast<al::ParameterChoice *>(dim->getParameterMeta())) {
           elements = p->getElements();
           break;
         }

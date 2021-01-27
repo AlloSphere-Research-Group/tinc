@@ -9,7 +9,7 @@ namespace vis {
 void drawControl(tinc::ParameterSpaceDimension *dim) {
   ImGui::PushID(dim);
   if (dim->size() == 0) {
-    al::ParameterGUI::draw(dim->parameterMeta());
+    al::ParameterGUI::draw(dim->getParameterMeta());
   } else if (dim->size() == 1) {
     std::string dimensionText = dim->getName() + ":" + dim->getCurrentId();
     ImGui::Text("%s", dimensionText.c_str());
@@ -52,28 +52,28 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
       bool changed = false;
       if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
         changed = ImGui::SliderFloat(dim->getName().c_str(), &value,
-                                     dim->parameter<al::Parameter>().min(),
-                                     dim->parameter<al::Parameter>().max());
+                                     dim->getParameter<al::Parameter>().min(),
+                                     dim->getParameter<al::Parameter>().max());
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT8) {
-        int intValue = dim->parameter<al::ParameterInt>().get();
+        int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
-                                   dim->parameter<al::ParameterInt>().min(),
-                                   dim->parameter<al::ParameterInt>().max());
+                                   dim->getParameter<al::ParameterInt>().min(),
+                                   dim->getParameter<al::ParameterInt>().max());
         value = intValue;
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::INT32) {
-        int intValue = dim->parameter<al::ParameterInt>().get();
+        int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
-                                   dim->parameter<al::ParameterInt>().min(),
-                                   dim->parameter<al::ParameterInt>().max());
+                                   dim->getParameter<al::ParameterInt>().min(),
+                                   dim->getParameter<al::ParameterInt>().max());
         value = intValue;
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT32) {
-        int intValue = dim->parameter<al::ParameterInt>().get();
+        int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
-                                   dim->parameter<al::ParameterInt>().min(),
-                                   dim->parameter<al::ParameterInt>().max());
+                                   dim->getParameter<al::ParameterInt>().min(),
+                                   dim->getParameter<al::ParameterInt>().max());
         value = intValue;
       }
       ImGui::SameLine();

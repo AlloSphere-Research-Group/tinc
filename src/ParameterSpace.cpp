@@ -31,8 +31,8 @@ ParameterSpace::getDimension(std::string name, std::string group) {
     name = parameterNameMap[name];
   }
   for (auto ps : getDimensions()) {
-    if (group.size() == 0 || group == ps->parameterMeta()->getGroup()) {
-      if (ps->parameterMeta()->getName() == name) {
+    if (group.size() == 0 || group == ps->getParameterMeta()->getGroup()) {
+      if (ps->getParameterMeta()->getName() == name) {
         return ps;
       }
     }
@@ -76,7 +76,7 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
   }
 
   if (al::ParameterBool *p =
-          dynamic_cast<al::ParameterBool *>(dimension->parameterMeta())) {
+          dynamic_cast<al::ParameterBool *>(dimension->getParameterMeta())) {
     auto &param = *p;
     param.registerChangeCallback([dimension, &param, this](float value) {
       //    std::cout << value << dimension->getName() << std::endl;
@@ -92,7 +92,7 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
     mDimensions.push_back(dimension);
     onDimensionRegister(dimension.get(), this, nullptr);
   } else if (al::Parameter *p =
-                 dynamic_cast<al::Parameter *>(dimension->parameterMeta())) {
+                 dynamic_cast<al::Parameter *>(dimension->getParameterMeta())) {
     auto &param = *p;
     param.registerChangeCallback([dimension, &param, this](float value) {
       //    std::cout << value << dimension->getName() << std::endl;
@@ -107,8 +107,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
     });
     mDimensions.push_back(dimension);
     onDimensionRegister(dimension.get(), this, nullptr);
-  } else if (al::ParameterInt *p =
-                 dynamic_cast<al::ParameterInt *>(dimension->parameterMeta())) {
+  } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(
+                 dimension->getParameterMeta())) {
     auto &param = *p;
     param.registerChangeCallback([dimension, &param, this](int32_t value) {
       //    std::cout << value << dimension->getName() << std::endl;
@@ -1231,7 +1231,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
     for (auto dim : mDimensions) {
       SourceArgument arg;
       arg.id = dim->getName();
-      auto *param = dim->parameterMeta();
+      auto *param = dim->getParameterMeta();
       if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
         arg.value.valueDouble = p->get();
         arg.value.type = VARIANT_DOUBLE;

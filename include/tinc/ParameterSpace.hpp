@@ -242,6 +242,12 @@ public:
       std::vector<std::shared_ptr<ParameterSpaceDimension>> &newDimensions);
 
   /**
+   * @brief Set the parameter space's root path
+   * @param rootPath
+   */
+  void setRootPath(std::string rootPath);
+
+  /**
    * @brief Get root path for the parameter space
    * @return
    *
@@ -251,16 +257,10 @@ public:
   std::string getRootPath();
 
   /**
-   * @brief Set the parameter space's root path
-   * @param rootPath
-   */
-  void setRootPath(std::string rootPath);
-
-  /**
    * @brief map names provided to getDimension() to internal data names
    *
    * You can also use this map to display user friendly names when displaying
-   * parameters
+   * parameters. Changing this is not thread safe.
    */
   std::map<std::string, std::string> parameterNameMap;
 

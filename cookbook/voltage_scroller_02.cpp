@@ -158,10 +158,10 @@ struct MyApp : public App {
     initializeComputation();
 
     // GUI sliders
-    gui << ps.getDimension("eci1")->parameterMeta();
-    gui << ps.getDimension("eci2")->parameterMeta();
-    gui << ps.getDimension("eci3")->parameterMeta();
-    gui << ps.getDimension("eci4")->parameterMeta();
+    gui << ps.getDimension("eci1")->getParameterMeta();
+    gui << ps.getDimension("eci2")->getParameterMeta();
+    gui << ps.getDimension("eci3")->getParameterMeta();
+    gui << ps.getDimension("eci4")->getParameterMeta();
     gui.init();
 
     // Now sweep the parameter space asynchronously to fill cache while user is

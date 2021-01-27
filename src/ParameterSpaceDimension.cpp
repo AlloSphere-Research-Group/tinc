@@ -122,94 +122,6 @@ std::string ParameterSpaceDimension::idAt(size_t index) {
   return mSpaceValues.idAt(index);
 }
 
-// size_t ParameterSpaceDimension::getFirstIndexForValue(float value,
-//                                                      bool reverse) {
-//  int paramIndex = -1;
-
-//  if (!reverse) {
-//    size_t i = 0;
-//    for (auto it = mValues.begin(); it != mValues.end(); it++) {
-//      if (*it == value) {
-//        paramIndex = i;
-//        break;
-//      } else if (*it > value && (i == mValues.size() - 1)) {
-//        break;
-//      }
-//      auto next = it;
-//      std::advance(next, 1);
-//      if (next != mValues.end()) {
-//        if (*it > value && *next < value) { // space is sorted and descending
-//          paramIndex = i;
-//          break;
-//        } else if (*it<value && * next>
-//                       value) { // space is sorted and ascending
-//          paramIndex = i + 1;
-//          break;
-//        }
-//      }
-//      i++;
-//    }
-//  } else {
-//    if (mValues.size() > 0) {
-
-//      value = mSpaceValues.at(getIndexForValue(value));
-//      size_t i = mValues.size();
-//      for (auto it = mValues.rbegin(); it != mValues.rend(); it++) {
-//        if (*it == value) {
-//          paramIndex = i;
-//          break;
-//        } else if (*it < value && (i == 0)) {
-//          break;
-//        }
-//        auto next = it;
-//        std::advance(next, 1);
-//        if (next != mValues.rend()) {
-//          if (*it<value && * next> value) { // space is sorted and descending
-//            paramIndex = i;
-//            break;
-//          } else if (*it > value &&
-//                     *next < value) { // space is sorted and ascending
-//            paramIndex = i - 1;
-//            break;
-//          }
-//        }
-//        i--;
-//      }
-//    }
-//  }
-//  if (paramIndex < 0) {
-//    //          std::cerr << "WARNING: index not found" << std::endl;
-//    paramIndex = 0;
-//  }
-//  return paramIndex;
-//}
-
-// size_t ParameterSpaceDimension::getFirstIndexForId(std::string id,
-//                                                   bool reverse) {
-//  size_t paramIndex = std::numeric_limits<size_t>::max();
-
-//  if (!reverse) {
-//    size_t i = 0;
-//    for (auto it = mIds.begin(); it != mIds.end(); it++) {
-//      if (*it == id) {
-//        paramIndex = i;
-//        break;
-//      }
-//      i++;
-//    }
-//  } else {
-//    size_t i = mIds.size() - 1;
-//    for (auto it = mIds.rbegin(); it != mIds.rend(); it++) {
-//      if (*it == id) {
-//        paramIndex = i;
-//        break;
-//      }
-//      i--;
-//    }
-//  }
-//  return paramIndex;
-//}
-
 float ParameterSpaceDimension::getCurrentValue() {
   if (mSpaceValues.size() > 0) {
     return mSpaceValues.at(getCurrentIndex());
@@ -257,52 +169,6 @@ std::string ParameterSpaceDimension::getGroup() {
 std::string ParameterSpaceDimension::getFullAddress() {
   return mParameterValue->getFullAddress();
 }
-
-// std::vector<std::string> ParameterSpaceDimension::getAllCurrentIds() {
-//  float value = getCurrentValue();
-//  return getAllIds(value);
-//}
-
-// std::vector<std::string> ParameterSpaceDimension::getAllIds(float value) {
-//  size_t lowIndex = getFirstIndexForValue(value);
-//  size_t highIndex = getFirstIndexForValue(
-//      value, true); // Open range value (excluded from range)
-//  std::vector<std::string> ids;
-
-//  for (size_t i = lowIndex; i < highIndex; i++) {
-//    ids.push_back(idAt(i));
-//  }
-//  if (lowIndex ==
-//      highIndex) { // Hack... shouldn't need to be done. This should be
-//      fixed
-//                   // for one dimensional data parameter spaces.
-//    ids.push_back(idAt(lowIndex));
-//  }
-//  return ids;
-//}
-
-// std::vector<size_t> ParameterSpaceDimension::getAllCurrentIndeces() {
-//  float value = getCurrentValue();
-//  return getAllIndeces(value);
-//}
-
-// std::vector<size_t> ParameterSpaceDimension::getAllIndeces(float value) {
-//  size_t lowIndex = getFirstIndexForValue(value);
-//  size_t highIndex = getFirstIndexForValue(
-//      value, true); // Open range value (excluded from range)
-//  std::vector<size_t> idxs;
-
-//  for (size_t i = lowIndex; i < highIndex; i++) {
-//    idxs.push_back(i);
-//  }
-//  if (lowIndex ==
-//      highIndex) { // Hack... shouldn't need to be done. This should be
-//      fixed
-//                   // for one dimensional data parameter spaces.
-//    idxs.push_back(lowIndex);
-//  }
-//  return idxs;
-//}
 
 void ParameterSpaceDimension::stepIncrement() {
   if (mSpaceValues.size() < 2) {
@@ -382,15 +248,6 @@ void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
   onDimensionMetadataChange(this, src);
 }
 
-void ParameterSpaceDimension::setSpaceValues(std::vector<float> values,
-                                             std::string idprefix,
-                                             al::Socket *src) {
-  mSpaceValues.clear();
-  // TODO add safety check for types and pointer sizes
-  mSpaceValues.append(values.data(), values.size(), idprefix);
-  onDimensionMetadataChange(this, src);
-}
-
 void ParameterSpaceDimension::appendSpaceValues(void *values, size_t count,
                                                 std::string idprefix,
                                                 al::Socket *src) {
@@ -412,7 +269,7 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
 void ParameterSpaceDimension::conformSpace() {
   switch (mSpaceValues.getDataType()) {
   case al::DiscreteParameterValues::FLOAT: {
-    auto &param = parameter<al::Parameter>();
+    auto &param = getParameter<al::Parameter>();
     float max = std::numeric_limits<float>::min();
     float min = std::numeric_limits<float>::max();
     for (auto value : getSpaceValues<float>()) {
@@ -432,7 +289,7 @@ void ParameterSpaceDimension::conformSpace() {
     }
   } break;
   case al::DiscreteParameterValues::UINT8: {
-    auto &param = parameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterInt>();
     uint8_t max = std::numeric_limits<uint8_t>::min();
     uint8_t min = std::numeric_limits<uint8_t>::max();
     for (auto value : getSpaceValues<uint8_t>()) {
@@ -452,7 +309,7 @@ void ParameterSpaceDimension::conformSpace() {
     }
   } break;
   case al::DiscreteParameterValues::INT8: {
-    auto &param = parameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterInt>();
     int8_t max = std::numeric_limits<int8_t>::min();
     int8_t min = std::numeric_limits<int8_t>::max();
     for (auto value : getSpaceValues<int8_t>()) {
@@ -472,7 +329,7 @@ void ParameterSpaceDimension::conformSpace() {
     }
   } break;
   case al::DiscreteParameterValues::INT32: {
-    auto &param = parameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterInt>();
     int32_t max = std::numeric_limits<int32_t>::min();
     int32_t min = std::numeric_limits<int32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {
@@ -492,7 +349,7 @@ void ParameterSpaceDimension::conformSpace() {
     }
   } break;
   case al::DiscreteParameterValues::UINT32: {
-    auto &param = parameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterInt>();
     uint32_t max = std::numeric_limits<uint32_t>::min();
     uint32_t min = std::numeric_limits<uint32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {

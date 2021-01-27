@@ -119,23 +119,25 @@ public:
 
   // ---- Data access
   /**
-   * Get current value as a float
-   */
-  float getCurrentValue();
-  /**
    * Set current value from float
    */
   void setCurrentValue(float value);
+
+  /**
+   * Get current value as a float
+   */
+  float getCurrentValue();
+
+  /**
+   * @brief Set current index
+   */
+  void setCurrentIndex(size_t index);
 
   /**
    * @brief get index of current value in parameter space
    * @return index
    */
   size_t getCurrentIndex();
-  /**
-   * @brief Set current index
-   */
-  void setCurrentIndex(size_t index);
 
   /**
    * @brief get current id
@@ -174,11 +176,17 @@ public:
    * You can set values for the internal parameter through this function,
    * register notifications and create GUIs/ network synchronization.
    */
-  template <typename ParameterType> ParameterType &parameter() {
+  template <typename ParameterType> ParameterType &getParameter() {
     return *static_cast<ParameterType *>(mParameterValue);
   }
-
-  al::ParameterMeta *parameterMeta() { return mParameterValue; }
+  /**
+   * @brief get abstract ParameterMeta pointer to internal parameter
+   * @return
+   *
+   * To determine the type of parameter, you can test if dynamic_cast<>() !=
+   * nullptr.
+   */
+  al::ParameterMeta *getParameterMeta() { return mParameterValue; }
 
   /**
    * Step to the nearest index that increments the paramter value. This could
@@ -186,6 +194,7 @@ public:
    * Requires that the space is sorted in ascending or descending order.
    */
   void stepIncrement();
+
   /**
    * Step to the nearest index that decrements the paramter value. This could
    * result in an increase or decrease of the index.
@@ -198,6 +207,7 @@ public:
    */
   size_t size();
 
+  // FIXME implement sort
   void sort();
 
   /**
@@ -217,27 +227,75 @@ public:
   std::string idAt(size_t index);
 
   // Discrete parameter space values
-  // FIXME improve these setters
+  /**
+   * @brief Set possible values in the parameter space dimension
+   * @param values pointer to array of values
+   * @param count number of values in pointer
+   * @param idprefix prefix for auto generated ids
+   * @param src source socket if this function is called from the network
+   */
   void setSpaceValues(void *values, size_t count, std::string idprefix = "",
                       al::Socket *src = nullptr);
-  void setSpaceValues(std::vector<float> values, std::string idprefix = "",
-                      al::Socket *src = nullptr);
+
+  /**
+   * @brief Set possible values in the parameter space dimension
+   * @param values pointer to array of values
+   * @param idprefix prefix for auto generated ids
+   * @param src source socket if this function is called from the network
+   */
+  template <typename SpaceDataType>
+  void setSpaceValues(std::vector<SpaceDataType> values,
+                      std::string idprefix = "", al::Socket *src = nullptr) {
+    mSpaceValues.clear();
+    // TODO add safety check for types and pointer sizes
+    mSpaceValues.append(values.data(), values.size(), idprefix);
+    onDimensionMetadataChange(this, src);
+  }
+  /**
+   * @brief append values to current dimension values
+   * @param values pointer to array of values
+   * @param count number of values in pointer
+   * @param idprefix prefix for auto generated ids
+   * @param src source socket if this function is called from the network
+   */
   void appendSpaceValues(void *values, size_t count, std::string idprefix = "",
                          al::Socket *src = nullptr);
 
+  /**
+   * Get possible values this dimension can take
+   */
   template <typename SpaceDataType>
   std::vector<SpaceDataType> getSpaceValues() {
     return mSpaceValues.getValues<SpaceDataType>();
   }
 
+  /**
+   * Set ids for space values. You must ensure that the size of the space and
+   * the number of ids matches.
+   */
   void setSpaceIds(std::vector<std::string> ids, al::Socket *src = nullptr);
 
+  /**
+   * Get vector containing all space ids
+   */
   std::vector<std::string> getSpaceIds();
 
+  /**
+   * @brief Get Data type for space data.
+   *
+   * The space data might be different to the parameter data type. Spaces in
+   * int8, int16 and in32 are all handled by ParameterInt that uses a 32 bit
+   * representation.
+   */
   al::DiscreteParameterValues::Datatype getSpaceDataType() {
     return mSpaceValues.getDataType();
   }
 
+  /**
+   * @brief Get index in space for value
+   * @param value
+   * @return the index
+   */
   size_t getIndexForValue(float value);
 
   /**

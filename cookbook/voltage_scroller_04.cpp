@@ -152,20 +152,20 @@ struct MyApp : public App {
     initializeComputation();
 
     // GUI sliders
-    gui << ps.getDimension("eci1")->parameterMeta()
-        << ps.getDimension("eci2")->parameterMeta()
-        << ps.getDimension("eci3")->parameterMeta()
-        << ps.getDimension("eci4")->parameterMeta();
+    gui << ps.getDimension("eci1")->getParameterMeta()
+        << ps.getDimension("eci2")->getParameterMeta()
+        << ps.getDimension("eci3")->getParameterMeta()
+        << ps.getDimension("eci4")->getParameterMeta();
 
     // Display a GUI for the preset handler
     gui << presetHandler;
     gui.init();
 
     // Register parameter space with preset handler
-    presetHandler << *ps.getDimension("eci1")->parameterMeta()
-                  << *ps.getDimension("eci2")->parameterMeta()
-                  << *ps.getDimension("eci3")->parameterMeta()
-                  << *ps.getDimension("eci4")->parameterMeta();
+    presetHandler << *ps.getDimension("eci1")->getParameterMeta()
+                  << *ps.getDimension("eci2")->getParameterMeta()
+                  << *ps.getDimension("eci3")->getParameterMeta()
+                  << *ps.getDimension("eci4")->getParameterMeta();
 
     // Now sweep the parameter space asynchronously to fill cache while user is
     // not interacting

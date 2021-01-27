@@ -16,13 +16,13 @@ TEST(PythonClient, ParameterSpaces) {
 
   ParameterSpace ps{"param_space"};
   auto ps_dim = ps.newDimension("ps_dim");
-  ps_dim->parameter<al::Parameter>().min(1.3);
-  ps_dim->parameter<al::Parameter>().max(2.53);
-  ps_dim->parameter<al::Parameter>().set(1.99);
+  ps_dim->getParameter<al::Parameter>().min(1.3);
+  ps_dim->getParameter<al::Parameter>().max(2.53);
+  ps_dim->getParameter<al::Parameter>().set(1.99);
   auto ps_dim_reply = ps.newDimension("ps_dim_reply");
-  ps_dim_reply->parameter<al::Parameter>().min(2.3);
-  ps_dim_reply->parameter<al::Parameter>().max(3.53);
-  ps_dim_reply->parameter<al::Parameter>().set(2.88);
+  ps_dim_reply->getParameter<al::Parameter>().min(2.3);
+  ps_dim_reply->getParameter<al::Parameter>().max(3.53);
+  ps_dim_reply->getParameter<al::Parameter>().set(2.88);
   tserver << ps;
 
   std::string pythonCode = R"(

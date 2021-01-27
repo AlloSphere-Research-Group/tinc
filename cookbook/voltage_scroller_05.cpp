@@ -159,10 +159,10 @@ struct MyApp : public App {
     initializeComputation();
 
     // GUI sliders
-    gui << ps.getDimension("eci1")->parameterMeta()
-        << ps.getDimension("eci2")->parameterMeta()
-        << ps.getDimension("eci3")->parameterMeta()
-        << ps.getDimension("eci4")->parameterMeta();
+    gui << ps.getDimension("eci1")->getParameterMeta()
+        << ps.getDimension("eci2")->getParameterMeta()
+        << ps.getDimension("eci3")->getParameterMeta()
+        << ps.getDimension("eci4")->getParameterMeta();
 
     // Display a GUI for the preset handler
     gui << presetHandler;
@@ -170,10 +170,10 @@ struct MyApp : public App {
 
     // Register parameter space with preset handler
     // FIXME allow ParameterMeta pointer when registering with presets
-    presetHandler << *ps.getDimension("eci1")->parameterMeta()
-                  << *ps.getDimension("eci2")->parameterMeta()
-                  << *ps.getDimension("eci3")->parameterMeta()
-                  << *ps.getDimension("eci4")->parameterMeta();
+    presetHandler << *ps.getDimension("eci1")->getParameterMeta()
+                  << *ps.getDimension("eci2")->getParameterMeta()
+                  << *ps.getDimension("eci3")->getParameterMeta()
+                  << *ps.getDimension("eci4")->getParameterMeta();
 
     // set pickable bounding box to slightly larger than graph bounds
     pickable.bb.set(Vec3f(-1, -0.75, 0) * 1.05, Vec3f(1, 0.75, 0) * 1.05);
