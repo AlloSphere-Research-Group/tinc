@@ -25,7 +25,7 @@ jobs:
             apt-get update
             apt-get install -y sudo build-essential cmake git ninja-build libnetcdf-dev libglew-dev libglu1-mesa-dev xorg-dev libasound2-dev python3 python3-pip python3-protobuf python3-netcdf4 lcov curl
             rm -rf /var/lib/apt/lists/*
-            pip install numpy matplotlib filelock
+            pip install numpy matplotlib filelock coverage
       - checkout
       - run:
           name: Checkout submodules
@@ -46,7 +46,7 @@ jobs:
           command: ./bin/tinc_tests
       - run:
           name: Run Python tests
-          command: python3 tinc-python/tinc-python/tests/unit_tests.py
+          command: coverage run tinc-python/tinc-python/tests/unit_tests.py & coverage report -m
       - run:
           name: Code coverage report
           command: |
