@@ -15,6 +15,11 @@ TINC can also be used standalone in python to assist exploration of complex
 datasets that are spread out through the filesystem through interactive
 computation prototyping.
 
+Here are some videos demonstrating the functionality and API of TINC
+
+[TINC: ParameterSpaces in Python](https://youtu.be/QWwW9XPRAdM)
+[TINC: Client in Python interacting with C++](https://youtu.be/xdXmISo4DeY)
+
 # Using TINC
 
 We have set up to repositories to assist learning and using TINC. The
