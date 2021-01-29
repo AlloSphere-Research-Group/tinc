@@ -33,6 +33,17 @@ through CMake. This template is useful to build larger applications made from
 multiple files or with multiple target that might require additional
 dependencies.
 
+# Support
+
+Join the user and development mailing lists at:
+
+[](https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev)
+
+[](https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-users)
+
+Please file feature and bug reports through the github
+[issue tracker](https://github.com/AlloSphere-Research-Group/tinc/issues).
+
 # Installation
 
 ## Dependencies
