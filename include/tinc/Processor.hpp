@@ -1,7 +1,41 @@
 #ifndef PROCESSOR_HPP
 #define PROCESSOR_HPP
 
+/*
+ * Copyright 2020 AlloSphere Research Group
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ *   3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ *        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * authors: Andres Cabrera
+*/
+
 #include "tinc/IdObject.hpp"
+#include "tinc/ParameterSpaceDimension.hpp"
+#include "tinc/VariantValue.hpp"
 
 #include "al/scene/al_PolySynth.hpp"
 
@@ -24,66 +58,6 @@ private:
   static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
 };
 
-enum VariantType {
-  VARIANT_INT64 = 0,
-  VARIANT_DOUBLE, // The script to be run
-  VARIANT_STRING
-};
-
-struct VariantValue {
-
-  VariantValue() {}
-  VariantValue(std::string value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-  VariantValue(const char *value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-
-  VariantValue(int64_t value) {
-    type = VARIANT_INT64;
-    valueInt64 = value;
-  }
-
-  VariantValue(double value) {
-    type = VARIANT_DOUBLE;
-    valueDouble = value;
-  }
-
-  //  ~VariantValue()
-  //  {
-  //      delete[] cstring;  // deallocate
-  //  }
-
-  //  VariantValue(const VariantValue& other) // copy constructor
-  //      : VariantValue(other.cstring)
-  //  {}
-
-  //  VariantValue(VariantValue&& other) noexcept // move constructor
-  //      : cstring(std::exchange(other.cstring, nullptr))
-  //  {}
-
-  //  VariantValue& operator=(const VariantValue& other) // copy assignment
-  //  {
-  //      return *this = VariantValue(other);
-  //  }
-
-  //  VariantValue& operator=(VariantValue&& other) noexcept // move assignment
-  //  {
-  //      std::swap(cstring, other.cstring);
-  //      return *this;
-  //  }
-
-  std::string commandFlag; // A prefix to the flag (e.g. -o)
-
-  VariantType type;
-  std::string valueStr;
-  int64_t valueInt64;
-  double valueDouble;
-};
-
 /**
  * @brief The Processor class presents an abstraction to filesystem based
  * computation
@@ -92,12 +66,16 @@ struct VariantValue {
  * function.
  */
 class Processor : public IdObject {
+  friend class ProcessorGraph;
+
 public:
   typedef std::map<std::string, VariantValue> Configuration;
 
   Processor(std::string id_ = "") { setId(id_); }
   Processor(Processor &p)
-      : mInputDirectory(p.mInputDirectory), mOutputDirectory(p.mOutputDirectory), mRunningDirectory(p.mRunningDirectory) {}
+      : mInputDirectory(p.mInputDirectory),
+        mOutputDirectory(p.mOutputDirectory),
+        mRunningDirectory(p.mRunningDirectory) {}
 
   virtual ~Processor() {}
 
@@ -174,13 +152,16 @@ public:
    */
   std::string getRunningDirectory() { return mRunningDirectory; }
 
+  void registerStartCallback(std::function<void(void)> func) {
+    mStartCallbacks.push_back(func);
+  }
+
   void registerDoneCallback(std::function<void(bool)> func) {
     mDoneCallbacks.push_back(func);
   }
 
   void verbose(bool verbose = true) { mVerbose = verbose; }
 
-  std::string id;
   bool ignoreFail{false}; ///< If set to true, processor chains will continue
                           ///< even if this processor fails. Has no effect if
                           ///< running asychronously
@@ -196,6 +177,12 @@ public:
    * dimensions.
    */
   std::function<bool(void)> prepareFunction;
+
+  Processor &registerDimension(ParameterSpaceDimension &dim);
+
+  Processor &operator<<(ParameterSpaceDimension &dim) {
+    return registerDimension(dim);
+  }
 
   template <class ParameterType>
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
@@ -213,8 +200,6 @@ public:
     return registerParameter(newParam);
   }
 
-  std::vector<al::ParameterMeta *> parameters() { return mParameters; }
-
   /**
    * @brief Current internal configuration key value pairs
    *
@@ -224,14 +209,20 @@ public:
   Configuration configuration;
 
 protected:
-  std::string mRunningDirectory;
-  std::string mOutputDirectory;
   std::string mInputDirectory;
+  std::string mOutputDirectory;
+  std::string mRunningDirectory;
   std::vector<std::string> mOutputFileNames;
   std::vector<std::string> mInputFileNames;
   bool mVerbose;
 
   std::vector<al::ParameterMeta *> mParameters;
+
+  void callStartCallbacks() {
+    for (auto cb : mStartCallbacks) {
+      cb();
+    }
+  }
 
   void callDoneCallbacks(bool result) {
     for (auto cb : mDoneCallbacks) {
@@ -241,6 +232,7 @@ protected:
   std::mutex mProcessLock;
 
 private:
+  std::vector<std::function<void()>> mStartCallbacks;
   std::vector<std::function<void(bool)>> mDoneCallbacks;
 };
 

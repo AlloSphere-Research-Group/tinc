@@ -9,24 +9,32 @@
 
 using namespace tinc;
 
-TEST(TincProtocol, ParameterSpaces) {
+TEST(ProtocolParameterSpace, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  al::Parameter p{"param", "group", 0.2, -10, 9.9};
-  tserver << p;
-  p.set(0.5);
+  ParameterSpace ps{"param_space"};
+  auto ps_dim = ps.newDimension("ps_dim");
+  tserver << ps;
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.5); // Give time to connect
-
   tclient.requestParameterSpaces();
 
-  al::al_sleep(0.5); // Give time to connect
+  bool timeout = false;
+  int counter = 0;
 
-  // TODO check that the parameter space details are correct
+  while (tclient.parameterSpaces().size() != 1 && !timeout) {
+    al::al_sleep(0.001); // Give time to connect
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      timeout = true;
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  // TODO complete checks
 
   tclient.stop();
   tserver.stop();

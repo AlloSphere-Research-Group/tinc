@@ -1,4 +1,4 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
 
 #include "al/app/al_App.hpp"
@@ -15,7 +15,7 @@ using namespace tinc;
 struct MyApp : public App {
 
   ParameterSpace ps;
-  CppProcessor processor;
+  ProcessorCpp processor;
 
   ControlGUI gui;
 
@@ -28,32 +28,42 @@ struct MyApp : public App {
         std::make_shared<tinc::ParameterSpaceDimension>("inner_param");
 
     // Create large parameter space
+    std::vector<std::string> ids;
+    std::vector<float> values;
     for (int i = 0; i < 200; i++) {
-      dimension1->push_back(i, "L_" + std::to_string(i));
+      values.push_back(i);
+      ids.push_back("L_" + std::to_string(i));
     }
-    dimension1->conform();
-    dimension1->setSpaceType(tinc::ParameterSpaceDimension::ID);
+    dimension1->setSpaceValues(values);
+    dimension1->setSpaceIds(ids);
+    dimension1->conformSpace();
+    dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
+    values.clear();
     for (int i = 0; i < 220; i++) {
-      dimension2->push_back(i / 220.0);
+      values.push_back(i / 220.0);
     }
-    dimension2->conform();
-    dimension2->setSpaceType(tinc::ParameterSpaceDimension::INDEX);
+    dimension2->setSpaceValues(values);
+    dimension2->conformSpace();
+    dimension2->setSpaceRepresentationType(
+        tinc::ParameterSpaceDimension::INDEX);
 
+    values.clear();
     for (int i = 0; i < 230; i++) {
-      inner_param->push_back(10 + i);
+      values.push_back(10 + i);
     }
-    inner_param->conform();
-    inner_param->setSpaceType(tinc::ParameterSpaceDimension::VALUE);
+    inner_param->setSpaceValues(values);
+    inner_param->conformSpace();
+    inner_param->setSpaceRepresentationType(
+        tinc::ParameterSpaceDimension::VALUE);
 
     ps.registerDimension(dimension1);
     ps.registerDimension(dimension2);
     ps.registerDimension(inner_param);
 
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
-                                     ParameterSpace *ps) {
-      return "asyncdata/";
-    };
+    // The running path for the parameter space is fixed
+    ps.setCurrentPathTemplate("asyncdata");
+
     // Create necessary filesystem directories to be populated by data
     ps.createDataDirectories();
 
@@ -63,15 +73,14 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.onValueChange = [&](float /*value*/,
-                           ParameterSpaceDimension * /*changedDimension*/,
+    ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
       std::string name =
           "out_" + ps->getDimension("dim1")->getCurrentId() + " -- " +
           std::to_string(ps->getDimension("dim2")->getCurrentIndex()) + " -- " +
           std::to_string(ps->getDimension("inner_param")->getCurrentValue()) +
           ".txt";
-      std::ifstream f(ps->currentRunPath() + name);
+      std::ifstream f(ps->currentRelativeRunPath() + name);
       if (f.is_open()) {
         f.seekg(0, std::ios::end);
         displayText.reserve(f.tellg());
@@ -117,13 +126,13 @@ struct MyApp : public App {
     defineParameterSpace();
     initializeComputation();
 
-    parameterServer() << ps.getDimension("dim1")->parameter()
-                      << ps.getDimension("dim2")->parameter()
-                      << ps.getDimension("inner_param")->parameter();
+    parameterServer() << ps.getDimension("dim1")->getParameterMeta()
+                      << ps.getDimension("dim2")->getParameterMeta()
+                      << ps.getDimension("inner_param")->getParameterMeta();
 
-    gui << ps.getDimension("dim1")->parameter()
-        << ps.getDimension("dim2")->parameter()
-        << ps.getDimension("inner_param")->parameter();
+    gui << ps.getDimension("dim1")->getParameterMeta()
+        << ps.getDimension("dim2")->getParameterMeta()
+        << ps.getDimension("inner_param")->getParameterMeta();
     gui.init();
 
     // Now sweep the parameter space asynchronously

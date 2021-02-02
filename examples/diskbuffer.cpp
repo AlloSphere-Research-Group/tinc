@@ -1,8 +1,8 @@
 
 #include "tinc/DiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/TincServer.hpp"
 
 #include "al/app/al_App.hpp"
@@ -18,11 +18,11 @@ using namespace tinc;
 using json = nlohmann::json;
 
 class MyApp : public al::App {
- public:
+public:
   TincServer tincServer;
   ImageDiskBuffer imageBuffer{"image", "image.png"};
-  JsonDiskBuffer jsonBuffer{"json", "file.json"};
-  NetCDFDiskBufferDouble netcdfBuffer{"nc", "file.nc"};
+  DiskBufferJson jsonBuffer{"json", "file.json"};
+  DiskBufferNetCDFDouble netcdfBuffer{"nc", "file.nc"};
 
   al::Trigger newImage{"newImage"};
   al::Trigger newJson{"newJson"};
@@ -36,7 +36,6 @@ class MyApp : public al::App {
 
   // Functions to generate random data into buffers
   void generateImage() {
-    auto imageName = imageBuffer.getCurrentFileName();
 
     // generating example image
     std::vector<unsigned char> pix;
@@ -47,15 +46,12 @@ class MyApp : public al::App {
       pix.push_back(c.b);
     }
 
-    al::Image::saveImage(imageName, pix.data(), 3, 3);
-
     // update the buffer with the new data
-    imageBuffer.updateData(imageName);
-    reportText.set(std::string("Created " + imageName));
+    imageBuffer.writePixels(pix.data(), 3, 3);
+    reportText.set(std::string("Created " + imageBuffer.getCurrentFileName()));
   }
 
   void generateJson() {
-    auto jsonName = jsonBuffer.getCurrentFileName();
 
     // generating example json data
     json exampleJson;
@@ -65,23 +61,9 @@ class MyApp : public al::App {
     exampleJson["int"] = 5;
     exampleJson["double"] = 1.2345;
 
-    // output to json file on disk
-    std::ofstream of(jsonName, std::ofstream::out);
-    if (of.good()) {
-      of << exampleJson.dump(2);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
-        return;
-      }
-    } else {
-      std::cout << "Error creating json file" << std::endl;
-      return;
-    }
-
     // update the buffer with the new data
-    jsonBuffer.updateData(jsonName);
-    reportText.set(std::string("Created " + jsonName));
+    jsonBuffer.writeJson(exampleJson);
+    reportText.set(std::string("Created " + jsonBuffer.getCurrentFileName()));
   }
 
   void generateNc() {
@@ -153,10 +135,9 @@ class MyApp : public al::App {
     newJson.registerChangeCallback([&](bool value) { generateJson(); });
     newNc.registerChangeCallback([&](bool value) { generateNc(); });
 
-    // Connect TINC server to network
-    tincServer.registerParameterServer(parameterServer());
     // Expose buffers on TINC server
     tincServer << imageBuffer << jsonBuffer << netcdfBuffer;
+    tincServer.start();
   }
 
   void onAnimate(double dt) override {

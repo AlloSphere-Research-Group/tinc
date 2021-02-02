@@ -1,6 +1,38 @@
 #ifndef DISKBUFFER_HPP
 #define DISKBUFFER_HPP
 
+/*
+ * Copyright 2020 AlloSphere Research Group
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ *
+ *   3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ *        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * authors: Andres Cabrera
+*/
+
 #include <fstream>
 #include <string>
 #include <cstring>
@@ -11,32 +43,12 @@
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/BufferManager.hpp"
-#include "tinc/IdObject.hpp"
+#include "tinc/DiskBufferAbstract.hpp"
 
 namespace tinc {
 
-class AbstractDiskBuffer : public IdObject {
-public:
-  // Careful, this is not thread safe. Needs to be called synchronously to any
-  // process functions
-  std::string getCurrentFileName() { return m_fileName; }
-
-  virtual bool updateData(std::string filename) = 0;
-  //  void exposeToNetwork(al::ParameterServer &p);
-
-  std::string getBaseFileName() { return m_fileName; }
-
-  void setPath(std::string path) { m_path = path; }
-  std::string getPath() { return m_path; }
-
-protected:
-  std::string m_fileName;
-  std::string m_path;
-  std::shared_ptr<al::ParameterString> m_trigger;
-};
-
 template <class DataType>
-class DiskBuffer : public BufferManager<DataType>, public AbstractDiskBuffer {
+class DiskBuffer : public BufferManager<DataType>, public DiskBufferAbstract {
 public:
   DiskBuffer(std::string id = "", std::string fileName = "",
              std::string path = "", uint16_t size = 2);

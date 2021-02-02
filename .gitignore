@@ -1,0 +1,13 @@
+cookbook/bin
+examples/bin
+doc/doc/html
+external/protobuf
+external/protobuf-build/
+external/protobuf-build-*/
+external/hdf5/
+external/hdf5_build/
+external/netcdf-c/
+external/usr/
+tests/bin
+src/tinc_protocol.pb.h
+src/tinc_protocol.pb.cc

@@ -1,6 +1,6 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
-#include "tinc/ScriptProcessor.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/graphics/al_Font.hpp"
@@ -22,7 +22,7 @@ using namespace tinc;
 
 struct MyApp : public App {
   ParameterSpace ps;
-  ScriptProcessor processor;
+  ProcessorScript processor;
   ControlGUI gui;
 
   std::string displayText;
@@ -51,47 +51,58 @@ struct MyApp : public App {
     auto eci4_dim = std::make_shared<tinc::ParameterSpaceDimension>("eci4");
 
     // Create large parameter space
-    std::vector<double> eci1_values = {-0.25, -0.125, 0.0, 0.125, 0.25};
-    std::vector<double> eci2_values = {0.0, 0.5, 1.0, 1.5, 2.5};
-    std::vector<double> eci3_values = {0.0, 0.5, 1.0, 1.5};
-    std::vector<double> eci4_values = {0.0, 0.25, 0.5};
+    std::vector<float> eci1_values = {-0.25, -0.125, 0.0, 0.125, 0.25};
+    std::vector<float> eci2_values = {0.0, 0.5, 1.0, 1.5, 2.5};
+    std::vector<float> eci3_values = {0.0, 0.5, 1.0, 1.5};
+    std::vector<float> eci4_values = {0.0, 0.25, 0.5};
+
+    std::vector<std::string> eciIds;
+    eci1_dim->setSpaceValues(eci1_values);
     for (const auto &val : eci1_values) {
-      eci1_dim->push_back(val, "_" + clean_double_to_string(val));
+      eciIds.push_back("_" + clean_double_to_string(val));
     }
-    eci1_dim->conform();
-    eci1_dim->setSpaceType(ParameterSpaceDimension::ID);
+    eci1_dim->setSpaceIds(eciIds);
+
+    eci1_dim->conformSpace();
+    eci1_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
+
+    eciIds.clear();
+    eci2_dim->setSpaceValues(eci2_values);
     for (const auto &val : eci2_values) {
-      eci2_dim->push_back(val, "_" + clean_double_to_string(val));
+      eciIds.push_back("_" + clean_double_to_string(val));
     }
-    eci2_dim->setSpaceType(ParameterSpaceDimension::ID);
-    eci2_dim->conform();
+    eci2_dim->setSpaceIds(eciIds);
+    eci2_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
+    eci2_dim->conformSpace();
+
+    eciIds.clear();
+    eci3_dim->setSpaceValues(eci3_values);
     for (const auto &val : eci3_values) {
-      eci3_dim->push_back(val, "_" + clean_double_to_string(val));
+      eciIds.push_back("_" + clean_double_to_string(val));
     }
-    eci3_dim->setSpaceType(ParameterSpaceDimension::ID);
-    eci3_dim->conform();
+    eci3_dim->setSpaceIds(eciIds);
+    eci3_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
+    eci3_dim->conformSpace();
+
+    eciIds.clear();
+    eci4_dim->setSpaceValues(eci4_values);
     for (const auto &val : eci4_values) {
-      eci4_dim->push_back(val, "_" + clean_double_to_string(val));
+      eciIds.push_back("_" + clean_double_to_string(val));
     }
-    eci4_dim->setSpaceType(ParameterSpaceDimension::ID);
-    eci4_dim->conform();
+    eci4_dim->setSpaceIds(eciIds);
+    eci4_dim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
+    eci4_dim->conformSpace();
 
     ps.registerDimension(eci1_dim);
     ps.registerDimension(eci2_dim);
     ps.registerDimension(eci3_dim);
     ps.registerDimension(eci4_dim);
 
-    // This function provided with a map of parameter name to index into
-    // that parameter knows how to find the folder to run a process from
-    ps.generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
-                                     ParameterSpace *ps) {
-      std::string path = "AMX2_spinel_diffusion_0.0_0.0";
-      for (const auto &mapped_param : ps->getDimensions()) {
-        path +=
-            mapped_param->idAt(indeces[mapped_param->parameter().getName()]);
-      }
-      return path + "/";
-    };
+    // Determine running path from template that is filled according to current
+    // values. Because the dimensions have been set to
+    // ParameterSpaceDimension::ID, the current ids will be inserted
+    ps.setCurrentPathTemplate(
+        "AMX2_spinel_diffusion_0.0_0.0_%%ec1%%_%%eci2%%_%%eci3%%_%%eci4%%");
     // Create necessary filesystem directories to be populated by data
     ps.createDataDirectories();
 
@@ -101,12 +112,11 @@ struct MyApp : public App {
     };
 
     // Whenever the parameter space point changes, this function is called
-    ps.onValueChange = [&](float oldValue,
-                           ParameterSpaceDimension *changedDimension,
+    ps.onValueChange = [&](ParameterSpaceDimension * /*changedDimension*/,
                            ParameterSpace *ps) {
-      processor.setRunningDirectory(ps->currentRunPath());
+      processor.setRunningDirectory(ps->currentRelativeRunPath());
       processor.process();
-      textureFile.set(ps->currentRunPath() + processor.getOutputFileNames()[0]);
+      textureFile.set(ps->currentRelativeRunPath() + processor.getOutputFileNames()[0]);
 
       return true;
     };
@@ -142,20 +152,20 @@ struct MyApp : public App {
     initializeComputation();
 
     // GUI sliders
-    gui << ps.getDimension("eci1")->parameter()
-        << ps.getDimension("eci2")->parameter()
-        << ps.getDimension("eci3")->parameter()
-        << ps.getDimension("eci4")->parameter();
+    gui << ps.getDimension("eci1")->getParameterMeta()
+        << ps.getDimension("eci2")->getParameterMeta()
+        << ps.getDimension("eci3")->getParameterMeta()
+        << ps.getDimension("eci4")->getParameterMeta();
 
     // Display a GUI for the preset handler
     gui << presetHandler;
     gui.init();
 
     // Register parameter space with preset handler
-    presetHandler << ps.getDimension("eci1")->parameter()
-                  << ps.getDimension("eci2")->parameter()
-                  << ps.getDimension("eci3")->parameter()
-                  << ps.getDimension("eci4")->parameter();
+    presetHandler << *ps.getDimension("eci1")->getParameterMeta()
+                  << *ps.getDimension("eci2")->getParameterMeta()
+                  << *ps.getDimension("eci3")->getParameterMeta()
+                  << *ps.getDimension("eci4")->getParameterMeta();
 
     // Now sweep the parameter space asynchronously to fill cache while user is
     // not interacting

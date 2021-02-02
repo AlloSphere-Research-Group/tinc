@@ -65,7 +65,7 @@ void Processor::setDataDirectory(std::string directory) {
 void Processor::setOutputDirectory(std::string outputDirectory) {
   mOutputDirectory = al::File::conformPathToOS(outputDirectory);
   std::replace(mOutputDirectory.begin(), mOutputDirectory.end(), '\\', '/');
-  if (!al::File::isDirectory(mOutputDirectory)) {
+  if (mOutputDirectory.size() > 0 && !al::File::isDirectory(mOutputDirectory)) {
     if (!al::Dir::make(mOutputDirectory)) {
       std::cout << "Unable to create output directory:" << mOutputDirectory
                 << std::endl;
@@ -76,7 +76,7 @@ void Processor::setOutputDirectory(std::string outputDirectory) {
 void Processor::setInputDirectory(std::string inputDirectory) {
   mInputDirectory = al::File::conformPathToOS(inputDirectory);
   std::replace(mInputDirectory.begin(), mInputDirectory.end(), '\\', '/');
-  if (!al::File::isDirectory(mInputDirectory)) {
+  if (mInputDirectory.size() > 0 && !al::File::isDirectory(mInputDirectory)) {
     std::cout
         << "Warning input directory for Processor doesn't exist. Creating."
         << std::endl;
@@ -96,6 +96,24 @@ void Processor::setRunningDirectory(std::string directory) {
                 << std::endl;
     }
   }
+}
+
+Processor &Processor::registerDimension(ParameterSpaceDimension &dim) {
+  auto *param = dim.getParameterMeta();
+  if (auto *p = dynamic_cast<al::Parameter *>(param)) {
+    return registerParameter(*p);
+  } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
+      return registerParameter(*p);
+    }  */
+  else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
+    return registerParameter(*p);
+  } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
+    return registerParameter(*p);
+  } else {
+    std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
+              << std::endl;
+  }
+  return *this;
 }
 
 void Processor::setOutputFileNames(std::vector<std::string> outputFiles) {

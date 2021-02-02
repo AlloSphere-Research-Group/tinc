@@ -1,4 +1,4 @@
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
 
 #include "al/io/al_File.hpp"
@@ -11,28 +11,15 @@ int main() {
   auto inner_param =
       std::make_shared<tinc::ParameterSpaceDimension>("inner_param");
 
-  dimension1->push_back(0.1, "A");
-  dimension1->push_back(0.2, "B");
-  dimension1->push_back(0.3, "C");
-  dimension1->push_back(0.4, "D");
-  dimension1->push_back(0.5, "E");
-  dimension1->setSpaceType(tinc::ParameterSpaceDimension::ID);
-  dimension1->setFilesystemDimension();
+  dimension1->setSpaceValues<float>({0.1, 0.2, 0.3, 0.4, 0.5});
+  dimension1->setSpaceIds({"A", "B", "C", "D", "E"});
+  dimension1->setSpaceRepresentationType(tinc::ParameterSpaceDimension::ID);
 
-  dimension2->push_back(10.1);
-  dimension2->push_back(10.2);
-  dimension2->push_back(10.3);
-  dimension2->push_back(10.4);
-  dimension2->push_back(10.5);
-  dimension2->setSpaceType(tinc::ParameterSpaceDimension::INDEX);
-  dimension1->setFilesystemDimension();
+  dimension2->setSpaceValues<float>({10.1, 10.2, 10.3, 10.4, 10.5});
+  dimension2->setSpaceRepresentationType(tinc::ParameterSpaceDimension::INDEX);
 
-  inner_param->push_back(1);
-  inner_param->push_back(2);
-  inner_param->push_back(3);
-  inner_param->push_back(4);
-  inner_param->push_back(5);
-  inner_param->setSpaceType(tinc::ParameterSpaceDimension::VALUE);
+  inner_param->setSpaceValues<float>({1, 2, 3, 4, 5});
+  inner_param->setSpaceRepresentationType(tinc::ParameterSpaceDimension::VALUE);
 
   tinc::ParameterSpace ps;
 
@@ -40,7 +27,7 @@ int main() {
   ps.registerDimension(dimension2);
   ps.registerDimension(inner_param);
 
-  tinc::CppProcessor processor;
+  tinc::ProcessorCpp processor;
 
   processor.setOutputFileNames({"output.txt"});
 
@@ -64,7 +51,7 @@ int main() {
     return true;
   };
 
-  ps.rootPath = "data/";
+  ps.setRootPath("data/");
 
   // Now sweep the parameter space
   ps.sweep(processor);

@@ -4,57 +4,78 @@ project(TINC)
 
 option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
 option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
+option(TINC_CODE_COVERAGE "Enable Code coverage for tests" OFF)
+
+add_custom_command(
+  OUTPUT foo.hh
+  COMMAND
+  DEPENDS ${SOURCE_FILES} /tmp/bin/create_foo_hh main.cpp
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+
 
 set(TINC_SRC
 
-    ${CMAKE_CURRENT_LIST_DIR}/src/AtomRenderer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ComputationChain.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/CppProcessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/CacheManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/GUI.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DistributedPath.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceDimension.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpaceNode.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/Processor.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorAsync.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/ScriptProcessor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorGraph.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorCpp.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorAsyncWrapper.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/ProcessorScript.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincClient.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincProtocol.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/TincServer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/VariantValue.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
+
+
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/AtomRenderer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/GUI.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/SceneObject.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/TrajectoryRender.cpp
   )
 
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
 
 set(TINC_HEADERS
-    ${TINC_INCLUDE_PATH}/tinc/AtomRenderer.hpp
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ComputationChain.hpp
-    ${TINC_INCLUDE_PATH}/tinc/CppProcessor.hpp
+    ${TINC_INCLUDE_PATH}/tinc/CacheManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/DataPool.hpp
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/GUI.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferAbstract.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferImage.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferJson.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDF.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DistributedPath.hpp
     ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ImageDiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/JsonDiskBuffer.hpp
-    ${TINC_INCLUDE_PATH}/tinc/NetCDFDiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpace.hpp
     ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceDimension.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ParameterSpaceNode.hpp
     ${TINC_INCLUDE_PATH}/tinc/PeriodicTask.hpp
     ${TINC_INCLUDE_PATH}/tinc/Processor.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ProcessorAsync.hpp
-    ${TINC_INCLUDE_PATH}/tinc/ScriptProcessor.hpp
+    ${TINC_INCLUDE_PATH}/tinc/ProcessorCpp.hpp
+    ${TINC_INCLUDE_PATH}/tinc/ProcessorGraph.hpp
+    ${TINC_INCLUDE_PATH}/tinc/ProcessorAsyncWrapper.hpp
+    ${TINC_INCLUDE_PATH}/tinc/ProcessorScript.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincClient.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincProtocol.hpp
     ${TINC_INCLUDE_PATH}/tinc/TincServer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/VariantValue.hpp
     ${TINC_INCLUDE_PATH}/tinc/VASPReader.hpp
 
+    ${TINC_INCLUDE_PATH}/tinc/vis/AtomRenderer.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/GUI.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/SceneObject.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/TrajectoryRender.hpp
 )
+
 
 add_library(tinc ${TINC_SRC} ${TINC_HEADERS})
 
@@ -74,7 +95,7 @@ include(ExternalProject)
 ExternalProject_Add(
   protobufProject
   PREFIX external/protobuf
-  URL https://github.com/protocolbuffers/protobuf/archive/v3.13.0.tar.gz
+  URL https://github.com/protocolbuffers/protobuf/archive/v3.6.1.tar.gz
   BINARY_DIR ${TINC_ROOT}/external/protobuf-build-${CMAKE_BUILD_TYPE}
   SOURCE_DIR ${TINC_ROOT}/external/protobuf
   CMAKE_CACHE_ARGS
@@ -201,5 +222,12 @@ endif(TINC_BUILD_EXAMPLES)
 
 if(TINC_BUILD_TESTS)
   message("Building TINC Tests")
+  
+  if (TINC_CODE_COVERAGE)
+    message("Building code coverage for tests")
+    set_target_properties(tinc PROPERTIES COMPILE_FLAGS "-g -O0 -Wall -fprofile-arcs -ftest-coverage")
+    target_link_libraries(tinc PUBLIC gcov)
+  endif()
+  
   add_subdirectory(tests)
 endif(TINC_BUILD_TESTS)

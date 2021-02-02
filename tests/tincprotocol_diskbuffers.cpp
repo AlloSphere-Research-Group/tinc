@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
 #include "tinc/DiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
 
@@ -13,15 +13,15 @@
 
 using namespace tinc;
 
-TEST(TincProtocol, DiskBuffers) {
+TEST(DiskBuffer, Connection) {
   TincServer tserver;
-  tserver.verbose(true);
+  // tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   // TODO create disk buffers of different types
   ImageDiskBuffer imageBuffer{"image", "test.png"};
-  // JsonDiskBuffer jsonBuffer{"json", "test.json"};
-  // NetCDFDiskBufferDouble netcdfBuffer{"nc", "test.nc"};
+  // DiskBufferJson jsonBuffer{"json", "test.json"};
+  // DiskBufferNetCDFDouble netcdfBuffer{"nc", "test.nc"};
 
   auto imageName = imageBuffer.getCurrentFileName();
 
@@ -43,9 +43,20 @@ TEST(TincProtocol, DiskBuffers) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-  tclient.verbose(true);
+  // tclient.setVerbose(true);
 
-  al::al_sleep(0.5); // Give time to connect
+  bool timeout = false;
+  int counter = 0;
+
+  al::ParameterMeta *param{nullptr};
+  while (!tclient.isConnected() && !timeout) {
+    al::al_sleep(0.001); // Give time to connect
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
   EXPECT_TRUE(tclient.isConnected());
 
   tclient.requestDiskBuffers();

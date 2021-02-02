@@ -1,7 +1,7 @@
 #include "tinc/DataPool.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
@@ -21,22 +21,19 @@ struct MyApp : public al::App {
   tinc::TincServer tserv;
 
   void prepareParameterSpace() {
-    auto dirDim =
-        ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
+    auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
     uint8_t values[] = {0, 2, 4, 6, 8};
-    dirDim->append(values, 5, "datapool_directory_");
-    dirDim->conform();
+    dirDim->appendSpaceValues(values, 5, "datapool_directory_");
+    dirDim->conformSpace();
 
     auto internalValuesDim = ps.newDimension("internalValuesDim");
     float internalValues[] = {-0.3f, -0.2f, -0.1f, 0.0f, 0.1f, 0.2f, 0.3f};
-    internalValuesDim->append(internalValues, 7);
-    internalValuesDim->conform();
+    internalValuesDim->setSpaceValues(internalValues, 7);
+    internalValuesDim->conformSpace();
 
-    ps.generateRelativeRunPath = [](std::map<std::string, size_t> indeces,
-                                    tinc::ParameterSpace *ps) {
-      std::string path = ps->getDimension("dirDim")->idAt(indeces["dirDim"]);
-      return path;
-    };
+    // The running path for the parameter space is determined by 'dirDim'
+    ps.setCurrentPathTemplate("%%dirDim%%");
+
     internalValuesDim->setCurrentIndex(0);
 
     // Now we will access the data
@@ -51,7 +48,7 @@ struct MyApp : public al::App {
   void prepareGui() {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space");
-    tinc::gui::drawControls(ps);
+    tinc::vis::drawControls(ps);
     al::ParameterGUI::endPanel();
     al::imguiEndFrame();
   }

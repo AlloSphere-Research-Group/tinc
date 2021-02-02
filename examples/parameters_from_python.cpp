@@ -4,8 +4,8 @@
 //#include "al/ui/al_ParameterGUI.hpp"
 
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/vis/GUI.hpp"
 
 using namespace tinc;
 
@@ -18,14 +18,12 @@ struct TincApp : al::App {
   }
 
   void onAnimate(double dt) override {
-
-    auto params = tserv.dimensions();
     al::imguiBeginFrame();
     ImGui::Begin("Remote Controls");
-    for (auto *param : params) {
+    for (auto *dim : tserv.dimensions()) {
 
-      gui::drawControl(param);
-      std::cout << param->values().size() << std::endl;
+      vis::drawControl(dim);
+      std::cout << dim->getName() << " size: " << dim->size() << std::endl;
     }
     ImGui::End();
     al::imguiEndFrame();

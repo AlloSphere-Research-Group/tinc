@@ -1,10 +1,10 @@
 #include "tinc/TincClient.hpp"
-#include "tinc/ComputationChain.hpp"
-#include "tinc/CppProcessor.hpp"
-#include "tinc/ProcessorAsync.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/ProcessorAsyncWrapper.hpp"
 
 #include <iostream>
 #include <memory>
@@ -15,8 +15,21 @@
 
 using namespace tinc;
 
-//// ------------------------
-TincClient::TincClient() {}
+TincClient::TincClient() {
+  mVersion = TINC_PROTOCOL_VERSION;
+  mRevision = TINC_PROTOCOL_REVISION;
+}
+
+void TincClient::stop() {
+  TincMessage tincMessage;
+
+  tincMessage.set_messagetype(MessageType::GOODBYE);
+  tincMessage.set_objecttype(ObjectType::GLOBAL);
+
+  sendTincMessage(&tincMessage);
+
+  CommandConnection::stop();
+}
 
 bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
 
@@ -27,8 +40,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
       break;
     }
     message.pushReadIndex(8);
-    std::cout << "Got " << msgSize << " of " << message.remainingBytes()
-              << std::endl;
+    if (verbose()) {
+      std::cout << "Client got " << msgSize << " of "
+                << message.remainingBytes() << std::endl;
+    }
     google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
     google::protobuf::io::CodedInputStream codedStream(&ais);
     TincMessage tincMessage;
@@ -42,75 +57,284 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          runRequest(objectType, objectId.id(), src);
+          readRequestMessage(objectType, objectId.id(), src);
         } else {
-          std::cout << "Request command unexpected payload. Not ObjectId";
+          std::cerr << __FUNCTION__ << ": Request message has invalid payload"
+                    << std::endl;
         }
         break;
       case MessageType::REMOVE:
         if (details.Is<ObjectId>()) {
           ObjectId objectId;
           details.UnpackTo(&objectId);
-          std::cout << "Remove command received, but not implemented"
+          std::cerr << __FUNCTION__
+                    << ": Remove message received, but not implemented"
                     << std::endl;
-          //              runRequest(objectType, objectId.id(), src);
         }
         break;
       case MessageType::REGISTER:
-        std::cout << "Register command received, but not implemented"
-                  << std::endl;
+        if (verbose()) {
+          std::cout << "Client received Register message" << std::endl;
+        }
+        if (!readRegisterMessage(objectType, (void *)&details, src)) {
+          std::cerr << __FUNCTION__ << ": Error processing Register message"
+                    << std::endl;
+        }
         break;
       case MessageType::CONFIGURE:
-        if (!runConfigure(objectType, (void *)&details, src)) {
-          std::cerr << "Error processing configure command" << std::endl;
+        if (verbose()) {
+          std::cout << "Client received Configure message" << std::endl;
+        }
+        if (!readConfigureMessage(objectType, (void *)&details, src)) {
+          std::cerr << __FUNCTION__ << ": Error processing Configure message"
+                    << std::endl;
         }
         break;
       case MessageType::COMMAND:
-        std::cout << "Command command received, but not implemented"
+        std::cerr << __FUNCTION__
+                  << ": Command message received, but not implemented"
                   << std::endl;
         break;
       case MessageType::PING:
-        std::cout << "Ping command received, but not implemented" << std::endl;
+        std::cerr << __FUNCTION__
+                  << ": Ping message received, but not implemented"
+                  << std::endl;
         break;
       case MessageType::PONG:
-        std::cout << "Pong command received, but not implemented" << std::endl;
+        std::cerr << __FUNCTION__
+                  << ": Pong message received, but not implemented"
+                  << std::endl;
+        break;
+      case MessageType::BARRIER_REQUEST:
+        if (details.Is<Command>()) {
+          Command objectId;
+          details.UnpackTo(&objectId);
+          processBarrierRequest(src, objectId.message_id());
+        } else {
+          std::cerr << __FUNCTION__ << ": Invalid payload for BARRIER_REQUEST"
+                    << std::endl;
+        }
+        break;
+      case MessageType::BARRIER_ACK_LOCK:
+        std::cerr << __FUNCTION__
+                  << ": Unexpected BARRIER_ACK_LOCK message in client"
+                  << std::endl;
+        break;
+      case MessageType::BARRIER_UNLOCK:
+        if (details.Is<Command>()) {
+          Command objectId;
+          details.UnpackTo(&objectId);
+          processBarrierUnlock(src, objectId.message_id());
+        } else {
+          std::cerr << __FUNCTION__ << ": Invalid payload for BARRIER_UNLOCK"
+                    << std::endl;
+        }
+        break;
+      case MessageType::STATUS:
+        processStatusMessage(&tincMessage);
+        break;
+      default:
+        std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
         break;
       }
-
     } else {
-      std::cerr << "Error parsing message" << std::endl;
+      std::cerr << __FUNCTION__ << ": Error parsing message" << std::endl;
     }
+
     message.pushReadIndex(msgSize);
   }
 
-  std::cout << "message buffer : " << message.remainingBytes() << std::endl;
-  //      tincMsessage->
+  if (verbose()) {
+    std::cout << "Client message buffer : " << message.remainingBytes()
+              << std::endl;
+  }
 
-  //  //      CodedInputStream coded_input(&ais);
-  //  auto command = message.getByte();
-  //  if (command == REQUEST_PARAMETERS) {
-  //    sendParameters(src);
-  //    return true;
-  //  } else if (command == REQUEST_PROCESSORS) {
-  //    sendProcessors(src);
-  //    return true;
-  //  } else if (command == REQUEST_DISK_BUFFERS) {
-  //    //            sendDiskBuffers();
-  //    //    assert(0 == 1);
-  //    return false;
-  //  } else if (command == REQUEST_DATA_POOLS) {
-  //    sendDataPools(src);
-  //    return true;
-  //  } else if (command == OBJECT_COMMAND) {
-  //    return processObjectCommand(message, src);
-  //  } else if (command == CONFIGURE_PARAMETER) {
-  //    return processConfigureParameter(message, src);
-  //  }
   return true;
 }
 
-void TincClient::sendTincMessage(void *msg, al::ValueSource *src) {
-  // No need to check src on client
-  if (!sendProtobufMessage(msg, &mSocket)) {
+void TincClient::setVerbose(bool verbose) {
+  CommandConnection::mVerbose = verbose;
+  TincProtocol::mVerbose = verbose;
+}
+
+void TincClient::processBarrierRequest(al::Socket *src,
+                                       uint64_t barrierConsecutive) {
+  std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
+  mBarrierRequests[barrierConsecutive] = src;
+}
+
+void TincClient::processBarrierUnlock(al::Socket *src,
+                                      uint64_t barrierConsecutive) {
+  std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
+  mBarrierUnlocks[barrierConsecutive] = src;
+}
+
+void TincClient::processStatusMessage(void *message) {
+  auto msg = static_cast<TincMessage *>(message);
+  auto details = msg->details();
+  if (details.Is<StatusMessage>()) {
+    StatusMessage statusDetails;
+    details.UnpackTo(&statusDetails);
+    if (msg->objecttype() == ObjectType::GLOBAL) {
+      if (statusDetails.status() == StatusTypes::AVAILABLE) {
+        mServerStatus = TincProtocol::Status::STATUS_AVAILABLE;
+      } else if (statusDetails.status() == StatusTypes::BUSY) {
+        mServerStatus = TincProtocol::Status::STATUS_BUSY;
+      } else {
+        mServerStatus = TincProtocol::Status::STATUS_UNKNOWN;
+      }
+    } else {
+      std::cerr << "ERROR: non global status messages not supported"
+                << std::endl;
+    }
   }
+}
+
+bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
+                                 al::ValueSource *src) {
+  if (!dst) {
+    if (!src || mSocket.address() != src->ipAddr ||
+        mSocket.port() != src->port) {
+      if (verbose()) {
+        std::cout << "Client sending message to " << mSocket.address() << ":"
+                  << mSocket.port() << std::endl;
+      }
+      return sendProtobufMessage(msg, &mSocket);
+    }
+  } else {
+    if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {
+      if (verbose()) {
+        std::cout << "Client sending message to " << dst->address() << ":"
+                  << dst->port() << std::endl;
+        if (dst != &mSocket) {
+          std::cout << "Unexpected socket provided to client: "
+                    << dst->address() << ":" << dst->port() << std::endl;
+        }
+      }
+      return sendProtobufMessage(msg, dst);
+    }
+  }
+
+  return false;
+}
+
+bool TincClient::barrier(uint32_t group, float timeoutsec) {
+  uint64_t currentConsecutive = 0;
+  bool noCurrentBarriers = false;
+
+  std::cerr << __FUNCTION__ << " Enter client barrier " << std::endl;
+  // First flush all existing barrier requests and unlocks
+  {
+    std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
+    for (auto unlockConsecutive : mBarrierUnlocks) {
+      std::deque<uint64_t>::const_iterator found;
+      while (mBarrierRequests.find(unlockConsecutive.first) !=
+             mBarrierRequests.end()) {
+        mBarrierRequests.erase(unlockConsecutive.first);
+      }
+    }
+    if (mBarrierRequests.size() == 1) {
+      currentConsecutive = mBarrierRequests.begin()->first;
+      noCurrentBarriers = true;
+    } else if (mBarrierRequests.size() == 0) {
+      noCurrentBarriers = true;
+    } else {
+      std::cerr << __FUNCTION__ << " ERROR unexpected inconsistent state in "
+                                   "barrier. Aborting barriers"
+                << std::endl;
+      mBarrierRequests.clear();
+      mBarrierUnlocks.clear();
+      return false;
+    }
+  }
+
+  int timems = 0;
+
+  std::cerr << __FUNCTION__ << " Client after flush " << std::endl;
+  // If no currently active barriers, wait for incoming barrier
+  if (noCurrentBarriers) {
+    while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0)) {
+      std::deque<uint64_t>::const_iterator found;
+      if (mBarrierQueuesLock.try_lock()) {
+        if (mBarrierRequests.size() > 0) {
+          currentConsecutive = mBarrierRequests.begin()->first;
+          mBarrierQueuesLock.unlock();
+
+          TincMessage msgAck;
+          msgAck.set_messagetype(MessageType::BARRIER_ACK_LOCK);
+          msgAck.set_objecttype(ObjectType::GLOBAL);
+          Command lockDetails;
+          lockDetails.set_message_id(currentConsecutive);
+
+          auto *commandAckDetails = msgAck.details().New();
+          commandAckDetails->PackFrom(lockDetails);
+          msgAck.set_allocated_details(commandAckDetails);
+          bool ret = sendProtobufMessage(&msgAck,
+                                         mBarrierRequests[currentConsecutive]);
+          if (!ret) {
+            std::cerr << "ERROR sending unlock command to "
+                      << mBarrierRequests[currentConsecutive]->address() << ":"
+                      << mBarrierRequests[currentConsecutive]->port()
+                      << std::endl;
+          }
+
+          std::cerr << __FUNCTION__ << " Client sent ACK_LOCK has lock "
+                    << currentConsecutive << std::endl;
+          break;
+        }
+        mBarrierQueuesLock.unlock();
+      }
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(barrierWaitGranularTimeMs));
+      timems += barrierWaitGranularTimeMs;
+    }
+  }
+  if ((timems < (timeoutsec * 1000) && timeoutsec != 0.0)) {
+    // Timed out waiting for barrier request
+    return false;
+  }
+
+  timems = 0;
+  while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0)) {
+    std::deque<uint64_t>::const_iterator found;
+    if (mBarrierQueuesLock.try_lock()) {
+      if (mBarrierUnlocks.find(currentConsecutive) != mBarrierUnlocks.end()) {
+        mBarrierRequests.erase(currentConsecutive);
+        mBarrierUnlocks.erase(currentConsecutive);
+        mBarrierQueuesLock.unlock();
+        break;
+      }
+      mBarrierQueuesLock.unlock();
+    }
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(barrierWaitGranularTimeMs));
+    timems += barrierWaitGranularTimeMs;
+  }
+
+  std::cerr << __FUNCTION__ << " Exit client barrier --------" << std::endl;
+  return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
+}
+
+TincClient::Status TincClient::serverStatus() { return mServerStatus; }
+
+bool TincClient::waitForServer(float timeoutsec) {
+  {
+    std::unique_lock<std::mutex> lk(mBusyCountLock);
+    if (mBusyCount == 0) {
+      return true;
+    }
+  }
+  mWaitForServer = true;
+  auto startTime = std::chrono::high_resolution_clock::now();
+  while (mWaitForServer) {
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(barrierWaitGranularTimeMs));
+    auto now = std::chrono::high_resolution_clock::now();
+    if (timeoutsec > 0.001 &&
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime)
+                .count() > uint32_t(timeoutsec * 1e3)) {
+      return false;
+    }
+  }
+  return true;
 }

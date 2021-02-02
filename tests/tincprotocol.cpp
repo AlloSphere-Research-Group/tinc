@@ -8,10 +8,14 @@ using namespace tinc;
 
 TEST(TincProtocol, Connection) {
   TincServer tserver;
+  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   TincClient tclient;
+  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
+
+  al::al_sleep(0.1);
 
   EXPECT_EQ(tserver.connectionCount(), 1);
   EXPECT_TRUE(tclient.isConnected());
@@ -22,7 +26,6 @@ TEST(TincProtocol, Connection) {
 
 TEST(TincProtocol, MultiConnection) {
   TincServer tserver;
-  tserver.verbose(true);
   EXPECT_TRUE(tserver.start());
 
   TincClient tclient;
@@ -37,6 +40,8 @@ TEST(TincProtocol, MultiConnection) {
   TincClient tclient4;
   EXPECT_TRUE(tclient4.start());
 
+  al::al_sleep(0.1);
+
   EXPECT_EQ(tserver.connectionCount(), 4);
   EXPECT_TRUE(tclient.isConnected());
   EXPECT_TRUE(tclient2.isConnected());
@@ -44,8 +49,13 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient.stop();
+  al::al_sleep(0.1);
   tclient2.stop();
+  al::al_sleep(0.1);
   tclient3.stop();
+  al::al_sleep(0.1);
   tclient4.stop();
+  al::al_sleep(0.5);
+  EXPECT_EQ(tserver.connectionCount(), 0);
   tserver.stop();
 }

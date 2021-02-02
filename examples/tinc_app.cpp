@@ -1,9 +1,9 @@
 #include "tinc/DataPool.hpp"
-#include "tinc/CppProcessor.hpp"
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
-#include "tinc/ImageDiskBuffer.hpp"
-#include "tinc/GUI.hpp"
+#include "tinc/DiskBufferJson.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
@@ -26,7 +26,7 @@ struct MyApp : public al::App {
   tinc::DataPool dp{ps};
 
   al::Parameter procParameter{"procParam", "", 0.0, -10.0, 10.0};
-  tinc::CppProcessor processor;
+  tinc::ProcessorCpp processor;
   float computedValue{0};
 
   tinc::ImageDiskBuffer dataBuffer{"graph", "output.png"};
@@ -37,23 +37,19 @@ struct MyApp : public al::App {
   al::Texture graphTex;
 
   void prepareParameterSpace() {
-    auto dirDim =
-        ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
+    auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
     uint8_t values[] = {0, 2, 4, 6, 8};
-    dirDim->append(values, 5, "datapool_directory_");
-    dirDim->conform();
+    dirDim->appendSpaceValues(values, 5, "datapool_directory_");
+    dirDim->conformSpace();
 
     auto internalValuesDim = ps.newDimension("internalValuesDim");
     float internalValues[] = {-0.3f, -0.2f, -0.1f, 0.0f, 0.1f, 0.2f, 0.3f};
-    internalValuesDim->append(internalValues, 7);
-    internalValuesDim->conform();
-
-    ps.generateRelativeRunPath = [](std::map<std::string, size_t> indeces,
-                                    tinc::ParameterSpace *ps) {
-      std::string path = ps->getDimension("dirDim")->idAt(indeces["dirDim"]);
-      return path;
-    };
+    internalValuesDim->appendSpaceValues(internalValues, 7);
+    internalValuesDim->conformSpace();
     internalValuesDim->setCurrentIndex(0);
+
+    // The running path for the parameter space is determined by 'dirDim'
+    ps.setCurrentPathTemplate("%%dirDim%%");
   }
 
   void prepareProcessor() {
@@ -72,7 +68,7 @@ struct MyApp : public al::App {
   void prepareGui() {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space");
-    tinc::gui::drawControls(ps);
+    tinc::vis::drawControls(ps);
     al::ParameterGUI::draw(&procParameter);
     ImGui::Text("Computed value: %f", computedValue);
     al::ParameterGUI::endPanel();
@@ -100,7 +96,7 @@ struct MyApp : public al::App {
     tserv << dp;
     // Register the image data buffer
     tserv << dataBuffer;
-    tserv.verbose(true); // Show more information
+    tserv.setVerbose(true); // Show more information
 
     // Start TINC server with default parameters
     tserv.start();

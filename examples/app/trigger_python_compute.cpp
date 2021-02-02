@@ -2,7 +2,7 @@
 #include "al/ui/al_ControlGUI.hpp"
 
 #include "tinc/TincServer.hpp"
-#include "tinc/JsonDiskBuffer.hpp"
+#include "tinc/DiskBufferJson.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -11,7 +11,7 @@ struct TincApp : DistributedApp {
   TincServer tserv;
 
   Parameter range{"range", "", 0.5, "", 0.0, 1.0};
-  JsonDiskBuffer dataBuffer{"random_data", "rand_output.json"};
+  DiskBufferJson dataBuffer{"random_data", "rand_output.json"};
 
   ControlGUI gui;
 

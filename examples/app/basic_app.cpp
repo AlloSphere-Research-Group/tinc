@@ -27,7 +27,7 @@ struct TincApp : DistributedApp {
     parameterServer().verbose();
 
     // Start TINC server
-    tserv.verbose(true);
+    tserv.setVerbose(true);
     tserv.start(34450, "localhost");
 
     // Callbacks for triggers
@@ -45,7 +45,10 @@ struct TincApp : DistributedApp {
     gui.draw(g);
   }
 
-  void onExit() { gui.cleanup(); }
+  void onExit() {
+    tserv.stop();
+    gui.cleanup();
+  }
 };
 
 int main() {

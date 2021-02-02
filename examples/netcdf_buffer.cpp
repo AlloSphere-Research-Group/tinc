@@ -1,18 +1,18 @@
 #include "al/app/al_App.hpp"
 #include "al/math/al_Random.hpp"
-#include "tinc/NetCDFDiskBuffer.hpp"
+#include "tinc/DiskBufferNetCDF.hpp"
 
 using namespace al;
 using namespace tinc;
 
-// This file demonstrates usage of NetCDFDiskBufferDouble
+// This file demonstrates usage of DiskBufferNetCDFDouble
 // This class handles buffering from NetCDF disk files.
 
 // Press any key to produce a new set of random values to a NetCDF file
 
 struct MyApp : public App {
 
-  NetCDFDiskBufferDouble buffer{"NetCDFBuffer", "test.nc"};
+  DiskBufferNetCDFDouble buffer{"NetCDFBuffer", "test.nc"};
   VAOMesh m;
 
   void onInit() override {
