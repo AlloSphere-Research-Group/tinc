@@ -1,4 +1,4 @@
-[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/devel.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc) [![codecov](https://codecov.io/gh/AlloSphere-Research-Group/tinc/branch/devel/graph/badge.svg?token=0Y3PBQORDU)](https://codecov.io/gh/AlloSphere-Research-Group/tinc)
+[![Allosphere-Research-Group](https://circleci.com/gh/AlloSphere-Research-Group/tinc/tree/main.svg?style=shield)](https://circleci.com/gh/AlloSphere-Research-Group/tinc) [![codecov](https://codecov.io/gh/AlloSphere-Research-Group/tinc/branch/devel/main/badge.svg?token=0Y3PBQORDU)](https://codecov.io/gh/AlloSphere-Research-Group/tinc)
 
 # TINC (Toolkit for Interactive Computation)
 The Toolkit for Interactive Computation (TINC) provides a set of C++ and python
