@@ -39,6 +39,12 @@
 
 namespace tinc {
 
+/**
+ * @brief A class to manage C++ computation within TINC
+ *
+ * The processingFunction function is called by process(). You must set this
+ * function, otherwise an excepstion is raised
+ */
 class ProcessorCpp : public Processor {
 public:
   ProcessorCpp(std::string id = "");

@@ -23,6 +23,7 @@ add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
 set(TEST_SOURCES main.cpp
+  processor.cpp
   parameters.cpp
   parameterspace.cpp
   tincprotocol_cache.cpp
@@ -37,11 +38,11 @@ set(TEST_SOURCES main.cpp
 )
 
 if(BUILD_PYTHON_TESTS)
-  list(APPEND TEST_SOURCES
+  list(PREPEND TEST_SOURCES
+    pythonclient_parameters.cpp
     python_common.cpp
     python_common.hpp
     pythonclient.cpp
-    pythonclient_parameters.cpp
     pythonclient_parameterspaces.cpp
     )
 endif(BUILD_PYTHON_TESTS)

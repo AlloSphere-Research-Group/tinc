@@ -245,6 +245,7 @@ void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
   // TODO add safety check for types and pointer sizes
   mSpaceValues.clear();
   mSpaceValues.append(values, count, idprefix);
+  conformSpace();
   onDimensionMetadataChange(this, src);
 }
 

@@ -4,17 +4,17 @@
 
 using namespace tinc;
 
-void ProcessorGraph::addProcessor(Processor &chain) {
+void ProcessorGraph::addProcessor(Processor &proc, bool connectFiles) {
   std::unique_lock<std::mutex> lk(mChainLock);
   switch (mType) {
   case PROCESS_ASYNC:
     // FIXME check if process is already async, so there's no need to do this.
     // FIXME free this on destructor
-    mAsyncProcessesInternal.emplace_back(new ProcessorAsyncWrapper(&chain));
-    mProcessors.push_back(mAsyncProcessesInternal.back());
+    mAsyncProcessesInternal.emplace_back(new ProcessorAsyncWrapper(&proc));
+    mProcessors.push_back({mAsyncProcessesInternal.back(), false});
     break;
   case PROCESS_SERIAL:
-    mProcessors.push_back(&chain);
+    mProcessors.push_back({&proc, connectFiles});
     break;
   }
 }
@@ -28,8 +28,8 @@ bool ProcessorGraph::process(bool forceRecompute) {
   }
 
   callStartCallbacks();
-  std::unique_lock<std::mutex> lk(mProcessLock);
   std::unique_lock<std::mutex> lk2(mChainLock);
+  std::unique_lock<std::mutex> lk(mProcessLock);
   if (prepareFunction && !prepareFunction()) {
     std::cerr << "ERROR preparing processor: " << mId << std::endl;
     return false;
@@ -38,30 +38,30 @@ bool ProcessorGraph::process(bool forceRecompute) {
   bool thisRet = true;
   switch (mType) {
   case PROCESS_ASYNC:
-    for (auto chain : mProcessors) {
+    for (auto proc : mProcessors) {
       for (auto configEntry : configuration) {
-        chain->configuration[configEntry.first] = configEntry.second;
+        proc.first->configuration[configEntry.first] = configEntry.second;
       }
-      mResults[chain->getId()] = chain->process(forceRecompute);
+      mResults[proc.first->getId()] = proc.first->process(forceRecompute);
     }
-    for (auto chain : mProcessors) {
-      thisRet = ((ProcessorAsyncWrapper *)chain)->waitUntilDone();
-      mResults[chain->getId()] = thisRet;
-      if (!chain->ignoreFail) {
-        if (!chain->ignoreFail) {
+    for (auto proc : mProcessors) {
+      thisRet = ((ProcessorAsyncWrapper *)proc.first)->waitUntilDone();
+      mResults[proc.first->getId()] = thisRet;
+      if (!proc.first->ignoreFail) {
+        if (!proc.first->ignoreFail) {
           ret &= thisRet;
         }
       }
     }
     break;
   case PROCESS_SERIAL:
-    for (auto chain : mProcessors) {
+    for (auto proc : mProcessors) {
       for (auto configEntry : configuration) {
-        chain->configuration[configEntry.first] = configEntry.second;
+        proc.first->configuration[configEntry.first] = configEntry.second;
       }
-      thisRet = chain->process(forceRecompute);
-      mResults[chain->getId()] = thisRet;
-      if (!chain->ignoreFail) {
+      thisRet = proc.first->process(forceRecompute);
+      mResults[proc.first->getId()] = thisRet;
+      if (!proc.first->ignoreFail) {
         ret &= thisRet;
         if (!thisRet) {
           break;
@@ -82,4 +82,13 @@ std::map<std::string, bool> ProcessorGraph::getResults() {
 ProcessorGraph &tinc::ProcessorGraph::operator<<(Processor &processor) {
   addProcessor(processor);
   return *this;
+}
+
+std::vector<Processor *> ProcessorGraph::getProcessors() {
+  std::vector<Processor *> procs;
+  std::unique_lock<std::mutex> lk2(mChainLock);
+  for (auto proc : mProcessors) {
+    procs.push_back(proc.first);
+  }
+  return procs;
 }

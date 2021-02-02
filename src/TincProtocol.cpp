@@ -1541,7 +1541,7 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ProcessorGraph *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->getProcessors()) {
       sendRegisterMessage(childProcessor, dst, src);
     }
   }
@@ -1774,7 +1774,7 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
 
   if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto childProcessor :
-         dynamic_cast<ProcessorGraph *>(p)->processors()) {
+         dynamic_cast<ProcessorGraph *>(p)->getProcessors()) {
       if (src) {
         sendConfigureMessage(childProcessor, dst, src);
       } else {

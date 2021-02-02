@@ -90,6 +90,7 @@ bool ProcessorScript::process(bool forceRecompute) {
       readJsonConfig(jsonFilename);
     }
   } else {
+    readJsonConfig(jsonFilename);
     if (mVerbose) {
       std::cout << "No need to update cache according to " << metaFilename()
                 << std::endl;

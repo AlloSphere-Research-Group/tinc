@@ -2,7 +2,7 @@
 #define COMPUTATIONCHAIN_HPP
 
 /*
- * Copyright 2020 AlloSphere Research Group
+ * Copyright 2020, 2021 AlloSphere Research Group
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -48,7 +48,22 @@ public:
       : Processor(id), mType(type) {}
   ProcessorGraph(std::string id) : Processor(id), mType(PROCESS_SERIAL) {}
 
-  void addProcessor(Processor &chain);
+  /**
+   * @brief Add a processor to the computation chain
+   * @param proc
+   * @param connectFiles true if output files should be connected to input files
+   *
+   * connectFiles only has effect if ChainType is PROCESS_SERIAL, it is ingored
+   * for PROCESS_ASYNC
+   */
+  void addProcessor(Processor &proc, bool connectFiles = true);
+
+  /**
+   * @brief Syntactic sugar for addProcessor()
+   *
+   * Call addProcessor() with connectFiles set to true
+   */
+  ProcessorGraph &operator<<(Processor &processor);
 
   bool process(bool forceRecompute = false) override;
 
@@ -60,12 +75,18 @@ public:
    */
   std::map<std::string, bool> getResults();
 
-  ProcessorGraph &operator<<(Processor &processor);
-
+  /**
+   * Register a parameter to trigger computation. The parameter value is also
+   * automatically added to the configuration passed to children Processors.
+   * These values will override any values of the same name that have been set.
+   * (for example from a parameter sweep or manually by the user)
+   */
   template <class ParameterType>
-  ProcessorGraph &
-  registerParameter(al::ParameterWrapper<ParameterType> &param);
+  ProcessorGraph &registerParameter(al::ParameterWrapper<ParameterType> &param);
 
+  /**
+   * @brief Syntactic sugar for registerParameter()
+   */
   template <class ParameterType>
   ProcessorGraph &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
     return registerParameter(newParam);
@@ -73,23 +94,21 @@ public:
   /**
    * @brief Return list of currently registered processors.
    */
-  std::vector<Processor *> processors() { return mProcessors; }
+  std::vector<Processor *> getProcessors();
 
 private:
   std::map<std::string, bool> mResults;
-  std::vector<Processor *> mProcessors;
+  std::mutex mChainLock; // Exclusive access to processor list mProcessors
+  std::vector<std::pair<Processor *, bool>> mProcessors;
   std::vector<ProcessorAsyncWrapper *> mAsyncProcessesInternal;
-  // TODO check, this lock might not be needed as Processor already has a mutex
-  // doing this.
-  std::mutex mChainLock;
   ChainType mType;
 };
 
 // Implementation
 
 template <class ParameterType>
-ProcessorGraph &ProcessorGraph::registerParameter(
-    al::ParameterWrapper<ParameterType> &param) {
+ProcessorGraph &
+ProcessorGraph::registerParameter(al::ParameterWrapper<ParameterType> &param) {
   mParameters.push_back(&param);
   configuration[param.getName()] = param.get();
   param.registerChangeCallback([&](ParameterType value) {

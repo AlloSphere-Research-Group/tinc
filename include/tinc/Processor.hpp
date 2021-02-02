@@ -66,6 +66,8 @@ private:
  * function.
  */
 class Processor : public IdObject {
+  friend class ProcessorGraph;
+
 public:
   typedef std::map<std::string, VariantValue> Configuration;
 
