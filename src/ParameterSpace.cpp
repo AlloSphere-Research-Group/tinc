@@ -856,8 +856,10 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
   auto dimNames = dimensionNames();
 
   std::map<std::string, size_t> currentIndeces;
-  for (auto dimension : dimNames) {
-    currentIndeces[dimension] = 0;
+  for (auto dimension : getDimensions()) {
+    if (dimension->size() > 0) {
+      currentIndeces[dimension->getName()] = 0;
+    }
   }
   bool done = false;
   std::vector<std::string> innerDimensions;
