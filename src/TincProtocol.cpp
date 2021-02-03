@@ -1375,6 +1375,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   for (auto dim : mParameterSpaceDimensions) {
     if (dim->getName() == id && dim->getGroup() == group) {
       if (mVerbose) {
+        // FIXME apply configuration (min, max, default) if found
         std::cout << __FUNCTION__ << ": Parameter " << id
                   << " (Group: " << group << ") already registered."
                   << std::endl;
