@@ -271,7 +271,7 @@ void ParameterSpaceDimension::conformSpace() {
   switch (mSpaceValues.getDataType()) {
   case al::DiscreteParameterValues::FLOAT: {
     auto &param = getParameter<al::Parameter>();
-    float max = std::numeric_limits<float>::min();
+    float max = std::numeric_limits<float>::lowest();
     float min = std::numeric_limits<float>::max();
     for (auto value : getSpaceValues<float>()) {
       if (value > max) {
@@ -291,7 +291,7 @@ void ParameterSpaceDimension::conformSpace() {
   } break;
   case al::DiscreteParameterValues::UINT8: {
     auto &param = getParameter<al::ParameterInt>();
-    uint8_t max = std::numeric_limits<uint8_t>::min();
+    uint8_t max = std::numeric_limits<uint8_t>::lowest();
     uint8_t min = std::numeric_limits<uint8_t>::max();
     for (auto value : getSpaceValues<uint8_t>()) {
       if (value > max) {
@@ -311,7 +311,7 @@ void ParameterSpaceDimension::conformSpace() {
   } break;
   case al::DiscreteParameterValues::INT8: {
     auto &param = getParameter<al::ParameterInt>();
-    int8_t max = std::numeric_limits<int8_t>::min();
+    int8_t max = std::numeric_limits<int8_t>::lowest();
     int8_t min = std::numeric_limits<int8_t>::max();
     for (auto value : getSpaceValues<int8_t>()) {
       if (value > max) {
@@ -331,7 +331,7 @@ void ParameterSpaceDimension::conformSpace() {
   } break;
   case al::DiscreteParameterValues::INT32: {
     auto &param = getParameter<al::ParameterInt>();
-    int32_t max = std::numeric_limits<int32_t>::min();
+    int32_t max = std::numeric_limits<int32_t>::lowest();
     int32_t min = std::numeric_limits<int32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {
       if (value > max) {
@@ -351,7 +351,7 @@ void ParameterSpaceDimension::conformSpace() {
   } break;
   case al::DiscreteParameterValues::UINT32: {
     auto &param = getParameter<al::ParameterInt>();
-    uint32_t max = std::numeric_limits<uint32_t>::min();
+    uint32_t max = std::numeric_limits<uint32_t>::lowest();
     uint32_t min = std::numeric_limits<uint32_t>::max();
     for (auto value : getSpaceValues<int32_t>()) {
 

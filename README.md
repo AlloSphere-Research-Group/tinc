@@ -35,6 +35,8 @@ dependencies.
 
 # Support
 
+The [TINC API documentation](https://allosphere-research-group.github.io/tinc-site/doc/html/annotated.html) is online.
+
 Join the user and development mailing lists at:
 
 [](https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev)
