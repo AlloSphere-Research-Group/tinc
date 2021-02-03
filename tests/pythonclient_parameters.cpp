@@ -282,7 +282,6 @@ while not tclient.get_parameter("param", "group"):
 
 time.sleep(0.2)
 p =  tclient.get_parameter("param", "group")
-test_output = [parameter_to_dict(p) for p in tclient.parameters]
 
 q = tclient.create_parameter(ParameterInt, "remoteParam", "remoteGroup", -11, 12, None, 8, None)
 
@@ -291,14 +290,15 @@ q.set_value(4)
 while q.value == 4:
     time.sleep(0.1)
 
+test_output = [parameter_to_dict(p) for p in tclient.parameters]
 tclient.stop()
 )";
   PythonTester ptest;
   ptest.pythonExecutable = PYTHON_EXECUTABLE;
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
-  ptest.runPython(pythonCode);
   std::thread th([&]() { ptest.runPython(pythonCode); });
 
+  tserver.waitForConnections(1);
   int counter = 0;
   while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
     al::al_sleep(0.05);
@@ -308,10 +308,10 @@ tclient.stop()
     }
   }
 
-  auto *q = tserver.getParameter("remoteParam", "remoteGroup");
+  auto *q = tserver.getDimension("remoteParam", "remoteGroup");
   EXPECT_NE(q, nullptr);
 
-  auto *remoteInt = static_cast<al::ParameterInt *>(q);
+  auto *remoteInt = static_cast<al::ParameterInt *>(q->getParameterMeta());
   EXPECT_EQ(remoteInt->min(), -11);
   EXPECT_EQ(remoteInt->max(), 12);
   EXPECT_EQ(remoteInt->getDefault(), 8);
@@ -319,8 +319,9 @@ tclient.stop()
 
   remoteInt->min(5);
   remoteInt->max(50);
+  q->onDimensionMetadataChange(q, nullptr);
   // Notify python to check
-  remoteInt->set(0);
+  remoteInt->set(10);
 
   th.join();
 
@@ -345,11 +346,10 @@ tclient.stop()
 
   auto p2 = output[1];
 
-  EXPECT_FLOAT_EQ(p1["minimum"], 5);
-  EXPECT_FLOAT_EQ(p1["maximum"], 50);
-  EXPECT_FLOAT_EQ(p1["_value"], 0);
+  EXPECT_FLOAT_EQ(p2["minimum"], 5);
+  EXPECT_FLOAT_EQ(p2["maximum"], 50);
+  EXPECT_FLOAT_EQ(p2["_value"], 10);
 
-  // TODO change value on the clientside
   tserver.stop();
 }
 
