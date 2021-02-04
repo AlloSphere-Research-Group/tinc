@@ -49,6 +49,15 @@ def parameter_space_to_dict(ps):
         pass
     return d
 
+def disk_buffer_to_dict(db):
+    d = db.__dict__.copy()
+
+    try:
+        del d["tinc_client"]
+    except:
+        pass
+    return d
+
 from tinc_client import *
 tclient = TincClient()
 

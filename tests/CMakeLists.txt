@@ -39,6 +39,7 @@ set(TEST_SOURCES main.cpp
 
 if(BUILD_PYTHON_TESTS)
   list(PREPEND TEST_SOURCES
+    pythonclient_diskbuffer.cpp
     pythonclient_parameters.cpp
     python_common.cpp
     python_common.hpp
