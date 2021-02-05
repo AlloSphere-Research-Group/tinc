@@ -20,7 +20,7 @@ using json = nlohmann::json;
 class MyApp : public al::App {
 public:
   TincServer tincServer;
-  ImageDiskBuffer imageBuffer{"image", "image.png"};
+  DiskBufferImage imageBuffer{"image", "image.png"};
   DiskBufferJson jsonBuffer{"json", "file.json"};
   DiskBufferNetCDFDouble netcdfBuffer{"nc", "file.nc"};
 

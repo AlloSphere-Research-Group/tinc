@@ -29,7 +29,7 @@ struct MyApp : public al::App {
   tinc::ProcessorCpp processor;
   float computedValue{0};
 
-  tinc::ImageDiskBuffer dataBuffer{"graph", "output.png"};
+  tinc::DiskBufferImage dataBuffer{"graph", "output.png"};
 
   tinc::TincServer tserv;
 

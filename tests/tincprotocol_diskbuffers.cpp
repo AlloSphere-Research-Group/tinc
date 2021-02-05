@@ -19,7 +19,7 @@ TEST(DiskBuffer, Connection) {
   EXPECT_TRUE(tserver.start());
 
   // TODO create disk buffers of different types
-  ImageDiskBuffer imageBuffer{"image", "test.png"};
+  DiskBufferImage imageBuffer{"image", "test.png"};
   // DiskBufferJson jsonBuffer{"json", "test.json"};
   // DiskBufferNetCDFDouble netcdfBuffer{"nc", "test.nc"};
 

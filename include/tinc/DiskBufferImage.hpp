@@ -39,9 +39,9 @@
 
 namespace tinc {
 
-class ImageDiskBuffer : public DiskBuffer<al::Image> {
+class DiskBufferImage : public DiskBuffer<al::Image> {
 public:
-  ImageDiskBuffer(std::string id, std::string fileName = "",
+  DiskBufferImage(std::string id, std::string fileName = "",
                   std::string path = "", uint16_t size = 2)
       : DiskBuffer<al::Image>(id, fileName, path, size) {}
 

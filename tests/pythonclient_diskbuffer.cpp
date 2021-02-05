@@ -16,7 +16,7 @@ TEST(PythonClient, Diskbuffer) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  ImageDiskBuffer imageBuffer{"image", "test.png"};
+  DiskBufferImage imageBuffer{"image", "test.png"};
   DiskBufferJson jsonBuffer{"json", "test.json"};
 
   tserver << imageBuffer << jsonBuffer;

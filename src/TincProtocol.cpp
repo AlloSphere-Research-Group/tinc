@@ -1562,7 +1562,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
 
   if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
     type = DiskBufferType::NETCDF;
-  } else if (strcmp(typeid(db).name(), typeid(ImageDiskBuffer).name()) == 0) {
+  } else if (strcmp(typeid(db).name(), typeid(DiskBufferImage).name()) == 0) {
     type = DiskBufferType::IMAGE;
   } else if (strcmp(typeid(db).name(), typeid(DiskBufferJson).name()) == 0) {
     type = DiskBufferType::JSON;
