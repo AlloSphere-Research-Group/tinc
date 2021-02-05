@@ -653,9 +653,9 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       for (size_t i = 0; i < lenp; i++) {
         newIds.push_back(idData[i]);
       }
+      pdim->conformSpace();
       pdim->setSpaceIds(newIds);
 
-      pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
 
       //      std::cout << "mapped parameter " << i << ":" << parameterName

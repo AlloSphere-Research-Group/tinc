@@ -959,6 +959,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
           // connects callbacks, sends register + configure messages
           registerParameterSpaceDimension(*changedDimension, src);
           sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr, src);
+          sendConfigureMessage(ps, nullptr, src);
           break;
         }
       }
