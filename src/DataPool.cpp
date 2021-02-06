@@ -2,9 +2,6 @@
 
 #include "al/io/al_File.hpp"
 
-#include "nlohmann/json.hpp"
-using json = nlohmann::json;
-
 #ifdef TINC_HAS_NETCDF
 #include <netcdf.h>
 #endif
@@ -48,7 +45,7 @@ DataPool::createDataSlice(std::string field,
   }
   // FIXME implement slicing along more than one dimension.
   std::vector<float> values;
-  std::string filename = "slice_";
+  std::string filename = "slice_" + field + "_";
 
   size_t fieldSize = 1; // FIXME get actual field size
   size_t dimCount = fieldSize;
@@ -61,7 +58,7 @@ DataPool::createDataSlice(std::string field,
       return std::string();
     }
   }
-  values.reserve(dimCount);
+  //  values.reserve(dimCount);
 
   // TODO check if file exists and is the correct slice to use cache instead.
   // TODO for this we need to add metadata to the file indicating where the
@@ -70,7 +67,7 @@ DataPool::createDataSlice(std::string field,
     auto dim = mParameterSpace->getDimension(sliceDimension);
     assert(dim);
     if (std::find(filesystemDims.begin(), filesystemDims.end(),
-                  sliceDimension) == filesystemDims.end()) {
+                  sliceDimension) != filesystemDims.end()) {
       // TODO should we perform a  copy of the parameter space to avoid race
       // conditions?
       // sliceDimension is a dimension that affects filesystem paths.
@@ -97,8 +94,10 @@ DataPool::createDataSlice(std::string field,
       for (auto dimension : mParameterSpace->getDimensions()) {
         currentIndeces[dimension->getName()] = dimension->getCurrentIndex();
       }
-      auto directory = mParameterSpace->generateRelativeRunPath(
-          currentIndeces, mParameterSpace);
+      auto directory =
+          al::File::conformDirectory(mParameterSpace->getRootPath()) +
+          mParameterSpace->generateRelativeRunPath(currentIndeces,
+                                                   mParameterSpace);
       for (auto file : mDataFilenames) {
         if (getFieldFromFile(field,
                              al::File::conformDirectory(directory) + file.first,
@@ -107,22 +106,23 @@ DataPool::createDataSlice(std::string field,
         }
       }
     }
-    filename += sliceDimension + +"_" +
-                mParameterSpace->getDimension(sliceDimension)->getCurrentId();
+    filename += sliceDimension + "_";
+    mParameterSpace->getDimension(sliceDimension)->getCurrentId();
   }
-
   for (auto dim : mParameterSpace->getDimensions()) {
     if (std::find(sliceDimensions.begin(), sliceDimensions.end(),
                   dim->getName()) == sliceDimensions.end()) {
-      filename += "_" + dim->getName();
+      filename +=
+          "_" + dim->getName() + "_" + std::to_string(dim->getCurrentIndex());
     }
   }
+
   filename += ".nc";
 #ifdef TINC_HAS_NETCDF
   int retval, ncid;
   if ((retval = nc_create((mSliceCacheDirectory + filename).c_str(),
                           NC_NETCDF4 | NC_CLOBBER, &ncid))) {
-    std::cerr << "Error opening file: " << filename << std::endl;
+    std::cerr << "Error creating file: " << filename << std::endl;
     filename.clear();
   }
   int x_dimid, varid;
@@ -163,7 +163,8 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
     nc_type xtypep;
     int ndimsp;
     int dimidsp[32];
-    if ((retval = nc_open(filename.c_str(), NC_NETCDF4, &ncid))) {
+    if ((retval = nc_open((mSliceCacheDirectory + filename).c_str(), NC_NETCDF4,
+                          &ncid))) {
       std::cerr << "Error opening file: " << filename << std::endl;
     }
     if ((retval = nc_inq_varid(ncid, "data", &varid))) {
@@ -182,7 +183,13 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
       if ((retval = nc_get_var(ncid, varid, data))) {
         return 0;
       }
+      if ((retval = nc_close(ncid))) {
+        std::cerr << "Error closing file: " << filename << std::endl;
+      }
       return lenp;
+    }
+    if ((retval = nc_close(ncid))) {
+      std::cerr << "Error closing file: " << filename << std::endl;
     }
 #endif
     return 0; // FIXME finish the edge case
@@ -200,40 +207,6 @@ void DataPool::setCacheDirectory(std::string cacheDirectory) {
   }
   mSliceCacheDirectory = cacheDirectory;
   modified();
-}
-
-bool DataPool::getFieldFromFile(std::string field, std::string file,
-                                size_t dimensionInFileIndex, void *data) {
-  std::ifstream f(file);
-  if (!f.good()) {
-    std::cerr << "ERROR reading file: " << file << std::endl;
-    return false;
-  }
-  json j = json::parse(f);
-  auto fieldData = j[field].at(dimensionInFileIndex).get<float>();
-  *(float *)data = fieldData;
-  return true;
-}
-
-bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
-                                size_t length) {
-
-  auto fileType = getFileType(file);
-  std::ifstream f(file);
-  if (!f.good()) {
-    std::cerr << "ERROR reading file: " << file << std::endl;
-    return false;
-  }
-  json j;
-  f >> j;
-  auto fieldData = j[field];
-  if (fieldData && fieldData.is_array()) {
-    memcpy((float *)data, fieldData.get<std::vector<float>>().data(),
-           length * sizeof(float));
-  } else {
-    return false;
-  }
-  return true;
 }
 
 std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/

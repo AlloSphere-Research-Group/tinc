@@ -105,7 +105,7 @@ public:
   /**
    * @brief readDataSlice
    * @param field
-   * @param sliceDimension
+   * @param sliceDimension dimension that can vary in the slice
    * @param data
    * @param maxLen
    * @return number of elements written to data pointer
@@ -130,10 +130,10 @@ public:
   };
 
 protected:
-  bool getFieldFromFile(std::string field, std::string file,
-                        size_t dimensionInFileIndex, void *data);
-  bool getFieldFromFile(std::string field, std::string file, void *data,
-                        size_t length);
+  virtual bool getFieldFromFile(std::string field, std::string file,
+                                size_t dimensionInFileIndex, void *data) = 0;
+  virtual bool getFieldFromFile(std::string field, std::string file, void *data,
+                                size_t length) = 0;
 
   std::string getFileType(std::string file);
 

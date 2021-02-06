@@ -1,4 +1,4 @@
-#include "tinc/DataPool.hpp"
+#include "tinc/DataPoolJson.hpp"
 #include "tinc/ProcessorCpp.hpp"
 
 #include "nlohmann/json.hpp"
@@ -67,7 +67,7 @@ int main() {
   }
 
   // Now we will access the data
-  tinc::DataPool dp(ps);
+  tinc::DataPoolJson dp(ps);
   dp.registerDataFile("datapool_data.json", "internalValuesDim");
 
   // You can write slices disk (with automatic caching)

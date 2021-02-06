@@ -1,4 +1,4 @@
-#include "tinc/DataPool.hpp"
+#include "tinc/DataPoolJson.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferJson.hpp"
@@ -23,7 +23,7 @@
 
 struct MyApp : public al::App {
   tinc::ParameterSpace ps;
-  tinc::DataPool dp{ps};
+  tinc::DataPoolJson dp{ps};
 
   al::Parameter procParameter{"procParam", "", 0.0, -10.0, 10.0};
   tinc::ProcessorCpp processor;

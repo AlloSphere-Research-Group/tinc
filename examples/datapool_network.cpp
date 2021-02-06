@@ -1,4 +1,4 @@
-#include "tinc/DataPool.hpp"
+#include "tinc/DataPoolJson.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
 #include "tinc/vis/GUI.hpp"
@@ -16,7 +16,7 @@
 
 struct MyApp : public al::App {
   tinc::ParameterSpace ps;
-  tinc::DataPool dp{ps};
+  tinc::DataPoolJson dp{ps};
 
   tinc::TincServer tserv;
 
