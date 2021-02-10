@@ -51,7 +51,7 @@ TEST(Datapool, Slices) {
 
   internalDim->setCurrentValue(0.0);
   externalDim->setCurrentValue(10.0);
-  float data[10];
+  double data[10];
   auto sliceSize = dp.readDataSlice("field1", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 0);
