@@ -105,6 +105,10 @@ std::string ProcessorScript::sanitizeName(std::string output_name) {
   std::replace(output_name.begin(), output_name.end(), '.', '_');
   std::replace(output_name.begin(), output_name.end(), ':', '_');
   std::replace(output_name.begin(), output_name.end(), '\\', '_');
+  std::replace(output_name.begin(), output_name.end(), '<', '_');
+  std::replace(output_name.begin(), output_name.end(), '>', '_');
+  std::replace(output_name.begin(), output_name.end(), '(', '_');
+  std::replace(output_name.begin(), output_name.end(), ')', '_');
   return output_name;
 }
 

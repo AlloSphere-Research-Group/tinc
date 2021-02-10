@@ -149,12 +149,15 @@ ParameterSpace::getDimensions() {
   return mDimensions;
 }
 
-std::vector<std::string> ParameterSpace::runningPaths() {
+std::vector<std::string>
+ParameterSpace::runningPaths(std::vector<std::string> fixedDimensions) {
   std::vector<std::string> paths;
 
   std::map<std::string, size_t> currentIndeces;
   for (auto dimension : mDimensions) {
-    if (isFilesystemDimension(dimension->getName())) {
+    if (isFilesystemDimension(dimension->getName()) &&
+        (std::find(fixedDimensions.begin(), fixedDimensions.end(),
+                   dimension->getName()) == fixedDimensions.end())) {
       currentIndeces[dimension->getName()] = 0;
     }
   }
@@ -653,9 +656,9 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       for (size_t i = 0; i < lenp; i++) {
         newIds.push_back(idData[i]);
       }
+      pdim->conformSpace();
       pdim->setSpaceIds(newIds);
 
-      pdim->conformSpace();
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
 
       //      std::cout << "mapped parameter " << i << ":" << parameterName

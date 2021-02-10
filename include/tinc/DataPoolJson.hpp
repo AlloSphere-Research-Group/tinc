@@ -1,8 +1,8 @@
-#ifndef IDOBJECT_HPP
-#define IDOBJECT_HPP
+#ifndef DATAPOOLJSON_HPP
+#define DATAPOOLJSON_HPP
 
 /*
- * Copyright 2020 AlloSphere Research Group
+ * Copyright 2021 AlloSphere Research Group
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,27 +33,31 @@
  * authors: Andres Cabrera
 */
 
-#include <string>
-#include <iostream>
-#include <functional>
+#include "tinc/DataPool.hpp"
 
 namespace tinc {
-
-class IdObject {
+/**
+ * @brief
+ */
+class DataPoolJson : public DataPool {
 public:
-  std::string getId();
+  DataPoolJson(std::string id, ParameterSpace &ps,
+               std::string sliceCacheDir = std::string())
+      : DataPool(id, ps, sliceCacheDir) {}
 
-  void setId(std::string id);
-
-  std::string getDocumentation() const;
-  void setDocumentation(const std::string &documentation);
-
-  std::function<void()> modified = []() {};
+  DataPoolJson(ParameterSpace &ps, std::string sliceCacheDir = std::string())
+      : DataPool(ps, sliceCacheDir) {}
 
 protected:
-  std::string mId;
-  std::string mDocumentation;
+  virtual std::vector<std::string> listFieldInFile(std::string file);
+
+  virtual bool getFieldFromFile(std::string field, std::string file,
+                                size_t dimensionInFileIndex, void *data);
+  virtual bool getFieldFromFile(std::string field, std::string file, void *data,
+                                size_t length);
+
+private:
 };
 }
 
-#endif // IDOBJECT_HPP
+#endif // DATAPOOLJSON_HPP

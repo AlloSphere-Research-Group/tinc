@@ -112,8 +112,11 @@ public:
 
   /**
    * @brief Returns all the paths that are used by the whole parameter space
+   * @param fixedDimensions only use paths for the current values of these
+   * dimensions
    */
-  std::vector<std::string> runningPaths();
+  std::vector<std::string> runningPaths(
+      std::vector<std::string> fixedDimensions = std::vector<std::string>());
 
   /**
    * @brief Get relative filesystem path for current parameter values

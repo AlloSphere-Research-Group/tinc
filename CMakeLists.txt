@@ -18,6 +18,8 @@ set(TINC_SRC
 
     ${CMAKE_CURRENT_LIST_DIR}/src/CacheManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DataPoolNetCDF.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DataPoolJson.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DistributedPath.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
@@ -48,6 +50,8 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/BufferManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/CacheManager.hpp
     ${TINC_INCLUDE_PATH}/tinc/DataPool.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DataPoolNetCDF.hpp
+    ${TINC_INCLUDE_PATH}/tinc/DataPoolJson.hpp
     ${TINC_INCLUDE_PATH}/tinc/DeferredComputation.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBuffer.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferAbstract.hpp

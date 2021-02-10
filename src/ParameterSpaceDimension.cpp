@@ -188,6 +188,10 @@ void ParameterSpaceDimension::stepIncrement() {
       // If element above is not greater and we have  space
       setCurrentIndex(curIndex - 1);
     }
+  } else {
+    if (mSpaceValues.at(curIndex - 1) > temp) {
+      setCurrentIndex(curIndex - 1);
+    }
   }
 }
 
@@ -208,6 +212,10 @@ void ParameterSpaceDimension::stepDecrease() {
     } else if (curIndex < mSpaceValues.size() - 1) {
       // If element below is not smaller and we have  space
       setCurrentIndex(curIndex + 1);
+    }
+  } else {
+    if (mSpaceValues.at(1) < temp) {
+      setCurrentIndex(1);
     }
   }
 }

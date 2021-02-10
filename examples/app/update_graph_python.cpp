@@ -11,7 +11,7 @@ using namespace tinc;
 struct TincApp : DistributedApp {
 
   Parameter param{"param", "", 0.5, "", 0.0, 1.0};
-  ImageDiskBuffer dataBuffer{"graph", "output.png"};
+  DiskBufferImage dataBuffer{"graph", "output.png"};
   TincServer tserv;
 
   ControlGUI gui;

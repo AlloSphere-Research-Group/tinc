@@ -21,7 +21,7 @@ using namespace al;
 // the ParamterString through the parameterServer(), any registered listeners
 // will be notified whenever a load is required.
 
-// TODO this example could use tinc's ImageDiskBuffer class
+// TODO this example could use tinc's DiskBufferImage class
 
 struct TincApp : DistributedApp {
   Parameter param{"param", "", 0.5, "", 0.0, 1.0};

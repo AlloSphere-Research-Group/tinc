@@ -959,6 +959,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
           // connects callbacks, sends register + configure messages
           registerParameterSpaceDimension(*changedDimension, src);
           sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr, src);
+          sendConfigureMessage(ps, nullptr, src);
           break;
         }
       }
@@ -1561,7 +1562,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
 
   if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
     type = DiskBufferType::NETCDF;
-  } else if (strcmp(typeid(db).name(), typeid(ImageDiskBuffer).name()) == 0) {
+  } else if (strcmp(typeid(db).name(), typeid(DiskBufferImage).name()) == 0) {
     type = DiskBufferType::IMAGE;
   } else if (strcmp(typeid(db).name(), typeid(DiskBufferJson).name()) == 0) {
     type = DiskBufferType::JSON;

@@ -23,6 +23,7 @@ add_definitions(-DTINC_TESTS_TIMEOUT_MS=500)
 # Build test binary
 # file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.cpp)
 set(TEST_SOURCES main.cpp
+  datapool.cpp
   processor.cpp
   parameters.cpp
   parameterspace.cpp
@@ -39,6 +40,7 @@ set(TEST_SOURCES main.cpp
 
 if(BUILD_PYTHON_TESTS)
   list(PREPEND TEST_SOURCES
+    pythonclient_diskbuffer.cpp
     pythonclient_parameters.cpp
     python_common.cpp
     python_common.hpp

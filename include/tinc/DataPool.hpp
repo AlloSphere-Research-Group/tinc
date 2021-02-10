@@ -55,12 +55,12 @@ public:
   /**
    * @brief registerDataFile
    * @param filename
+   * @param dimensionInFile
    *
-   * This filename must be relative to mParameterSpace->generateRelativeRunPath
+   * This filename must be relative to mParameterSpace->generateRelativeRunPath.
+   * It should be present in all data paths for the parameter space.
    */
-  void registerDataFile(std::string filename, std::string dimensionInFile) {
-    mDataFilenames[filename] = dimensionInFile;
-  }
+  void registerDataFile(std::string filename, std::string dimensionInFile);
 
   /**
    * @brief Get parameter space that controls this data pool
@@ -105,7 +105,7 @@ public:
   /**
    * @brief readDataSlice
    * @param field
-   * @param sliceDimension
+   * @param sliceDimension dimension that can vary in the slice
    * @param data
    * @param maxLen
    * @return number of elements written to data pointer
@@ -121,19 +121,24 @@ public:
 
   void setCacheDirectory(std::string cacheDirectory);
 
+  std::vector<std::string> listFields(bool verifyConsistency = false);
+
   /**
    *  Replace this function when the parameter space runningPaths() function is
    * not adequate.
    */
-  std::function<std::vector<std::string>()> getAllPaths = [&]() {
-    return mParameterSpace->runningPaths();
-  };
+  std::function<std::vector<std::string>(std::vector<std::string>)>
+      getAllPaths = [&](std::vector<std::string> fixedDimensions =
+                            std::vector<std::string>()) {
+        return mParameterSpace->runningPaths(fixedDimensions);
+      };
 
 protected:
-  bool getFieldFromFile(std::string field, std::string file,
-                        size_t dimensionInFileIndex, void *data);
-  bool getFieldFromFile(std::string field, std::string file, void *data,
-                        size_t length);
+  virtual std::vector<std::string> listFieldInFile(std::string file) = 0;
+  virtual bool getFieldFromFile(std::string field, std::string file,
+                                size_t dimensionInFileIndex, void *data) = 0;
+  virtual bool getFieldFromFile(std::string field, std::string file, void *data,
+                                size_t length) = 0;
 
   std::string getFileType(std::string file);
 
