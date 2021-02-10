@@ -45,10 +45,14 @@ public:
 
   void setId(std::string id);
 
+  std::string getDocumentation() const;
+  void setDocumentation(const std::string &documentation);
+
   std::function<void()> modified = []() {};
 
 protected:
   std::string mId;
+  std::string mDocumentation;
 };
 }
 

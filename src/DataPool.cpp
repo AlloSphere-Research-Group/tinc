@@ -1,4 +1,5 @@
 #include "tinc/DataPool.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include "al/io/al_File.hpp"
 
@@ -16,6 +17,15 @@ DataPool::DataPool(ParameterSpace &ps, std::string sliceCacheDir)
     sliceCacheDir = al::File::currentPath();
   }
   setCacheDirectory(sliceCacheDir);
+}
+
+void DataPool::registerDataFile(std::string filename,
+                                std::string dimensionInFile) {
+  if (mDataFilenames.find(filename) != mDataFilenames.end()) {
+    std::cout << "DataPool: Overwriting dimension in file " << filename
+              << std::endl;
+  }
+  mDataFilenames[filename] = dimensionInFile;
 }
 
 DataPool::DataPool(std::string id, ParameterSpace &ps,
@@ -38,13 +48,18 @@ DataPool::createDataSlice(std::string field,
                           std::vector<std::string> sliceDimensions) {
 
   std::vector<std::string> filesystemDims;
+  std::vector<std::string> fixedDims;
   for (auto dim : mParameterSpace->getDimensions()) {
     if (mParameterSpace->isFilesystemDimension(dim->getName())) {
       filesystemDims.push_back(dim->getName());
     }
+    if (std::find(sliceDimensions.begin(), sliceDimensions.end(),
+                  dim->getName()) == sliceDimensions.end()) {
+      fixedDims.push_back(dim->getName());
+    }
   }
   // FIXME implement slicing along more than one dimension.
-  std::vector<float> values;
+  std::vector<double> values;
   std::string filename = "slice_" + field + "_";
 
   size_t fieldSize = 1; // FIXME get actual field size
@@ -74,17 +89,29 @@ DataPool::createDataSlice(std::string field,
       size_t dimCount = dim->size();
       values.reserve(dimCount);
 
-      auto dataPaths = getAllPaths();
+      auto dataPaths = getAllPaths(fixedDims);
       for (auto directory : dataPaths) {
         for (auto file : mDataFilenames) {
-          float value;
-          size_t index =
-              mParameterSpace->getDimension(file.second)->getCurrentIndex();
-          if (getFieldFromFile(field, al::File::conformDirectory(directory) +
-                                          file.first,
-                               index, &value)) {
-            values.push_back(value);
-            break;
+          auto fullPath = al::File::conformDirectory(directory) + file.first;
+          if (!al::File::isRelativePath(fullPath)) {
+            fullPath = al::File::absolutePath(fullPath);
+          }
+          if (file.second == sliceDimension) {
+            // The file contains the slice.
+            values.resize(dim->size());
+            if (getFieldFromFile(field, fullPath, values.data(),
+                                 values.size())) {
+              goto storedata; // We need to exit the two loops
+            }
+          } else {
+            double value;
+            size_t index =
+                mParameterSpace->getDimension(file.second)->getCurrentIndex();
+
+            if (getFieldFromFile(field, fullPath, index, &value)) {
+              values.push_back(value);
+              break;
+            }
           }
         }
       }
@@ -109,6 +136,7 @@ DataPool::createDataSlice(std::string field,
     filename += sliceDimension + "_";
     mParameterSpace->getDimension(sliceDimension)->getCurrentId();
   }
+storedata:
   for (auto dim : mParameterSpace->getDimensions()) {
     if (std::find(sliceDimensions.begin(), sliceDimensions.end(),
                   dim->getName()) == sliceDimensions.end()) {
@@ -117,7 +145,8 @@ DataPool::createDataSlice(std::string field,
     }
   }
 
-  filename += ".nc";
+  filename = ProcessorScript::sanitizeName(filename) + ".nc";
+// TODO accommodate more types apart from double
 #ifdef TINC_HAS_NETCDF
   int retval, ncid;
   if ((retval = nc_create((mSliceCacheDirectory + filename).c_str(),
@@ -133,13 +162,13 @@ DataPool::createDataSlice(std::string field,
   dimids[0] = x_dimid;
 
   /* Define the variable.*/
-  if ((retval = nc_def_var(ncid, "data", NC_FLOAT, 1, dimids, &varid))) {
+  if ((retval = nc_def_var(ncid, "data", NC_DOUBLE, 1, dimids, &varid))) {
     filename.clear();
   }
   if ((retval = nc_enddef(ncid))) {
     filename.clear();
   }
-  if ((retval = nc_put_var_float(ncid, varid, values.data()))) {
+  if ((retval = nc_put_var_double(ncid, varid, values.data()))) {
     filename.clear();
   }
   if ((retval = nc_close(ncid))) {
@@ -155,6 +184,7 @@ DataPool::createDataSlice(std::string field,
 
 size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
                                void *data, size_t maxLen) {
+  // TODO accommodate more types apart from double
   auto filename = DataPool::createDataSlice(field, sliceDimension);
   if (filename.size() > 0) {
 #ifdef TINC_HAS_NETCDF
@@ -209,6 +239,25 @@ void DataPool::setCacheDirectory(std::string cacheDirectory) {
   modified();
 }
 
+std::vector<std::string> DataPool::listFields(bool verifyConsistency) {
+  std::vector<std::string> fields;
+
+  auto paths = getAllPaths({});
+  for (auto path : paths) {
+
+    for (auto file : mDataFilenames) {
+      auto fullPath = path + file.first;
+      if (verifyConsistency) {
+        // TODO verify consistency
+
+      } else {
+        return listFieldInFile(fullPath);
+      }
+    }
+  }
+  return fields;
+}
+
 std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
   std::string type;
   return type;
@@ -216,10 +265,15 @@ std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
 
 std::vector<std::string> DataPool::getCurrentFiles() {
   std::vector<std::string> files;
-  std::string path = al::File::conformPathToOS(mParameterSpace->getRootPath()) +
-                     mParameterSpace->currentRelativeRunPath();
+  std::string path =
+      al::File::conformDirectory(mParameterSpace->getRootPath() +
+                                 mParameterSpace->currentRelativeRunPath());
   for (auto f : mDataFilenames) {
-    files.push_back(path + f.first);
+    auto fullPath = path + f.first;
+    if (!al::File::isRelativePath(fullPath)) {
+      fullPath = al::File::absolutePath(fullPath);
+    }
+    files.push_back(fullPath);
   }
   return files;
 }

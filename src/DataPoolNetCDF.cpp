@@ -43,3 +43,9 @@ bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
   //  }
   return true;
 }
+
+std::vector<std::string> DataPoolNetCDF::listFieldInFile(std::string file) {
+  std::vector<std::string> fields;
+  // FIXME implement
+  return fields;
+}

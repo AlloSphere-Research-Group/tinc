@@ -42,6 +42,7 @@ namespace tinc {
 class DataPoolNetCDF : public DataPool {
 public:
 protected:
+  virtual std::vector<std::string> listFieldInFile(std::string file);
   virtual bool getFieldFromFile(std::string field, std::string file,
                                 size_t dimensionInFileIndex, void *data);
   virtual bool getFieldFromFile(std::string field, std::string file, void *data,
