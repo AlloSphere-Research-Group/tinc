@@ -47,7 +47,7 @@ int main() {
     }
     return true;
   };
-  dataCreator.verbose(false);
+  dataCreator.setVerbose(false);
 
   // Generate data
   ps.sweep(dataCreator);

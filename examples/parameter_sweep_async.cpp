@@ -129,7 +129,7 @@ struct MyApp : public App {
       return true;
     };
 
-    processor.verbose(true);
+    processor.setVerbose(true);
   }
 
   void onInit() override {
