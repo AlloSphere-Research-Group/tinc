@@ -845,6 +845,8 @@ void ParameterSpace::enableCache(std::string cachePath) {
       DistributedPath{std::string("tinc_cache.json"), cachePath, mRootPath});
 }
 
+void ParameterSpace::disableCache() { mCacheManager = nullptr; }
+
 bool ParameterSpace::readFromNetCDF(std::string ncFile) {
 #ifdef TINC_HAS_NETCDF
   std::vector<std::shared_ptr<ParameterSpaceDimension>> newDimensions;

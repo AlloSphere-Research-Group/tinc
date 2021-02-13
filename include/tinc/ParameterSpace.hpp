@@ -331,12 +331,16 @@ public:
   /**
    * @brief Enable caching for the parameter space
    * @param cachePath
-   * @param rootPath
    *
    * Caching will be used when calling runProcess() and sweep()
    * You should use cachePath as a relative path to rootPath
    */
   void enableCache(std::string cachePath);
+
+  /**
+   * @brief Disable caching for the parameter space
+   */
+  void disableCache();
 
   /**
    * @brief callback when the value in any particular dimension changes.
