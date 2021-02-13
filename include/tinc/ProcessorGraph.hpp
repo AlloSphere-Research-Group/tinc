@@ -40,7 +40,13 @@
 #include <thread>
 
 namespace tinc {
-
+/**
+ * @brief A class to trigger a group of Processor classes in series or in
+ * parallel
+ *
+ * Complex graphs can be created by connecting and nesting ProcessorGraph
+ * objects
+ */
 class ProcessorGraph : public Processor {
 public:
   typedef enum { PROCESS_SERIAL, PROCESS_ASYNC } ChainType;

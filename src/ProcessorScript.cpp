@@ -1,6 +1,8 @@
 
 #include "tinc/ProcessorScript.hpp"
 
+#include "al/io/al_File.hpp"
+
 #include "nlohmann/json.hpp"
 
 #include <array>
@@ -147,7 +149,7 @@ std::string ProcessorScript::writeJsonConfig() {
     std::cout << "Writing json config: " << jsonFilename << std::endl;
   }
   {
-    PushDirectory p(mRunningDirectory, mVerbose);
+    al::PushDirectory p(mRunningDirectory, mVerbose);
     std::ofstream of(jsonFilename, std::ofstream::out);
     if (of.good()) {
       of << j.dump(4);
@@ -168,7 +170,7 @@ bool ProcessorScript::readJsonConfig(std::string filename) {
   using json = nlohmann::json;
   json j;
   {
-    PushDirectory p(mRunningDirectory, mVerbose);
+    al::PushDirectory p(mRunningDirectory, mVerbose);
     std::ifstream f(filename);
     if (!f.good()) {
       std::cerr << __FILE__
@@ -246,7 +248,7 @@ std::string ProcessorScript::makeCommandLine() {
 }
 
 bool ProcessorScript::runCommand(const std::string &command) {
-  PushDirectory p(mRunningDirectory, mVerbose);
+  al::PushDirectory p(mRunningDirectory, mVerbose);
 
   if (mVerbose) {
     std::cout << "ProcessorScript command: " << command << std::endl;
@@ -319,7 +321,7 @@ bool ProcessorScript::writeMeta() {
     std::cout << "Wrote cache in: " << metaFilename() << std::endl;
   }
   {
-    PushDirectory p(mRunningDirectory, mVerbose);
+    al::PushDirectory p(mRunningDirectory, mVerbose);
     std::ofstream of(jsonFilename, std::ofstream::out);
     if (of.good()) {
       of << j.dump(4);

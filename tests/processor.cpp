@@ -10,9 +10,67 @@
 
 using namespace tinc;
 
-TEST(Processor, Basic) {}
+TEST(Processor, BasicCpp) {
+  float value = 0.0;
+  ProcessorCpp proc1("proc1");
+  proc1.processingFunction = [&]() {
+    value = 1.0;
+    return true;
+  };
 
-TEST(Processor, Trigerring) {
+  EXPECT_TRUE(proc1.process());
+  EXPECT_EQ(value, 1.0);
+}
+
+TEST(Processor, BasicScript) {
+  float value = 0.0;
+  ProcessorScript proc1("proc1");
+  proc1.setCommand("ls");
+
+  EXPECT_TRUE(proc1.process());
+  EXPECT_EQ(value, 1.0);
+}
+
+TEST(Processor, PrepareFunctionCpp) {
+  float value = 0.0;
+  ProcessorCpp proc1("proc1");
+  proc1.processingFunction = [&]() {
+    value += 1.0;
+    return true;
+  };
+  proc1.prepareFunction = [&]() {
+    value = 1.0;
+    return true;
+  };
+
+  EXPECT_TRUE(proc1.process());
+  EXPECT_EQ(value, 2.0);
+
+  proc1.prepareFunction = [&]() { return false; };
+
+  EXPECT_FALSE(proc1.process());
+  EXPECT_EQ(value, 2.0);
+}
+
+TEST(Processor, CallbacksCpp) {
+  float value = 0.0;
+  float before = 0.0;
+  float done = 0.0;
+  ProcessorCpp proc1("proc1");
+  proc1.processingFunction = [&]() {
+    value = 1.0;
+    return true;
+  };
+  proc1.registerStartCallback([&]() { before = 2.0; });
+  proc1.registerDoneCallback([&](bool) { done = 3.0; });
+
+  EXPECT_TRUE(proc1.process());
+  EXPECT_EQ(value, 1.0);
+  EXPECT_EQ(before, 2.0);
+  EXPECT_EQ(done, 3.0);
+}
+
+TEST(Processor, TrigerringCpp) {
 
   ProcessorCpp proc1("proc1");
   ProcessorCpp proc2("proc2");

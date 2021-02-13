@@ -1,12 +1,14 @@
 #include "tinc/ProcessorCpp.hpp"
 
+#include "al/io/al_File.hpp"
+
 using namespace tinc;
 
 ProcessorCpp::ProcessorCpp(std::string id) : Processor(id) {}
 
 bool ProcessorCpp::process(bool forceRecompute) {
   callStartCallbacks();
-  PushDirectory dir(mRunningDirectory, mVerbose);
+  al::PushDirectory dir(mRunningDirectory, mVerbose);
   if (!enabled) {
     return true;
   }

@@ -44,20 +44,6 @@
 
 namespace tinc {
 
-// TODO move PushDirectory to allolib? Or its own file?
-class PushDirectory {
-public:
-  PushDirectory(std::string directory, bool verbose = false);
-
-  ~PushDirectory();
-
-private:
-  char previousDirectory[4096];
-  bool mVerbose;
-
-  static std::mutex mDirectoryLock; // Protects all instances of PushDirectory
-};
-
 /**
  * @brief The Processor class presents an abstraction to filesystem based
  * computation
@@ -69,8 +55,6 @@ class Processor : public IdObject {
   friend class ProcessorGraph;
 
 public:
-  typedef std::map<std::string, VariantValue> Configuration;
-
   Processor(std::string id_ = "") { setId(id_); }
   Processor(Processor &p)
       : mInputDirectory(p.mInputDirectory),
@@ -82,8 +66,8 @@ public:
   /**
    * @brief override this function to determine how subclasses should process
    *
-   * You must call prepareFunction(), callDoneCallbacks() and test for 'enabled'
-   * within the process() function of all child classes.
+   * You must call prepareFunction(), callDoneCallbacks() , callStartCallbacks()
+   * and test for 'enabled' within the process() function of all child classes.
    */
   virtual bool process(bool forceRecompute = false) = 0;
 
@@ -125,6 +109,10 @@ public:
 
   /**
    * @brief Query the current output filenames
+   *
+   * This function contains the filenames set in C++ using setOutputFileNames or
+   * the filenames set by the Processor after running, see for example
+   * ProcessorScript
    */
   std::vector<std::string> getOutputFileNames();
 
@@ -134,11 +122,12 @@ public:
    */
   void setInputFileNames(std::vector<std::string> inputFiles);
 
-  // TODO how should the files synchronize to processing. Should these functions
-  // return only available files, or should they reflect the current settings?
-  // Perhaps we need two different functions
   /**
    * @brief Query the current input filenames
+   *
+   * This function contains the filenames set in C++ using setInputFileNames or
+   * the filenames set by the Processor after running, see for example
+   * ProcessorScript
    */
   std::vector<std::string> getInputFileNames();
 
@@ -152,19 +141,29 @@ public:
    */
   std::string getRunningDirectory() { return mRunningDirectory; }
 
-  void registerStartCallback(std::function<void(void)> func) {
-    mStartCallbacks.push_back(func);
-  }
+  /**
+   * @brief Register a function to be called at the start of process()
+   */
+  void registerStartCallback(std::function<void(void)> func);
 
-  void registerDoneCallback(std::function<void(bool)> func) {
-    mDoneCallbacks.push_back(func);
-  }
+  /**
+   * @brief Register a function to be called at the end of process()
+   *
+   * This function is passed true if the process() function has been sucessful.
+   */
+  void registerDoneCallback(std::function<void(bool)> func);
 
-  void verbose(bool verbose = true) { mVerbose = verbose; }
+  void setVerbose(bool verbose = true) { mVerbose = verbose; }
 
-  bool ignoreFail{false}; ///< If set to true, processor chains will continue
-                          ///< even if this processor fails. Has no effect if
-                          ///< running asychronously
+  /**
+   * If set to true, ProcessorChains will continue even if this processor
+   * fails. Has no effect if running chain asychronously
+   */
+  bool ignoreFail{false};
+
+  /**
+   * If set to false, process() has no effect and will return true;
+   */
   bool enabled{true};
 
   /**
@@ -178,12 +177,21 @@ public:
    */
   std::function<bool(void)> prepareFunction;
 
+  /**
+   * @brief Register a dimension so that the Processor is executed on changes
+   */
   Processor &registerDimension(ParameterSpaceDimension &dim);
 
+  /**
+   * @brief Convenient syntax for registerDimension()
+   */
   Processor &operator<<(ParameterSpaceDimension &dim) {
     return registerDimension(dim);
   }
 
+  /**
+   * @brief Register a Parameter so that the Processor is executed on changes
+   */
   template <class ParameterType>
   Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
     mParameters.push_back(&param);
@@ -195,10 +203,15 @@ public:
     return *this;
   }
 
+  /**
+   * @brief Convenient syntax for registerParameter()
+   */
   template <class ParameterType>
   Processor &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
     return registerParameter(newParam);
   }
+
+  typedef std::map<std::string, VariantValue> Configuration;
 
   /**
    * @brief Current internal configuration key value pairs
@@ -218,17 +231,9 @@ protected:
 
   std::vector<al::ParameterMeta *> mParameters;
 
-  void callStartCallbacks() {
-    for (auto cb : mStartCallbacks) {
-      cb();
-    }
-  }
+  void callStartCallbacks();
+  void callDoneCallbacks(bool result);
 
-  void callDoneCallbacks(bool result) {
-    for (auto cb : mDoneCallbacks) {
-      cb(result);
-    }
-  }
   std::mutex mProcessLock;
 
 private:

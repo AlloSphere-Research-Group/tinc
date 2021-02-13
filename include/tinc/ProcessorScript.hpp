@@ -92,7 +92,6 @@ public:
    * @brief Set name of script to be run
    * @param scriptName
    *
-   * This name will be used unless a flag is set with type FLAG_SCRIPT
    */
   void setScriptName(std::string scriptName) {
     std::replace(mScriptName.begin(), mScriptName.end(), '\\', '/');

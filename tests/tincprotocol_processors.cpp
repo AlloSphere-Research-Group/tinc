@@ -33,8 +33,8 @@ TEST(Processor, Connection) {
 
 TEST(ProcessorScript, ConstructorCopy) {
   ProcessorScript proc;
-  proc.inputFile("_in_");
-  proc.outputFile("_out_");
+  proc.setInputFileNames({"_in_"});
+  proc.setOutputFileNames({"_out_"});
   proc.scriptFile("_script_");
   proc.setCommand("_command_");
   proc.setScriptName("_scriptname_");

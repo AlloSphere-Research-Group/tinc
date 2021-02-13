@@ -4,47 +4,7 @@
 
 #include <iostream>
 
-// For PushDirectory
-#if defined(AL_OSX) || defined(AL_LINUX) || defined(AL_EMSCRIPTEN)
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#elif defined(AL_WINDOWS)
-#include <Windows.h>
-#include <direct.h> // for _chdir() and _getcwd()
-#define chdir _chdir
-#define getcwd _getcwd
-
-#define popen _popen
-#define pclose _pclose
-#include <fileapi.h>
-#endif
-
 using namespace tinc;
-
-std::mutex PushDirectory::mDirectoryLock;
-
-PushDirectory::PushDirectory(std::string directory, bool verbose)
-    : mVerbose(verbose) {
-  mDirectoryLock.lock();
-  getcwd(previousDirectory, sizeof(previousDirectory));
-  chdir(directory.c_str());
-  if (mVerbose) {
-    std::cout << "Pushing directory: " << directory << std::endl;
-    char curDir[4096];
-    getcwd(curDir, sizeof(curDir));
-    std::cout << "now at: " << curDir << std::endl;
-  }
-}
-
-PushDirectory::~PushDirectory() {
-  chdir(previousDirectory);
-  if (mVerbose) {
-    std::cout << "Setting directory back to: " << previousDirectory
-              << std::endl;
-  }
-  mDirectoryLock.unlock();
-}
 
 // --------------------------------------------------
 
@@ -98,6 +58,14 @@ void Processor::setRunningDirectory(std::string directory) {
   }
 }
 
+void Processor::registerStartCallback(std::function<void()> func) {
+  mStartCallbacks.push_back(func);
+}
+
+void Processor::registerDoneCallback(std::function<void(bool)> func) {
+  mDoneCallbacks.push_back(func);
+}
+
 Processor &Processor::registerDimension(ParameterSpaceDimension &dim) {
   auto *param = dim.getParameterMeta();
   if (auto *p = dynamic_cast<al::Parameter *>(param)) {
@@ -140,4 +108,16 @@ void Processor::setInputFileNames(std::vector<std::string> inputFiles) {
 
 std::vector<std::string> Processor::getInputFileNames() {
   return mInputFileNames;
+}
+
+void Processor::callStartCallbacks() {
+  for (auto cb : mStartCallbacks) {
+    cb();
+  }
+}
+
+void Processor::callDoneCallbacks(bool result) {
+  for (auto cb : mDoneCallbacks) {
+    cb(result);
+  }
 }
