@@ -40,6 +40,10 @@ namespace tinc {
 enum VariantType {
   VARIANT_INT64 = 0,
   VARIANT_INT32,
+  VARIANT_INT8,
+  VARIANT_UINT64,
+  VARIANT_UINT32,
+  VARIANT_UINT8,
   VARIANT_DOUBLE,
   VARIANT_FLOAT,
   VARIANT_STRING,
@@ -49,34 +53,16 @@ enum VariantType {
 struct VariantValue {
   VariantValue() { type = VARIANT_NULL; }
 
-  VariantValue(std::string value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-  VariantValue(const char *value) {
-    type = VARIANT_STRING;
-    valueStr = value;
-  }
-
-  VariantValue(int64_t value) {
-    type = VARIANT_INT64;
-    valueInt64 = value;
-  }
-
-  VariantValue(int32_t value) {
-    type = VARIANT_INT32;
-    valueInt64 = value;
-  }
-
-  VariantValue(double value) {
-    type = VARIANT_DOUBLE;
-    valueDouble = value;
-  }
-
-  VariantValue(float value) {
-    type = VARIANT_FLOAT;
-    valueDouble = value;
-  }
+  VariantValue(std::string value);
+  VariantValue(const char *value);
+  VariantValue(int64_t value);
+  VariantValue(int32_t value);
+  VariantValue(int8_t value);
+  VariantValue(uint64_t value);
+  VariantValue(uint32_t value);
+  VariantValue(uint8_t value);
+  VariantValue(double value);
+  VariantValue(float value);
 
   //  ~VariantValue()
   //  {
@@ -107,6 +93,7 @@ struct VariantValue {
   VariantType type;
   std::string valueStr;
   int64_t valueInt64;
+  uint64_t valueUInt64;
   double valueDouble;
 };
 }
