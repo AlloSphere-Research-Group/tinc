@@ -25,10 +25,9 @@ TEST(Processor, BasicCpp) {
 TEST(Processor, BasicScript) {
   float value = 0.0;
   ProcessorScript proc1("proc1");
-  proc1.setCommand("ls");
+  proc1.setCommand("echo");
 
   EXPECT_TRUE(proc1.process());
-  EXPECT_EQ(value, 1.0);
 }
 
 TEST(Processor, PrepareFunctionCpp) {

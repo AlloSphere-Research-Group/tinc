@@ -47,7 +47,7 @@ bool ProcessorScript::process(bool forceRecompute) {
     std::cerr << "ERROR preparing processor: " << getId() << std::endl;
     return false;
   }
-  if (mScriptName == "" || mScriptCommand == "") {
+  if (mScriptName == "" && mScriptCommand == "") {
     std::cout << "ERROR: process() for '" << getId()
               << "' missing script name or script command." << std::endl;
     return false;
