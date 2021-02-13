@@ -107,6 +107,7 @@ void ParameterSpaceDimension::sort() {
 
 void ParameterSpaceDimension::clear(al::Socket *src) {
   mSpaceValues.clear();
+  conformSpace();
   onDimensionMetadataChange(this, src);
 }
 
@@ -291,9 +292,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() < min) {
+    if (param.get() < min && min != std::numeric_limits<float>::max()) {
       param.set(min);
-    } else if (param.get() > max) {
+    } else if (param.get() > max &&
+               max != std::numeric_limits<float>::lowest()) {
       param.set(max);
     }
   } break;
@@ -311,9 +313,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() < min) {
+    if (param.get() < min && min != std::numeric_limits<uint8_t>::max()) {
       param.set(min);
-    } else if (param.get() > max) {
+    } else if (param.get() > max &&
+               max != std::numeric_limits<uint8_t>::lowest()) {
       param.set(max);
     }
   } break;
@@ -331,9 +334,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() < min) {
+    if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
       param.set(min);
-    } else if (param.get() > max) {
+    } else if (param.get() > max &&
+               max != std::numeric_limits<int8_t>::lowest()) {
       param.set(max);
     }
   } break;
@@ -351,9 +355,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() < min) {
+    if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
       param.set(min);
-    } else if (param.get() > max) {
+    } else if (param.get() > max &&
+               max != std::numeric_limits<int32_t>::lowest()) {
       param.set(max);
     }
   } break;
@@ -372,9 +377,10 @@ void ParameterSpaceDimension::conformSpace() {
     }
     param.max(max);
     param.min(min);
-    if (param.get() < min) {
+    if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
       param.set(min);
-    } else if (param.get() > max) {
+    } else if (param.get() > max &&
+               max != std::numeric_limits<int32_t>::lowest()) {
       param.set(max);
     }
   } break;

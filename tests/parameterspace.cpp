@@ -252,8 +252,7 @@ TEST(ParameterSpace, Sweep) {
   ProcessorCpp proc("proc");
 
   proc.processingFunction = [&]() {
-    al::File f("out_" + proc.configuration["dim3"].valueStr + ".txt", "w",
-               true);
+    al::File f("out.txt", "w", true);
     std::string text = std::to_string(proc.configuration["dim1"].valueDouble) +
                        "_" +
                        std::to_string(proc.configuration["dim2"].valueDouble) +
@@ -261,12 +260,22 @@ TEST(ParameterSpace, Sweep) {
     f.write(text);
     return true;
   };
+
+  int counter = 0;
+  proc.registerDoneCallback([&](bool success) {
+    if (success) {
+      counter++;
+    }
+  });
   ps.setRootPath("ps_test");
   ps.createDataDirectories();
   ps.sweep(proc);
 
+  EXPECT_EQ(counter, 4 * 5 * 6);
+
   for (auto path : ps.runningPaths()) {
-    //    EXPECT_FALSE(al::File::isDirectory(path));
+    EXPECT_TRUE(al::File::isDirectory(path));
+    EXPECT_TRUE(al::File::exists(path + "out.txt"));
   }
 }
 

@@ -95,10 +95,14 @@ ps.get_parameter('ps_dim_reply').set_value(value * 2))
 ps.get_parameter('ps_dim_reply').value = 10.0
 
 
-while tclient.get_parameter("ps_dim").value != 100:
+while tclient.get_parameter("ps_dim").value != 1:
     time.sleep(0.05)
 
+ps.get_parameter('ps_dim_reply').value = 2.0
+
 time.sleep(0.05)
+while tclient.get_parameter("ps_dim").value != 100:
+    time.sleep(0.05)
 
 tclient.stop()
 )";
