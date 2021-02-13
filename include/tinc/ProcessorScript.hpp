@@ -106,17 +106,7 @@ public:
   /**
    * @brief Query current script file name
    */
-  std::string scriptFile(bool fullPath = false);
-
-  /**
-   * @brief Query input file name
-   */
-  std::string inputFile(bool fullPath = true, int index = 0);
-
-  /**
-   * @brief Query output file name
-   */
-  std::string outputFile(bool fullPath = true, int index = 0);
+  std::string getScriptFile(bool fullPath = false);
 
   /**
    * @brief process

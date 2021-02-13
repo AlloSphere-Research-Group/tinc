@@ -35,7 +35,7 @@ TEST(ProcessorScript, ConstructorCopy) {
   ProcessorScript proc;
   proc.setInputFileNames({"_in_"});
   proc.setOutputFileNames({"_out_"});
-  proc.scriptFile("_script_");
+  proc.getScriptFile("_script_");
   proc.setCommand("_command_");
   proc.setScriptName("_scriptname_");
 
@@ -45,9 +45,9 @@ TEST(ProcessorScript, ConstructorCopy) {
 
   ProcessorScript procCopy = proc;
 
-  EXPECT_EQ(procCopy.inputFile(), proc.inputFile());
-  EXPECT_EQ(procCopy.scriptFile(), proc.scriptFile());
-  EXPECT_EQ(procCopy.outputFile(), proc.outputFile());
+  EXPECT_EQ(procCopy.getInputFiles()[0], proc.getInputFiles()[0]);
+  EXPECT_EQ(procCopy.getScriptFile(), proc.getScriptFile());
+  EXPECT_EQ(procCopy.getOutputFiles()[0], proc.getOutputFiles()[0]);
   EXPECT_EQ(procCopy.getCommand(), proc.getCommand());
   EXPECT_EQ(procCopy.getScriptName(), proc.getScriptName());
   EXPECT_EQ(procCopy.getInputDirectory(), proc.getInputDirectory());

@@ -35,31 +35,8 @@ using namespace tinc;
 
 constexpr auto DATASCRIPT_META_FORMAT_VERSION = 0;
 
-std::string ProcessorScript::scriptFile(bool fullPath) { return mScriptName; }
-
-std::string ProcessorScript::inputFile(bool fullPath, int index) {
-  std::string inputName;
-  if (mInputFileNames.size() > index) {
-    inputName = mInputFileNames[index];
-  }
-
-  if (fullPath) {
-    return getRunningDirectory() + inputName;
-  } else {
-    return inputName;
-  }
-}
-
-std::string ProcessorScript::outputFile(bool fullPath, int index) {
-  std::string outputName;
-  if (mOutputFileNames.size() > index) {
-    outputName = mOutputFileNames[index];
-  }
-  if (fullPath) {
-    return getOutputDirectory() + outputName;
-  } else {
-    return outputName;
-  }
+std::string ProcessorScript::getScriptFile(bool fullPath) {
+  return mScriptName;
 }
 
 bool ProcessorScript::process(bool forceRecompute) {
@@ -289,14 +266,18 @@ bool ProcessorScript::writeMeta() {
   nlohmann::json j;
 
   j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
-  j["__script"] = scriptFile(false);
-  j["__script_modified"] = modified(scriptFile().c_str());
+  j["__script"] = getScriptFile(false);
+  j["__script_modified"] = modified(getScriptFile().c_str());
   j["__running_directory"] = getRunningDirectory();
   // TODO add support for multiple input and output files.
   j["__output_dir"] = getOutputDirectory();
   j["__output_names"] = getOutputFileNames();
   j["__input_dir"] = getInputDirectory();
-  j["__input_modified"] = modified(inputFile().c_str());
+  std::vector<al_sec> modifiedTimes;
+  for (auto file : getInputFileNames()) {
+    modifiedTimes.push_back(modified((getInputDirectory() + file).c_str()));
+  }
+  j["__input_modified"] = modifiedTimes;
   j["__input_names"] = getInputFileNames();
 
   // TODO add date and other important information.
@@ -381,16 +362,23 @@ bool ProcessorScript::needsRecompute() {
     }
     return true;
   }
-  if (metaData["__script_modified"] != modified(scriptFile().c_str())) {
+  if (metaData["__script_modified"] != modified(getScriptFile().c_str())) {
     return true;
   }
-  if (al::File::exists(inputFile()) && inputFile(false).size() > 0) {
-    if (metaData["__input_modified"] != modified(inputFile().c_str())) {
+  if (metaData["__input_modified"].size() != mInputFileNames.size()) {
+    return true;
+  }
+  for (int i = 0; i < metaData["__input_modified"]; i++) {
+    if (metaData["__input_modified"][i] !=
+        modified((getInputDirectory() + mInputFileNames[i]).c_str())) {
       return true;
     }
   }
-  if (!al::File::exists(outputFile())) {
-    return true;
+
+  for (auto file : getOutputFileNames()) {
+    if (!al::File::exists(getOutputDirectory() + file)) {
+      return true;
+    }
   }
 
   return false;
@@ -398,7 +386,10 @@ bool ProcessorScript::needsRecompute() {
 
 std::string ProcessorScript::metaFilename() {
   std::string outPath = getOutputDirectory();
-  std::string outName = outputFile(false);
+  std::string outName = "out.meta";
+  if (mOutputFileNames.size() > 0) {
+    outName = getOutputFileNames()[0];
+  }
   std::string metafilename =
       al::File::conformPathToOS(outPath) + outName + ".meta";
   return metafilename;
