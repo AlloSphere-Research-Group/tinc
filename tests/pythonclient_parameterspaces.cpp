@@ -150,3 +150,73 @@ tclient.stop()
 
   tserver.stop();
 }
+
+TEST(PythonClient, ParameterSpace_Sweep) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpace ps{"param_space"};
+
+  auto dim1 = ps.newDimension("dim1");
+  auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
+  auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
+  float dim1Values[5] = {0.1, 0.2, 0.3, 0.4};
+  dim1->setSpaceValues(dim1Values, 4);
+  dim1->conformSpace();
+
+  float dim2Values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
+  dim2->setSpaceValues(dim2Values, 5, "xx");
+  dim2->conformSpace();
+
+  float dim3Values[6];
+  std::vector<std::string> ids;
+  for (int i = 0; i < 6; i++) {
+    dim3Values[i] = i * 0.01;
+    ids.push_back("id" + std::to_string(i));
+  }
+  dim3->setSpaceValues(dim3Values, 6);
+  dim3->setSpaceIds(ids);
+  dim3->conformSpace();
+
+  ps.setCurrentPathTemplate("file_%%dim1%%_%%dim2%%");
+  tserver << ps;
+
+  std::string pythonCode = R"(
+#tclient.debug = True
+import time
+time.sleep(0.1)
+tclient.request_parameter_spaces()
+while len(tclient.parameter_spaces) == 0:
+    time.sleep(0.1)
+
+time.sleep(0.1)
+
+ps = tclient.get_parameter_space("param_space")
+
+def proc(dim1, dim2, dim3):
+    print(f"sweep {dim1} {dim2} {dim3}")
+    return dim1*dim2*dim3
+
+ps.enable_cache("python_cache_test")
+ps.sweep(proc)
+
+test_output = [parameter_space_to_dict(ps) for ps in
+tclient.parameter_spaces]
+
+tclient.stop()
+)";
+
+  PythonTester ptest;
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
+  ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
+  ptest.runPython(pythonCode);
+
+  tserver.stop();
+
+  EXPECT_TRUE(al::File::isDirectory("python_cache_test"));
+  auto dirEntries = al::itemListInDir("python_cache_test");
+
+  EXPECT_EQ(dirEntries.count(), 4 * 5 * 6);
+
+  auto output = ptest.readResults();
+}
