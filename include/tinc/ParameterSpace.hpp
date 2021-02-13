@@ -293,12 +293,15 @@ public:
    * Only override this function if using a path template is insufficient. If
    * this function is replaced, the path template will have noeffect unless it
    * is specifically used in the new function.
+   *
+   * This function should always return the path ending with a drectory
+   * separator.
    */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
                                     ParameterSpace *ps) {
         std::string path = ps->resolveFilename(mCurrentPathTemplate, indeces);
-        return al::File::conformPathToOS(path);
+        return al::File::conformDirectory(al::File::conformPathToOS(path));
       };
 
   /**

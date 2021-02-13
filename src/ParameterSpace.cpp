@@ -164,8 +164,9 @@ ParameterSpace::runningPaths(std::vector<std::string> fixedDimensions) {
   bool done = false;
   while (!done) {
     done = true;
-    auto path = al::File::conformPathToOS(mRootPath) +
-                generateRelativeRunPath(currentIndeces, this);
+    auto path = al::File::conformDirectory(
+        al::File::conformPathToOS(mRootPath) +
+        generateRelativeRunPath(currentIndeces, this));
     if (path.size() > 0 &&
         std::find(paths.begin(), paths.end(), path) == paths.end()) {
       paths.push_back(path);
