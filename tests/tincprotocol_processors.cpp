@@ -45,6 +45,8 @@ TEST(ProcessorScript, ConstructorCopy) {
 
   ProcessorScript procCopy = proc;
 
+  EXPECT_EQ(procCopy.getInputFileNames().size(), 1);
+  EXPECT_EQ(procCopy.getOutputFileNames().size(), 1);
   EXPECT_EQ(procCopy.getInputFileNames()[0], proc.getInputFileNames()[0]);
   EXPECT_EQ(procCopy.getScriptFile(), proc.getScriptFile());
   EXPECT_EQ(procCopy.getOutputFileNames()[0], proc.getOutputFileNames()[0]);

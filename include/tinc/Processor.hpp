@@ -59,7 +59,9 @@ public:
   Processor(Processor &p)
       : mInputDirectory(p.mInputDirectory),
         mOutputDirectory(p.mOutputDirectory),
-        mRunningDirectory(p.mRunningDirectory) {}
+        mRunningDirectory(p.mRunningDirectory),
+        mOutputFileNames(p.mOutputFileNames),
+        mInputFileNames(p.mInputFileNames) {}
 
   virtual ~Processor() {}
 
