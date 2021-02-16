@@ -31,11 +31,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
+#include "al/io/al_Socket.hpp"
+#include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
 #include "tinc/Processor.hpp"
-#include "tinc/IdObject.hpp"
 
 #include <functional>
 #include <memory>
@@ -68,7 +69,8 @@ public:
    * @param name
    * @return the dimension or nullptr if not found
    */
-  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name);
+  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name,
+                                                        std::string group = "");
 
   /**
    * @brief create and register a new dimension for this parameter space
@@ -78,7 +80,7 @@ public:
    * @return the newly created dimension.
    */
   std::shared_ptr<ParameterSpaceDimension>
-  newDimension(std::string name,
+  newDimension(std::string name, std::string group = "",
                ParameterSpaceDimension::RepresentationType type =
                    ParameterSpaceDimension::VALUE,
                al::DiscreteParameterValues::Datatype datatype =
@@ -87,14 +89,18 @@ public:
   /**
    * @brief Register an existing dimension with the parameter space
    * @param dimension dimension to register
+   * @param src original socket that message came from
    */
-  void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
+  void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension,
+                         al::Socket *src = nullptr);
 
   /**
    * @brief remove dimension form list of registered dimensions
    * @param dimensionName
+   * @param src original socket that message came from
    */
-  void removeDimension(std::string dimensionName);
+  void removeDimension(std::string name, std::string group = "",
+                       al::Socket *src = nullptr);
 
   /**
    * @brief get list of currently registered dimensions
@@ -249,11 +255,11 @@ public:
    * is specifically used in the new function.
    */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
-      generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
-                                    ParameterSpace *ps) {
-        std::string path = ps->resolveFilename(mCurrentPathTemplate);
-        return al::File::conformPathToOS(path);
-      };
+      generateRelativeRunPath =
+          [&](std::map<std::string, size_t> indeces, ParameterSpace *ps) {
+            std::string path = ps->resolveFilename(mCurrentPathTemplate);
+            return al::File::conformPathToOS(path);
+          };
 
   /**
    * @brief onSweepProcess is called after a sample completes processing as part
@@ -297,8 +303,9 @@ public:
    * except when a particular dimension has changed.
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps)> onValueChange =
-      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
+                     ParameterSpace *ps)>
+      onValueChange =
+          [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
   // Currently allows only one TincServer. Should we provision for more?
   /**
@@ -306,18 +313,27 @@ public:
    * dimension is added
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps, al::Socket *src)> onDimensionRegister =
-      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps,
-         al::Socket *src = nullptr) {};
+                     ParameterSpace *ps, al::Socket *src)>
+      onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
+                               ParameterSpace *ps,
+                               al::Socket *src = nullptr) {};
+
+  /**
+   * This callback is called when dimension is removed
+   */
+  std::function<void(ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps, al::Socket *src)>
+      onDimensionRemove = [](ParameterSpaceDimension *changedDimension,
+                             ParameterSpace *ps, al::Socket *src = nullptr) {};
 
 protected:
   /**
- * @brief update current position to value in dimension ps
- * @param ps
- *
- * This function checks if new dataset directory needs a reload of
- * parameter_space.nc and processes the parameter space changes
- */
+   * @brief update current position to value in dimension ps
+   * @param ps
+   *
+   * This function checks if new dataset directory needs a reload of
+   * parameter_space.nc and processes the parameter space changes
+   */
   void updateParameterSpace(ParameterSpaceDimension *ps);
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;

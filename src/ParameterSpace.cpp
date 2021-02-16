@@ -19,14 +19,16 @@ using namespace tinc;
 ParameterSpace::~ParameterSpace() { stopSweep(); }
 
 std::shared_ptr<ParameterSpaceDimension>
-ParameterSpace::getDimension(std::string name) {
+ParameterSpace::getDimension(std::string name, std::string group) {
 
   std::unique_lock<std::mutex> lk(mSpaceLock);
   if (parameterNameMap.find(name) != parameterNameMap.end()) {
     name = parameterNameMap[name];
   }
   for (auto ps : getDimensions()) {
-    if (ps->parameterMeta()->getName() == name) {
+    if (ps->getName() == name && ps->getGroup() == group) {
+      return ps;
+    } else if (group == "" && ps->getFullAddress() == name) {
       return ps;
     }
   }
@@ -34,10 +36,11 @@ ParameterSpace::getDimension(std::string name) {
 }
 
 std::shared_ptr<ParameterSpaceDimension>
-ParameterSpace::newDimension(std::string name,
+ParameterSpace::newDimension(std::string name, std::string group,
                              ParameterSpaceDimension::RepresentationType type,
                              al::DiscreteParameterValues::Datatype datatype) {
-  auto newDim = std::make_shared<ParameterSpaceDimension>(name, "", datatype);
+  auto newDim =
+      std::make_shared<ParameterSpaceDimension>(name, group, datatype);
 
   newDim->mRepresentationType = type;
   registerDimension(newDim);
@@ -45,10 +48,11 @@ ParameterSpace::newDimension(std::string name,
 }
 
 void ParameterSpace::registerDimension(
-    std::shared_ptr<ParameterSpaceDimension> dimension) {
+    std::shared_ptr<ParameterSpaceDimension> dimension, al::Socket *src) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
   for (auto dim : getDimensions()) {
-    if (dim->getName() == dimension->getName()) {
+    if (dim->getName() == dimension->getName() &&
+        dim->getGroup() == dimension->getGroup()) {
       // FIXME check data type
       if (dim->mSpaceValues.getDataType() ==
           dimension->mSpaceValues.getDataType()) {
@@ -59,7 +63,7 @@ void ParameterSpace::registerDimension(
 
         //      std::cout << "Updated dimension: " << dimension->getName() <<
         //      std::endl;
-        onDimensionRegister(dim.get(), this, nullptr);
+        onDimensionRegister(dim.get(), this, src);
         return;
       } else {
         std::cout << "WARNING: Dimension datatype change." << std::endl;
@@ -82,7 +86,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this, nullptr);
+    onDimensionRegister(dimension.get(), this, src);
   } else if (al::Parameter *p =
                  dynamic_cast<al::Parameter *>(dimension->parameterMeta())) {
     auto &param = *p;
@@ -98,7 +102,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this, nullptr);
+    onDimensionRegister(dimension.get(), this, src);
   } else if (al::ParameterInt *p =
                  dynamic_cast<al::ParameterInt *>(dimension->parameterMeta())) {
     auto &param = *p;
@@ -114,7 +118,7 @@ void ParameterSpace::registerDimension(
       // later on inside the Parameter classes
     });
     mDimensions.push_back(dimension);
-    onDimensionRegister(dimension.get(), this, nullptr);
+    onDimensionRegister(dimension.get(), this, src);
   } else {
     // FIXME implement for all parameter types
     std::cerr << "Support for parameter type not implemented in dimension "
@@ -122,16 +126,26 @@ void ParameterSpace::registerDimension(
   }
 }
 
-void ParameterSpace::removeDimension(std::string dimensionName) {
+void ParameterSpace::removeDimension(std::string name, std::string group,
+                                     al::Socket *src) {
   auto it = mDimensions.begin();
-  while ((*it)->getName() != dimensionName && it < mDimensions.end()) {
-    it++;
+  while (it < mDimensions.end()) {
+    if ((*it)->getName() == name && (*it)->getGroup() == group) {
+      onDimensionRemove(it->get(), this, src);
+      it = mDimensions.erase(it);
+      break;
+    } else if (group == "" && (*it)->getFullAddress() == name) {
+      onDimensionRemove(it->get(), this, src);
+      it = mDimensions.erase(it);
+      break;
+    } else {
+      ++it;
+    }
   }
-  if (it != mDimensions.end()) {
-    mDimensions.erase(it);
-    // TODO ensure space inside dimension is cleaned up correctly. It's probably
-    // leaking.
-  }
+
+  std::cout << "after while" << std::endl;
+  if (it < mDimensions.end())
+    std::cout << "it hasn't reached end" << std::endl;
 }
 
 std::vector<std::shared_ptr<ParameterSpaceDimension>>
@@ -758,11 +772,11 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
     }
     done = incrementIndeces(currentIndeces);
   }
-//  for (auto dimName : innerDimensions) {
-//    if (!getDimension(dimName)) {
-//      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
-//    }
-//  }
+  //  for (auto dimName : innerDimensions) {
+  //    if (!getDimension(dimName)) {
+  //      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
+  //    }
+  //  }
 
 #else
   std::cerr << "TINC built without NetCDF support. "

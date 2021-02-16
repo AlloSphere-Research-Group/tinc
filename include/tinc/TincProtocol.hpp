@@ -132,6 +132,13 @@ public:
   void requestDiskBuffers(al::Socket *dst);
   void requestDataPools(al::Socket *dst);
 
+  // Remove registered objects from this Tinc node
+  void removeParameter(std::string name, std::string group = "");
+  void removeParameterSpace(std::string name);
+  void removeProcessor(std::string name);
+  void removeDiskbuffer(std::string name);
+  void removeDataPool(std::string name);
+
   /**
    * @brief get a parameter from a registered dimension in this Tinc node
    * @param name name (id) of the parameter
@@ -147,6 +154,8 @@ public:
     // TODO protect possible race conditions.
     return mParameterSpaceDimensions;
   }
+
+  ParameterSpace *getParameterSpace(std::string name);
 
   std::vector<ParameterSpace *> parameterSpaces() {
     // TODO protect possible race conditions.
@@ -279,15 +288,15 @@ protected:
     return true;
   }
 
-  std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
+  std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<Processor *> mProcessors;
   std::vector<DiskBufferAbstract *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
   // Dimensions that were allocated by this class
-  std::vector<std::unique_ptr<ParameterSpaceDimension>> mLocalPSDs;
-  std::vector<std::unique_ptr<ParameterSpace>> mLocalPSs;
+  std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
+  std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
