@@ -18,6 +18,7 @@ computation prototyping.
 Here are some videos demonstrating the functionality and API of TINC
 
 [TINC: ParameterSpaces in Python](https://youtu.be/QWwW9XPRAdM)
+
 [TINC: Client in Python interacting with C++](https://youtu.be/xdXmISo4DeY)
 
 # Using TINC
@@ -57,10 +58,13 @@ with:
     -DNETCDF4_INSTALL_ROOT="C:/Program Files/netCDF 4.7.4/"
     
 If you use a binary installation, make sure you download a netCDF version that
-includes *hdf5 AND DAP* support.
+includes *hdf5 AND DAP* support. You can download Windows binaries at: 
+[](https://www.unidata.ucar.edu/downloads/netcdf/), make sure you get the verison
+called 'NetCDF-4+DAP 64-bit'
 
-Or you can use the *./build_deps.sh script on *nix platforms. You will need
-ninja and curl installed for these scripts to work.
+You can use the *./build_deps.sh script on *nix platforms. These scripts download and
+build NetCDF4 and HDF5. You will need ninja and curl installed for these scripts
+to work.
 
 ## Acknowledgements
 
