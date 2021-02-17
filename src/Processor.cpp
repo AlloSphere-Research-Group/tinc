@@ -23,7 +23,7 @@ void Processor::setDataDirectory(std::string directory) {
 }
 
 void Processor::setOutputDirectory(std::string outputDirectory) {
-  mOutputDirectory = al::File::conformPathToOS(outputDirectory);
+  mOutputDirectory = al::File::conformDirectory(al::File::conformPathToOS(outputDirectory));
   std::replace(mOutputDirectory.begin(), mOutputDirectory.end(), '\\', '/');
   if (mOutputDirectory.size() > 0 && !al::File::isDirectory(mOutputDirectory)) {
     if (!al::Dir::make(mOutputDirectory)) {
@@ -34,8 +34,8 @@ void Processor::setOutputDirectory(std::string outputDirectory) {
 }
 
 void Processor::setInputDirectory(std::string inputDirectory) {
-  mInputDirectory = al::File::conformPathToOS(inputDirectory);
-  std::replace(mInputDirectory.begin(), mInputDirectory.end(), '\\', '/');
+  mInputDirectory = al::File::conformDirectory(al::File::conformPathToOS(inputDirectory));
+//  std::replace(mInputDirectory.begin(), mInputDirectory.end(), '\\', '/');
   if (mInputDirectory.size() > 0 && !al::File::isDirectory(mInputDirectory)) {
     std::cout
         << "Warning input directory for Processor doesn't exist. Creating."

@@ -365,10 +365,11 @@ bool ProcessorScript::needsRecompute() {
   if (metaData["__script_modified"] != modified(getScriptFile().c_str())) {
     return true;
   }
-  if (metaData["__input_modified"].size() != mInputFileNames.size()) {
+  if (metaData["__input_modified"].size() != mInputFileNames.size()
+      || !metaData["__input_modified"].is_array()) {
     return true;
   }
-  for (int i = 0; i < metaData["__input_modified"]; i++) {
+  for (int i = 0; i < metaData["__input_modified"].size(); i++) {
     if (metaData["__input_modified"][i] !=
         modified((getInputDirectory() + mInputFileNames[i]).c_str())) {
       return true;
