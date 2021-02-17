@@ -59,7 +59,7 @@ with:
     
 If you use a binary installation, make sure you download a netCDF version that
 includes *hdf5 AND DAP* support. You can download Windows binaries at: 
-[https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev](), make sure you get the verison
+[https://www.unidata.ucar.edu/downloads/netcdf/](), make sure you get the verison
 called 'NetCDF-4+DAP 64-bit'
 
 You can use the *./build_deps.sh script on *nix platforms. These scripts download and
