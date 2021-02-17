@@ -40,9 +40,9 @@ The [TINC API documentation](https://allosphere-research-group.github.io/tinc-si
 
 Join the user and development mailing lists at:
 
-[](https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev)
+[https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev]()
 
-[](https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-users)
+[https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev]()
 
 Please file feature and bug reports through the github
 [issue tracker](https://github.com/AlloSphere-Research-Group/tinc/issues).
@@ -59,7 +59,7 @@ with:
     
 If you use a binary installation, make sure you download a netCDF version that
 includes *hdf5 AND DAP* support. You can download Windows binaries at: 
-[](https://www.unidata.ucar.edu/downloads/netcdf/), make sure you get the verison
+[https://groups.google.com/a/allosphere.ucsb.edu/g/tinc-dev](), make sure you get the verison
 called 'NetCDF-4+DAP 64-bit'
 
 You can use the *./build_deps.sh script on *nix platforms. These scripts download and
