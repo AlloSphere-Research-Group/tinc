@@ -454,18 +454,20 @@ createConfigureParameterChoiceMessage(al::ParameterChoice *param) {
 std::vector<TincMessage>
 createConfigureParameterTriggerMessage(al::Trigger *param) {
   std::vector<TincMessage> messages;
-  {
-    TincMessage msg;
-    msg.set_messagetype(MessageType::CONFIGURE);
-    msg.set_objecttype(ObjectType::PARAMETER);
+  // We shouldn't send the value for a trigger as this will actually trigger
+  // functions on the other end.
+  //  {
+  //    TincMessage msg;
+  //    msg.set_messagetype(MessageType::CONFIGURE);
+  //    msg.set_objecttype(ObjectType::PARAMETER);
 
-    google::protobuf::Any *details = msg.details().New();
-    ConfigureParameter confMessage;
-    createParameterValueMessage(param, confMessage);
-    details->PackFrom(confMessage);
-    msg.set_allocated_details(details);
-    messages.push_back(msg);
-  }
+  //    google::protobuf::Any *details = msg.details().New();
+  //    ConfigureParameter confMessage;
+  //    createParameterValueMessage(param, confMessage);
+  //    details->PackFrom(confMessage);
+  //    msg.set_allocated_details(details);
+  //    messages.push_back(msg);
+  //  }
 
   return messages;
 }
