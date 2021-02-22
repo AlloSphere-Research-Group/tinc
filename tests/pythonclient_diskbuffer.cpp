@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 
-#include "tinc/TincClient.hpp"
-#include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
+#include "tinc/TincClient.hpp"
+#include "tinc/TincServer.hpp"
 
 #include "al/system/al_Time.hpp"
 #include "al/ui/al_Parameter.hpp"
@@ -37,6 +37,8 @@ tclient.stop()
   ptest.pythonExecutable = PYTHON_EXECUTABLE;
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
   ptest.runPython(pythonCode);
+
+  al::al_sleep(0.5);
 
   auto output = ptest.readResults();
 

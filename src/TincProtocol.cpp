@@ -1315,6 +1315,8 @@ void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
     p->registerChangeCallback([&, p](bool value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->setNoCalls(
+        false); // Default value needs to be set manually in some cases.
     //    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
     //        std::vector<TincMessage> confMessages =
     //            createConfigureParameterMessage(&pmeta);
