@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "al/io/al_File.hpp"
 #include "al/ui/al_Parameter.hpp"

@@ -31,10 +31,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
-#include "tinc/IdObject.hpp"
 #include "al/ui/al_Parameter.hpp"
+#include "tinc/IdObject.hpp"
 
 #include <string>
 
@@ -47,7 +47,10 @@ class DiskBufferAbstract : public IdObject {
 public:
   // Careful, this is not thread safe. Needs to be called synchronously to any
   // process functions
-  std::string getCurrentFileName() { return m_fileName; }
+  std::string getCurrentFileName() {
+    std::unique_lock<std::mutex> lk(mWriteLock);
+    return m_fileName;
+  }
 
   virtual bool updateData(std::string filename) = 0;
 
@@ -60,6 +63,8 @@ protected:
   std::string m_fileName;
   std::string m_path;
   std::shared_ptr<al::ParameterString> m_trigger;
+
+  std::mutex mWriteLock;
 };
 
 } // namespace tinc

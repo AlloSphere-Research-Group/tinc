@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/DiskBuffer.hpp"
 
@@ -46,6 +46,7 @@ public:
       : DiskBuffer<al::Image>(id, fileName, path, size) {}
 
   bool updateData(std::string filename = "") override {
+    std::unique_lock<std::mutex> lk(mWriteLock);
     if (filename.size() > 0) {
       m_fileName = filename;
     }

@@ -31,12 +31,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
-#include <fstream>
-#include <string>
 #include <cstring>
 #include <errno.h>
+#include <fstream>
+#include <string>
 
 #include "al/io/al_File.hpp"
 #include "al/ui/al_Parameter.hpp"
@@ -94,6 +94,7 @@ DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
 
 template <class DataType>
 bool DiskBuffer<DataType>::updateData(std::string filename) {
+  std::unique_lock<std::mutex> lk(mWriteLock);
   if (filename.size() > 0) {
     m_fileName = filename;
   }

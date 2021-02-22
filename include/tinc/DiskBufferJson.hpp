@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/DiskBuffer.hpp"
 
@@ -46,6 +46,9 @@ public:
       : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
   bool writeJson(nlohmann::json &newData, std::string filename = "") {
+    // Currently single file buffer. Implement round robin mode to avoid
+    // blocking
+    std::unique_lock<std::mutex> lk(mWriteLock);
     // output to json file on disk
     if (filename.size() == 0) {
       filename = getCurrentFileName();
@@ -72,6 +75,7 @@ protected:
                  std::shared_ptr<nlohmann::json> newData) override {
 
     try {
+      std::cout << "file" << std::endl;
       *newData = nlohmann::json::parse(file);
       return true;
     } catch (std::exception &e) {
