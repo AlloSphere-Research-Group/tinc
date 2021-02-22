@@ -626,17 +626,17 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
-      p->min(v.valuefloat());
+      p->min(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MAX) {
-      p->max(v.valuefloat());
+      p->max(v.valuefloat(), src->valueSource());
     }
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
-      p->min(v.valuefloat());
+      p->min(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MAX) {
-      p->max(v.valuefloat());
+      p->max(v.valuefloat(), src->valueSource());
     }
   } else if (al::ParameterString *p =
                  dynamic_cast<al::ParameterString *>(param)) {
@@ -652,9 +652,9 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valueint32(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
-      p->min(v.valueint32());
+      p->min(v.valueint32(), src->valueSource());
     } else if (command == ParameterConfigureType::MAX) {
-      p->max(v.valueint32());
+      p->max(v.valueint32(), src->valueSource());
     }
   } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
@@ -1200,49 +1200,126 @@ void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(&pmeta)) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
+    });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
     });
   } else if (al::ParameterString *p =
                  dynamic_cast<al::ParameterString *>(&pmeta)) {
     p->registerChangeCallback([&, p](std::string value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(&pmeta)) {
     p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
+    });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
     });
   } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(&pmeta)) {
     p->registerChangeCallback([&, p](al::Vec3f value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(&pmeta)) {
     p->registerChangeCallback([&, p](al::Vec4f value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
+    });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
     });
   } else if (al::ParameterColor *p =
                  dynamic_cast<al::ParameterColor *>(&pmeta)) {
     p->registerChangeCallback([&, p](al::Color value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(&pmeta)) {
     p->registerChangeCallback([&, p](al::Pose value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(&pmeta)) {
     p->registerChangeCallback([&, p](int32_t value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
+    });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
     });
   } else if (al::ParameterChoice *p =
                  dynamic_cast<al::ParameterChoice *>(&pmeta)) {
     p->registerChangeCallback([&, p](uint64_t value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+      std::vector<TincMessage> confMessages =
+          createConfigureParameterMessage(&pmeta);
+      for (auto &msg : confMessages) {
+        sendTincMessage(&msg, nullptr, src);
+      }
+    });
   } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(&pmeta)) {
     p->registerChangeCallback([&, p](bool value, al::ValueSource *src) {
       sendValueMessage(value, p->getFullAddress(), src);
     });
+    //    p->registerMetaChangeCallback([&, p](al::ValueSource *src) {
+    //        std::vector<TincMessage> confMessages =
+    //            createConfigureParameterMessage(&pmeta);
+    //        for (auto &msg: confMessages) {
+    //            sendTincMessage(&msg, nullptr, src);
+    //        }
+    //    });
   }
 }
 
