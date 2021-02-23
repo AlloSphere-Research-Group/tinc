@@ -92,7 +92,10 @@ public:
     return mData[mReadBuffer];
   }
 
-  bool newDataAvailable() { return mNewData; }
+  bool newDataAvailable() {
+    std::unique_lock<std::mutex> lk(mDataLock);
+    return mNewData;
+  }
 
 protected:
   std::vector<std::shared_ptr<DataType>> mData;
