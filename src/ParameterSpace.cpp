@@ -12,10 +12,10 @@
 
 #endif
 
-#include <iostream>
-#include <ctime>
 #include <chrono>
+#include <ctime>
 #include <iomanip>
+#include <iostream>
 
 #include "picosha2.h" // SHA256 hash generator
 
@@ -484,8 +484,8 @@ bool readNetCDFValues(int grpid,
   }
   return true;
 #else
-    std::cerr << __FILE__ <<  " TINC built without NetCDF support" <<std::endl;
-    return false;
+  std::cerr << __FILE__ << " TINC built without NetCDF support" << std::endl;
+  return false;
 #endif
 }
 
@@ -719,8 +719,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
   return true;
 #else
-    std::cerr << __FILE__ <<  " TINC built without NetCDF support" <<std::endl;
-    return false;
+  std::cerr << __FILE__ << " TINC built without NetCDF support" << std::endl;
+  return false;
 #endif
 }
 std::string ParameterSpace::getRootPath() { return mRootPath; }
@@ -887,13 +887,17 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
     std::string item;
     std::string subPath;
     while (std::getline(ss, item, AL_FILE_DELIMITER)) {
+      if (item == ".") {
+        continue;
+      }
       subPath += item + AL_FILE_DELIMITER_STR;
-      if (al::File::exists(al::File::conformPathToOS(mRootPath) + subPath +
-                           ncFile)) {
+      auto subpathFile =
+          al::File::conformPathToOS(mRootPath) + subPath + ncFile;
+      if (al::File::exists(subpathFile)) {
         mSpecialDirs[subPath] = ncFile;
         std::vector<std::shared_ptr<ParameterSpaceDimension>>
             newInnerDimensions;
-        if (readDimensionsInNetCDFFile(filename, newInnerDimensions)) {
+        if (readDimensionsInNetCDFFile(subpathFile, newInnerDimensions)) {
 
           for (auto newDim : newInnerDimensions) {
             //            if (std::find(innerDimensions.begin(),
@@ -909,11 +913,11 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
     }
     done = incrementIndeces(currentIndeces);
   }
-//  for (auto dimName : innerDimensions) {
-//    if (!getDimension(dimName)) {
-//      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
-//    }
-//  }
+  //  for (auto dimName : innerDimensions) {
+  //    if (!getDimension(dimName)) {
+  //      registerDimension(std::make_shared<ParameterSpaceDimension>(dimName));
+  //    }
+  //  }
 
 #else
   std::cerr << "TINC built without NetCDF support. "
@@ -925,7 +929,7 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
 
 bool writeNetCDFValues(int datagrpid,
                        std::shared_ptr<ParameterSpaceDimension> ps) {
-    #ifdef TINC_HAS_HDF5
+#ifdef TINC_HAS_HDF5
   int retval;
   int shuffle = 1;
   int deflate = 9;
@@ -1003,13 +1007,13 @@ bool writeNetCDFValues(int datagrpid,
   // FIXME add support for the rest of the data types.
   return true;
 #else
-  std::cerr << __FILE__ <<  " TINC built without NetCDF support" <<std::endl;
+  std::cerr << __FILE__ << " TINC built without NetCDF support" << std::endl;
   return false;
 #endif
 }
 
 bool ParameterSpace::writeToNetCDF(std::string fileName) {
-    #ifdef TINC_HAS_HDF5
+#ifdef TINC_HAS_HDF5
   int retval;
   int ncid;
   fileName = al::File::conformPathToOS(mRootPath) + fileName;
@@ -1149,8 +1153,8 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
   //  } while (!incrementIndeces(indeces));
   return true;
 #else
-std::cerr << __FILE__ <<  " TINC built without NetCDF support" <<std::endl;
-return false;
+  std::cerr << __FILE__ << " TINC built without NetCDF support" << std::endl;
+  return false;
 #endif
 }
 

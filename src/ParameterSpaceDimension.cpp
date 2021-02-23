@@ -252,6 +252,9 @@ void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
                                              std::string idprefix,
                                              al::Socket *src) {
   // TODO add safety check for types and pointer sizes
+  if (count == 0 && mSpaceValues.size() == 0) {
+    return;
+  }
   mSpaceValues.clear();
   mSpaceValues.append(values, count, idprefix);
   conformSpace();
