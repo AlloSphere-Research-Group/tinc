@@ -48,7 +48,7 @@ public:
   bool writeJson(nlohmann::json &newData, std::string filename = "") {
     // Currently single file buffer. Implement round robin mode to avoid
     // blocking
-    std::unique_lock<std::mutex> lk(mWriteLock);
+    std::unique_lock<std::mutex> lk(m_writeLock);
     // output to json file on disk
     if (filename.size() == 0) {
       filename = getCurrentFileName();

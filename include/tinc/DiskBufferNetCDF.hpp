@@ -77,7 +77,7 @@ public:
   }
 
   bool updateData(std::string filename) {
-    std::unique_lock<std::mutex> lk(mWriteLock);
+    std::unique_lock<std::mutex> lk(m_writeLock);
     if (filename.size() > 0) {
       m_fileName = filename;
     }
