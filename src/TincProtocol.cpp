@@ -910,16 +910,29 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
 
 void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
                                                    al::Socket *src) {
-  bool registered = false;
+  ParameterSpaceDimension *registered = nullptr;
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
-      registered = true;
+      registered = dim;
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
                   << psd.getFullAddress() << " already registered."
                   << std::endl;
       }
       break;
+    }
+  }
+  for (auto *ps : mParameterSpaces) {
+    for (auto dim : ps->getDimensions()) {
+      if (dim.get() == &psd || dim->getFullAddress() == psd.getFullAddress()) {
+        registered = dim.get();
+        if (mVerbose) {
+          std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+                    << psd.getFullAddress() << " already registered."
+                    << std::endl;
+        }
+        break;
+      }
     }
   }
   if (!registered) {
@@ -930,6 +943,11 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     // Broadcast registered ParameterSpaceDimension
     sendRegisterMessage(&psd, nullptr, src);
     sendConfigureMessage(&psd, nullptr, src);
+  } else {
+    connectParameterCallbacks(*registered->getParameterMeta());
+    connectDimensionCallbacks(*registered);
+    sendRegisterMessage(registered, nullptr, src);
+    sendConfigureMessage(registered, nullptr, src);
   }
 }
 
@@ -1022,6 +1040,8 @@ void TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
     // Broadcast registered DiskBuffer
     sendRegisterMessage(&db, nullptr, src);
     sendConfigureMessage(&db, nullptr, src);
+  } else {
+    // TODO apply data from new dimension
   }
 }
 

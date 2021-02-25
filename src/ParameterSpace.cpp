@@ -47,7 +47,7 @@ ParameterSpace::newDimension(std::string name,
   auto newDim = std::make_shared<ParameterSpaceDimension>(name, "", datatype);
 
   newDim->mRepresentationType = type;
-  registerDimension(newDim);
+  newDim = registerDimension(newDim);
   return newDim;
 }
 
