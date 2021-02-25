@@ -182,6 +182,8 @@ public:
 
   virtual void markAvailable();
 
+  Status getStatus();
+
 protected:
   // Register CBs
   void connectParameterCallbacks(al::ParameterMeta &param);

@@ -1217,6 +1217,15 @@ void TincProtocol::markAvailable() {
   mBusyCount--;
 }
 
+TincProtocol::Status TincProtocol::getStatus() {
+  std::unique_lock<std::mutex> lk(mBusyCountLock);
+  if (mBusyCount > 0) {
+    return STATUS_BUSY;
+  } else {
+    return STATUS_AVAILABLE;
+  }
+}
+
 void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(&pmeta)) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {

@@ -111,8 +111,11 @@ void drawTincServerInfo(TincServer &tserv, bool debug) {
   ImGui::PushID(&tserv);
 
   auto serverAddr = tserv.serverAddress();
-  ImGui::Text("Tinc server at %#010lx -- %s:%i", (uintptr_t)&tserv,
-              serverAddr.first.c_str(), serverAddr.second);
+  std::string status =
+      tserv.getStatus() == TincProtocol::STATUS_BUSY ? "BUSY" : "Idle";
+  ImGui::Text("Tinc server at %#010lx -- %s:%i Status: %s", (uintptr_t)&tserv,
+              serverAddr.first.c_str(), serverAddr.second, status.c_str());
+
   if (debug) {
     ImGui::SameLine();
     if (ImGui::Button("Disconnect all")) {
@@ -126,6 +129,6 @@ void drawTincServerInfo(TincServer &tserv, bool debug) {
   ImGui::PopID();
 }
 
-} // namespace gui
+} // namespace vis
 
 } // namespace tinc
