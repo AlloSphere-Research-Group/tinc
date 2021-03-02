@@ -247,17 +247,19 @@ bool ParameterSpace::runProcess(
     processor.setRunningDirectory(path);
   }
   // First set the current values in the parameter space
-  std::unique_lock<std::mutex> lk(mDimensionsLock);
-  for (auto dim : mDimensions) {
-    if (args.find(dim->getName()) == args.end()) {
-      if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
-        processor.configuration[dim->getName()] = dim->getCurrentValue();
-      } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
-        processor.configuration[dim->getName()] = dim->getCurrentId();
-      } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
-        assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-        processor.configuration[dim->getName()] =
-            (int64_t)dim->getCurrentIndex();
+  {
+    std::unique_lock<std::mutex> lk(mDimensionsLock);
+    for (auto dim : mDimensions) {
+      if (args.find(dim->getName()) == args.end()) {
+        if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
+          processor.configuration[dim->getName()] = dim->getCurrentValue();
+        } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
+          processor.configuration[dim->getName()] = dim->getCurrentId();
+        } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
+          assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
+          processor.configuration[dim->getName()] =
+              (int64_t)dim->getCurrentIndex();
+        }
       }
     }
   }
