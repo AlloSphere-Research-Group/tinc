@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
@@ -145,6 +145,9 @@ public:
 
   /**
    * @brief Register a function to be called at the start of process()
+   *
+   * These callbacks should only be used for data related actions, as they
+   * will be skipped when reusing cache in ParameterSpace.
    */
   void registerStartCallback(std::function<void(void)> func);
 
@@ -152,6 +155,9 @@ public:
    * @brief Register a function to be called at the end of process()
    *
    * This function is passed true if the process() function has been sucessful.
+   *
+   * These callbacks should only be used for data related actions, as they
+   * will be skipped when reusing cache in ParameterSpace.
    */
   void registerDoneCallback(std::function<void(bool)> func);
 

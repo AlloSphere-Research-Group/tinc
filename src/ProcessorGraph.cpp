@@ -24,9 +24,15 @@ bool ProcessorGraph::process(bool forceRecompute) {
   if (!enabled) {
     // TODO should callbacks be called if disabled?
     //    callDoneCallbacks(true);
+    if (mVerbose) {
+      std::cerr << "SKIPPED: " << mId << " - processor disabled" << std::endl;
+    }
     return true;
   }
 
+  if (mVerbose) {
+    std::cerr << "STARTING Processor Graph: " << mId << std::endl;
+  }
   callStartCallbacks();
   std::unique_lock<std::mutex> lk2(mChainLock);
   std::unique_lock<std::mutex> lk(mProcessLock);
@@ -56,6 +62,7 @@ bool ProcessorGraph::process(bool forceRecompute) {
     break;
   case PROCESS_SERIAL:
     for (auto proc : mProcessors) {
+      proc.first->setRunningDirectory(this->getRunningDirectory());
       for (auto configEntry : configuration) {
         proc.first->configuration[configEntry.first] = configEntry.second;
       }

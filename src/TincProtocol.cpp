@@ -2298,7 +2298,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
     incomingCommand.details().UnpackTo(&request);
     for (auto ps : mParameterSpaces) {
       if (ps->getId() == psId) {
-        auto curDir = ps->currentRelativeRunPath();
+        auto curDir = ps->getCurrentRelativeRunPath();
 
         if (mVerbose) {
           std::cout << commandNumber << ":****: " << curDir << std::endl;

@@ -80,7 +80,7 @@ struct MyApp : public App {
           std::to_string(ps->getDimension("dim2")->getCurrentIndex()) + " -- " +
           std::to_string(ps->getDimension("inner_param")->getCurrentValue()) +
           ".txt";
-      std::ifstream f(ps->currentRelativeRunPath() + name);
+      std::ifstream f(ps->getCurrentRelativeRunPath() + name);
       if (f.is_open()) {
         f.seekg(0, std::ios::end);
         displayText.reserve(f.tellg());

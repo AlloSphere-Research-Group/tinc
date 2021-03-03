@@ -31,12 +31,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
+#include "tinc/CacheManager.hpp"
+#include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
 #include "tinc/Processor.hpp"
-#include "tinc/IdObject.hpp"
-#include "tinc/CacheManager.hpp"
 
 #include <functional>
 #include <memory>
@@ -124,7 +124,7 @@ public:
    *
    * Generated according to generateRelativePath()
    */
-  std::string currentRelativeRunPath();
+  std::string getCurrentRelativeRunPath();
 
   /**
    * @brief Returns the names of all dimensions
@@ -330,7 +330,7 @@ public:
 
   /**
    * @brief Enable caching for the parameter space
-   * @param cachePath
+   * @param cachePath path relative to root path
    *
    * Caching will be used when calling runProcess() and sweep()
    * You should use cachePath as a relative path to rootPath
@@ -362,8 +362,9 @@ public:
    * except when a particular dimension has changed.
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps)> onValueChange =
-      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
+                     ParameterSpace *ps)>
+      onValueChange =
+          [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
   // Currently allows only one TincServer. Should we provision for more?
   /**
@@ -371,18 +372,19 @@ public:
    * dimension is added
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps, al::Socket *src)> onDimensionRegister =
-      [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps,
-         al::Socket *src = nullptr) {};
+                     ParameterSpace *ps, al::Socket *src)>
+      onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
+                               ParameterSpace *ps,
+                               al::Socket *src = nullptr) {};
 
 protected:
   /**
- * @brief update current position to value in dimension ps
- * @param ps
- *
- * This function checks if new dataset directory needs a reload of
- * parameter_space.nc and processes the parameter space changes
- */
+   * @brief update current position to value in dimension ps
+   * @param ps
+   *
+   * This function checks if new dataset directory needs a reload of
+   * parameter_space.nc and processes the parameter space changes
+   */
   void updateParameterSpace(ParameterSpaceDimension *ps);
 
   bool executeProcess(Processor &processor, bool recompute);

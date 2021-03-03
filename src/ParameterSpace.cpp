@@ -1,4 +1,5 @@
 #include "tinc/ParameterSpace.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 #include "al/io/al_File.hpp"
 
@@ -176,7 +177,7 @@ ParameterSpace::runningPaths(std::vector<std::string> fixedDimensions) {
   return paths;
 }
 
-std::string ParameterSpace::currentRelativeRunPath() {
+std::string ParameterSpace::getCurrentRelativeRunPath() {
   std::map<std::string, size_t> indeces;
   {
     std::unique_lock<std::mutex> lk(mDimensionsLock);
@@ -241,38 +242,53 @@ bool ParameterSpace::runProcess(
     Processor &processor, std::map<std::string, VariantValue> args,
     std::map<std::string, VariantValue> dependencies, bool recompute) {
 
-  auto path = currentRelativeRunPath();
-  if (path.size() > 0) {
-    // TODO allow fine grained options of what directory to set
-    processor.setRunningDirectory(path);
-  }
-  // First set the current values in the parameter space
-  {
-    std::unique_lock<std::mutex> lk(mDimensionsLock);
-    for (auto dim : mDimensions) {
-      if (args.find(dim->getName()) == args.end()) {
-        if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
-          processor.configuration[dim->getName()] = dim->getCurrentValue();
-        } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
-          processor.configuration[dim->getName()] = dim->getCurrentId();
-        } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
-          assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-          processor.configuration[dim->getName()] =
-              (int64_t)dim->getCurrentIndex();
+  if (auto *procChain = dynamic_cast<ProcessorGraph *>(&processor)) {
+    // TODO enable async processing of processor chain
+    bool ret = true;
+    for (auto *childProc : procChain->getProcessors()) {
+      bool childRet = runProcess(*childProc, args, dependencies, recompute);
+      ret &= childRet;
+      if (!childRet && !childProc->ignoreFail) {
+        break;
+      }
+    }
+    return ret;
+  } else {
+    auto path = getCurrentRelativeRunPath();
+    if (path.size() > 0) {
+      // TODO allow fine grained options of what directory to set
+      processor.setRunningDirectory(getRootPath() + path);
+    }
+    // First set the current values in the parameter space
+    {
+      std::unique_lock<std::mutex> lk(mDimensionsLock);
+      for (auto dim : mDimensions) {
+        if (args.find(dim->getName()) == args.end()) {
+          if (dim->mRepresentationType == ParameterSpaceDimension::VALUE) {
+            processor.configuration[dim->getName()] = dim->getCurrentValue();
+          } else if (dim->mRepresentationType == ParameterSpaceDimension::ID) {
+            processor.configuration[dim->getName()] = dim->getCurrentId();
+          } else if (dim->mRepresentationType ==
+                     ParameterSpaceDimension::INDEX) {
+            assert(dim->getCurrentIndex() <
+                   std::numeric_limits<int64_t>::max());
+            processor.configuration[dim->getName()] =
+                (int64_t)dim->getCurrentIndex();
+          }
         }
       }
     }
+    // Then set dependencies. Dependencies and arguments override values in the
+    // parameter space. Although that is not meant to be their use.
+    for (auto &dep : dependencies) {
+      processor.configuration[dep.first] = dep.second;
+    }
+    // Then set the provided arguments
+    for (auto &arg : args) {
+      processor.configuration[arg.first] = arg.second;
+    }
+    return executeProcess(processor, recompute);
   }
-  // Then set dependencies. Dependencies and arguments override values in the
-  // parameter space. Although that is not meant to be their use.
-  for (auto &dep : dependencies) {
-    processor.configuration[dep.first] = dep.second;
-  }
-  // Then set the provided arguments
-  for (auto &arg : args) {
-    processor.configuration[arg.first] = arg.second;
-  }
-  return executeProcess(processor, recompute);
 }
 
 void ParameterSpace::sweep(Processor &processor,
@@ -328,7 +344,7 @@ void ParameterSpace::sweep(Processor &processor,
       processor.configuration[dep.first] = dep.second;
     }
     auto path =
-        al::File::conformDirectory(mRootPath) + currentRelativeRunPath();
+        al::File::conformDirectory(mRootPath) + getCurrentRelativeRunPath();
     if (path.size() > 0) {
       // TODO allow fine grained options of what directory to set
       processor.setRunningDirectory(path);
@@ -844,6 +860,7 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
 }
 
 void ParameterSpace::enableCache(std::string cachePath) {
+  al::PushDirectory(getRootPath());
   if (mCacheManager) {
     std::cout << "Warning cache already enabled. Overwriting previous settings"
               << std::endl;
@@ -1180,7 +1197,7 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
       oldPathComponents.push_back(std::move(item));
     }
 
-    auto newPath = currentRelativeRunPath();
+    auto newPath = getCurrentRelativeRunPath();
     std::stringstream ss2(newPath);
     std::vector<std::string> newPathComponents;
     while (std::getline(ss2, item, AL_FILE_DELIMITER)) {
@@ -1340,6 +1357,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
           std::cout << "Cache restored from: "
                     << mCacheManager->cacheDirectory() + cacheFiles.at(i)
                     << std::endl;
+          return true;
         }
       }
     } else {
@@ -1359,7 +1377,8 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       for (auto dim : mDimensions) {
         parameterPrefix += "%%" + dim->getName() + "%%_";
       }
-      parameterPrefix = resolveFilename(parameterPrefix);
+      parameterPrefix =
+          ProcessorScript::sanitizeName(resolveFilename(parameterPrefix));
       std::string cacheFilename =
           mCacheManager->cacheDirectory() + parameterPrefix + filename;
       if (al::File::exists(cacheFilename)) {

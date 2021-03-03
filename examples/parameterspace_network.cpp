@@ -41,7 +41,7 @@ struct MyApp : public al::App {
     for (auto *ps : tserv.parameterSpaces()) {
       tinc::vis::drawControls(*ps);
     }
-    ImGui::Text("Current path: %s", ps.currentRelativeRunPath().c_str());
+    ImGui::Text("Current path: %s", ps.getCurrentRelativeRunPath().c_str());
     tinc::vis::drawTincServerInfo(tserv);
     al::ParameterGUI::endPanel();
     al::imguiEndFrame();

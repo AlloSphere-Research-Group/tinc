@@ -123,7 +123,7 @@ struct MyApp : public App {
 
     // Register callback after every process call in a parameter sweep
     ps.onSweepProcess = [&](double progress) {
-      std::cout << "Processed: " << ps.currentRelativeRunPath() << std::endl;
+      std::cout << "Processed: " << ps.getCurrentRelativeRunPath() << std::endl;
       std::cout << "Progress: " << progress * 100 << "%" << std::endl;
     };
   }

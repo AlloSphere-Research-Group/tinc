@@ -43,6 +43,10 @@ bool ProcessorScript::process(bool forceRecompute) {
   if (!enabled) {
     return true;
   }
+
+  if (mVerbose) {
+    std::cerr << "STARTING ProcessorScript: " << mId << std::endl;
+  }
   if (prepareFunction && !prepareFunction()) {
     std::cerr << "ERROR preparing processor: " << getId() << std::endl;
     return false;
@@ -65,7 +69,9 @@ bool ProcessorScript::process(bool forceRecompute) {
         mScriptCommand + " \"" + mScriptName + "\" \"" + jsonFilename + "\"";
     ok = runCommand(command);
     if (ok) {
-      writeMeta();
+      if (mUseCache) {
+        writeMeta();
+      }
       readJsonConfig(jsonFilename);
     }
   } else {
@@ -120,8 +126,8 @@ std::string ProcessorScript::writeJsonConfig() {
     }
   }
 
-  std::string jsonFilename = "_" + sanitizeName(mRunningDirectory) +
-                             std::to_string(long(this)) + "_config.json";
+  std::string jsonFilename =
+      "_" + mId + std::to_string(long(this)) + "_config.json";
   if (mVerbose) {
     std::cout << "Writing json config: " << jsonFilename << std::endl;
   }
@@ -365,8 +371,8 @@ bool ProcessorScript::needsRecompute() {
   if (metaData["__script_modified"] != modified(getScriptFile().c_str())) {
     return true;
   }
-  if (metaData["__input_modified"].size() != mInputFileNames.size()
-      || !metaData["__input_modified"].is_array()) {
+  if (metaData["__input_modified"].size() != mInputFileNames.size() ||
+      !metaData["__input_modified"].is_array()) {
     return true;
   }
   for (int i = 0; i < metaData["__input_modified"].size(); i++) {
