@@ -1,16 +1,16 @@
 #ifndef CACHEMANAGER_HPP
 #define CACHEMANAGER_HPP
 
-#include "nlohmann/json.hpp"
 #include "nlohmann/json-schema.hpp"
+#include "nlohmann/json.hpp"
 
 #include "tinc/DistributedPath.hpp"
 #include "tinc/VariantValue.hpp"
 
+#include <cinttypes>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
-#include <cinttypes>
 
 namespace tinc {
 
@@ -27,6 +27,12 @@ struct SourceArgument {
   VariantValue value;
 };
 
+struct FileDependency {
+  DistributedPath file;
+  std::string modified;
+  uint64_t size;
+};
+
 struct SourceInfo {
   std::string type;
   std::string
@@ -36,7 +42,7 @@ struct SourceInfo {
   std::string hash;
   std::vector<SourceArgument> arguments;
   std::vector<SourceArgument> dependencies;
-  std::vector<DistributedPath> fileDependencies;
+  std::vector<FileDependency> fileDependencies;
 };
 
 struct CacheEntry {
@@ -115,6 +121,6 @@ protected:
   nlohmann::json_schema::json_validator mValidator{nullptr,
                                                    tincSchemaFormatChecker};
 };
-}
+} // namespace tinc
 
 #endif // CACHEMANAGER_HPP

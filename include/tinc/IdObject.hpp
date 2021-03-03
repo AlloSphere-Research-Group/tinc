@@ -31,11 +31,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
-#include <string>
-#include <iostream>
 #include <functional>
+#include <iostream>
+#include <string>
 
 namespace tinc {
 
@@ -54,6 +54,6 @@ protected:
   std::string mId;
   std::string mDocumentation;
 };
-}
+} // namespace tinc
 
 #endif // IDOBJECT_HPP

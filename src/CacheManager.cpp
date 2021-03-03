@@ -1,7 +1,7 @@
 #include "tinc/CacheManager.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 #include "al/io/al_File.hpp"
@@ -120,7 +120,13 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
   return {};
 }
 
-std::string CacheManager::cacheDirectory() { return mCachePath.path(); }
+std::string CacheManager::cacheDirectory() {
+
+  if (!al::File::isDirectory(mCachePath.path())) {
+    al::Dir::make(mCachePath.path());
+  }
+  return mCachePath.path();
+}
 
 void CacheManager::updateFromDisk() {
   std::unique_lock<std::mutex> lk(mCacheLock);
@@ -199,9 +205,14 @@ void CacheManager::updateFromDisk() {
         e.sourceInfo.dependencies.push_back(newArg);
       }
       for (auto arg : entry["sourceInfo"]["fileDependencies"]) {
-        DistributedPath newArg(arg["filename"], arg["relativePath"],
-                               arg["rootPath"]);
-        e.sourceInfo.fileDependencies.push_back(newArg);
+        FileDependency fileDep;
+        fileDep.file = DistributedPath(arg["file"]["filename"],
+                                       arg["file"]["relativePath"],
+                                       arg["file"]["rootPath"]);
+        fileDep.modified = arg["modified"];
+        fileDep.size = arg["size"];
+
+        e.sourceInfo.fileDependencies.push_back(fileDep);
       }
       mEntries.push_back(e);
     }
@@ -286,9 +297,11 @@ void CacheManager::writeToDisk() {
       }
       for (auto arg : e.sourceInfo.fileDependencies) {
         nlohmann::json newArg;
-        newArg["fileName"] = arg.filename;
-        newArg["relativePath"] = arg.relativePath;
-        newArg["rootPath"] = arg.rootPath;
+        newArg["file"]["filename"] = arg.file.filename;
+        newArg["file"]["relativePath"] = arg.file.relativePath;
+        newArg["file"]["rootPath"] = arg.file.rootPath;
+        newArg["modified"] = "";
+        newArg["size"] = 0; // TODO write modified and size values
         entry["sourceInfo"]["fileDependencies"].push_back(newArg);
       }
 

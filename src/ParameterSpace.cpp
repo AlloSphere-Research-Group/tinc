@@ -873,6 +873,7 @@ void ParameterSpace::enableCache(std::string cachePath) {
   }
   mCacheManager = std::make_shared<CacheManager>(
       DistributedPath{std::string("tinc_cache.json"), cachePath, mRootPath});
+  mCacheManager->updateFromDisk();
 }
 
 void ParameterSpace::disableCache() { mCacheManager = nullptr; }
@@ -1394,7 +1395,11 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
     }
 
     for (auto filename : processor.getInputFileNames()) {
-      DistributedPath dep(filename); // TODO enrich meta data
+
+      FileDependency dep;
+      dep.file = DistributedPath(filename); // TODO enrich meta data
+      dep.modified = "";
+      dep.size = 0; // TODO write size and modified
       entry.sourceInfo.fileDependencies.push_back(dep);
     }
 
