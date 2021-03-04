@@ -82,7 +82,7 @@ void AtomRenderer::draw(al::Graphics &g, float scale,
   g.shader().uniform("eye_sep", scale * g.lens().eyeSep() * g.eye() / 2.0f);
   // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
   g.shader().uniform("foc_len", g.lens().focalLength());
-  g.shader().uniform("clipped_mult", 0.45);
+  g.shader().uniform("clipped_mult", mClippedMultiplier);
   g.update();
 
   renderInstances(g, scale, mAtomData, mAligned4fData);
@@ -177,7 +177,7 @@ void SlicingAtomRenderer::draw(Graphics &g, float scale,
   g.shader().uniform("plane_normal", mSlicingPlaneNormal.get().normalized());
   g.shader().uniform("second_plane_distance", mSlicingPlaneThickness);
 
-  g.shader().uniform("clipped_mult", 0.45);
+  g.shader().uniform("clipped_mult", mClippedMultiplier);
   g.update();
   renderInstances(g, scale, mAtomData, mAligned4fData);
 }

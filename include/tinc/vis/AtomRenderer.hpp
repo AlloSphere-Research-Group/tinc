@@ -97,6 +97,7 @@ public:
   // Increase layer separation (Z- axis scaling) in perspectiveView
   al::Parameter mLayerSeparation{"LayerSeparation", "", 0, 0, 3};
   al::ParameterChoice mShowAtoms{"ShowAtoms"};
+  al::Parameter mClippedMultiplier{"ClippedMultiplier", "", 0.3, 0.0, 2.0};
 
   al::ShaderProgram instancing_shader;
   InstancingMesh instancingMesh;
