@@ -69,8 +69,8 @@ public:
    * @param name
    * @return the dimension or nullptr if not found
    */
-  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name,
-                                                        std::string group = "");
+  ParameterSpaceDimension *getDimension(std::string name,
+                                        std::string group = "");
 
   /**
    * @brief create and register a new dimension for this parameter space
@@ -79,7 +79,7 @@ public:
    * @param datatype data type
    * @return the newly created dimension.
    */
-  std::shared_ptr<ParameterSpaceDimension>
+  ParameterSpaceDimension *
   newDimension(std::string name, std::string group = "",
                ParameterSpaceDimension::RepresentationType type =
                    ParameterSpaceDimension::VALUE,
@@ -91,7 +91,7 @@ public:
    * @param dimension dimension to register
    * @param src original socket that message came from
    */
-  void registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension,
+  void registerDimension(std::shared_ptr<ParameterSpaceDimension> &dimension,
                          al::Socket *src = nullptr);
 
   /**
@@ -105,7 +105,7 @@ public:
   /**
    * @brief get list of currently registered dimensions
    */
-  std::vector<std::shared_ptr<ParameterSpaceDimension>> getDimensions();
+  std::vector<ParameterSpaceDimension *> getDimensions();
 
   /**
    * @brief Returns all the paths that are used by the whole parameter space
@@ -140,10 +140,10 @@ public:
 
   /**
    * @brief increment to next index from index array
-   * @param currentIndeces
-   * @return true when no more indeces to process
+   * @param currentIndices
+   * @return true when no more indices to process
    */
-  bool incrementIndeces(std::map<std::string, size_t> &currentIndeces);
+  bool incrementIndices(std::map<std::string, size_t> &currentIndices);
 
   /**
    * @brief sweep the parameter space across all or specified dimensions
@@ -256,7 +256,7 @@ public:
    */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath =
-          [&](std::map<std::string, size_t> indeces, ParameterSpace *ps) {
+          [&](std::map<std::string, size_t> indices, ParameterSpace *ps) {
             std::string path = ps->resolveFilename(mCurrentPathTemplate);
             return al::File::conformPathToOS(path);
           };
