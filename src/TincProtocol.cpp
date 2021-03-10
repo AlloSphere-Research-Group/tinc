@@ -883,7 +883,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
                                      al::Socket *src) {
   bool registered = false;
-  for (auto &dim : mParameterSpaceDimensions) {
+  for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == pmeta.getName() &&
         dim->getGroup() == pmeta.getGroup()) {
       registered = true;
@@ -963,6 +963,9 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
                                   ParameterSpace *ps, al::Socket *src) {
       sendConfigureParameterSpaceRemoveDimension(ps, changedDimension, nullptr,
                                                  src);
+      // removeParameter(changedDimension->getName(),
+      // changedDimension->getGroup(),
+      //                 src);
     };
 
     // register PSDs attached to the ParameterSpace
@@ -1149,31 +1152,53 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
-void TincProtocol::removeParameter(std::string name, std::string group) {
+void TincProtocol::removeParameter(std::string name, std::string group,
+                                   al::Socket *src) {
   // FIXME add lock
 
-  // std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
-  // std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
-  // for (auto *dim : mParameterSpaceDimensions) {
-  //   if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
-  //     registered = true;
-  //     if (mVerbose) {
-  //       std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-  //                 << psd.getFullAddress() << " already registered."
-  //                 << std::endl;
-  //     }
-  //     break;
-  //   }
-  // }
-  // if (!registered) {
-  //   mParameterSpaceDimensions.push_back(&psd);
-  //   connectParameterCallbacks(*psd.parameterMeta());
-  //   connectDimensionCallbacks(psd);
+  for (auto it = mParameterSpaceDimensions.begin();
+       it != mParameterSpaceDimensions.end();) {
+    if (((*it)->getName() == name && (*it)->getGroup() == group) ||
+        (group == "" && (*it)->getFullAddress() == name)) {
 
-  //   // Broadcast registered ParameterSpaceDimension
-  //   sendRegisterMessage(&psd, nullptr, src);
-  //   sendConfigureMessage(&psd, nullptr, src);
-  // }
+      // sendremovemessage
+
+      it = mParameterSpaceDimensions.erase(it);
+
+      for (auto itLocal = mLocalPSDs.begin(); itLocal != mLocalPSDs.end();) {
+        if (((*itLocal)->getName() == name &&
+             (*itLocal)->getGroup() == group) ||
+            (group == "" && (*itLocal)->getFullAddress() == name)) {
+          if (mVerbose) {
+            std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+                      << (*itLocal)->getFullAddress() << " removed."
+                      << std::endl;
+          }
+          std::cout << "use count before remove: " << itLocal->use_count()
+                    << std::endl;
+          itLocal = mLocalPSDs.erase(itLocal);
+
+          return; // removed local psd & stored ptr
+        } else {
+          ++itLocal;
+        }
+      }
+
+      if (mVerbose) {
+        std::cout
+            << __FUNCTION__ << ": ParameterSpaceDimension " << name
+            << " (Group: " << group
+            << ") removed from TincProtocol but original is stored externally."
+            << std::endl;
+      }
+      return; // removed stored ptr but psd is owned externally
+    } else {
+      ++it;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find ParameterSpaceDimension "
+            << name << " (Group: " << group << ")" << std::endl;
 }
 
 al::ParameterMeta *TincProtocol::getParameter(std::string name,

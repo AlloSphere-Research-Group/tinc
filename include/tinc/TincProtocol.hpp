@@ -133,11 +133,12 @@ public:
   void requestDataPools(al::Socket *dst);
 
   // Remove registered objects from this Tinc node
-  void removeParameter(std::string name, std::string group = "");
-  void removeParameterSpace(std::string name);
-  void removeProcessor(std::string name);
-  void removeDiskbuffer(std::string name);
-  void removeDataPool(std::string name);
+  void removeParameter(std::string name, std::string group = "",
+                       al::Socket *src = nullptr);
+  void removeParameterSpace(std::string name, al::Socket *src = nullptr);
+  void removeProcessor(std::string name, al::Socket *src = nullptr);
+  void removeDiskbuffer(std::string name, al::Socket *src = nullptr);
+  void removeDataPool(std::string name, al::Socket *src = nullptr);
 
   /**
    * @brief get a parameter from a registered dimension in this Tinc node

@@ -98,8 +98,9 @@ public:
    * @brief remove dimension form list of registered dimensions
    * @param dimensionName
    * @param src original socket that message came from
+   * @return true if dimension was successfully removed
    */
-  void removeDimension(std::string name, std::string group = "",
+  bool removeDimension(std::string name, std::string group = "",
                        al::Socket *src = nullptr);
 
   /**

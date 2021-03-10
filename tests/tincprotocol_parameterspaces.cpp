@@ -79,9 +79,11 @@ TEST(ParameterSpace, Connection) {
   ps_dims = client_ps->getDimensions();
   std::cout << "dim size: " << ps_dims.size() << std::endl;
 
+  tclient.removeParameter("ps_dim");
+  al::al_sleep(0.2);
+
   auto client_dim2 = tclient.getParameter("ps_dim");
-  EXPECT_NE(client_dim2, nullptr);
-  std::cout << client_dim2->toFloat() << std::endl;
+  EXPECT_EQ(client_dim2, nullptr);
 
   tclient.stop();
   tserver.stop();
