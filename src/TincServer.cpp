@@ -1,10 +1,10 @@
 #include "tinc/TincServer.hpp"
-#include "tinc/ProcessorGraph.hpp"
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 #include <iostream>
 #include <memory>
@@ -342,8 +342,8 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
 
     std::unique_lock<std::mutex> lk(mConnectionsLock);
     for (auto connection : mServerConnections) {
-      if (!src || connection->address() != src->ipAddr ||
-          connection->port() != src->port) {
+      if (!src || (connection->address() != src->ipAddr &&
+                   connection->port() != src->port)) {
         if (verbose()) {
           std::cout << "Server sending message to " << connection->address()
                     << ":" << connection->port() << std::endl;

@@ -369,7 +369,8 @@ public:
   // Currently allows only one TincServer. Should we provision for more?
   /**
    * This callback is called when dimension metadata has changed or a
-   * dimension is added
+   * dimension is added. When a dimension is new, the new dimension has not yet
+   * been added to the parameter space.
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps, al::Socket *src)>

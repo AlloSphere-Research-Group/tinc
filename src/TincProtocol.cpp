@@ -944,8 +944,8 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     sendRegisterMessage(&psd, nullptr, src);
     sendConfigureMessage(&psd, nullptr, src);
   } else {
-    connectParameterCallbacks(*registered->getParameterMeta());
-    connectDimensionCallbacks(*registered);
+    //    connectParameterCallbacks(*registered->getParameterMeta());
+    //    connectDimensionCallbacks(*registered);
     sendRegisterMessage(registered, nullptr, src);
     sendConfigureMessage(registered, nullptr, src);
   }
@@ -969,26 +969,30 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     // FIXME re-check callback function. something doesn't look right
     ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                     ParameterSpace *ps, al::Socket *src) {
+      bool dimIsRegistered = false;
+      // check if dimension already exists
       for (auto dim : ps->getDimensions()) {
-        // check if dimension already exists
+        // TODO should we check for full name
         if (dim->getName() == changedDimension->getName()) {
-          // FIXME dimension pointer gets stored in 2 places
-          // review cases where this redundancy is needed
-          // (connecting callbacks, etc)
-
-          // connects callbacks, sends register + configure messages
-          registerParameterSpaceDimension(*changedDimension, src);
-          sendConfigureParameterSpaceAddDimension(ps, dim.get(), nullptr, src);
-          sendConfigureMessage(ps, nullptr, src);
+          dimIsRegistered = true;
           break;
         }
       }
+      for (auto dim : this->dimensions()) {
+        if (dim->getName() == changedDimension->getName()) {
+          dimIsRegistered = true;
+          break;
+        }
+      }
+      if (!dimIsRegistered) {
+        registerParameterSpaceDimension(*changedDimension, src);
+        //        connectParameterCallbacks(*changedDimension->getParameterMeta());
+        //        connectDimensionCallbacks(*changedDimension);
+      }
+      sendConfigureParameterSpaceAddDimension(ps, changedDimension, nullptr,
+                                              src);
+      sendConfigureMessage(ps, nullptr, src);
     };
-
-    // register PSDs attached to the ParameterSpace
-    for (auto dim : ps.getDimensions()) {
-      registerParameterSpaceDimension(*dim, src);
-    }
 
     // Broadcast registered ParameterSpace
     // FIXME if the parameter was not registered above, this will send

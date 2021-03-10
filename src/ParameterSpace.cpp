@@ -90,8 +90,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    mDimensions.push_back(dimension);
     onDimensionRegister(dimension.get(), this, nullptr);
+    mDimensions.push_back(dimension);
   } else if (al::Parameter *p =
                  dynamic_cast<al::Parameter *>(dimension->getParameterMeta())) {
     auto &param = *p;
@@ -106,8 +106,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    mDimensions.push_back(dimension);
     onDimensionRegister(dimension.get(), this, nullptr);
+    mDimensions.push_back(dimension);
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(
                  dimension->getParameterMeta())) {
     auto &param = *p;
@@ -122,8 +122,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    mDimensions.push_back(dimension);
     onDimensionRegister(dimension.get(), this, nullptr);
+    mDimensions.push_back(dimension);
   } else {
     // FIXME implement for all parameter types
     std::cerr << "Support for parameter type not implemented in dimension "
