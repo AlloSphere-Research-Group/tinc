@@ -27,6 +27,7 @@ set(TEST_SOURCES main.cpp
   processor.cpp
   parameters.cpp
   parameterspace.cpp
+  diskbuffer.cpp
   tincprotocol_cache.cpp
   tincprotocol.cpp
   tincprotocol_parameters.cpp
