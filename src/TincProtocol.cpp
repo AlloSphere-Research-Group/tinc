@@ -616,6 +616,8 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
                                            al::ParameterMeta *param,
                                            al::Socket *src) {
   auto &confValue = conf.configurationvalue();
+
+  //  std::cout << __FUNCTION__ << ": Configure parameter" << std::endl;
   if (!confValue.Is<ParameterValue>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
@@ -789,12 +791,14 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        if (newIds.size() > 0 || newValues.size() > 0) {
-          dim->setSpaceValues(newValues, "", src);
-          dim->setSpaceIds(newIds, src);
-          dim->conformSpace();
+
+        dim->setSpaceValues(newValues, "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() == 0 || newValues.size() == 0) {
+          std::cout << __FUNCTION__
+                    << "Warning: got empty parameter space values" << std::endl;
         } else {
-          std::cout << "Warning: got empty parameter space values" << std::endl;
+          dim->conformSpace();
         }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT8) {
@@ -808,12 +812,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        if (newIds.size() > 0 || newValues.size() > 0) {
-          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-          dim->setSpaceIds(newIds, src);
-          dim->conformSpace();
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() == 0 || newValues.size() == 0) {
+          std::cout << __FUNCTION__
+                    << "Warning: got empty parameter space values" << std::endl;
         } else {
-          std::cout << "Warning: got empty parameter space values" << std::endl;
+          dim->conformSpace();
         }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::INT32) {
@@ -827,12 +832,13 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        if (newIds.size() > 0 || newValues.size() > 0) {
-          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-          dim->setSpaceIds(newIds, src);
-          dim->conformSpace();
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() == 0 || newValues.size() == 0) {
+          std::cout << __FUNCTION__
+                    << "Warning: got empty parameter space values" << std::endl;
         } else {
-          std::cout << "Warning: got empty parameter space values" << std::endl;
+          dim->conformSpace();
         }
       } else if (dim->getSpaceDataType() ==
                  al::DiscreteParameterValues::UINT32) {
@@ -846,20 +852,21 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
             idsIt++;
           }
         }
-        if (newIds.size() > 0 || newValues.size() > 0) {
-          dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
-          dim->setSpaceIds(newIds, src);
-          dim->conformSpace();
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() == 0 || newValues.size() == 0) {
+          std::cout << __FUNCTION__
+                    << "Warning: got empty parameter space values" << std::endl;
         } else {
-          std::cout << "Warning: got empty parameter space values" << std::endl;
+          dim->conformSpace();
         }
+        // FIXME add all types
+      } else {
+        return false;
       }
-      // FIXME add all types
-    } else {
-      return false;
+      // TODO ensure correct forwarding to connections
+      return true;
     }
-    // TODO ensure correct forwarding to connections
-    return true;
   } else if (command == ParameterConfigureType::SPACE_TYPE) {
 
     if (conf.configurationvalue().Is<ParameterValue>()) {
@@ -922,20 +929,25 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
       break;
     }
   }
-  for (auto *ps : mParameterSpaces) {
-    for (auto dim : ps->getDimensions()) {
-      if (dim.get() == &psd || dim->getFullAddress() == psd.getFullAddress()) {
-        registered = dim.get();
-        if (mVerbose) {
-          std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-                    << psd.getFullAddress() << " already registered."
-                    << std::endl;
-        }
-        break;
-      }
-    }
-  }
+  //  for (auto *ps : mParameterSpaces) {
+  //    for (auto dim : ps->getDimensions()) {
+  //      if (dim.get() == &psd || dim->getFullAddress() ==
+  //      psd.getFullAddress()) {
+  //        registered = dim.get();
+  //        if (mVerbose) {
+  //          std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+  //                    << psd.getFullAddress() << " already registered."
+  //                    << std::endl;
+  //        }
+  //        break;
+  //      }
+  //    }
+  //  }
   if (!registered) {
+    if (mVerbose) {
+      std::cout << __FUNCTION__ << ": Register new dimension  " << psd.getName()
+                << std::endl;
+    }
     mParameterSpaceDimensions.push_back(&psd);
     connectParameterCallbacks(*psd.getParameterMeta());
     connectDimensionCallbacks(psd);
@@ -944,6 +956,10 @@ void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     sendRegisterMessage(&psd, nullptr, src);
     sendConfigureMessage(&psd, nullptr, src);
   } else {
+    if (mVerbose) {
+      std::cout << __FUNCTION__ << ": Updating metadata for  " << psd.getName()
+                << std::endl;
+    }
     //    connectParameterCallbacks(*registered->getParameterMeta());
     //    connectDimensionCallbacks(*registered);
     sendRegisterMessage(registered, nullptr, src);
@@ -964,11 +980,18 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     }
   }
   if (!registered) {
+    if (mVerbose) {
+      std::cout << __FUNCTION__ << ": Registering new dimension " << ps.getId()
+                << std::endl;
+    }
     mParameterSpaces.push_back(&ps);
-
     // FIXME re-check callback function. something doesn't look right
     ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                     ParameterSpace *ps, al::Socket *src) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Callback onDimensionRegister() "
+                  << ps->getId() << std::endl;
+      }
       bool dimIsRegistered = false;
       // check if dimension already exists
       for (auto dim : ps->getDimensions()) {
@@ -999,6 +1022,11 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     // register/config message for the parameter twice here
     sendRegisterMessage(&ps, nullptr, src);
     sendConfigureMessage(&ps, nullptr, src);
+
+    for (auto dim : ps.getDimensions()) {
+      registerParameterSpaceDimension(*dim, src);
+      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
+    }
   }
 }
 
@@ -1055,8 +1083,8 @@ void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
     if (p == &dp || p->getId() == dp.getId()) {
       registered = true;
       if (mVerbose) {
-        // FIXME replace entry in mDataPools wiht this one if it is not the same
-        // instance
+        // FIXME replace entry in mDataPools wiht this one if it is not the
+        // same instance
         std::cout << __FUNCTION__ << ": DataPool " << dp.getId()
                   << " already registered." << std::endl;
       }
@@ -1425,6 +1453,11 @@ void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
   for (auto ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
     sendConfigureMessage(ps, dst);
+    for (auto dim : ps->getDimensions()) {
+      sendRegisterMessage(dim.get(), dst);
+      sendConfigureMessage(dim.get(), dst);
+      sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst);
+    }
   }
 }
 
@@ -1769,8 +1802,10 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
-            << std::endl;
+  if (mVerbose) {
+    std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
+              << std::endl;
+  }
   return false;
 }
 

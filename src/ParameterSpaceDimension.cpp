@@ -107,7 +107,7 @@ void ParameterSpaceDimension::sort() {
 
 void ParameterSpaceDimension::clear(al::Socket *src) {
   mSpaceValues.clear();
-  conformSpace();
+  //  conformSpace();
   onDimensionMetadataChange(this, src);
 }
 
@@ -131,8 +131,8 @@ float ParameterSpaceDimension::getCurrentValue() {
   }
 }
 
-void ParameterSpaceDimension::setCurrentValue(float value) {
-  mParameterValue->fromFloat(value);
+bool ParameterSpaceDimension::setCurrentValue(float value) {
+  return mParameterValue->fromFloat(value);
 }
 
 size_t ParameterSpaceDimension::getCurrentIndex() {
@@ -257,7 +257,6 @@ void ParameterSpaceDimension::setSpaceValues(void *values, size_t count,
   }
   mSpaceValues.clear();
   mSpaceValues.append(values, count, idprefix);
-  conformSpace();
   onDimensionMetadataChange(this, src);
 }
 

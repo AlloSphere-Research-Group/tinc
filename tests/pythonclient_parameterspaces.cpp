@@ -54,14 +54,89 @@ tclient.stop()
   EXPECT_EQ(params.size(), 2);
 
   EXPECT_EQ(params[0]["id"], "ps_dim");
-  EXPECT_FLOAT_EQ(params[0]["minimum"], 1.3f);
-  EXPECT_FLOAT_EQ(params[0]["maximum"], 2.53f);
+  EXPECT_FLOAT_EQ(params[0]["_minimum"], 1.3f);
+  EXPECT_FLOAT_EQ(params[0]["_maximum"], 2.53f);
   EXPECT_FLOAT_EQ(params[0]["_value"], 1.99f);
 
   EXPECT_EQ(params[1]["id"], "ps_dim_reply");
-  EXPECT_FLOAT_EQ(params[1]["minimum"], 2.3f);
-  EXPECT_FLOAT_EQ(params[1]["maximum"], 3.53f);
+  EXPECT_FLOAT_EQ(params[1]["_minimum"], 2.3f);
+  EXPECT_FLOAT_EQ(params[1]["_maximum"], 3.53f);
   EXPECT_FLOAT_EQ(params[1]["_value"], 2.88f);
+}
+
+TEST(PythonClient, ParameterSpacesRTCallback) {
+  TincServer tserver;
+  // tserver.setVerbose(true);
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpace ps{"param_space"};
+  auto dim = ps.newDimension("dim");
+  auto dim2 = ps.newDimension("dim2");
+  tserver << ps;
+
+  std::string pythonCode = R"(
+
+while len(tclient.parameter_spaces) == 0 :
+    time.sleep(0.1)
+
+ps = tclient.get_parameter_space("param_space")
+
+while not tclient.parameter_spaces[0].get_parameter('dim'):
+    time.sleep(0.1)
+
+def cb(value):
+    ps.get_parameter('dim2').set_value(value * 2)
+
+# Connect ps_dim to ps_dim_reply
+ps.get_parameter("dim").register_callback(cb)
+
+#tclient.debug = True
+#tclient.print()
+
+while ps.get_parameter("dim2").value != 4:
+    time.sleep(0.2)
+test_output = [parameter_to_dict(p) for p in
+tclient.parameters]
+
+tclient.stop()
+)";
+
+  PythonTester ptest;
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
+  ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
+  std::thread th([&]() { ptest.runPython(pythonCode); });
+
+  int counter = 0;
+
+  while (tserver.connectionCount() == 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 2000) {
+      std::cerr << "Connection Timeout" << std::endl;
+      break;
+    }
+  }
+
+  std::cout << "Connected" << std::endl;
+  al::al_sleep(1);
+
+  dim->setCurrentValue(2.0);
+
+  while (dim2->getCurrentValue() != 4.0) {
+    al::al_sleep(0.05);
+  }
+
+  if (th.joinable())
+    th.join();
+
+  tserver.stop();
+
+  auto output = ptest.readResults();
+  EXPECT_EQ(output.size(), 2);
+
+  EXPECT_EQ(output[0]["id"], "dim");
+  EXPECT_FLOAT_EQ(output[0]["_value"], 2.0f);
+  EXPECT_EQ(output[1]["id"], "dim2");
+  EXPECT_FLOAT_EQ(output[1]["_value"], 4.0f);
 }
 
 TEST(PythonClient, ParameterSpacesRT) {
@@ -78,7 +153,7 @@ TEST(PythonClient, ParameterSpacesRT) {
   std::string pythonCode = R"(
 #tclient.debug = True
 time.sleep(0.3)
-tclient.request_parameter_spaces()
+
 while len(tclient.parameter_spaces) == 0 :
     time.sleep(0.1)
 
@@ -87,23 +162,33 @@ ps = tclient.get_parameter_space("param_space")
 while not tclient.parameter_spaces[0].get_parameter('ps_dim_reply'):
     time.sleep(0.1)
 
+def cb(value):
+    print(f"got value {value}")
+    ps.get_parameter('ps_dim_reply').set_value(value * 2)
+
 # Connect ps_dim to ps_dim_reply
-ps.get_parameter("ps_dim").register_callback(lambda value:
-ps.get_parameter('ps_dim_reply').set_value(value * 2))
+ps.get_parameter("ps_dim").register_callback(cb)
+
+tclient.debug = True
 
 # Notify I'm ready:
+time.sleep(0.1)
+print("python: reply 10.0")
 ps.get_parameter('ps_dim_reply').value = 10.0
 
-
-while tclient.get_parameter("ps_dim").value != 1:
+print(ps.get_parameter("ps_dim").__dict__)
+print("python: waiting for ps_dim == 1.0")
+while abs(tclient.get_parameter("ps_dim").value - 1.0) > 0.00001:
     time.sleep(0.05)
 
-ps.get_parameter('ps_dim_reply').value = 2.0
 
 time.sleep(0.05)
+print("python: waiting for ps_dim == 100")
 while tclient.get_parameter("ps_dim").value != 100:
+    print(tclient.get_parameter("ps_dim").value)
     time.sleep(0.05)
 
+print("python: done waiting for ps_dim == 100")
 tclient.stop()
 )";
   PythonTester ptest;
@@ -111,21 +196,33 @@ tclient.stop()
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
   std::thread th([&]() { ptest.runPython(pythonCode); });
 
-  // Python will send 10.0 on ps_dim_reply when ready
   int counter = 0;
-  while (ps_dim_reply->getCurrentValue() != 10.0) {
+
+  al::al_sleep(2.0);
+  while (tserver.connectionCount() == 0) {
+    al::al_sleep(0.05);
+    if (counter++ > 2000) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  // Python will send 10.0 on ps_dim_reply when ready
+  counter = 0;
+  while (fabs(ps_dim_reply->getCurrentValue() - 10.0) > 0.0001) {
     al::al_sleep(0.05);
     if (counter++ > 50) {
       std::cerr << "Timeout" << std::endl;
       break;
     }
   }
+  EXPECT_FLOAT_EQ(ps_dim_reply->getCurrentValue(), 10.0);
 
+  std::cout << "C++ Send ps_dim 1.0" << std::endl;
   ps_dim->setCurrentValue(1.0);
-  al::al_sleep(0.05);
 
   counter = 0;
-  while (ps_dim_reply->getCurrentValue() != 2.0) {
+  while (fabs(ps_dim_reply->getCurrentValue() - 2.0) > 0.00001) {
     al::al_sleep(0.05);
     if (counter++ > 50) {
       std::cerr << "Timeout" << std::endl;
@@ -134,6 +231,7 @@ tclient.stop()
   }
   EXPECT_FLOAT_EQ(ps_dim_reply->getCurrentValue(), 2.0);
 
+  std::cout << "C++ Send ps_dim 100" << std::endl;
   ps_dim->setCurrentValue(100);
 
   counter = 0;

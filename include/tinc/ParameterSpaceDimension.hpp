@@ -121,7 +121,7 @@ public:
   /**
    * Set current value from float
    */
-  void setCurrentValue(float value);
+  bool setCurrentValue(float value);
 
   /**
    * Get current value as a float
@@ -323,8 +323,8 @@ public:
    * avoid resending the change to that socket.
    */
   std::function<void(ParameterSpaceDimension *, al::Socket *src)>
-      onDimensionMetadataChange = [](ParameterSpaceDimension *,
-                                     al::Socket *src) {};
+      onDimensionMetadataChange =
+          [](ParameterSpaceDimension *, al::Socket *src) {};
 
 private:
   // Used to store discretization values of parameters

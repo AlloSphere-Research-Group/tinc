@@ -13,6 +13,7 @@ using namespace tinc;
 TEST(PythonClient, ParameterFloat) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
+  tserver.setVerbose(true);
 
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
   tserver << p;
@@ -44,15 +45,6 @@ tclient.stop()
   ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
   ptest.runPython(pythonCode);
 
-  auto output = ptest.readResults();
-
-  EXPECT_NE(output, 1);
-
-  auto p1 = output[0];
-  EXPECT_FLOAT_EQ(p1["minimum"], -10);
-  EXPECT_FLOAT_EQ(p1["maximum"], 9.9);
-  EXPECT_FLOAT_EQ(p1["_value"], 0.5);
-
   int counter = 0;
   while (tserver.getParameter("remoteParam", "remoteGroup") == nullptr) {
     al::al_sleep(0.05);
@@ -65,11 +57,30 @@ tclient.stop()
   auto *q = tserver.getParameter("remoteParam", "remoteGroup");
   EXPECT_NE(q, nullptr);
 
+  // Wait for value to be set.
+  counter = 0;
+  while (q->toFloat() != 4.4) {
+    al::al_sleep(0.05);
+    if (counter++ > 50) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  auto output = ptest.readResults();
+
+  EXPECT_NE(output, 1);
+
+  auto p1 = output[0];
+  EXPECT_FLOAT_EQ(p1["_minimum"], -10);
+  EXPECT_FLOAT_EQ(p1["_maximum"], 9.9);
+  EXPECT_FLOAT_EQ(p1["_value"], 0.5);
+
   auto *remoteFloat = static_cast<al::Parameter *>(q);
-  EXPECT_EQ(remoteFloat->min(), -11.1f);
-  EXPECT_EQ(remoteFloat->max(), 12.2f);
-  EXPECT_EQ(remoteFloat->getDefault(), 8.8f);
-  EXPECT_EQ(remoteFloat->get(), 4.4f);
+  EXPECT_FLOAT_EQ(remoteFloat->min(), -11.1f);
+  EXPECT_FLOAT_EQ(remoteFloat->max(), 12.2f);
+  EXPECT_FLOAT_EQ(remoteFloat->getDefault(), 8.8f);
+  EXPECT_FLOAT_EQ(remoteFloat->get(), 4.4f);
 
   counter = 0;
   while (tserver.connectionCount() > 0) {
@@ -339,15 +350,15 @@ tclient.stop()
 
   auto p1 = output[0];
 
-  EXPECT_FLOAT_EQ(p1["minimum"], -10);
-  EXPECT_FLOAT_EQ(p1["maximum"], 11);
+  EXPECT_FLOAT_EQ(p1["_minimum"], -10);
+  EXPECT_FLOAT_EQ(p1["_maximum"], 11);
   EXPECT_FLOAT_EQ(p1["default"], 3);
   EXPECT_FLOAT_EQ(p1["_value"], -3);
 
   auto p2 = output[1];
 
-  EXPECT_FLOAT_EQ(p2["minimum"], 5);
-  EXPECT_FLOAT_EQ(p2["maximum"], 50);
+  EXPECT_FLOAT_EQ(p2["_minimum"], 5);
+  EXPECT_FLOAT_EQ(p2["_maximum"], 50);
   EXPECT_FLOAT_EQ(p2["_value"], 10);
 
   tserver.stop();

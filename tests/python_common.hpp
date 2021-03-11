@@ -33,8 +33,12 @@ def parameter_to_dict(p):
     d["_ids"] = list(d["_ids"])
     try:
         del d["_interactive_widget"]
-        del d["_data_type"]
         del d["tinc_client"]
+        del d["_data_type"]
+        if "_value_callbacks" in d:
+            del d["_value_callbacks"]
+        if "_async_callbacks" in d:
+            del d["_async_callbacks"]
     except:
         pass
     return d
