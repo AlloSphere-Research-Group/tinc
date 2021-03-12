@@ -1,10 +1,10 @@
 #include "tinc/TincClient.hpp"
-#include "tinc/ProcessorGraph.hpp"
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 #include <iostream>
 #include <memory>
@@ -61,11 +61,11 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REMOVE:
-        if (details.Is<ObjectId>()) {
-          ObjectId objectId;
-          details.UnpackTo(&objectId);
-          std::cerr << __FUNCTION__
-                    << ": Remove message received, but not implemented"
+        if (verbose()) {
+          std::cout << "Client received Remove message" << std::endl;
+        }
+        if (!readRemoveMessage(objectType, (void *)&details, src)) {
+          std::cerr << __FUNCTION__ << ": Error processing Remove message"
                     << std::endl;
         }
         break;

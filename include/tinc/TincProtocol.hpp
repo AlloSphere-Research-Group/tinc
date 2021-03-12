@@ -134,7 +134,7 @@ public:
 
   // Remove registered objects from this Tinc node
   void removeParameter(std::string name, std::string group = "",
-                       al::Socket *src = nullptr);
+                       bool invoked = false, al::Socket *src = nullptr);
   void removeParameterSpace(std::string name, al::Socket *src = nullptr);
   void removeProcessor(std::string name, al::Socket *src = nullptr);
   void removeDiskbuffer(std::string name, al::Socket *src = nullptr);
@@ -241,6 +241,13 @@ protected:
                                                   ParameterSpaceDimension *dim,
                                                   al::Socket *dst,
                                                   al::Socket *src = nullptr);
+
+  // Incoming remove message
+  bool readRemoveMessage(int objectType, void *any, al::Socket *src);
+  bool processRemoveParameter(void *any, al::Socket *src);
+  // Outgoing remove message
+  void sendRemoveMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                         al::Socket *src = nullptr);
 
   // Outgoing configure message (only value) for callback functions
   void sendValueMessage(float value, std::string fullAddress,

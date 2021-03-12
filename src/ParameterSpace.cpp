@@ -49,8 +49,7 @@ ParameterSpace::newDimension(std::string name, std::string group,
 void ParameterSpace::registerDimension(
     std::shared_ptr<ParameterSpaceDimension> &dimension, al::Socket *src) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
-  std::cout << "use count just before ps register:" << dimension.use_count()
-            << std::endl;
+
   for (auto &dim : mDimensions) {
     if (dim->getName() == dimension->getName() &&
         dim->getGroup() == dimension->getGroup()) {
@@ -121,27 +120,21 @@ void ParameterSpace::registerDimension(
   }
 }
 
-bool ParameterSpace::removeDimension(std::string name, std::string group,
-                                     al::Socket *src) {
+void ParameterSpace::removeDimension(std::string name, std::string group,
+                                     bool invoked, al::Socket *src) {
   std::unique_lock<std::mutex> lk(mSpaceLock);
+
   auto it = mDimensions.begin();
   while (it < mDimensions.end()) {
     if (((*it)->getName() == name && (*it)->getGroup() == group) ||
         (group == "" && (*it)->getFullAddress() == name)) {
-      std::cout << "use count before ps remove: " << it->use_count()
-                << std::endl;
-      onDimensionRemove(it->get(), this, src);
+      onDimensionRemove(it->get(), this, invoked, src);
       it = mDimensions.erase(it);
-      return true;
+      break;
     } else {
       ++it;
     }
   }
-
-  if (it == mDimensions.end())
-    std::cout << "no dim to remove" << std::endl;
-
-  return false;
 }
 
 std::vector<ParameterSpaceDimension *> ParameterSpace::getDimensions() {

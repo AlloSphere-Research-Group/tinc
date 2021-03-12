@@ -960,12 +960,14 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     };
 
     ps.onDimensionRemove = [this](ParameterSpaceDimension *changedDimension,
-                                  ParameterSpace *ps, al::Socket *src) {
+                                  ParameterSpace *ps, bool invoked,
+                                  al::Socket *src) {
       sendConfigureParameterSpaceRemoveDimension(ps, changedDimension, nullptr,
                                                  src);
-      // removeParameter(changedDimension->getName(),
-      // changedDimension->getGroup(),
-      //                 src);
+      if (!invoked) {
+        removeParameter(changedDimension->getName(),
+                        changedDimension->getGroup(), true, src);
+      }
     };
 
     // register PSDs attached to the ParameterSpace
@@ -1153,7 +1155,7 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
 }
 
 void TincProtocol::removeParameter(std::string name, std::string group,
-                                   al::Socket *src) {
+                                   bool invoked, al::Socket *src) {
   // FIXME add lock
 
   for (auto it = mParameterSpaceDimensions.begin();
@@ -1161,21 +1163,27 @@ void TincProtocol::removeParameter(std::string name, std::string group,
     if (((*it)->getName() == name && (*it)->getGroup() == group) ||
         (group == "" && (*it)->getFullAddress() == name)) {
 
-      // sendremovemessage
+      sendRemoveMessage(*it, nullptr, src);
 
       it = mParameterSpaceDimensions.erase(it);
+
+      if (!invoked) {
+        for (auto *ps : mParameterSpaces) {
+          ps->removeDimension(name, group, true, src);
+        }
+      }
 
       for (auto itLocal = mLocalPSDs.begin(); itLocal != mLocalPSDs.end();) {
         if (((*itLocal)->getName() == name &&
              (*itLocal)->getGroup() == group) ||
             (group == "" && (*itLocal)->getFullAddress() == name)) {
+
           if (mVerbose) {
             std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
                       << (*itLocal)->getFullAddress() << " removed."
                       << std::endl;
           }
-          std::cout << "use count before remove: " << itLocal->use_count()
-                    << std::endl;
+
           itLocal = mLocalPSDs.erase(itLocal);
 
           return; // removed local psd & stored ptr
@@ -1385,15 +1393,12 @@ bool TincProtocol::readRegisterMessage(int objectType, void *any,
     return processRegisterParameter(any, src);
   case ObjectType::PROCESSOR:
     return processRegisterProcessor(any, src);
-    break;
   case ObjectType::DISK_BUFFER:
     return processRegisterDiskBuffer(any, src);
   case ObjectType::DATA_POOL:
     return processRegisterDataPool(any, src);
-    break;
   case ObjectType::PARAMETER_SPACE:
     return processRegisterParameterSpace(any, src);
-    break;
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
     break;
@@ -1765,13 +1770,11 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
                 std::cout << "Registered Parameter " << addr
                           << " to ParameterSpace " << id << std::endl;
               }
-              std::cout << "use count after register: " << dim.use_count()
-                        << std::endl;
               return true;
             }
           }
 
-          std::cerr << __FUNCTION__ << "Unable to find Parameter " << addr
+          std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
                     << std::endl;
           return false;
         }
@@ -1783,7 +1786,7 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
 
           for (auto *dim : ps->getDimensions()) {
             if (addr == dim->getFullAddress()) {
-              ps->removeDimension(dim->getName(), dim->getGroup(), src);
+              ps->removeDimension(dim->getName(), dim->getGroup(), true, src);
               if (mVerbose) {
                 std::cout << __FUNCTION__ << ": Removing Parameter " << addr
                           << " from ParameterSpace " << id << std::endl;
@@ -1960,6 +1963,73 @@ void TincProtocol::sendConfigureParameterSpaceRemoveDimension(
     ParameterSpace *ps, ParameterSpaceDimension *dim, al::Socket *dst,
     al::Socket *src) {
   auto msg = createConfigureParameterSpaceRemove(ps, dim);
+
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
+}
+
+bool TincProtocol::readRemoveMessage(int objectType, void *any,
+                                     al::Socket *src) {
+  switch (objectType) {
+  case ObjectType::PARAMETER:
+    return processRemoveParameter(any, src);
+  case ObjectType::PROCESSOR:
+    // return processRemoveProcessor(any, src);
+  case ObjectType::DISK_BUFFER:
+    // return processRemoveDiskBuffer(any, src);
+  case ObjectType::DATA_POOL:
+    // return processRemoveDataPool(any, src);
+  case ObjectType::PARAMETER_SPACE:
+    // return processRemoveParameterSpace(any, src);
+  default:
+    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    break;
+  }
+  return false;
+}
+
+bool TincProtocol::processRemoveParameter(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RemoveParameter>()) {
+    std::cerr << __FUNCTION__ << ": Remove message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RemoveParameter command;
+  details->UnpackTo(&command);
+  auto name = command.id();
+  auto group = command.group();
+
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (dim->getName() == name && dim->getGroup() == group) {
+      removeParameter(name, group, true, src);
+      return true;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find Parameter " << name
+            << " (Group: " << group << ") to remove." << std::endl;
+  return false;
+}
+
+void TincProtocol::sendRemoveMessage(ParameterSpaceDimension *dim,
+                                     al::Socket *dst, al::Socket *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REMOVE);
+  msg.set_objecttype(ObjectType::PARAMETER);
+
+  google::protobuf::Any *details = msg.details().New();
+
+  RemoveParameter removeDetails;
+  removeDetails.set_id(dim->getName());
+  removeDetails.set_group(dim->getGroup());
+  details->PackFrom(removeDetails);
+
+  msg.set_allocated_details(details);
 
   if (src) {
     sendTincMessage(&msg, dst, src->valueSource());

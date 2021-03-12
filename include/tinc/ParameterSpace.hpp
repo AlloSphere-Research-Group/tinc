@@ -95,13 +95,14 @@ public:
                          al::Socket *src = nullptr);
 
   /**
-   * @brief remove dimension form list of registered dimensions
-   * @param dimensionName
+   * @brief remove dimension from list of registered dimensions
+   * @param name dimension name
+   * @param group dimension group
+   * @param invoked true only if called by TincProtocol's removeParameter
    * @param src original socket that message came from
-   * @return true if dimension was successfully removed
    */
-  bool removeDimension(std::string name, std::string group = "",
-                       al::Socket *src = nullptr);
+  void removeDimension(std::string name, std::string group = "",
+                       bool invoked = false, al::Socket *src = nullptr);
 
   /**
    * @brief get list of currently registered dimensions
@@ -323,9 +324,10 @@ public:
    * This callback is called when dimension is removed
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps, al::Socket *src)>
+                     ParameterSpace *ps, bool invoked, al::Socket *src)>
       onDimensionRemove = [](ParameterSpaceDimension *changedDimension,
-                             ParameterSpace *ps, al::Socket *src = nullptr) {};
+                             ParameterSpace *ps, bool invoked = false,
+                             al::Socket *src = nullptr) {};
 
 protected:
   /**

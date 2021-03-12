@@ -190,6 +190,13 @@ message ConfigureDataPool {
   google.protobuf.Any configurationValue = 3;
 }
 
+// Remove Messages
+
+message RemoveParameter {
+  string id = 1;
+  string group = 2;
+}
+
 // Commands
 
 message Command {
