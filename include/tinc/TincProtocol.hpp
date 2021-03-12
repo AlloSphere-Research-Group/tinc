@@ -46,6 +46,28 @@ namespace tinc {
 static const uint16_t TINC_PROTOCOL_VERSION = 1;
 static const uint16_t TINC_PROTOCOL_REVISION = 0;
 
+/**
+ * @brief The TincProtocol class
+ *
+ * This class serves as the basis for TincClient and TincServer classes and
+ * provides refence storage and network synchronization
+ *
+ * This class registers objects (ParameterSpaceDimension, ParameterSpace,
+ * DataPool, etc.), but takes no ownership of them. They are not deallocated
+ * when the TincProtocol object is destroyed and the user must guarantee that
+ * they are valid for the whole duration of the TincProtocol object's life, or
+ * the must be removed from TincProtocol before being destroyed.
+ *
+ * When an object is not registered, but created internally, e.g. from a network
+ * command, the TincProtocol will destroy the object when it itself is
+ * destroyed. So it is the user's responsibility not to destroy the TincProtocol
+ * object while still requiring the objects that were provided by it. It might
+ * also be the case that the object is destroyed from a network request, so for
+ * these types of objects it is always good to request them directly from
+ * TincProtocol every time they are used, e.g. using getDimension() and checking
+ * for nullptr, instead of storing the pointer.
+ */
+
 class TincProtocol {
 public:
   // Data pool commands
@@ -61,34 +83,41 @@ public:
    * @brief register a parameter with this Tinc node
    * @param param the parameter to register
    * @param src the source socket of the request
-   *
-   * If src is not nullptr, network notification of registration will be blocked
-   * for that destination.
-   */
-  void registerParameter(al::ParameterMeta &param, al::Socket *src = nullptr);
-
-  /**
-   * @brief register a parameter space dimencion with this Tinc node
-   * @param ps the parameter space to register
-   * @param src the source socket of the request
+   * @return true if successfully registered
    *
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    * This is equivalent to registerParameterSpaceDimension() and will internally
    * wrap the parameter in a dimension.
+   * TincClient does not take ownership of the param object, and does not
+   * free it when destroyed.
    */
-  void registerParameterSpaceDimension(ParameterSpaceDimension &psd,
+  bool registerParameter(al::ParameterMeta &param, al::Socket *src = nullptr);
+
+  /**
+   * @brief register a parameter space dimencion with this Tinc node
+   * @param ps the parameter space to register
+   * @param src the source socket of the request
+   * @return true if successfully registered dimension
+   *
+   * If src is not nullptr, network notification of registration will be blocked
+   * for that destination.
+   * TincClient does not take ownership of the psd object, and does not
+   * free it when destroyed.
+   */
+  bool registerParameterSpaceDimension(ParameterSpaceDimension &psd,
                                        al::Socket *src = nullptr);
 
   /**
    * @brief register a parameter space with this Tinc node
    * @param psd the parameter space dimension to register
    * @param src the source socket of the request
+   * @return true if successfully registered
    *
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    */
-  void registerParameterSpace(ParameterSpace &ps, al::Socket *src = nullptr);
+  bool registerParameterSpace(ParameterSpace &ps, al::Socket *src = nullptr);
 
   /**
    * @brief register a processor with this Tinc node
@@ -98,7 +127,7 @@ public:
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    */
-  void registerProcessor(Processor &processor, al::Socket *src = nullptr);
+  bool registerProcessor(Processor &processor, al::Socket *src = nullptr);
 
   /**
    * @brief register a disk buffer with this Tinc node
@@ -108,7 +137,7 @@ public:
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    */
-  void registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src = nullptr);
+  bool registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src = nullptr);
 
   /**
    * @brief register a data pool with this Tinc node
@@ -118,7 +147,7 @@ public:
    * If src is not nullptr, network notification of registration will be blocked
    * for that destination.
    */
-  void registerDataPool(DataPool &dp, al::Socket *src = nullptr);
+  bool registerDataPool(DataPool &dp, al::Socket *src = nullptr);
 
   TincProtocol &operator<<(al::ParameterMeta &p);
   TincProtocol &operator<<(ParameterSpace &p);
@@ -142,6 +171,11 @@ public:
    * @return a pointer to the dimension or nullptr if not found
    *
    * If group is empty, the first matching name in any group is returned
+   *
+   * It is recommended that you always call this function instead of storing the
+   * pointer, as the dimension might be free in some cases, for example if it
+   * was created by a network REGISTER command and then destroyed through a
+   * network REMOVE command.
    */
   ParameterSpaceDimension *getDimension(std::string name,
                                         std::string group = "");
@@ -153,16 +187,21 @@ public:
    * @return a pointer to the parameter or nullptr if not found
    *
    * If group is empty, the first matching name in any group is returned
+   *
+   * It is recommended that you always call this function instead of storing the
+   * pointer, as the dimension might be free in some cases, for example if it
+   * was created by a network REGISTER command and then destroyed through a
+   * network REMOVE command.
    */
   al::ParameterMeta *getParameter(std::string name, std::string group = "");
 
   std::vector<ParameterSpaceDimension *> dimensions() {
-    // TODO protect possible race conditions.
+    // TODO protect possible race conditions through a global lock
     return mParameterSpaceDimensions;
   }
 
   std::vector<ParameterSpace *> parameterSpaces() {
-    // TODO protect possible race conditions.
+    // TODO protect possible race conditions through a global lock
     return mParameterSpaces;
   }
 
@@ -300,7 +339,8 @@ protected:
   std::vector<DiskBufferAbstract *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
-  // Dimensions that were allocated by this class
+  // Dimensions that were allocated by this class, so this class is the owner.
+  // Be careful with dangling pointers.
   std::vector<std::unique_ptr<ParameterSpaceDimension>> mLocalPSDs;
 
   // Barriers

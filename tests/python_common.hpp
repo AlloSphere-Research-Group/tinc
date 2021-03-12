@@ -50,6 +50,7 @@ def parameter_space_to_dict(ps):
     try:
         del d["tinc_client"]
         del d["_cache_manager"]
+        del d["_process_lock"]
     except:
         pass
     return d

@@ -81,22 +81,27 @@ while len(tclient.parameter_spaces) == 0 :
 
 ps = tclient.get_parameter_space("param_space")
 
-while not tclient.parameter_spaces[0].get_parameter('dim'):
-    time.sleep(0.1)
-
 def cb(value):
+    print(f"python: got {value} sending *2")
     ps.get_parameter('dim2').set_value(value * 2)
+
+while  not tclient.parameter_spaces[0].get_parameter('dim') and not tclient.parameter_spaces[0].get_parameter('dim2'):
+    time.sleep(0.1)
 
 # Connect ps_dim to ps_dim_reply
 ps.get_parameter("dim").register_callback(cb)
+
+print(f"python sending dim2 3")
+ps.get_parameter("dim2").value = 3
 
 #tclient.debug = True
 #tclient.print()
 
 while ps.get_parameter("dim2").value != 4:
     time.sleep(0.2)
-test_output = [parameter_to_dict(p) for p in
-tclient.parameters]
+    print(ps.get_parameter("dim").value)
+
+test_output = [parameter_to_dict(p) for p in tclient.parameters]
 
 tclient.stop()
 )";
@@ -116,8 +121,11 @@ tclient.stop()
     }
   }
 
-  std::cout << "Connected" << std::endl;
-  al::al_sleep(1);
+  while (dim2->getCurrentValue() != 3.0) {
+    al::al_sleep(0.1);
+  }
+
+  std::cout << "C++: Sending 2.0" << std::endl;
 
   dim->setCurrentValue(2.0);
 
