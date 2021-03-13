@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/ProcessorCpp.hpp"
 
 #include "al/system/al_Time.hpp"
 
@@ -57,14 +57,14 @@ TEST(ParameterSpace, DimensionReregister) {
   float values[] = {0.1, 0.2, 0.3};
   dim1->setSpaceValues(values, 3, "prefix");
 
-  auto newDim1 = std::make_shared<ParameterSpaceDimension>("dim1");
+  auto newDim = std::make_shared<ParameterSpaceDimension>("dim1");
 
-  newDim1->setSpaceRepresentationType(ParameterSpaceDimension::ID);
+  newDim->setSpaceRepresentationType(ParameterSpaceDimension::ID);
   float aliasValues[] = {0.4, 0.5, 0.6, 0.7};
-  newDim1->setSpaceValues(aliasValues, 4);
-  newDim1->setSpaceIds({"A", "B", "C", "C", "E"});
+  newDim->setSpaceValues(aliasValues, 4);
+  newDim->setSpaceIds({"A", "B", "C", "C", "E"});
 
-  newDim1 = ps.registerDimension(newDim1);
+  auto newDim1 = ps.registerDimension(newDim);
 
   // The dimension pointer should correspond to the previously registered one
   EXPECT_EQ(newDim1, dim1);

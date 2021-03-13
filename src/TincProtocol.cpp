@@ -530,16 +530,19 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
       }
     } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT8) {
       for (auto &value : dim->getSpaceValues<uint8_t>()) {
-        valuesMessage.add_values()->set_valueuint8(value);
+        // we utilize variable encoding of protobuf to handle 1 byte ints
+        valuesMessage.add_values()->set_valueuint32(value);
       }
     } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::INT32) {
       for (auto &value : dim->getSpaceValues<int32_t>()) {
         valuesMessage.add_values()->set_valueint32(value);
       }
     } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT32) {
-      for (auto &value : dim->getSpaceValues<int32_t>()) {
-        valuesMessage.add_values()->set_valueint32(value);
+      for (auto &value : dim->getSpaceValues<uint32_t>()) {
+        valuesMessage.add_values()->set_valueuint32(value);
       }
+    } else {
+      std::cerr << "Other types not supported yet" << std::endl;
     }
     // FIXME support the rest of the types
     auto confValue = confMessage.configurationvalue().New();
@@ -806,7 +809,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
         for (auto &v : values) {
-          newValues.push_back(v.valueuint8());
+          newValues.push_back(v.valueuint32());
           if (idsIt != sv.ids().end()) {
             newIds.push_back(*idsIt);
             idsIt++;
@@ -889,7 +892,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
                                      al::Socket *src) {
   bool registered = false;
-  for (auto dim : mParameterSpaceDimensions) {
+  for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == pmeta.getName() &&
         dim->getGroup() == pmeta.getGroup()) {
       registered = true;
@@ -910,7 +913,7 @@ void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
   }
   if (!registered) {
     mLocalPSDs.emplace_back(
-        std::make_unique<ParameterSpaceDimension>(&pmeta, false));
+        std::make_shared<ParameterSpaceDimension>(&pmeta, false));
     registerParameterSpaceDimension(*mLocalPSDs.back(), src);
   }
 }
@@ -973,7 +976,7 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     if (p == &ps || p->getId() == ps.getId()) {
       registered = true;
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": Processor " << ps.getId()
+        std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
                   << " already registered." << std::endl;
       }
       break;
@@ -981,10 +984,12 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   }
   if (!registered) {
     if (mVerbose) {
-      std::cout << __FUNCTION__ << ": Registering new dimension " << ps.getId()
-                << std::endl;
+      std::cout << __FUNCTION__ << ": Registering new ParameterSpace "
+                << ps.getId() << std::endl;
     }
+
     mParameterSpaces.push_back(&ps);
+
     // FIXME re-check callback function. something doesn't look right
     ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                     ParameterSpace *ps, al::Socket *src) {
@@ -992,41 +997,35 @@ void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
         std::cout << __FUNCTION__ << ": Callback onDimensionRegister() "
                   << ps->getId() << std::endl;
       }
-      bool dimIsRegistered = false;
-      // check if dimension already exists
-      for (auto dim : ps->getDimensions()) {
-        // TODO should we check for full name
-        if (dim->getName() == changedDimension->getName()) {
-          dimIsRegistered = true;
-          break;
-        }
-      }
-      for (auto dim : this->dimensions()) {
-        if (dim->getName() == changedDimension->getName()) {
-          dimIsRegistered = true;
-          break;
-        }
-      }
-      if (!dimIsRegistered) {
-        registerParameterSpaceDimension(*changedDimension, src);
-        //        connectParameterCallbacks(*changedDimension->getParameterMeta());
-        //        connectDimensionCallbacks(*changedDimension);
-      }
+
+      // function that invokes this cb should do relevant checks
+      // connects callbacks, sends register + configure messages
+      registerParameterSpaceDimension(*changedDimension, src);
       sendConfigureParameterSpaceAddDimension(ps, changedDimension, nullptr,
                                               src);
-      sendConfigureMessage(ps, nullptr, src);
     };
+
+    ps.onDimensionRemove = [this](ParameterSpaceDimension *changedDimension,
+                                  ParameterSpace *ps, bool invoked,
+                                  al::Socket *src) {
+      sendConfigureParameterSpaceRemoveDimension(ps, changedDimension, nullptr,
+                                                 src);
+      if (!invoked) {
+        removeParameter(changedDimension->getName(),
+                        changedDimension->getGroup(), true, src);
+      }
+    };
+
+    // register PSDs attached to the ParameterSpace
+    for (auto *dim : ps.getDimensions()) {
+      registerParameterSpaceDimension(*dim, src);
+    }
 
     // Broadcast registered ParameterSpace
     // FIXME if the parameter was not registered above, this will send
     // register/config message for the parameter twice here
     sendRegisterMessage(&ps, nullptr, src);
     sendConfigureMessage(&ps, nullptr, src);
-
-    for (auto dim : ps.getDimensions()) {
-      registerParameterSpaceDimension(*dim, src);
-      sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
-    }
   }
 }
 
@@ -1203,9 +1202,64 @@ void TincProtocol::requestDataPools(al::Socket *dst) {
   sendProtobufMessage(&msg, dst);
 }
 
+void TincProtocol::removeParameter(std::string name, std::string group,
+                                   bool invoked, al::Socket *src) {
+  // FIXME add lock
+
+  for (auto it = mParameterSpaceDimensions.begin();
+       it != mParameterSpaceDimensions.end();) {
+    if (((*it)->getName() == name && (*it)->getGroup() == group) ||
+        (group == "" && (*it)->getFullAddress() == name)) {
+
+      sendRemoveMessage(*it, nullptr, src);
+
+      it = mParameterSpaceDimensions.erase(it);
+
+      if (!invoked) {
+        for (auto *ps : mParameterSpaces) {
+          ps->removeDimension(name, group, true, src);
+        }
+      }
+
+      for (auto itLocal = mLocalPSDs.begin(); itLocal != mLocalPSDs.end();) {
+        if (((*itLocal)->getName() == name &&
+             (*itLocal)->getGroup() == group) ||
+            (group == "" && (*itLocal)->getFullAddress() == name)) {
+
+          if (mVerbose) {
+            std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
+                      << (*itLocal)->getFullAddress() << " removed."
+                      << std::endl;
+          }
+
+          itLocal = mLocalPSDs.erase(itLocal);
+
+          return; // removed local psd & stored ptr
+        } else {
+          ++itLocal;
+        }
+      }
+
+      if (mVerbose) {
+        std::cout
+            << __FUNCTION__ << ": ParameterSpaceDimension " << name
+            << " (Group: " << group
+            << ") removed from TincProtocol but original is stored externally."
+            << std::endl;
+      }
+      return; // removed stored ptr but psd is owned externally
+    } else {
+      ++it;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find ParameterSpaceDimension "
+            << name << " (Group: " << group << ")" << std::endl;
+}
+
 ParameterSpaceDimension *TincProtocol::getDimension(std::string name,
                                                     std::string group) {
-  for (auto dim : mParameterSpaceDimensions) {
+  for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == name && dim->getGroup() == group) {
       return dim;
     } else if (group == "" && dim->getFullAddress() == name) {
@@ -1215,7 +1269,7 @@ ParameterSpaceDimension *TincProtocol::getDimension(std::string name,
   for (auto *ps : mParameterSpaces) {
     auto dim = ps->getDimension(name, group);
     if (dim) {
-      return dim.get();
+      return dim;
     }
   }
   return nullptr;
@@ -1228,6 +1282,15 @@ al::ParameterMeta *TincProtocol::getParameter(std::string name,
       return dim->getParameterMeta();
     } else if (group == "" && dim->getName() == name) {
       return dim->getParameterMeta();
+    }
+  }
+  return nullptr;
+}
+
+ParameterSpace *TincProtocol::getParameterSpace(std::string name) {
+  for (auto *ps : mParameterSpaces) {
+    if (ps->getId() == name) {
+      return ps;
     }
   }
   return nullptr;
@@ -1450,13 +1513,13 @@ void TincProtocol::processRequestParameters(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
-  for (auto ps : mParameterSpaces) {
+  for (auto &ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
     sendConfigureMessage(ps, dst);
-    for (auto dim : ps->getDimensions()) {
-      sendRegisterMessage(dim.get(), dst);
-      sendConfigureMessage(dim.get(), dst);
-      sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst);
+    for (auto &dim : ps->getDimensions()) {
+      sendRegisterMessage(dim, dst);
+      sendConfigureMessage(dim, dst);
+      sendConfigureParameterSpaceAddDimension(ps, dim, dst);
     }
   }
 }
@@ -1489,15 +1552,12 @@ bool TincProtocol::readRegisterMessage(int objectType, void *any,
     return processRegisterParameter(any, src);
   case ObjectType::PROCESSOR:
     return processRegisterProcessor(any, src);
-    break;
   case ObjectType::DISK_BUFFER:
     return processRegisterDiskBuffer(any, src);
   case ObjectType::DATA_POOL:
     return processRegisterDataPool(any, src);
-    break;
   case ObjectType::PARAMETER_SPACE:
     return processRegisterParameterSpace(any, src);
-    break;
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
     break;
@@ -1520,7 +1580,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   auto def = command.defaultvalue();
   auto datatype = command.datatype();
 
-  for (auto dim : mParameterSpaceDimensions) {
+  for (auto &dim : mParameterSpaceDimensions) {
     if (dim->getName() == id && dim->getGroup() == group) {
       if (mVerbose) {
         // FIXME apply configuration (min, max, default) if found
@@ -1592,7 +1652,7 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
 
   if (param) {
     mLocalPSDs.emplace_back(
-        std::make_unique<ParameterSpaceDimension>(param, true));
+        std::make_shared<ParameterSpaceDimension>(param, true));
     registerParameterSpaceDimension(*mLocalPSDs.back(), src);
     delete param;
     return true;
@@ -1602,8 +1662,31 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
-  // FIXME implement
-  std::cerr << __FUNCTION__ << ": not implemented" << std::endl;
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterParameterSpace>()) {
+    std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RegisterParameterSpace command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+
+  for (auto &ps : mParameterSpaces) {
+    if (ps->getId() == id) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": ParameterSpace " << id
+                  << " already registered." << std::endl;
+      }
+      return true;
+    }
+  }
+
+  mLocalPSs.emplace_back(std::make_shared<ParameterSpace>(id));
+
+  registerParameterSpace(*mLocalPSs.back(), src);
+
   return true;
 }
 
@@ -1642,9 +1725,9 @@ void TincProtocol::sendRegisterMessage(ParameterSpace *ps, al::Socket *dst,
     sendTincMessage(&msg);
   }
 
-  for (auto dim : ps->getDimensions()) {
-    sendRegisterMessage(dim.get(), dst, src);
-    sendConfigureParameterSpaceAddDimension(ps, dim.get(), dst, src);
+  for (auto *dim : ps->getDimensions()) {
+    sendRegisterMessage(dim, dst, src);
+    sendConfigureParameterSpaceAddDimension(ps, dim, dst, src);
   }
 }
 
@@ -1670,11 +1753,11 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   }
 
   registerProcMessage.set_inputdirectory(p->getInputDirectory());
-  for (auto inFile : p->getInputFileNames()) {
+  for (auto &inFile : p->getInputFileNames()) {
     registerProcMessage.add_inputfiles(inFile);
   }
   registerProcMessage.set_outputdirectory(p->getOutputDirectory());
-  for (auto outFile : p->getOutputFileNames()) {
+  for (auto &outFile : p->getOutputFileNames()) {
     registerProcMessage.add_outputfiles(outFile);
   }
 
@@ -1689,7 +1772,7 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   }
 
   if (dynamic_cast<ProcessorGraph *>(p)) {
-    for (auto childProcessor :
+    for (auto &childProcessor :
          dynamic_cast<ProcessorGraph *>(p)->getProcessors()) {
       sendRegisterMessage(childProcessor, dst, src);
     }
@@ -1795,9 +1878,9 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
   }
 
   for (auto *ps : mParameterSpaces) {
-    for (auto dim : ps->getDimensions()) {
+    for (auto *dim : ps->getDimensions()) {
       if (addr == dim->getFullAddress()) {
-        return processConfigureParameterMessage(conf, dim.get(), src);
+        return processConfigureParameterMessage(conf, dim, src);
       }
     }
   }
@@ -1810,9 +1893,86 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
-  // FIXME implement
-  std::cerr << __FUNCTION__ << ": not implemented" << std::endl;
-  return true;
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<ConfigureParameterSpace>()) {
+    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  ConfigureParameterSpace conf;
+  details->UnpackTo(&conf);
+  auto id = conf.id();
+
+  for (auto *ps : mParameterSpaces) {
+    if (id == ps->getId()) {
+      ParameterSpaceConfigureType command = conf.configurationkey();
+
+      if (command == ParameterSpaceConfigureType::ADD_PARAMETER) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue val;
+          conf.configurationvalue().UnpackTo(&val);
+          auto addr = val.valuestring();
+
+          for (auto *dim : ps->getDimensions()) {
+            if (addr == dim->getFullAddress()) {
+              if (mVerbose) {
+                std::cout << __FUNCTION__ << ": Parameter " << addr
+                          << " already registered in ParameterSpace " << id
+                          << std::endl;
+              }
+              return true;
+            }
+          }
+
+          for (auto &dim : mLocalPSDs) {
+            if (addr == dim->getFullAddress()) {
+              ps->registerDimension(dim, src);
+              if (mVerbose) {
+                std::cout << "Registered Parameter " << addr
+                          << " to ParameterSpace " << id << std::endl;
+              }
+              return true;
+            }
+          }
+
+          std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
+                    << std::endl;
+          return false;
+        }
+      } else if (command == ParameterSpaceConfigureType::REMOVE_PARAMETER) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue val;
+          conf.configurationvalue().UnpackTo(&val);
+          auto addr = val.valuestring();
+
+          for (auto *dim : ps->getDimensions()) {
+            if (addr == dim->getFullAddress()) {
+              ps->removeDimension(dim->getName(), dim->getGroup(), true, src);
+              if (mVerbose) {
+                std::cout << __FUNCTION__ << ": Removing Parameter " << addr
+                          << " from ParameterSpace " << id << std::endl;
+              }
+              return true;
+            }
+          }
+
+          std::cerr << __FUNCTION__ << "Unable to find Parameter " << addr
+                    << std::endl;
+          return false;
+        }
+      }
+
+      std::cerr << __FUNCTION__
+                << ": Unrecognized configure message for ParameterSpace " << id
+                << std::endl;
+      return false;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find ParameterSpace " << id
+            << std::endl;
+  return false;
 }
 
 bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
@@ -1881,8 +2041,8 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
 void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                                         al::Socket *src) {
   // FIXME currently no config message needs to be sent for PS itself
-  for (auto dim : ps->getDimensions()) {
-    sendConfigureMessage(dim.get(), dst, src);
+  for (auto *dim : ps->getDimensions()) {
+    sendConfigureMessage(dim, dst, src);
   }
 }
 
@@ -1893,7 +2053,7 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     p = dynamic_cast<ProcessorAsyncWrapper *>(p)->processor();
   }
 
-  for (auto config : p->configuration) {
+  for (auto &config : p->configuration) {
     TincMessage msg;
     msg.set_messagetype(MessageType::CONFIGURE);
     msg.set_objecttype(ObjectType::PROCESSOR);
@@ -1924,7 +2084,7 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
   }
 
   if (dynamic_cast<ProcessorGraph *>(p)) {
-    for (auto childProcessor :
+    for (auto &childProcessor :
          dynamic_cast<ProcessorGraph *>(p)->getProcessors()) {
       if (src) {
         sendConfigureMessage(childProcessor, dst, src);
@@ -1965,6 +2125,73 @@ void TincProtocol::sendConfigureParameterSpaceRemoveDimension(
     ParameterSpace *ps, ParameterSpaceDimension *dim, al::Socket *dst,
     al::Socket *src) {
   auto msg = createConfigureParameterSpaceRemove(ps, dim);
+
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
+}
+
+bool TincProtocol::readRemoveMessage(int objectType, void *any,
+                                     al::Socket *src) {
+  switch (objectType) {
+  case ObjectType::PARAMETER:
+    return processRemoveParameter(any, src);
+  case ObjectType::PROCESSOR:
+    // return processRemoveProcessor(any, src);
+  case ObjectType::DISK_BUFFER:
+    // return processRemoveDiskBuffer(any, src);
+  case ObjectType::DATA_POOL:
+    // return processRemoveDataPool(any, src);
+  case ObjectType::PARAMETER_SPACE:
+    // return processRemoveParameterSpace(any, src);
+  default:
+    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    break;
+  }
+  return false;
+}
+
+bool TincProtocol::processRemoveParameter(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RemoveParameter>()) {
+    std::cerr << __FUNCTION__ << ": Remove message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RemoveParameter command;
+  details->UnpackTo(&command);
+  auto name = command.id();
+  auto group = command.group();
+
+  for (auto *dim : mParameterSpaceDimensions) {
+    if (dim->getName() == name && dim->getGroup() == group) {
+      removeParameter(name, group, true, src);
+      return true;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find Parameter " << name
+            << " (Group: " << group << ") to remove." << std::endl;
+  return false;
+}
+
+void TincProtocol::sendRemoveMessage(ParameterSpaceDimension *dim,
+                                     al::Socket *dst, al::Socket *src) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::REMOVE);
+  msg.set_objecttype(ObjectType::PARAMETER);
+
+  google::protobuf::Any *details = msg.details().New();
+
+  RemoveParameter removeDetails;
+  removeDetails.set_id(dim->getName());
+  removeDetails.set_group(dim->getGroup());
+  details->PackFrom(removeDetails);
+
+  msg.set_allocated_details(details);
 
   if (src) {
     sendTincMessage(&msg, dst, src->valueSource());
@@ -2268,7 +2495,7 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
   if (incomingCommand.details().Is<ParameterRequestChoiceElements>()) {
     std::vector<std::string> elements;
     for (auto *ps : mParameterSpaces) {
-      for (auto dim : ps->getDimensions()) {
+      for (auto *dim : ps->getDimensions()) {
         if (dim->getFullAddress() == id) {
           if (al::ParameterChoice *p = dynamic_cast<al::ParameterChoice *>(
                   dim->getParameterMeta())) {
@@ -2278,7 +2505,7 @@ bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
         }
       }
     }
-    for (auto dim : mParameterSpaceDimensions) {
+    for (auto &dim : mParameterSpaceDimensions) {
       if (dim->getFullAddress() == id) {
         if (al::ParameterChoice *p =
                 dynamic_cast<al::ParameterChoice *>(dim->getParameterMeta())) {
@@ -2335,7 +2562,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
   if (incomingCommand.details().Is<ParameterSpaceRequestCurrentPath>()) {
     ParameterSpaceRequestCurrentPath request;
     incomingCommand.details().UnpackTo(&request);
-    for (auto ps : mParameterSpaces) {
+    for (auto &ps : mParameterSpaces) {
       if (ps->getId() == psId) {
         auto curDir = ps->getCurrentRelativeRunPath();
 
@@ -2371,7 +2598,7 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
   } else if (incomingCommand.details().Is<ParameterSpaceRequestRootPath>()) {
     ParameterSpaceRequestRootPath request;
     incomingCommand.details().UnpackTo(&request);
-    for (auto ps : mParameterSpaces) {
+    for (auto &ps : mParameterSpaces) {
       if (ps->getId() == psId) {
         auto rootPath = ps->getRootPath();
 
@@ -2436,7 +2663,7 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
       dims.push_back(commandSlice.dimension(i));
     }
 
-    for (auto dp : mDataPools) {
+    for (auto &dp : mDataPools) {
       if (dp->getId() == datapoolId) {
         auto sliceName = dp->createDataSlice(field, dims);
 
@@ -2475,7 +2702,7 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
     DataPoolCommandCurrentFiles commandSlice;
     incomingCommand.details().UnpackTo(&commandSlice);
 
-    for (auto dp : mDataPools) {
+    for (auto &dp : mDataPools) {
       if (dp->getId() == datapoolId) {
         auto filenames = dp->getCurrentFiles();
 
@@ -2496,7 +2723,7 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
 
         auto *commandDetails = command.details().New();
         DataPoolCommandCurrentFilesReply reply;
-        for (auto f : filenames) {
+        for (auto &f : filenames) {
           reply.add_filenames(f);
         }
 

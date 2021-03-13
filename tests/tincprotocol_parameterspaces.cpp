@@ -34,7 +34,41 @@ TEST(ProtocolParameterSpace, Connection) {
     }
   }
 
-  // TODO complete checks
+  auto client_ps = tclient.getParameterSpace("param_space");
+  EXPECT_NE(client_ps, nullptr);
+
+  auto client_ps_dim = client_ps->getDimension("ps_dim");
+  EXPECT_NE(client_ps_dim, nullptr);
+
+  auto client_dim = tclient.getParameter("ps_dim");
+  EXPECT_NE(client_dim, nullptr);
+
+  ps_dim->setCurrentValue(5.f);
+
+  al::al_sleep(0.2);
+
+  EXPECT_EQ(client_ps_dim->getCurrentValue(), 5.f);
+  EXPECT_EQ(client_dim->toFloat(), 5.f);
+
+  client_ps_dim->setCurrentValue(4.f);
+
+  al::al_sleep(0.2);
+
+  EXPECT_EQ(client_dim->toFloat(), 4.f);
+  EXPECT_EQ(ps_dim->getCurrentValue(), 4.f);
+
+  client_dim->fromFloat(3.f);
+
+  al::al_sleep(0.2);
+
+  EXPECT_EQ(client_ps_dim->getCurrentValue(), 3.f);
+  EXPECT_EQ(ps_dim->getCurrentValue(), 3.f);
+
+  ps.removeDimension("ps_dim");
+  al::al_sleep(0.2);
+
+  auto client_dim2 = tclient.getParameter("ps_dim");
+  EXPECT_EQ(client_dim2, nullptr);
 
   tclient.stop();
   tserver.stop();

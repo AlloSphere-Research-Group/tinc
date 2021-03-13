@@ -28,7 +28,7 @@ ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
   if (dynamic_cast<al::Parameter *>(param)) {
     return ParameterSpaceDimension::Datatype::FLOAT;
   } else if (dynamic_cast<al::ParameterBool *>(param)) {
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return ParameterSpaceDimension::Datatype::BOOL;
   } else if (dynamic_cast<al::ParameterString *>(param)) {
     return ParameterSpaceDimension::Datatype::STRING;
   } else if (dynamic_cast<al::ParameterInt *>(param)) {
@@ -84,6 +84,8 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
                    dynamic_cast<al::ParameterMenu *>(param)) {
       mParameterValue =
           new al::ParameterMenu(p->getName(), p->getGroup(), p->getDefault());
+      dynamic_cast<al::ParameterMenu *>(mParameterValue)
+          ->setElements(p->getElements());
       dynamic_cast<al::ParameterMenu *>(mParameterValue)->set(p->get());
     } else if (al::ParameterChoice *p =
                    dynamic_cast<al::ParameterChoice *>(param)) {

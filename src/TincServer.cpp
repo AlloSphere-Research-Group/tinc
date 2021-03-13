@@ -54,11 +54,11 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::REMOVE:
-        if (details.Is<ObjectId>()) {
-          ObjectId objectId;
-          details.UnpackTo(&objectId);
-          std::cerr << __FUNCTION__
-                    << ": Remove message received, but not implemented"
+        if (verbose()) {
+          std::cout << "Server received Remove message" << std::endl;
+        }
+        if (!readRemoveMessage(objectType, (void *)&details, src)) {
+          std::cerr << __FUNCTION__ << ": Error processing remove message"
                     << std::endl;
         }
         break;

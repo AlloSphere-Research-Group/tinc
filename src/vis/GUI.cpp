@@ -101,8 +101,8 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
 void drawControls(ParameterSpace &ps) {
   ImGui::PushID(("TincParameterSpace_" + ps.getId()).c_str());
   ImGui::Text("Parameter Space: %s", ps.getId().c_str());
-  for (auto dim : ps.getDimensions()) {
-    drawControl(dim.get());
+  for (auto *dim : ps.getDimensions()) {
+    drawControl(dim);
   }
   ImGui::PopID();
 }
