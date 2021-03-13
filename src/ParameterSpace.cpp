@@ -90,8 +90,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    onDimensionRegister(dimension.get(), this, nullptr);
     mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else if (al::Parameter *p =
                  dynamic_cast<al::Parameter *>(dimension->getParameterMeta())) {
     auto &param = *p;
@@ -106,8 +106,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    onDimensionRegister(dimension.get(), this, nullptr);
     mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(
                  dimension->getParameterMeta())) {
     auto &param = *p;
@@ -122,8 +122,8 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpace::registerDimension(
       // The internal parameter will get set internally to the new value
       // later on inside the Parameter classes
     });
-    onDimensionRegister(dimension.get(), this, nullptr);
     mDimensions.push_back(dimension);
+    onDimensionRegister(dimension.get(), this, nullptr);
   } else {
     // FIXME implement for all parameter types
     std::cerr << "Support for parameter type not implemented in dimension "
@@ -219,7 +219,8 @@ bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
 
 void ParameterSpace::clear() {
   std::unique_lock<std::mutex> lk(mDimensionsLock);
-  mDimensions.clear();
+  // FIXME remove all dimensions on clear
+  //  mDimensions.clear();
   mSpecialDirs.clear();
 }
 
@@ -576,18 +577,17 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (nc_inq_grpname(state_grp_ids[i], groupName)) {
         return false;
       }
+      int varid;
+      if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
+        return false;
+      }
+      nc_type nctypeid;
+      if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
+        return false;
+      }
       std::shared_ptr<ParameterSpaceDimension> pdim =
           getDimension(groupName, "");
       if (!pdim) {
-        int varid;
-        if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
-          return false;
-        }
-        nc_type nctypeid;
-        if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
-          return false;
-        }
-
         pdim = std::make_shared<ParameterSpaceDimension>(
             groupName, "", nctypeToTincType(nctypeid));
         newDimensions.push_back(pdim);
@@ -652,17 +652,17 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
                nc_get_var_string(parameters_ids[i], varid, idData.data()))) {
         return false;
       }
+      int varid;
+      if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
+        return false;
+      }
+      nc_type nctypeid;
+      if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
+        return false;
+      }
       std::shared_ptr<ParameterSpaceDimension> pdim =
           getDimension(parameterName, "");
       if (!pdim) {
-        int varid;
-        if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
-          return false;
-        }
-        nc_type nctypeid;
-        if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
-          return false;
-        }
         pdim = std::make_shared<ParameterSpaceDimension>(parameterName);
         newDimensions.push_back(pdim);
       }

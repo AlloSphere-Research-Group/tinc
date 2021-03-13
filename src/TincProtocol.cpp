@@ -968,7 +968,7 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
                   << " already registered." << std::endl;
       }
       if (p != &ps) {
-        std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
+        std::cout << __FUNCTION__ << ": ERROR ParameterSpace " << ps.getId()
                   << " already registered as another object." << std::endl;
       }
       assert(p == &ps);
