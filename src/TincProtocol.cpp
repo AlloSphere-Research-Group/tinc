@@ -925,6 +925,7 @@ bool TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
                   << " ERROR: Attempted to register a  dimension that already "
                      "exists. Dimension not registered."
                   << std::endl;
+        assert(dim == &psd);
       }
       return false;
     }
@@ -964,6 +965,10 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     if (p->getId() == ps.getId()) {
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
+                  << " already registered." << std::endl;
+      }
+      if (p != &ps) {
+        std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
                   << " already registered as another object." << std::endl;
       }
       assert(p == &ps);
@@ -971,7 +976,8 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     }
   }
   if (mVerbose) {
-    std::cout << __FUNCTION__ << ": Registering new dimension " << ps.getId()
+    std::cout << __FUNCTION__
+              << ": Registering new ParameterSpace: " << ps.getId()
               << std::endl;
   }
   mParameterSpaces.push_back(&ps);
@@ -983,8 +989,6 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     registerParameterSpaceDimension(*dim, src);
     sendConfigureParameterSpaceAddDimension(&ps, dim.get(), nullptr, src);
   }
-  sendRegisterMessage(&ps, nullptr, src);
-  sendConfigureMessage(&ps, nullptr, src);
 
   ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                   ParameterSpace *ps, al::Socket *src) {
@@ -995,6 +999,10 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     registerParameterSpaceDimension(*changedDimension, src);
     sendConfigureParameterSpaceAddDimension(ps, changedDimension, nullptr, src);
   };
+
+  sendRegisterMessage(&ps, nullptr, src);
+  sendConfigureMessage(&ps, nullptr, src);
+
   return true;
 }
 

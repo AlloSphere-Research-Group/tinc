@@ -576,13 +576,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (nc_inq_grpname(state_grp_ids[i], groupName)) {
         return false;
       }
-      std::shared_ptr<ParameterSpaceDimension> pdim;
-      for (auto dim : getDimensions()) {
-        if (dim->getName() == groupName && dim->getGroup().size() == 0) {
-          pdim = dim;
-          break;
-        }
-      }
+      std::shared_ptr<ParameterSpaceDimension> pdim =
+          getDimension(groupName, "");
       if (!pdim) {
         int varid;
         if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
@@ -657,13 +652,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
                nc_get_var_string(parameters_ids[i], varid, idData.data()))) {
         return false;
       }
-      std::shared_ptr<ParameterSpaceDimension> pdim;
-      for (auto dim : getDimensions()) {
-        if (dim->getName() == parameterName && dim->getGroup().size() == 0) {
-          pdim = dim;
-          break;
-        }
-      }
+      std::shared_ptr<ParameterSpaceDimension> pdim =
+          getDimension(parameterName, "");
       if (!pdim) {
         int varid;
         if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
@@ -706,13 +696,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       if (nc_inq_grpname(conditions_ids[i], conditionName)) {
         return false;
       }
-      std::shared_ptr<ParameterSpaceDimension> pdim;
-      for (auto dim : getDimensions()) {
-        if (dim->getName() == conditionName && dim->getGroup().size() == 0) {
-          pdim = dim;
-          break;
-        }
-      }
+      std::shared_ptr<ParameterSpaceDimension> pdim =
+          getDimension(conditionName, "");
       if (!pdim) {
         pdim = std::make_shared<ParameterSpaceDimension>(conditionName);
         newDimensions.push_back(pdim);
