@@ -889,222 +889,217 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 }
 
 //// ------------------------------------------------------
-void TincProtocol::registerParameter(al::ParameterMeta &pmeta,
+bool TincProtocol::registerParameter(al::ParameterMeta &pmeta,
                                      al::Socket *src) {
-  bool registered = false;
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getName() == pmeta.getName() &&
         dim->getGroup() == pmeta.getGroup()) {
-      registered = true;
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": Parameter " << pmeta.getName()
                   << " (Group: " << pmeta.getGroup() << ") already registered."
                   << std::endl;
       }
       if (&pmeta != dim->getParameterMeta()) {
-        // FIXME this will create a new parameter with same id/group
         std::cerr
             << __FUNCTION__
             << ": Parameter is already registered but pointer doesn't match."
             << std::endl;
       }
-      break;
+      return false;
     }
   }
-  if (!registered) {
-    mLocalPSDs.emplace_back(
-        std::make_shared<ParameterSpaceDimension>(&pmeta, false));
-    registerParameterSpaceDimension(*mLocalPSDs.back(), src);
-  }
+  mLocalPSDs.emplace_back(
+      std::make_shared<ParameterSpaceDimension>(&pmeta, false));
+  registerParameterSpaceDimension(*mLocalPSDs.back(), src);
+  return true;
 }
 
-void TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
+bool TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
                                                    al::Socket *src) {
-  ParameterSpaceDimension *registered = nullptr;
   for (auto *dim : mParameterSpaceDimensions) {
-    if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
-      registered = dim;
+    if (dim->getFullAddress() == psd.getFullAddress()) {
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
                   << psd.getFullAddress() << " already registered."
                   << std::endl;
       }
-      break;
+      if (dim != &psd) {
+        std::cerr << __FILE__
+                  << " ERROR: Attempted to register a  dimension that already "
+                     "exists. Dimension not registered."
+                  << std::endl;
+      }
+      return false;
     }
   }
-  //  for (auto *ps : mParameterSpaces) {
-  //    for (auto dim : ps->getDimensions()) {
-  //      if (dim.get() == &psd || dim->getFullAddress() ==
-  //      psd.getFullAddress()) {
-  //        registered = dim.get();
-  //        if (mVerbose) {
-  //          std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-  //                    << psd.getFullAddress() << " already registered."
-  //                    << std::endl;
-  //        }
-  //        break;
-  //      }
-  //    }
-  //  }
-  if (!registered) {
-    if (mVerbose) {
-      std::cout << __FUNCTION__ << ": Register new dimension  " << psd.getName()
-                << std::endl;
-    }
-    mParameterSpaceDimensions.push_back(&psd);
-    connectParameterCallbacks(*psd.getParameterMeta());
-    connectDimensionCallbacks(psd);
 
-    // Broadcast registered ParameterSpaceDimension
-    sendRegisterMessage(&psd, nullptr, src);
-    sendConfigureMessage(&psd, nullptr, src);
-  } else {
-    if (mVerbose) {
-      std::cout << __FUNCTION__ << ": Updating metadata for  " << psd.getName()
-                << std::endl;
+  for (auto *ps : mParameterSpaces) {
+    for (auto *dim : ps->getDimensions()) {
+      if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
+        if (&psd != dim) {
+          std::cerr << __FILE__
+                    << " ERROR: Attempted to register a dimension that already "
+                       "exists in a ParameterSpace with a different object. "
+                       "Duplicate dimension will cause inconsistent state."
+                    << std::endl;
+          assert(&psd == dim); // Forced failed assert
+          return false;
+        }
+      }
     }
-    //    connectParameterCallbacks(*registered->getParameterMeta());
-    //    connectDimensionCallbacks(*registered);
-    sendRegisterMessage(registered, nullptr, src);
-    sendConfigureMessage(registered, nullptr, src);
   }
+  if (mVerbose) {
+    std::cout << __FUNCTION__ << ": Register new dimension  " << psd.getName()
+              << std::endl;
+  }
+  mParameterSpaceDimensions.push_back(&psd);
+  connectParameterCallbacks(*psd.getParameterMeta());
+  connectDimensionCallbacks(psd);
+
+  // Broadcast registered ParameterSpaceDimension
+  sendRegisterMessage(&psd, nullptr, src);
+  sendConfigureMessage(&psd, nullptr, src);
+  return true;
 }
 
-void TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
-  bool registered = false;
+bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   for (auto *p : mParameterSpaces) {
-    if (p == &ps || p->getId() == ps.getId()) {
-      registered = true;
+    if (p->getId() == ps.getId()) {
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
-                  << " already registered." << std::endl;
+                  << " already registered as another object." << std::endl;
       }
-      break;
+      assert(p == &ps);
+      return false;
     }
   }
-  if (!registered) {
+  if (mVerbose) {
+
+    std::cout << __FUNCTION__ << ": Registering new ParameterSpace "
+              << ps.getId() << std::endl;
+  }
+
+  mParameterSpaces.push_back(&ps);
+
+  // FIXME re-check callback function. something doesn't look right
+  ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
+                                  ParameterSpace *ps, al::Socket *src) {
     if (mVerbose) {
-      std::cout << __FUNCTION__ << ": Registering new ParameterSpace "
-                << ps.getId() << std::endl;
+      std::cout << __FUNCTION__ << ": Callback onDimensionRegister() "
+                << ps->getId() << std::endl;
     }
 
-    mParameterSpaces.push_back(&ps);
+    // function that invokes this cb should do relevant checks
+    // connects callbacks, sends register + configure messages
+    registerParameterSpaceDimension(*changedDimension, src);
+    sendConfigureParameterSpaceAddDimension(ps, changedDimension, nullptr, src);
+  };
 
-    // FIXME re-check callback function. something doesn't look right
-    ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
-                                    ParameterSpace *ps, al::Socket *src) {
-      if (mVerbose) {
-        std::cout << __FUNCTION__ << ": Callback onDimensionRegister() "
-                  << ps->getId() << std::endl;
-      }
-
-      // function that invokes this cb should do relevant checks
-      // connects callbacks, sends register + configure messages
-      registerParameterSpaceDimension(*changedDimension, src);
-      sendConfigureParameterSpaceAddDimension(ps, changedDimension, nullptr,
-                                              src);
-    };
-
-    ps.onDimensionRemove = [this](ParameterSpaceDimension *changedDimension,
-                                  ParameterSpace *ps, bool invoked,
-                                  al::Socket *src) {
-      sendConfigureParameterSpaceRemoveDimension(ps, changedDimension, nullptr,
-                                                 src);
-      if (!invoked) {
-        removeParameter(changedDimension->getName(),
-                        changedDimension->getGroup(), true, src);
-      }
-    };
-
-    // register PSDs attached to the ParameterSpace
-    for (auto *dim : ps.getDimensions()) {
-      registerParameterSpaceDimension(*dim, src);
+  ps.onDimensionRemove = [this](ParameterSpaceDimension *changedDimension,
+                                ParameterSpace *ps, bool invoked,
+                                al::Socket *src) {
+    sendConfigureParameterSpaceRemoveDimension(ps, changedDimension, nullptr,
+                                               src);
+    if (!invoked) {
+      removeParameter(changedDimension->getName(), changedDimension->getGroup(),
+                      true, src);
     }
+  };
 
-    // Broadcast registered ParameterSpace
-    // FIXME if the parameter was not registered above, this will send
-    // register/config message for the parameter twice here
-    sendRegisterMessage(&ps, nullptr, src);
-    sendConfigureMessage(&ps, nullptr, src);
+  // register PSDs attached to the ParameterSpace
+  for (auto *dim : ps.getDimensions()) {
+    registerParameterSpaceDimension(*dim, src);
   }
+
+  // Broadcast registered ParameterSpace
+  // FIXME if the parameter was not registered above, this will send
+  // register/config message for the parameter twice here
+  sendRegisterMessage(&ps, nullptr, src);
+  sendConfigureMessage(&ps, nullptr, src);
+
+  return true;
 }
 
-void TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
-  bool registered = false;
+bool TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   for (auto *p : mProcessors) {
-    if (p == &processor || p->getId() == processor.getId()) {
-      registered = true;
+    if (p->getId() == processor.getId()) {
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": Processor " << processor.getId()
                   << " already registered." << std::endl;
       }
-      break;
+      if (p != &processor) {
+        std::cerr << __FUNCTION__ << ": ERROR Processor " << processor.getId()
+                  << " already registered as a different object." << std::endl;
+      }
+      assert(p == &processor);
+      return false;
     }
   }
-  if (!registered) {
-    mProcessors.push_back(&processor);
-    // FIXME we should register parameters registered with processors.
-    //    for (auto *param: processor.parameters()) {
-    //    }
+  mProcessors.push_back(&processor);
+  // FIXME we should register parameters registered with processors.
+  // Look at how it is done in ParameterSpace that also handle internal
+  // parameters
+  //    for (auto *param: processor.parameters()) {
+  //    }
 
-    // Broadcast registered processor
-    sendRegisterMessage(&processor, nullptr, src);
-    sendConfigureMessage(&processor, nullptr, src);
-  }
+  // Broadcast registered processor
+  sendRegisterMessage(&processor, nullptr, src);
+  sendConfigureMessage(&processor, nullptr, src);
+  return true;
 }
 
-void TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
-  bool registered = false;
+bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   for (auto *p : mDiskBuffers) {
-    if (p == &db || p->getId() == db.getId()) {
-      registered = true;
+    if (p->getId() == db.getId()) {
       if (mVerbose) {
         std::cout << __FUNCTION__ << ": DiskBuffer " << db.getId()
                   << " already registered." << std::endl;
       }
-      break;
+      if (p != &db) {
+        std::cerr << __FUNCTION__ << ": ERROR Diskbuffer " << db.getId()
+                  << " already registered as a different object." << std::endl;
+      }
+      assert(p == &db);
+      return false;
     }
   }
-  if (!registered) {
-    mDiskBuffers.push_back(&db);
+  mDiskBuffers.push_back(&db);
 
-    // Broadcast registered DiskBuffer
-    sendRegisterMessage(&db, nullptr, src);
-    sendConfigureMessage(&db, nullptr, src);
-  } else {
-    // TODO apply data from new dimension
-  }
+  // Broadcast registered DiskBuffer
+  sendRegisterMessage(&db, nullptr, src);
+  sendConfigureMessage(&db, nullptr, src);
+  return true;
 }
 
-void TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
-  bool registered = false;
+bool TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   for (auto *p : mDataPools) {
-    if (p == &dp || p->getId() == dp.getId()) {
-      registered = true;
+    if (p->getId() == dp.getId()) {
       if (mVerbose) {
-        // FIXME replace entry in mDataPools wiht this one if it is not the
-        // same instance
         std::cout << __FUNCTION__ << ": DataPool " << dp.getId()
                   << " already registered." << std::endl;
       }
-      break;
+      if (p != &dp) {
+        std::cerr << __FUNCTION__ << ": ERROR DataPool " << dp.getId()
+                  << " already registered as a different object." << std::endl;
+      }
+      assert(p == &dp);
+      return false;
     }
   }
-  if (!registered) {
-    mDataPools.push_back(&dp);
-    // FIXME check register order datapool -> ps
-    registerParameterSpace(dp.getParameterSpace(), src);
+  mDataPools.push_back(&dp);
+  // FIXME check register order datapool -> ps
+  registerParameterSpace(dp.getParameterSpace(), src);
 
-    // FIXME add input source to avoid repropagating
-    dp.modified = [&]() {
-      auto msg = createConfigureDataPoolMessage(&dp);
-      sendTincMessage(&msg);
-    };
+  // FIXME add input source to avoid repropagating
+  dp.modified = [&]() {
+    auto msg = createConfigureDataPoolMessage(&dp);
+    sendTincMessage(&msg);
+  };
 
-    // Broadcast registered DataPool
-    sendRegisterMessage(&dp, nullptr, src);
-    sendConfigureMessage(&dp, nullptr, src);
-  }
+  // Broadcast registered DataPool
+  sendRegisterMessage(&dp, nullptr, src);
+  sendConfigureMessage(&dp, nullptr, src);
+  return true;
 }
 
 TincProtocol &TincProtocol::operator<<(al::ParameterMeta &p) {

@@ -57,6 +57,8 @@ namespace tinc {
  * more information.
  */
 class ParameterSpace : public IdObject {
+  friend class TincProtocol;
+
 public:
   ParameterSpace(std::string id = std::string()) { setId(id); }
   ~ParameterSpace();
@@ -97,7 +99,8 @@ public:
    *
    * If the dimension was already registered, the data from the incoming
    * dimension is copied to the existing dimension and the existing dimension is
-   * returned.
+   * returned. You must always use the returned shared_ptr instead of the
+   * shared_ptr passed
    */
   ParameterSpaceDimension *
   registerDimension(std::shared_ptr<ParameterSpaceDimension> &dimension,
@@ -407,7 +410,30 @@ protected:
 
   bool executeProcess(Processor &processor, bool recompute);
 
+  // TODO Currently allows only one TincServer/TincClient. Should we provision
+  // for more?
+  /**
+   * This callback is called when dimension metadata has changed or a
+   * dimension is added. When a dimension is new, the new dimension has not yet
+   * been added to the parameter space.
+   *
+   * If dimension was not registered correctly we will be in an inconsistent
+   * state, and user will be warned. assert will fail to trigger crash on debug
+   * builds.
+   */
+  // std::function<void(ParameterSpaceDimension *changedDimension,
+  //                    ParameterSpace *ps, al::Socket *src)>
+  //     onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
+  //                              ParameterSpace *ps, al::Socket *src = nullptr)
+  //                              {
+  //       (void)changedDimension;
+  //       (void)ps;
+  //       (void)src;
+  //     };
+
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
+
+  std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensionsOwned;
 
   /// Stores template to generate current path using resolveFilename()
   std::string mCurrentPathTemplate;
