@@ -223,6 +223,8 @@ public:
 
   Status getStatus();
 
+  void print(std::ostream &stream = std::cout);
+
 protected:
   // Register CBs
   void connectParameterCallbacks(al::ParameterMeta &param);

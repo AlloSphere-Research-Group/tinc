@@ -317,6 +317,8 @@ public:
    */
   std::shared_ptr<ParameterSpaceDimension> deepCopy();
 
+  void print(std::ostream &stream = std::cout);
+
   /**
    * This function is called whenever dimension metadata cahnges, to notify
    * connected clients. 'src' provides the socket that originated the change, to

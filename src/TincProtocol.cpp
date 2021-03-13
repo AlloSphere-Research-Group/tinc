@@ -1238,6 +1238,16 @@ TincProtocol::Status TincProtocol::getStatus() {
   }
 }
 
+void TincProtocol::print(std::ostream &stream) {
+  stream << " --- *** ParameterSpaceDimensions *** ---" << std::endl;
+  for (auto dim : mParameterSpaceDimensions) {
+    dim->print(stream);
+  }
+  for (auto ps : mParameterSpaces) {
+    ps->print(stream);
+  }
+}
+
 void TincProtocol::connectParameterCallbacks(al::ParameterMeta &pmeta) {
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(&pmeta)) {
     p->registerChangeCallback([&, p](float value, al::ValueSource *src) {

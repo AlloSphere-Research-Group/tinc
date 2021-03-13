@@ -863,6 +863,14 @@ void ParameterSpace::enableCache(std::string cachePath) {
 
 void ParameterSpace::disableCache() { mCacheManager = nullptr; }
 
+void ParameterSpace::print(std::ostream &stream) {
+  stream << " ParameterSpace " << this->getId() << " @ " << this << std::endl;
+  for (auto dim : getDimensions()) {
+    dim->print(stream);
+  }
+  stream << " ------------------------  " << std::endl;
+}
+
 bool ParameterSpace::readFromNetCDF(std::string ncFile) {
 #ifdef TINC_HAS_NETCDF
   std::vector<std::shared_ptr<ParameterSpaceDimension>> newDimensions;

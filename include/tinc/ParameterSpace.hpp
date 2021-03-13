@@ -345,6 +345,8 @@ public:
    */
   void disableCache();
 
+  void print(std::ostream &stream = std::cout);
+
   /**
    * @brief callback when the value in any particular dimension changes.
    *

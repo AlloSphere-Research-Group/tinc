@@ -117,6 +117,9 @@ void drawTincServerInfo(TincServer &tserv, bool debug) {
               serverAddr.first.c_str(), serverAddr.second, status.c_str());
 
   if (debug) {
+    if (ImGui::Button("Print")) {
+      tserv.print();
+    }
     ImGui::SameLine();
     if (ImGui::Button("Disconnect all")) {
       tserv.disconnectAllClients();

@@ -415,6 +415,12 @@ std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {
   return dimCopy;
 }
 
+void ParameterSpaceDimension::print(std::ostream &stream) {
+  stream << "ParameterSpaceParameterSpaceDimension: " << this->getFullAddress()
+         << "  @" << this << std::endl;
+  stream << "   ParameterMeta " << this->mParameterValue << std::endl;
+}
+
 class sort_indices {
 private:
   float *mFloatArray;
