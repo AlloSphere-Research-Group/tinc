@@ -28,7 +28,7 @@ tclient.stop()
   int counter = 0;
   while (tserver.connectionCount() == 0) {
     al::al_sleep(0.05);
-    if ((counter * 50) >= TINC_TESTS_TIMEOUT_MS) {
+    if (counter >= TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
       break;
     }

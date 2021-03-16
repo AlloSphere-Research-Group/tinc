@@ -34,13 +34,13 @@ TEST(ProtocolParameterSpace, Connection) {
     }
   }
 
-  auto client_ps = tclient.getParameterSpace("param_space");
+  auto *client_ps = tclient.getParameterSpace("param_space");
   EXPECT_NE(client_ps, nullptr);
 
-  auto client_ps_dim = client_ps->getDimension("ps_dim");
+  auto *client_ps_dim = client_ps->getDimension("ps_dim");
   EXPECT_NE(client_ps_dim, nullptr);
 
-  auto client_dim = tclient.getParameter("ps_dim");
+  auto *client_dim = tclient.getParameter("ps_dim");
   EXPECT_NE(client_dim, nullptr);
 
   ps_dim->setCurrentValue(5.f);
