@@ -22,25 +22,24 @@ TEST(ProtocolParameterSpace, Connection) {
 
   tclient.requestParameterSpaces();
 
-  bool timeout = false;
   int counter = 0;
 
-  while (tclient.parameterSpaces().size() != 1 && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      timeout = true;
+  while (tclient.parameterSpaces().size() != 1) {
+    al::al_sleep(0.05); // Give time to connect
+    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
       break;
     }
   }
 
-  auto *client_ps = tclient.getParameterSpace("param_space");
+  auto client_ps = tclient.getParameterSpace("param_space");
+  auto client_ps_dim = client_ps->getDimension("ps_dim");
+  auto client_dim = tclient.getParameter("ps_dim");
+
+  al::al_sleep(0.2);
+
   EXPECT_NE(client_ps, nullptr);
-
-  auto *client_ps_dim = client_ps->getDimension("ps_dim");
   EXPECT_NE(client_ps_dim, nullptr);
-
-  auto *client_dim = tclient.getParameter("ps_dim");
   EXPECT_NE(client_dim, nullptr);
 
   ps_dim->setCurrentValue(5.f);
