@@ -43,7 +43,16 @@ TEST(ProtocolParameterSpace, Connection) {
   EXPECT_NE(client_dim, nullptr);
 
   ps_dim->setCurrentValue(5.f);
-  al::al_sleep(0.5);
+  al::al_sleep(0.2);
+
+  counter = 0;
+  while (client_ps_dim->getCurrentValue() == 0) {
+    al::al_sleep(0.05);
+    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
 
   EXPECT_EQ(client_ps_dim->getCurrentValue(), 5.f);
   EXPECT_EQ(client_dim->toFloat(), 5.f);
