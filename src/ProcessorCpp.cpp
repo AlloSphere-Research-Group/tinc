@@ -8,17 +8,22 @@ ProcessorCpp::ProcessorCpp(std::string id) : Processor(id) {}
 
 bool ProcessorCpp::process(bool forceRecompute) {
   callStartCallbacks();
-  al::PushDirectory dir(mRunningDirectory, mVerbose);
   if (!enabled) {
     return true;
   }
-  if (prepareFunction && !prepareFunction()) {
-    std::cerr << "ERROR preparing processor: " << mId << std::endl;
-    return false;
+  if (prepareFunction) {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    if (!prepareFunction()) {
+      std::cerr << "ERROR preparing processor: " << mId << std::endl;
+      return false;
+    }
   }
   bool ret = true;
-  if (forceRecompute) {
-    ret = processingFunction();
+  {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    if (needsRecompute() || forceRecompute) {
+      ret = processingFunction();
+    }
   }
   callDoneCallbacks(ret);
   return ret;

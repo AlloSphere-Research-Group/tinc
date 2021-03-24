@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/Processor.hpp"
 
@@ -58,7 +58,7 @@ public:
 
   ~ProcessorAsyncWrapper();
 
-  // FIXME we need to take over the other process if we tunr it async.
+  // FIXME we need to take over the other process if we turn it async.
   ProcessorAsyncWrapper(const ProcessorAsyncWrapper &other) // copy constructor
       : ProcessorAsyncWrapper(other.mProcessor) {
     mId = other.mId;

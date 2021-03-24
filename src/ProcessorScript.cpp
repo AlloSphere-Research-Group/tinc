@@ -45,15 +45,19 @@ bool ProcessorScript::process(bool forceRecompute) {
   if (mVerbose) {
     std::cerr << "STARTING ProcessorScript: " << mId << std::endl;
   }
-  if (prepareFunction && !prepareFunction()) {
-    std::cerr << "ERROR preparing processor: " << getId() << std::endl;
-    return false;
-  }
   if (mScriptName == "" && mScriptCommand == "") {
     std::cout << "ERROR: process() for '" << getId()
               << "' missing script name or script command." << std::endl;
     return false;
   }
+  if (prepareFunction) {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    if (!prepareFunction()) {
+      std::cerr << "ERROR preparing processor: " << getId() << std::endl;
+      return false;
+    }
+  }
+
   callStartCallbacks();
   std::unique_lock<std::mutex> lk(mProcessingLock);
 
@@ -127,20 +131,21 @@ std::string ProcessorScript::writeJsonConfig() {
   if (mVerbose) {
     std::cout << "Writing json config: " << jsonFilename << std::endl;
   }
+  std::ofstream of;
   {
     al::PushDirectory p(mRunningDirectory, mVerbose);
-    std::ofstream of(jsonFilename, std::ofstream::out);
-    if (of.good()) {
-      of << j.dump(4);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
-        return "";
-      }
-    } else {
+    of.open(jsonFilename, std::ofstream::out);
+  }
+  if (of.good()) {
+    of << j.dump(4);
+    of.close();
+    if (!of.good()) {
       std::cout << "Error writing json file." << std::endl;
       return "";
     }
+  } else {
+    std::cout << "Error writing json file." << std::endl;
+    return "";
   }
   return jsonFilename;
 }
@@ -148,18 +153,18 @@ std::string ProcessorScript::writeJsonConfig() {
 bool ProcessorScript::readJsonConfig(std::string filename) {
   using json = nlohmann::json;
   json j;
+  std::ifstream f;
   {
     al::PushDirectory p(mRunningDirectory, mVerbose);
-    std::ifstream f(filename);
-    if (!f.good()) {
-      std::cerr << __FILE__
-                << "Error: can't open json config file: " << filename
-                << std::endl;
-      return false;
-    }
-
-    f >> j;
+    f.open(filename);
   }
+  if (!f.good()) {
+    std::cerr << __FILE__ << "Error: can't open json config file: " << filename
+              << std::endl;
+    return false;
+  }
+
+  f >> j;
   try {
     if (j["__tinc_metadata_version"].get<int>() ==
         PROCESSOR_META_FORMAT_VERSION) {
@@ -227,15 +232,19 @@ std::string ProcessorScript::makeCommandLine() {
 }
 
 bool ProcessorScript::runCommand(const std::string &command) {
-  al::PushDirectory p(mRunningDirectory, mVerbose);
 
   if (mVerbose) {
     std::cout << "ProcessorScript command: " << command << std::endl;
   }
   std::array<char, 128> buffer{0};
   std::string output;
+
   // FIXME fork if running async
-  FILE *pipe = popen(command.c_str(), "r");
+  FILE *pipe;
+  {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    pipe = popen(command.c_str(), "r");
+  }
   if (!pipe)
     throw std::runtime_error("popen() failed!");
   while (!feof(pipe)) {
@@ -304,21 +313,24 @@ bool ProcessorScript::writeMeta() {
   if (mVerbose) {
     std::cout << "Wrote cache in: " << metaFilename() << std::endl;
   }
+
+  std::ofstream of;
   {
     al::PushDirectory p(mRunningDirectory, mVerbose);
-    std::ofstream of(jsonFilename, std::ofstream::out);
-    if (of.good()) {
-      of << j.dump(4);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
-        return false;
-      }
-    } else {
+    of.open(jsonFilename, std::ofstream::out);
+  }
+  if (of.good()) {
+    of << j.dump(4);
+    of.close();
+    if (!of.good()) {
       std::cout << "Error writing json file." << std::endl;
       return false;
     }
+  } else {
+    std::cout << "Error writing json file." << std::endl;
+    return false;
   }
+
   return true;
 }
 
@@ -328,7 +340,10 @@ bool ProcessorScript::needsRecompute() {
     return true;
   }
   std::ifstream metaFileStream;
-  metaFileStream.open(metaFilename(), std::ofstream::in);
+  {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    metaFileStream.open(metaFilename(), std::ofstream::in);
+  }
 
   if (metaFileStream.fail()) {
     if (mVerbose) {

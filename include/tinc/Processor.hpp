@@ -52,18 +52,27 @@ constexpr auto PROCESSOR_META_FORMAT_VERSION = 0;
  *
  * An instance of Processor can only run a single instance of its process()
  * function.
+ *
+ * You can group Processor objects together in serial or parallel through
+ * ProcessorChain that is a Processor itself, allowing for sophisticated
+ * netwroks of processes.
  */
+
 class Processor : public IdObject {
   friend class ProcessorGraph;
 
 public:
   Processor(std::string id_ = "") { setId(id_); }
+  // TODO test that copying works correctly so that you can run multiple
+  // instances of Processor in parallel.
   Processor(Processor &p)
       : mInputDirectory(p.mInputDirectory),
         mOutputDirectory(p.mOutputDirectory),
         mRunningDirectory(p.mRunningDirectory),
         mOutputFileNames(p.mOutputFileNames),
-        mInputFileNames(p.mInputFileNames) {}
+        mInputFileNames(p.mInputFileNames) {
+    // FIXME we need to connect callbacks and parameters as well.
+  }
 
   virtual ~Processor() {}
 
@@ -77,11 +86,15 @@ public:
 
   /**
    * @brief returns true is the process() function is currently running
+   *
+   * This is useful for soft queries, for example for user feedback.
+   * The processor might have started running
+   * before this function exits even if it reports it is idle and viceversa.
    */
   bool isRunning();
 
   /**
-   * @brief Convenience function to set input and output directory
+   * @brief Convenience function to set input and output directories in one call
    */
   void setDataDirectory(std::string directory);
 
@@ -137,6 +150,10 @@ public:
 
   /**
    * @brief Set the current directory for process to run in.
+   *
+   * You must ensure you don;t change the running directory while the processor
+   * is running, otherwise different parts of the processing (the callbacks and
+   * the processing function) might execute in a different directory
    */
   void setRunningDirectory(std::string directory);
 
@@ -184,11 +201,19 @@ public:
    * you will likely break ParameterSpace::sweep used with this Processor as
    * sweep() does not change the internal values of the parameter space and its
    * dimensions.
+   *
+   * If this function returns false, computation is not performed and process()
+   * will return false. You can use this function to avoid computation when
+   * conditions are not right.
    */
   std::function<bool(void)> prepareFunction;
 
   /**
    * @brief Register a dimension so that the Processor is executed on changes
+   *
+   * You should only register dimensions in this way if you are not using the
+   * processor through ParameterSpace::process() or ParameterSpace::sweep(). The
+   * tow modes are provided for flexibility but should not be used concurrently.
    */
   Processor &registerDimension(ParameterSpaceDimension &dim);
 

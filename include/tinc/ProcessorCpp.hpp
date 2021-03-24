@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/Processor.hpp"
 
@@ -43,13 +43,29 @@ namespace tinc {
  * @brief A class to manage C++ computation within TINC
  *
  * The processingFunction function is called by process(). You must set this
- * function, otherwise an exception will be raised
+ * function, otherwise an exception will be raised.
+ *
+ * @code
+ProcessorCpp proc("proc1");
+
+proc.processingFunction = [&]() {
+    // Do processing here and return status
+    return true;
+};
+
+proc.process();
+@endcode
+ *
+ * A ProcessorCpp object process() function has a default of true for
+ * forceRecompute, but it will still be false when used within a ProcessorChain,
+ * so you will need to force recomputation of the chain for the ProcessCpp to be
+ * executed.
  */
 class ProcessorCpp : public Processor {
 public:
   ProcessorCpp(std::string id = "");
 
-  bool process(bool forceRecompute = true) override;
+  bool process(bool forceRecompute = false) override;
 
   std::function<bool(void)> processingFunction;
 

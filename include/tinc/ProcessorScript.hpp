@@ -50,25 +50,32 @@
 namespace tinc {
 
 /**
- * @brief The DataScript class
+ * @brief The ProcessorScript class
  *
  *
  * @code
- *
+ProcessorScript proc{"proc"};
 
+proc.setDataDirectory("/data/dir");
+proc.setRunningDirectory("/running/dir");
+proc.setInputFileNames({"input_file"});
+proc.setOutputFileNames({"output_file"});
+
+proc.setCommand("python");
+proc.setScriptName("script.py");
+
+if (proc.process()) {
+    // Data is ready
+}
+@endcode
  *
- * @endcode
- *
- *
- * @codeline
- * python myscript.py output_dir option 3.14159 0.5
- *
- * In the /home/sweet/home directory.
+ * The script will be passed options through a json file, and can
+ * also recieve feedback from the script through the same file. The
+ * filename is passed to the script as its first argument.
  *
  */
 class ProcessorScript : public Processor {
 public:
-  // TODO change constructor to match Processor constructor
   ProcessorScript(std::string id = "") : Processor(id) {}
 
   virtual ~ProcessorScript() {}

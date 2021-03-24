@@ -22,7 +22,6 @@ bool Processor::isRunning() {
 void Processor::setDataDirectory(std::string directory) {
   setOutputDirectory(directory);
   setInputDirectory(directory);
-  //  setRunningDirectory(directory);
 }
 
 void Processor::setOutputDirectory(std::string outputDirectory) {
@@ -46,7 +45,7 @@ void Processor::setInputDirectory(std::string inputDirectory) {
         << "Warning input directory for Processor doesn't exist. Creating."
         << std::endl;
     if (!al::Dir::make(mInputDirectory)) {
-      std::cout << "Unable to create input directory:" << mOutputDirectory
+      std::cout << "Unable to create input directory:" << mInputDirectory
                 << std::endl;
     }
   }
@@ -116,12 +115,14 @@ std::vector<std::string> Processor::getInputFileNames() {
 }
 
 void Processor::callStartCallbacks() {
+  al::PushDirectory dir(mRunningDirectory, mVerbose);
   for (auto cb : mStartCallbacks) {
     cb();
   }
 }
 
 void Processor::callDoneCallbacks(bool result) {
+  al::PushDirectory p(mRunningDirectory, mVerbose);
   for (auto cb : mDoneCallbacks) {
     cb(result);
   }
@@ -189,7 +190,10 @@ bool Processor::needsRecompute() {
     return true;
   }
   std::ifstream metaFileStream;
-  metaFileStream.open(metaFilename(), std::ofstream::in);
+  {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    metaFileStream.open(metaFilename(), std::ofstream::in);
+  }
 
   if (metaFileStream.fail()) {
     if (mVerbose) {
