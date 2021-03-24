@@ -124,17 +124,6 @@ public:
    */
   static std::string sanitizeName(std::string output_name);
 
-  /**
-   * @brief Enable simple scipt caching
-   * @param use
-   *
-   * This caching is a simpel but brittle caching mechanism. Whenever possible
-   * use the caching provided by ParameterSpace. For this caching to work, you
-   * will need to ensure that every run produces a unique and reproducible
-   * filename.
-   */
-  void useCache(bool use = true);
-
 protected:
   std::string writeJsonConfig();
 
@@ -156,19 +145,13 @@ private:
   std::condition_variable mAsyncDoneTrigger;
   std::mutex mAsyncDoneTriggerLock;
 
-  bool mUseCache{false};
-
   std::string makeCommandLine();
 
   bool runCommand(const std::string &command);
 
-  bool writeMeta();
+  bool writeMeta() override;
 
-  al_sec modified(const char *path) const;
-
-  bool needsRecompute();
-
-  std::string metaFilename();
+  bool needsRecompute() override;
 };
 
 } // namespace tinc

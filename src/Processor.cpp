@@ -2,6 +2,9 @@
 
 #include "al/io/al_File.hpp"
 
+#include "nlohmann/json.hpp"
+
+#include <fstream>
 #include <iostream>
 
 using namespace tinc;
@@ -23,7 +26,8 @@ void Processor::setDataDirectory(std::string directory) {
 }
 
 void Processor::setOutputDirectory(std::string outputDirectory) {
-  mOutputDirectory = al::File::conformDirectory(al::File::conformPathToOS(outputDirectory));
+  mOutputDirectory =
+      al::File::conformDirectory(al::File::conformPathToOS(outputDirectory));
   std::replace(mOutputDirectory.begin(), mOutputDirectory.end(), '\\', '/');
   if (mOutputDirectory.size() > 0 && !al::File::isDirectory(mOutputDirectory)) {
     if (!al::Dir::make(mOutputDirectory)) {
@@ -34,8 +38,9 @@ void Processor::setOutputDirectory(std::string outputDirectory) {
 }
 
 void Processor::setInputDirectory(std::string inputDirectory) {
-  mInputDirectory = al::File::conformDirectory(al::File::conformPathToOS(inputDirectory));
-//  std::replace(mInputDirectory.begin(), mInputDirectory.end(), '\\', '/');
+  mInputDirectory =
+      al::File::conformDirectory(al::File::conformPathToOS(inputDirectory));
+  //  std::replace(mInputDirectory.begin(), mInputDirectory.end(), '\\', '/');
   if (mInputDirectory.size() > 0 && !al::File::isDirectory(mInputDirectory)) {
     std::cout
         << "Warning input directory for Processor doesn't exist. Creating."
@@ -120,4 +125,126 @@ void Processor::callDoneCallbacks(bool result) {
   for (auto cb : mDoneCallbacks) {
     cb(result);
   }
+}
+
+bool Processor::writeMeta() {
+
+  nlohmann::json j;
+
+  j["__tinc_metadata_version"] = PROCESSOR_META_FORMAT_VERSION;
+  j["__running_directory"] = getRunningDirectory();
+  // TODO add support for multiple input and output files.
+  j["__output_dir"] = getOutputDirectory();
+  j["__output_names"] = getOutputFileNames();
+  j["__input_dir"] = getInputDirectory();
+  std::vector<al_sec> modifiedTimes;
+  for (auto file : getInputFileNames()) {
+    modifiedTimes.push_back(
+        al::File::modificationTime((getInputDirectory() + file).c_str()));
+  }
+  j["__input_modified"] = modifiedTimes;
+  j["__input_names"] = getInputFileNames();
+
+  // TODO add date and other important information.
+
+  for (auto option : configuration) {
+    switch (option.second.type) {
+    case VARIANT_STRING:
+      j[option.first] = option.second.valueStr;
+      break;
+    case VARIANT_INT64:
+    case VARIANT_INT32:
+      j[option.first] = option.second.valueInt64;
+      break;
+    case VARIANT_DOUBLE:
+    case VARIANT_FLOAT:
+      j[option.first] = option.second.valueDouble;
+      break;
+    }
+  }
+  std::string jsonFilename = metaFilename();
+  if (mVerbose) {
+    std::cout << "Wrote cache in: " << metaFilename() << std::endl;
+  }
+  {
+    al::PushDirectory p(mRunningDirectory, mVerbose);
+    std::ofstream of(jsonFilename, std::ofstream::out);
+    if (of.good()) {
+      of << j.dump(4);
+      of.close();
+      if (!of.good()) {
+        std::cout << "Error writing json file." << std::endl;
+        return false;
+      }
+    } else {
+      std::cout << "Error writing json file." << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
+bool Processor::needsRecompute() {
+  if (!mUseCache) {
+    return true;
+  }
+  std::ifstream metaFileStream;
+  metaFileStream.open(metaFilename(), std::ofstream::in);
+
+  if (metaFileStream.fail()) {
+    if (mVerbose) {
+      std::cout << "Failed to open metadata: Recomputing. " << metaFilename()
+                << std::endl;
+    }
+    return true;
+  }
+  nlohmann::json metaData;
+  try {
+    metaData = nlohmann::json::parse(metaFileStream);
+  } catch (...) {
+    std::cout << "Error parsing: " << metaFilename() << std::endl;
+    metaFileStream.close();
+  }
+
+  metaFileStream.close();
+  if (!metaData.is_object()) {
+    return true;
+  }
+
+  if (metaData["__tinc_metadata_version"] != PROCESSOR_META_FORMAT_VERSION) {
+    if (mVerbose) {
+      std::cout << "Metadata format mismatch. Forcing recompute" << std::endl;
+    }
+    return true;
+  }
+  if (metaData["__input_modified"].size() != mInputFileNames.size() ||
+      !metaData["__input_modified"].is_array()) {
+    return true;
+  }
+  for (int i = 0; i < metaData["__input_modified"].size(); i++) {
+    if (metaData["__input_modified"][i] !=
+        al::File::modificationTime(
+            (getInputDirectory() + mInputFileNames[i]).c_str())) {
+      return true;
+    }
+  }
+
+  for (auto file : getOutputFileNames()) {
+    if (!al::File::exists(getOutputDirectory() + file)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+std::string Processor::metaFilename() {
+  std::string outPath = getOutputDirectory();
+  std::string outName = "out.meta";
+  if (mOutputFileNames.size() > 0) {
+    outName = getOutputFileNames()[0];
+  }
+  std::string metafilename =
+      al::File::conformPathToOS(outPath) + outName + ".meta";
+  return metafilename;
 }

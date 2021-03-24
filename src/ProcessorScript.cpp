@@ -33,8 +33,6 @@
 
 using namespace tinc;
 
-constexpr auto DATASCRIPT_META_FORMAT_VERSION = 0;
-
 std::string ProcessorScript::getScriptFile(bool fullPath) {
   return mScriptName;
 }
@@ -97,13 +95,11 @@ std::string ProcessorScript::sanitizeName(std::string output_name) {
   return output_name;
 }
 
-void ProcessorScript::useCache(bool use) { mUseCache = use; }
-
 std::string ProcessorScript::writeJsonConfig() {
   using json = nlohmann::json;
   json j;
 
-  j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
+  j["__tinc_metadata_version"] = PROCESSOR_META_FORMAT_VERSION;
   j["__output_dir"] = getOutputDirectory();
   j["__output_names"] = getOutputFileNames();
   j["__input_dir"] = getInputDirectory();
@@ -166,7 +162,7 @@ bool ProcessorScript::readJsonConfig(std::string filename) {
   }
   try {
     if (j["__tinc_metadata_version"].get<int>() ==
-        DATASCRIPT_META_FORMAT_VERSION) {
+        PROCESSOR_META_FORMAT_VERSION) {
       setOutputDirectory(j["__output_dir"].get<std::string>());
       setOutputFileNames(j["__output_names"].get<std::vector<std::string>>());
       setInputDirectory(j["__input_dir"].get<std::string>());
@@ -271,9 +267,9 @@ bool ProcessorScript::writeMeta() {
 
   nlohmann::json j;
 
-  j["__tinc_metadata_version"] = DATASCRIPT_META_FORMAT_VERSION;
+  j["__tinc_metadata_version"] = PROCESSOR_META_FORMAT_VERSION;
   j["__script"] = getScriptFile(false);
-  j["__script_modified"] = modified(getScriptFile().c_str());
+  j["__script_modified"] = al::File::modificationTime(getScriptFile().c_str());
   j["__running_directory"] = getRunningDirectory();
   // TODO add support for multiple input and output files.
   j["__output_dir"] = getOutputDirectory();
@@ -281,7 +277,8 @@ bool ProcessorScript::writeMeta() {
   j["__input_dir"] = getInputDirectory();
   std::vector<al_sec> modifiedTimes;
   for (auto file : getInputFileNames()) {
-    modifiedTimes.push_back(modified((getInputDirectory() + file).c_str()));
+    modifiedTimes.push_back(
+        al::File::modificationTime((getInputDirectory() + file).c_str()));
   }
   j["__input_modified"] = modifiedTimes;
   j["__input_names"] = getInputFileNames();
@@ -325,18 +322,9 @@ bool ProcessorScript::writeMeta() {
   return true;
 }
 
-al_sec ProcessorScript::modified(const char *path) const {
-  struct stat s;
-  if (::stat(path, &s) == 0) {
-    // const auto& t = s.st_mtim;
-    // return t.tv_sec + t.tv_usec/1e9;
-    return s.st_mtime;
-  }
-  return 0.;
-}
-
 bool ProcessorScript::needsRecompute() {
-  if (!mUseCache) {
+
+  if (Processor::needsRecompute()) {
     return true;
   }
   std::ifstream metaFileStream;
@@ -356,48 +344,10 @@ bool ProcessorScript::needsRecompute() {
     std::cout << "Error parsing: " << metaFilename() << std::endl;
     metaFileStream.close();
   }
-
-  metaFileStream.close();
-  if (!metaData.is_object()) {
+  if (metaData["__script_modified"] !=
+      al::File::modificationTime(getScriptFile().c_str())) {
     return true;
-  }
-
-  if (metaData["__tinc_metadata_version"] != DATASCRIPT_META_FORMAT_VERSION) {
-    if (mVerbose) {
-      std::cout << "Metadata format mismatch. Forcing recompute" << std::endl;
-    }
-    return true;
-  }
-  if (metaData["__script_modified"] != modified(getScriptFile().c_str())) {
-    return true;
-  }
-  if (metaData["__input_modified"].size() != mInputFileNames.size() ||
-      !metaData["__input_modified"].is_array()) {
-    return true;
-  }
-  for (int i = 0; i < metaData["__input_modified"].size(); i++) {
-    if (metaData["__input_modified"][i] !=
-        modified((getInputDirectory() + mInputFileNames[i]).c_str())) {
-      return true;
-    }
-  }
-
-  for (auto file : getOutputFileNames()) {
-    if (!al::File::exists(getOutputDirectory() + file)) {
-      return true;
-    }
   }
 
   return false;
-}
-
-std::string ProcessorScript::metaFilename() {
-  std::string outPath = getOutputDirectory();
-  std::string outName = "out.meta";
-  if (mOutputFileNames.size() > 0) {
-    outName = getOutputFileNames()[0];
-  }
-  std::string metafilename =
-      al::File::conformPathToOS(outPath) + outName + ".meta";
-  return metafilename;
 }

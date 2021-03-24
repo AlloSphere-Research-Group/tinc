@@ -44,6 +44,8 @@
 
 namespace tinc {
 
+constexpr auto PROCESSOR_META_FORMAT_VERSION = 0;
+
 /**
  * @brief The Processor class presents an abstraction to filesystem based
  * computation
@@ -198,6 +200,24 @@ public:
   }
 
   /**
+   * @brief Enable simple file based caching
+   * @param use
+   *
+   * This caching is a simple but brittle caching mechanism. Whenever possible
+   * use the caching provided by ParameterSpace, as it is more robust.
+   *
+   * For this caching to work, you will need to ensure that every independent
+   * run produces unique and reproducible filenames. i.e. you will need to set
+   * the output file names on every run to include in their name all parameter
+   * values and dependencies, or have some other way of connecting the
+   * parameters/ parameter space to the file.
+   *
+   * This will cache the output as written in the output files. You can set and
+   * query the files using getOutputFiles() setOutputFiles().
+   */
+  void useCache(bool use = true) { mUseCache = use; }
+
+  /**
    * @brief Register a Parameter so that the Processor is executed on changes
    */
   template <class ParameterType>
@@ -237,10 +257,17 @@ protected:
   std::vector<std::string> mInputFileNames;
   bool mVerbose;
 
+  bool mUseCache{false};
+
   std::vector<al::ParameterMeta *> mParameters;
 
   void callStartCallbacks();
   void callDoneCallbacks(bool result);
+
+  // Metadata
+  virtual bool writeMeta();
+  virtual bool needsRecompute();
+  std::string metaFilename();
 
   std::mutex mProcessLock;
 
