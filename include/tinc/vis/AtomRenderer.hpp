@@ -109,13 +109,13 @@ public:
   virtual void setDataBoundaries(al::BoundingBoxData &b);
 
   virtual void draw(al::Graphics &g, float scale,
-                    std::map<std::string, AtomData> &mAtomData,
-                    std::vector<float> &mAligned4fData);
+                    std::map<std::string, AtomData> &atomData,
+                    std::vector<float> &aligned4fData);
 
 protected:
   void renderInstances(al::Graphics &g, float scale,
-                       std::map<std::string, AtomData> &mAtomData,
-                       std::vector<float> &mAligned4fData);
+                       std::map<std::string, AtomData> &atomData,
+                       std::vector<float> &aligned4fData);
 
   std::string instancing_vert =
       R"(
@@ -197,7 +197,7 @@ void main()
 
     float local_scale = 1.0;
 
-    float reflectivity = (0.8 + (0.2 - pow(sin((position.z + 1.0)/2), 0.5)  * 0.2/ sin(1.0)));
+    float reflectivity = (0.8 + (0.2 - pow(sin(3.14159 *(position.z + 1.0)* 0.5), 0.5)  * 0.2));
 
     if (is_line > 0.5) {
         local_scale = 1.03;
@@ -252,13 +252,16 @@ public:
   al::Parameter mSliceRotationRoll{"SliceRotationRoll", "SliceAngles", 0.0,
                                    -M_PI / 2.0, M_PI / 2.0};
 
+  al::Parameter mSliceAtomMarkerFactor{"sliceAtomMarkerFactor", "", 1.0, 0.0,
+                                       5.0};
+
   virtual void init() override;
 
   virtual void setDataBoundaries(al::BoundingBoxData &b) override;
 
   virtual void draw(al::Graphics &g, float scale,
-                    std::map<std::string, AtomData> &mAtomData,
-                    std::vector<float> &mAligned4fData) override;
+                    std::map<std::string, AtomData> &atomData,
+                    std::vector<float> &aligned4fData) override;
   void nextLayer();
 
   void previousLayer();

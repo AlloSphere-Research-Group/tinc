@@ -72,7 +72,7 @@ void AtomRenderer::setDataBoundaries(al::BoundingBoxData &b) {
 }
 
 void AtomRenderer::draw(al::Graphics &g, float scale,
-                        std::map<std::string, AtomData> &mAtomData,
+                        std::map<std::string, AtomData> &atomData,
                         std::vector<float> &mAligned4fData) {
   g.polygonFill();
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
@@ -85,16 +85,17 @@ void AtomRenderer::draw(al::Graphics &g, float scale,
   g.shader().uniform("clipped_mult", mClippedMultiplier);
   g.update();
 
-  renderInstances(g, scale, mAtomData, mAligned4fData);
+  renderInstances(g, scale, atomData, mAligned4fData);
 }
 
 void AtomRenderer::renderInstances(Graphics &g, float scale,
-                                   std::map<std::string, AtomData> &mAtomData,
-                                   std::vector<float> &mAligned4fData) {
+                                   std::map<std::string, AtomData> &atomData,
+                                   std::vector<float> &aligned4fData) {
 
   int cumulativeCount = 0;
-  for (auto data : mAtomData) {
+  for (auto data : atomData) {
     if (mShowRadius == 1.0f) {
+
       g.shader().uniform("markerScale", data.second.radius * mAtomMarkerSize *
                                             mMarkerScale / scale);
       //                std::cout << data.radius << std::endl;
@@ -102,9 +103,9 @@ void AtomRenderer::renderInstances(Graphics &g, float scale,
       g.shader().uniform("markerScale", mAtomMarkerSize * mMarkerScale / scale);
     }
     int count = data.second.counts;
-    assert((int)mAligned4fData.size() >= (cumulativeCount + count) * 4);
+    assert((int)aligned4fData.size() >= (cumulativeCount + count) * 4);
     instancingMesh.attrib_data(count * 4 * sizeof(float),
-                               mAligned4fData.data() + (cumulativeCount * 4),
+                               aligned4fData.data() + (cumulativeCount * 4),
                                count);
     cumulativeCount += count;
 
@@ -158,8 +159,8 @@ void SlicingAtomRenderer::setDataBoundaries(BoundingBoxData &b) {
 }
 
 void SlicingAtomRenderer::draw(Graphics &g, float scale,
-                               std::map<std::string, AtomData> &mAtomData,
-                               std::vector<float> &mAligned4fData) {
+                               std::map<std::string, AtomData> &atomData,
+                               std::vector<float> &aligned4fData) {
 
   //  int cumulativeCount = 0;
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
@@ -179,7 +180,7 @@ void SlicingAtomRenderer::draw(Graphics &g, float scale,
 
   g.shader().uniform("clipped_mult", mClippedMultiplier);
   g.update();
-  renderInstances(g, scale, mAtomData, mAligned4fData);
+  renderInstances(g, scale, atomData, aligned4fData);
 }
 
 void SlicingAtomRenderer::nextLayer() {
