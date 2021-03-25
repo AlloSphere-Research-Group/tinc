@@ -1923,6 +1923,7 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
   for (auto *ps : mParameterSpaces) {
     if (id == ps->getId()) {
       ParameterSpaceConfigureType command = conf.configurationkey();
+      std::cout << "PSconfigtype: " << command << std::endl;
 
       if (command == ParameterSpaceConfigureType::ADD_PARAMETER) {
         if (conf.configurationvalue().Is<ParameterValue>()) {

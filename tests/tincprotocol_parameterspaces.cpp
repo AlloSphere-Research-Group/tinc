@@ -43,6 +43,7 @@ TEST(ProtocolParameterSpace, Connection) {
   EXPECT_NE(client_ps_dim, nullptr);
   EXPECT_NE(client_dim, nullptr);
 
+  al::al_sleep(0.2);
   ps.removeDimension("psdim");
   al::al_sleep(0.2);
 
