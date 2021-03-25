@@ -15,10 +15,11 @@ TEST(ProtocolParameterSpace, Connection) {
 
   ParameterSpace ps{"param_space"};
   auto ps_dim = ps.newDimension("ps_dim");
+  EXPECT_NE(ps_dim, nullptr);
+
   tserver << ps;
 
   TincClient tclient;
-  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
 
   tclient.requestParameterSpaces();
@@ -42,38 +43,11 @@ TEST(ProtocolParameterSpace, Connection) {
   EXPECT_NE(client_ps_dim, nullptr);
   EXPECT_NE(client_dim, nullptr);
 
-  ps_dim->setCurrentValue(5.f);
+  ps.removeDimension("ps_dim");
   al::al_sleep(0.2);
 
-  counter = 0;
-  while (client_ps_dim->getCurrentValue() == 0) {
-    al::al_sleep(0.05);
-    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
-
-  EXPECT_EQ(client_ps_dim->getCurrentValue(), 5.f);
-  EXPECT_EQ(client_dim->toFloat(), 5.f);
-
-  // client_ps_dim->setCurrentValue(4.f);
-  // al::al_sleep(0.5);
-
-  // EXPECT_EQ(client_dim->toFloat(), 4.f);
-  // EXPECT_EQ(ps_dim->getCurrentValue(), 4.f);
-
-  // client_dim->fromFloat(3.f);
-  // al::al_sleep(0.5);
-
-  // EXPECT_EQ(client_ps_dim->getCurrentValue(), 3.f);
-  // EXPECT_EQ(ps_dim->getCurrentValue(), 3.f);
-
-  ps.removeDimension("ps_dim");
-  al::al_sleep(0.5);
-
   auto client_dim2 = tclient.getParameter("ps_dim");
-  al::al_sleep(0.5);
+  al::al_sleep(0.2);
 
   EXPECT_EQ(client_dim2, nullptr);
 

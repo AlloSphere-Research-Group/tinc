@@ -631,9 +631,6 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
   confValue.UnpackTo(&v);
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
-
-      std::cout << " Configuring value of " << p->getFullAddress() << ": "
-                << v.valuefloat() << std::endl;
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
       p->min(v.valuefloat(), src->valueSource());
