@@ -40,10 +40,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
       break;
     }
     message.pushReadIndex(8);
-    if (verbose()) {
-      std::cout << "Client got " << msgSize << " of "
-                << message.remainingBytes() << std::endl;
-    }
+    // if (verbose()) {
+    //   std::cout << "Client got " << msgSize << " of "
+    //             << message.remainingBytes() << std::endl;
+    // }
     google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
     google::protobuf::io::CodedInputStream codedStream(&ais);
     TincMessage tincMessage;
@@ -144,10 +144,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
     message.pushReadIndex(msgSize);
   }
 
-  if (verbose()) {
-    std::cout << "Client message buffer : " << message.remainingBytes()
-              << std::endl;
-  }
+  // if (verbose()) {
+  //   std::cout << "Client message buffer : " << message.remainingBytes()
+  //             << std::endl;
+  // }
 
   return true;
 }
@@ -239,8 +239,9 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
     } else if (mBarrierRequests.size() == 0) {
       noCurrentBarriers = true;
     } else {
-      std::cerr << __FUNCTION__ << " ERROR unexpected inconsistent state in "
-                                   "barrier. Aborting barriers"
+      std::cerr << __FUNCTION__
+                << " ERROR unexpected inconsistent state in "
+                   "barrier. Aborting barriers"
                 << std::endl;
       mBarrierRequests.clear();
       mBarrierUnlocks.clear();

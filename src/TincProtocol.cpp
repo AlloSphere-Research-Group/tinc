@@ -631,6 +631,9 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
   confValue.UnpackTo(&v);
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     if (command == ParameterConfigureType::VALUE) {
+
+      std::cout << " Configuring value of " << p->getFullAddress() << ": "
+                << v.valuefloat() << std::endl;
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
       p->min(v.valuefloat(), src->valueSource());
@@ -1587,6 +1590,11 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   auto def = command.defaultvalue();
   auto datatype = command.datatype();
 
+  if (mVerbose) {
+    std::cout << " Registering Parameter " << id << " (Group: " << group << ")"
+              << std::endl;
+  }
+
   for (auto &dim : mParameterSpaceDimensions) {
     if (dim->getName() == id && dim->getGroup() == group) {
       if (mVerbose) {
@@ -1679,6 +1687,10 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
   RegisterParameterSpace command;
   details->UnpackTo(&command);
   auto id = command.id();
+
+  if (mVerbose) {
+    std::cout << " Registering ParameterSpace " << id << std::endl;
+  }
 
   for (auto &ps : mParameterSpaces) {
     if (ps->getId() == id) {

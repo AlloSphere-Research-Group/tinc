@@ -30,10 +30,10 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
       break;
     }
     message.pushReadIndex(8);
-    if (verbose()) {
-      std::cout << "Server got " << msgSize << " of "
-                << message.remainingBytes() << std::endl;
-    }
+    // if (verbose()) {
+    //   std::cout << "Server got " << msgSize << " of "
+    //             << message.remainingBytes() << std::endl;
+    // }
     google::protobuf::io::ArrayInputStream ais(message.data(), msgSize);
     google::protobuf::io::CodedInputStream codedStream(&ais);
     TincMessage tincMessage;
@@ -132,10 +132,10 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
     message.pushReadIndex(msgSize);
   }
 
-  if (verbose()) {
-    std::cout << "Server message buffer : " << message.remainingBytes()
-              << std::endl;
-  }
+  // if (verbose()) {
+  //   std::cout << "Server message buffer : " << message.remainingBytes()
+  //             << std::endl;
+  // }
 
   markAvailable();
   return true;
