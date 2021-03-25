@@ -586,7 +586,6 @@ TincMessage createConfigureParameterSpaceAdd(ParameterSpace *ps,
   confMessage.set_configurationkey(ParameterSpaceConfigureType::ADD_PARAMETER);
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
-  std::cout << "creating psadd: " << dim->getFullAddress() << std::endl;
   val.set_valuestring(dim->getFullAddress());
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
@@ -1930,8 +1929,6 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
           ParameterValue val;
           conf.configurationvalue().UnpackTo(&val);
           auto addr = val.valuestring();
-
-          std::cout << " add param: " << addr << std::endl;
 
           for (auto *dim : ps->getDimensions()) {
             if (addr == dim->getFullAddress()) {

@@ -37,29 +37,29 @@ TEST(ProtocolParameterSpace, Connection) {
     }
   }
 
-  auto client_ps_dim = client_ps->getDimension("psdim");
-  auto client_dim = tclient.getParameter("psdim");
+  // auto client_ps_dim = client_ps->getDimension("psdim");
+  // auto client_dim = tclient.getParameter("psdim");
 
-  EXPECT_NE(client_ps_dim, nullptr);
-  EXPECT_NE(client_dim, nullptr);
+  // EXPECT_NE(client_ps_dim, nullptr);
+  // EXPECT_NE(client_dim, nullptr);
 
-  al::al_sleep(0.2);
-  ps.removeDimension("psdim");
-  al::al_sleep(0.2);
+  // al::al_sleep(0.2);
+  // ps.removeDimension("psdim");
+  // al::al_sleep(0.2);
 
-  counter = 0;
-  while (tclient.dimensions().size() != 0) {
-    al::al_sleep(0.05);
-    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout 2" << std::endl;
-      break;
-    }
-  }
+  // counter = 0;
+  // while (tclient.dimensions().size() != 0) {
+  //   al::al_sleep(0.05);
+  //   if (counter++ > TINC_TESTS_TIMEOUT_MS) {
+  //     std::cerr << "Timeout 2" << std::endl;
+  //     break;
+  //   }
+  // }
 
-  auto client_dim2 = tclient.getParameter("psdim");
-  al::al_sleep(0.2);
+  // auto client_dim2 = tclient.getParameter("psdim");
+  // al::al_sleep(0.2);
 
-  EXPECT_EQ(client_dim2, nullptr);
+  // EXPECT_EQ(client_dim2, nullptr);
 
   tclient.stop();
   tserver.stop();
