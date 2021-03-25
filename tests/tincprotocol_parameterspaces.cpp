@@ -13,8 +13,10 @@ TEST(ProtocolParameterSpace, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  ParameterSpace ps{"param_space"};
-  auto ps_dim = ps.newDimension("ps_dim");
+  ParameterSpace ps{"paramspace"};
+  auto ps_dim = ps.newDimension("psdim");
+  EXPECT_NE(ps_dim, nullptr);
+
   tserver << ps;
 
   TincClient tclient;
@@ -22,19 +24,42 @@ TEST(ProtocolParameterSpace, Connection) {
 
   tclient.requestParameterSpaces();
 
-  bool timeout = false;
-  int counter = 0;
+  al::al_sleep(0.2); // Give time to connect
+  auto client_ps = tclient.getParameterSpace("paramspace");
 
-  while (tclient.parameterSpaces().size() != 1 && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      timeout = true;
+  int counter = 0;
+  while (client_ps == nullptr) {
+    al::al_sleep(0.05); // Give time to connect
+    client_ps = tclient.getParameterSpace("paramspace");
+    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
       std::cerr << "Timeout" << std::endl;
       break;
     }
   }
 
-  // TODO complete checks
+  // auto client_ps_dim = client_ps->getDimension("psdim");
+  // auto client_dim = tclient.getParameter("psdim");
+
+  // EXPECT_NE(client_ps_dim, nullptr);
+  // EXPECT_NE(client_dim, nullptr);
+
+  // al::al_sleep(0.2);
+  // ps.removeDimension("psdim");
+  // al::al_sleep(0.2);
+
+  // counter = 0;
+  // while (tclient.dimensions().size() != 0) {
+  //   al::al_sleep(0.05);
+  //   if (counter++ > TINC_TESTS_TIMEOUT_MS) {
+  //     std::cerr << "Timeout 2" << std::endl;
+  //     break;
+  //   }
+  // }
+
+  // auto client_dim2 = tclient.getParameter("psdim");
+  // al::al_sleep(0.2);
+
+  // EXPECT_EQ(client_dim2, nullptr);
 
   tclient.stop();
   tserver.stop();

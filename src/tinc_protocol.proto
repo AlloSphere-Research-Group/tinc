@@ -80,17 +80,15 @@ message ObjectId {
 // Parameter data message
 message ParameterValue {
 // THis should be oneof, but 'repeated'is not allowed in oneof
-    float valueFloat = 1;
-    double valueDouble = 2;
-    int32 valueInt32 = 3;
-    int32 valueUint32 = 4;
-    uint64 valueInt64 = 5;
-    uint64 valueUint64 = 6;
-    uint64 valueInt8 = 7;
-    uint64 valueUint8 = 8;
-    bool valueBool = 9;
-    repeated ParameterValue valueList = 20;
-    string valueString = 30;
+    bool valueBool = 1;
+    float valueFloat = 2;
+    double valueDouble = 3;
+    int32 valueInt32 = 4;
+    uint32 valueUint32 = 5;
+    int64 valueInt64 = 6;
+    fixed64 valueUint64 = 7; // often used as bitfields
+    string valueString = 20;
+    repeated ParameterValue valueList = 30;
 }
 
 // Registration Messages --------------------
@@ -190,6 +188,13 @@ message ConfigureDataPool {
   string id = 1;
   DataPoolConfigureType configurationKey = 2;
   google.protobuf.Any configurationValue = 3;
+}
+
+// Remove Messages
+
+message RemoveParameter {
+  string id = 1;
+  string group = 2;
 }
 
 // Commands

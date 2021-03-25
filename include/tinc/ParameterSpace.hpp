@@ -33,6 +33,7 @@
  * authors: Andres Cabrera
  */
 
+#include "al/io/al_Socket.hpp"
 #include "tinc/CacheManager.hpp"
 #include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
@@ -72,8 +73,8 @@ public:
    * @param group
    * @return the dimension or nullptr if not found
    */
-  std::shared_ptr<ParameterSpaceDimension> getDimension(std::string name,
-                                                        std::string group = "");
+  ParameterSpaceDimension *getDimension(std::string name,
+                                        std::string group = "");
 
   /**
    * @brief create and register a new dimension for this parameter space
@@ -82,16 +83,18 @@ public:
    * @param datatype data type
    * @return the newly created dimension.
    */
-  std::shared_ptr<ParameterSpaceDimension>
+  ParameterSpaceDimension *
   newDimension(std::string name,
                ParameterSpaceDimension::RepresentationType type =
                    ParameterSpaceDimension::VALUE,
                al::DiscreteParameterValues::Datatype datatype =
-                   al::DiscreteParameterValues::FLOAT);
+                   al::DiscreteParameterValues::FLOAT,
+               std::string group = "");
 
   /**
    * @brief Register an existing dimension with the parameter space
    * @param dimension dimension to register
+   * @param src original socket that message came from * /
    * @return pointer to the registered dimension
    *
    * If the dimension was already registered, the data from the incoming
@@ -99,19 +102,24 @@ public:
    * returned. You must always use the returned shared_ptr instead of the
    * shared_ptr passed
    */
-  std::shared_ptr<ParameterSpaceDimension>
-  registerDimension(std::shared_ptr<ParameterSpaceDimension> dimension);
+  ParameterSpaceDimension *
+  registerDimension(std::shared_ptr<ParameterSpaceDimension> &dimension,
+                    al::Socket *src = nullptr);
 
   /**
-   * @brief remove dimension form list of registered dimensions
-   * @param dimensionName
+   * @brief remove dimension from list of registered dimensions
+   * @param name dimension name
+   * @param group dimension group
+   * @param invoked true only if called by TincProtocol's removeParameter
+   * @param src original socket that message came from
    */
-  void removeDimension(std::string dimensionName);
+  void removeDimension(std::string name, std::string group = "",
+                       bool invoked = false, al::Socket *src = nullptr);
 
   /**
    * @brief get list of currently registered dimensions
    */
-  std::vector<std::shared_ptr<ParameterSpaceDimension>> getDimensions();
+  std::vector<ParameterSpaceDimension *> getDimensions();
 
   /**
    * @brief Returns all the paths that are used by the whole parameter space
@@ -149,10 +157,10 @@ public:
 
   /**
    * @brief increment to next index from index array
-   * @param currentIndeces
-   * @return true when no more indeces to process
+   * @param currentIndices
+   * @return true when no more indices to process
    */
-  bool incrementIndeces(std::map<std::string, size_t> &currentIndeces);
+  bool incrementIndices(std::map<std::string, size_t> &currentIndices);
 
   /**
    * @brief run a Processor with information and caching from the parameter
@@ -301,9 +309,9 @@ public:
    * separator.
    */
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
-      generateRelativeRunPath = [&](std::map<std::string, size_t> indeces,
+      generateRelativeRunPath = [&](std::map<std::string, size_t> indices,
                                     ParameterSpace *ps) {
-        std::string path = ps->resolveFilename(mCurrentPathTemplate, indeces);
+        std::string path = ps->resolveFilename(mCurrentPathTemplate, indices);
         return al::File::conformDirectory(al::File::conformPathToOS(path));
       };
 
@@ -371,6 +379,27 @@ public:
       onValueChange =
           [](ParameterSpaceDimension *changedDimension, ParameterSpace *ps) {};
 
+  // Currently allows only one TincServer. Should we provision for more?
+  /**
+   * This callback is called when dimension metadata has changed or a
+   * dimension is added. When a dimension is new, the new dimension has not yet
+   * been added to the parameter space.
+   */
+  std::function<void(ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps, al::Socket *src)>
+      onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
+                               ParameterSpace *ps,
+                               al::Socket *src = nullptr) {};
+
+  /**
+   * This callback is called when dimension is removed
+   */
+  std::function<void(ParameterSpaceDimension *changedDimension,
+                     ParameterSpace *ps, bool invoked, al::Socket *src)>
+      onDimensionRemove = [](ParameterSpaceDimension *changedDimension,
+                             ParameterSpace *ps, bool invoked = false,
+                             al::Socket *src = nullptr) {};
+
 protected:
   /**
    * @brief update current position to value in dimension ps
@@ -394,14 +423,15 @@ protected:
    * state, and user will be warned. assert will fail to trigger crash on debug
    * builds.
    */
-  std::function<void(ParameterSpaceDimension *changedDimension,
-                     ParameterSpace *ps, al::Socket *src)>
-      onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
-                               ParameterSpace *ps, al::Socket *src = nullptr) {
-        (void)changedDimension;
-        (void)ps;
-        (void)src;
-      };
+  // std::function<void(ParameterSpaceDimension *changedDimension,
+  //                    ParameterSpace *ps, al::Socket *src)>
+  //     onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
+  //                              ParameterSpace *ps, al::Socket *src = nullptr)
+  //                              {
+  //       (void)changedDimension;
+  //       (void)ps;
+  //       (void)src;
+  //     };
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
 

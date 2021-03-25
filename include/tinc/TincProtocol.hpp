@@ -164,6 +164,14 @@ public:
   void requestDiskBuffers(al::Socket *dst);
   void requestDataPools(al::Socket *dst);
 
+  // Remove registered objects from this Tinc node
+  void removeParameter(std::string name, std::string group = "",
+                       bool invoked = false, al::Socket *src = nullptr);
+  void removeParameterSpace(std::string name, al::Socket *src = nullptr);
+  void removeProcessor(std::string name, al::Socket *src = nullptr);
+  void removeDiskbuffer(std::string name, al::Socket *src = nullptr);
+  void removeDataPool(std::string name, al::Socket *src = nullptr);
+
   /**
    * @brief get a registered dimension in this Tinc node
    * @param name name (id) of the dimension
@@ -199,6 +207,8 @@ public:
     // TODO protect possible race conditions through a global lock
     return mParameterSpaceDimensions;
   }
+
+  ParameterSpace *getParameterSpace(std::string name);
 
   std::vector<ParameterSpace *> parameterSpaces() {
     // TODO protect possible race conditions through a global lock
@@ -288,6 +298,13 @@ protected:
                                                   al::Socket *dst,
                                                   al::Socket *src = nullptr);
 
+  // Incoming remove message
+  bool readRemoveMessage(int objectType, void *any, al::Socket *src);
+  bool processRemoveParameter(void *any, al::Socket *src);
+  // Outgoing remove message
+  void sendRemoveMessage(ParameterSpaceDimension *dim, al::Socket *dst,
+                         al::Socket *src = nullptr);
+
   // Outgoing configure message (only value) for callback functions
   void sendValueMessage(float value, std::string fullAddress,
                         al::ValueSource *src = nullptr);
@@ -335,15 +352,15 @@ protected:
     return true;
   }
 
-  std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<ParameterSpaceDimension *> mParameterSpaceDimensions;
+  std::vector<ParameterSpace *> mParameterSpaces;
   std::vector<Processor *> mProcessors;
   std::vector<DiskBufferAbstract *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
-  // Dimensions that were allocated by this class, so this class is the owner.
-  // Be careful with dangling pointers.
-  std::vector<std::unique_ptr<ParameterSpaceDimension>> mLocalPSDs;
+  // Dimensions that were allocated by this class
+  std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
+  std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
