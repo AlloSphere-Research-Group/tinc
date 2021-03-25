@@ -46,6 +46,15 @@ TEST(ProtocolParameterSpace, Connection) {
   ps.removeDimension("ps_dim");
   al::al_sleep(0.2);
 
+  counter = 0;
+  while (tclient.dimensions().size() != 0) {
+    al::al_sleep(0.05);
+    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout 2" << std::endl;
+      break;
+    }
+  }
+
   auto client_dim2 = tclient.getParameter("ps_dim");
   al::al_sleep(0.2);
 
