@@ -1,10 +1,10 @@
 #include "tinc/TincClient.hpp"
-#include "tinc/ProcessorGraph.hpp"
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDF.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
+#include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 #include <iostream>
 #include <memory>
@@ -219,28 +219,25 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
 }
 
 bool TincClient::barrier(uint32_t group, float timeoutsec) {
-  uint64_t currentConsecutive = 0;
-  bool noCurrentBarriers = false;
-
   std::cerr << __FUNCTION__ << " Enter client barrier " << std::endl;
   // First flush all existing barrier requests and unlocks
   {
     std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
+    std::vector<uint64_t> matchedUnlocks;
     for (auto unlockConsecutive : mBarrierUnlocks) {
-      std::deque<uint64_t>::const_iterator found;
       while (mBarrierRequests.find(unlockConsecutive.first) !=
              mBarrierRequests.end()) {
         mBarrierRequests.erase(unlockConsecutive.first);
+        matchedUnlocks.push_back(unlockConsecutive.first);
       }
     }
-    if (mBarrierRequests.size() == 1) {
-      currentConsecutive = mBarrierRequests.begin()->first;
-      noCurrentBarriers = true;
-    } else if (mBarrierRequests.size() == 0) {
-      noCurrentBarriers = true;
-    } else {
-      std::cerr << __FUNCTION__ << " ERROR unexpected inconsistent state in "
-                                   "barrier. Aborting barriers"
+    for (auto &matched : matchedUnlocks) {
+      mBarrierUnlocks.erase(matched);
+    }
+    if (mBarrierRequests.size() > 1) {
+      std::cerr << __FUNCTION__
+                << " ERROR unexpected inconsistent state in "
+                   "barrier. Aborting and flushing barriers."
                 << std::endl;
       mBarrierRequests.clear();
       mBarrierUnlocks.clear();
@@ -250,53 +247,54 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
 
   int timems = 0;
 
-  std::cerr << __FUNCTION__ << " Client after flush " << std::endl;
-  // If no currently active barriers, wait for incoming barrier
-  if (noCurrentBarriers) {
-    while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0)) {
-      std::deque<uint64_t>::const_iterator found;
-      if (mBarrierQueuesLock.try_lock()) {
-        if (mBarrierRequests.size() > 0) {
-          currentConsecutive = mBarrierRequests.begin()->first;
-          mBarrierQueuesLock.unlock();
+  // process currently pending barrier wait for incoming
+  uint64_t currentConsecutive = 0;
+  while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0)) {
+    std::deque<uint64_t>::const_iterator found;
+    if (mBarrierQueuesLock.try_lock()) {
+      if (mBarrierRequests.size() > 0) {
+        currentConsecutive = mBarrierRequests.begin()->first;
 
-          TincMessage msgAck;
-          msgAck.set_messagetype(MessageType::BARRIER_ACK_LOCK);
-          msgAck.set_objecttype(ObjectType::GLOBAL);
-          Command lockDetails;
-          lockDetails.set_message_id(currentConsecutive);
+        TincMessage msgAck;
+        msgAck.set_messagetype(MessageType::BARRIER_ACK_LOCK);
+        msgAck.set_objecttype(ObjectType::GLOBAL);
+        Command lockDetails;
+        lockDetails.set_message_id(currentConsecutive);
 
-          auto *commandAckDetails = msgAck.details().New();
-          commandAckDetails->PackFrom(lockDetails);
-          msgAck.set_allocated_details(commandAckDetails);
-          bool ret = sendProtobufMessage(&msgAck,
-                                         mBarrierRequests[currentConsecutive]);
-          if (!ret) {
-            std::cerr << "ERROR sending unlock command to "
-                      << mBarrierRequests[currentConsecutive]->address() << ":"
-                      << mBarrierRequests[currentConsecutive]->port()
-                      << std::endl;
-          }
-
-          std::cerr << __FUNCTION__ << " Client sent ACK_LOCK has lock "
-                    << currentConsecutive << std::endl;
-          break;
+        auto *commandAckDetails = msgAck.details().New();
+        commandAckDetails->PackFrom(lockDetails);
+        msgAck.set_allocated_details(commandAckDetails);
+        bool ret =
+            sendProtobufMessage(&msgAck, mBarrierRequests[currentConsecutive]);
+        if (!ret) {
+          std::cerr << "ERROR sending unlock command to "
+                    << mBarrierRequests[currentConsecutive]->address() << ":"
+                    << mBarrierRequests[currentConsecutive]->port()
+                    << std::endl;
         }
+
+        mBarrierRequests.erase(mBarrierRequests.begin());
         mBarrierQueuesLock.unlock();
+
+        std::cerr << __FUNCTION__ << " Client sent ACK_LOCK has lock "
+                  << currentConsecutive << std::endl;
+        break;
       }
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(barrierWaitGranularTimeMs));
-      timems += barrierWaitGranularTimeMs;
+      mBarrierQueuesLock.unlock();
     }
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(barrierWaitGranularTimeMs));
+    timems += barrierWaitGranularTimeMs;
   }
-  if ((timems < (timeoutsec * 1000) && timeoutsec != 0.0)) {
+
+  if ((timems > (timeoutsec * 1000) && timeoutsec != 0.0)) {
     // Timed out waiting for barrier request
     return false;
   }
 
+  // Now wait for unlock
   timems = 0;
   while ((timems < (timeoutsec * 1000) || timeoutsec == 0.0)) {
-    std::deque<uint64_t>::const_iterator found;
     if (mBarrierQueuesLock.try_lock()) {
       if (mBarrierUnlocks.find(currentConsecutive) != mBarrierUnlocks.end()) {
         mBarrierRequests.erase(currentConsecutive);

@@ -62,8 +62,44 @@ TEST(Barrier, FastTrigger) {
     th_clients2.join();
   }
 
+  for (int i = 0; i < 30; i++) {
+    std::thread th_clients2([&]() { EXPECT_TRUE(tserver.barrier()); });
+    std::thread th_server2([&]() { EXPECT_TRUE(tclient.barrier()); });
+
+    th_server2.join();
+    th_clients2.join();
+  }
+
   tclient.stop();
   tserver.stop();
+}
+
+TEST(Barrier, BarrierStack) {
+  //  TincServer tserver;
+  //  EXPECT_TRUE(tserver.start());
+
+  //  TincClient tclient;
+  //  EXPECT_TRUE(tclient.start());
+
+  //  al::al_sleep(0.5);
+
+  //  // Create two barriers on the server
+  //  std::thread th_server([&]() { EXPECT_TRUE(tserver.barrier()); });
+
+  //  std::thread th_server2([&]() { EXPECT_TRUE(tserver.barrier()); });
+
+  //  // Should require two barriers on client
+  //  std::thread th_client([&]() { EXPECT_TRUE(tclient.barrier()); });
+
+  //  std::thread th_client2([&]() { EXPECT_TRUE(tclient.barrier()); });
+
+  //  th_server.join();
+  //  th_client.join();
+  //  th_server2.join();
+  //  th_client2.join();
+
+  //  tclient.stop();
+  //  tserver.stop();
 }
 
 TEST(Barrier, MultiClient) {
