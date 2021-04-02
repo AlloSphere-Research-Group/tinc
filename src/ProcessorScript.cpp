@@ -60,24 +60,32 @@ bool ProcessorScript::process(bool forceRecompute) {
 
   callStartCallbacks();
   std::unique_lock<std::mutex> lk(mProcessingLock);
-
-  auto jsonFilename = writeJsonConfig();
-  if (jsonFilename.size() == 0) {
-    return false;
+  std::string jsonFilename;
+  if (mEnableJsonConfig) {
+    jsonFilename = writeJsonConfig();
+    if (jsonFilename.size() == 0) {
+      return false;
+    }
   }
   bool ok = true;
   if (needsRecompute() || forceRecompute) {
-    std::string command =
-        mScriptCommand + " \"" + mScriptName + "\" \"" + jsonFilename + "\"";
+    std::string command = mScriptCommand + " \"" + mScriptName + "\" ";
+    if (mEnableJsonConfig) {
+      command += "\"" + jsonFilename + "\"";
+    }
     ok = runCommand(command);
     if (ok) {
       if (mUseCache) {
         writeMeta();
       }
-      readJsonConfig(jsonFilename);
+      if (mEnableJsonConfig) {
+        readJsonConfig(jsonFilename);
+      }
     }
   } else {
-    readJsonConfig(jsonFilename);
+    if (mEnableJsonConfig) {
+      readJsonConfig(jsonFilename);
+    }
     if (mVerbose) {
       std::cout << "No need to update cache according to " << metaFilename()
                 << std::endl;
@@ -97,6 +105,10 @@ std::string ProcessorScript::sanitizeName(std::string output_name) {
   std::replace(output_name.begin(), output_name.end(), '(', '_');
   std::replace(output_name.begin(), output_name.end(), ')', '_');
   return output_name;
+}
+
+void ProcessorScript::enableJsonConfig(bool enable) {
+  mEnableJsonConfig = enable;
 }
 
 std::string ProcessorScript::writeJsonConfig() {

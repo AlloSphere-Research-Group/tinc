@@ -131,6 +131,13 @@ public:
    */
   static std::string sanitizeName(std::string output_name);
 
+  /**
+   * @brief if set to false disables creation and argument passing of json
+   * config
+   * @param enable
+   */
+  void enableJsonConfig(bool enable);
+
 protected:
   std::string writeJsonConfig();
 
@@ -143,6 +150,7 @@ protected:
 private:
   std::string mScriptCommand{"/usr/bin/python3"};
   std::string mScriptName;
+  bool mEnableJsonConfig{true};
 
   std::mutex mProcessingLock;
   int mMaxAsyncProcesses{4};
