@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include <memory>
 #include <mutex>
@@ -52,6 +52,9 @@ public:
       mData.emplace_back(std::make_shared<DataType>());
     }
   }
+
+  // Delete copy constructor
+  BufferManager(const BufferManager &) = delete;
 
   std::shared_ptr<DataType> get(bool markAsUsed = true) {
     std::unique_lock<std::mutex> lk(mDataLock);
