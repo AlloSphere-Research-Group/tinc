@@ -60,31 +60,37 @@ public:
    * Whenever overriding this function, you must make sure you call the
    * update callbacks in mUpdateCallbacks
    */
-  bool updateData(std::string filename = "") override;
+  bool loadData(std::string filename = "") override;
+
+  /**
+   * @brief Write data from memory to disk buffer and then load it.
+   * @param newData
+   * @return the name of the file where buffer was written
+   */
+  std::string setData(DataType &newData);
 
   void registerUpdateCallback(std::function<void(bool)> cb) {
     mUpdateCallbacks.push_back(cb);
   }
 
 protected:
-  virtual bool parseFile(std::ifstream &file,
+  virtual bool parseFile(std::string fileName,
                          std::shared_ptr<DataType> newData) = 0;
 
-  std::vector<std::function<void(bool)>> mUpdateCallbacks;
+  virtual bool encodeData(std::string fileName, DataType &newData) = 0;
 
-  // Make this function private as users should not have a way to make the
-  // buffer writable. Data writing should be done by writing to the file.
-  using BufferManager<DataType>::getWritable;
+  std::vector<std::function<void(bool)>> mUpdateCallbacks;
 };
 
+// ----------------------------------
 template <class DataType>
 DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
                                  std::string path, uint16_t size)
     : BufferManager<DataType>(size) {
   mId = id;
-  // TODO there should be a check through a singleton to make sure names are
+  // TODO there should be a check through TincProtocol to make sure names are
   // unique
-  m_fileName = fileName;
+  m_baseFileName = fileName;
   if (path.size() > 0) {
     m_path = al::File::conformDirectory(path);
   } else {
@@ -93,24 +99,37 @@ DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
 }
 
 template <class DataType>
-bool DiskBuffer<DataType>::updateData(std::string filename) {
+bool DiskBuffer<DataType>::loadData(std::string filename) {
   std::unique_lock<std::mutex> lk(m_writeLock);
   if (filename.size() > 0) {
     m_fileName = filename;
   }
-  std::ifstream file(m_path + m_fileName);
-  bool ret = false;
-  if (file.good()) {
-    auto buffer = getWritable();
-    ret = parseFile(file, buffer);
-    BufferManager<DataType>::doneWriting(buffer);
-  } else {
-    std::cerr << "Error code: " << std::strerror(errno);
+  auto newData = getWritable();
+  auto ret = parseFile(filename, newData);
+  if (ret) {
+    doneWriting(newData);
   }
   for (auto cb : mUpdateCallbacks) {
     cb(ret);
   }
   return ret;
+}
+
+template <class DataType>
+std::string DiskBuffer<DataType>::setData(DataType &newData) {
+  std::unique_lock<std::mutex> lk(m_writeLock);
+  auto fileName = getFilenameForWriting();
+  if (encodeData(fileName, newData)) {
+    lk.unlock();
+    if (!loadData(fileName)) {
+      std::cerr << __FILE__ << ":" << __LINE__
+                << " ERROR: DiskBuffer failed to load written data."
+                << std::endl;
+      return std::string();
+    }
+    return fileName;
+  }
+  return std::string();
 }
 
 } // namespace tinc

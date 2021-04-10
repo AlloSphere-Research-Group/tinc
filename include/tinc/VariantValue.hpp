@@ -31,27 +31,32 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
-#include <string>
 #include <cinttypes>
+#include <string>
 
 namespace tinc {
+
+// VariantType enum is equivalent to NC_* types
 enum VariantType {
-  VARIANT_INT64 = 0,
+  VARIANT_NONE = 0,
+  VARIANT_INT64,
   VARIANT_INT32,
+  VARIANT_INT16,
   VARIANT_INT8,
   VARIANT_UINT64,
   VARIANT_UINT32,
+  VARIANT_UINT16,
   VARIANT_UINT8,
   VARIANT_DOUBLE,
   VARIANT_FLOAT,
-  VARIANT_STRING,
-  VARIANT_NULL
+  VARIANT_STRING
 };
 
+// FIXME complete support for all types
 struct VariantValue {
-  VariantValue() { type = VARIANT_NULL; }
+  VariantValue() { type = VARIANT_NONE; }
 
   VariantValue(std::string value);
   VariantValue(const char *value);
@@ -96,6 +101,6 @@ struct VariantValue {
   uint64_t valueUInt64;
   double valueDouble;
 };
-}
+} // namespace tinc
 
 #endif // VARIANTVALUE_HPP

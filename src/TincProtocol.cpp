@@ -1,6 +1,6 @@
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
-#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/DiskBufferNetCDFData.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/ProcessorGraph.hpp"
@@ -1806,7 +1806,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
 
   DiskBufferType type = DiskBufferType::BINARY;
 
-  if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFDouble).name()) == 0) {
+  if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFData).name()) == 0) {
     type = DiskBufferType::NETCDF;
   } else if (strcmp(typeid(db).name(), typeid(DiskBufferImage).name()) == 0) {
     type = DiskBufferType::IMAGE;
@@ -2015,7 +2015,7 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
         if (conf.configurationvalue().Is<ParameterValue>()) {
           ParameterValue file;
           conf.configurationvalue().UnpackTo(&file);
-          if (!db->updateData(file.valuestring())) {
+          if (!db->loadData(file.valuestring())) {
             std::cerr << __FUNCTION__ << ": Error updating DiskBuffer " << id
                       << " from file " << file.valuestring() << std::endl;
             return false;

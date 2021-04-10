@@ -1,6 +1,6 @@
 #include "al/app/al_App.hpp"
 #include "al/math/al_Random.hpp"
-#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/DiskBufferNetCDFData.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -12,7 +12,7 @@ using namespace tinc;
 
 struct MyApp : public App {
 
-  DiskBufferNetCDFDouble buffer{"NetCDFBuffer", "test.nc"};
+  DiskBufferNetCDFData buffer{"NetCDFBuffer", "test.nc"};
   VAOMesh m;
 
   void onInit() override {
@@ -28,7 +28,7 @@ struct MyApp : public App {
       m.reset();
       bool switcher = true;
       double valueCache;
-      for (auto value : *bufferData) {
+      for (auto value : bufferData->getVector<float>()) {
         if (switcher) {
           valueCache = value;
         } else {
@@ -50,7 +50,7 @@ struct MyApp : public App {
     data.push_back(rnd::normal());
     data.push_back(rnd::normal());
     if (writeDataToDisk(data)) {
-      buffer.updateData(buffer.getCurrentFileName());
+      buffer.loadData(buffer.getCurrentFileName());
     }
     return true;
   }

@@ -4,13 +4,15 @@ using namespace tinc;
 
 SceneObject::SceneObject(std::string id, std::string filename, std::string path,
                          uint16_t size)
-    : mBuffer(id + "_buffer", filename, path, size) {
+    : scale("scale", id, al::Vec3f(1.0f)),
+      mBuffer(id + "_buffer", filename, path, size) {
   mBuffer.enableRoundRobin(size);
+  *this << scale;
 }
 
 void SceneObject::registerWithTincServer(TincServer &server) {
   server.registerDiskBuffer(mBuffer);
-  for (auto *param : mParameters) {
+  for (auto *param : parameters()) {
     server.registerParameter(*param);
   }
 }

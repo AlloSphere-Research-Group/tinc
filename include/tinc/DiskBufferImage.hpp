@@ -45,25 +45,6 @@ public:
                   std::string path = "", uint16_t size = 2)
       : DiskBuffer<al::Image>(id, fileName, path, size) {}
 
-  bool updateData(std::string filename = "") override {
-    std::unique_lock<std::mutex> lk(m_writeLock);
-    if (filename.size() > 0) {
-      m_fileName = filename;
-    }
-    auto buffer = getWritable();
-    bool ret = false;
-    if (buffer->load(m_path + m_fileName)) {
-      BufferManager<al::Image>::doneWriting(buffer);
-      ret = true;
-    } else {
-      std::cerr << "Error reading Image: " << m_path + m_fileName << std::endl;
-    }
-    for (auto cb : mUpdateCallbacks) {
-      cb(ret);
-    }
-    return ret;
-  }
-
   bool writePixels(unsigned char *newData, int width, int height,
                    std::string filename = "") {
 
@@ -72,14 +53,31 @@ public:
     }
     al::Image::saveImage(filename, newData, width, height);
 
-    return updateData(filename);
+    return loadData(filename);
   };
 
 protected:
-  bool parseFile(std::ifstream &file,
+  bool parseFile(std::string fileName,
                  std::shared_ptr<al::Image> newData) override {
-    // TODO implement
+    bool ret = false;
+    if (newData->load(m_path + fileName)) {
+      BufferManager<al::Image>::doneWriting(newData);
+      ret = true;
+    } else {
+      std::cerr << "Error reading Image: " << m_path + m_fileName << std::endl;
+    }
     return true;
+  }
+
+  bool encodeData(std::string fileName, al::Image &newData) override {
+    bool ret = false;
+
+    if (newData.save(m_path + fileName)) {
+      ret = true;
+    } else {
+      std::cerr << "Error writing Image: " << m_path + m_fileName << std::endl;
+    }
+    return ret;
   }
 };
 

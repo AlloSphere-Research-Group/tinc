@@ -2,7 +2,7 @@
 #include "tinc/DiskBuffer.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
-#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/DiskBufferNetCDFData.hpp"
 #include "tinc/TincServer.hpp"
 
 #include "al/app/al_App.hpp"
@@ -22,7 +22,7 @@ public:
   TincServer tincServer;
   DiskBufferImage imageBuffer{"image", "image.png"};
   DiskBufferJson jsonBuffer{"json", "file.json"};
-  DiskBufferNetCDFDouble netcdfBuffer{"nc", "file.nc"};
+  DiskBufferNetCDFData netcdfBuffer{"nc", "file.nc"};
 
   al::Trigger newImage{"newImage"};
   al::Trigger newJson{"newJson"};
@@ -62,7 +62,7 @@ public:
     exampleJson["double"] = 1.2345;
 
     // update the buffer with the new data
-    jsonBuffer.writeJson(exampleJson);
+    jsonBuffer.setData(exampleJson);
     reportText.set(std::string("Created " + jsonBuffer.getCurrentFileName()));
   }
 
@@ -118,7 +118,7 @@ public:
     }
 
     // update the buffer with the new data
-    netcdfBuffer.updateData(ncName);
+    netcdfBuffer.loadData(ncName);
     reportText.set(std::string("Created " + ncName));
   }
 

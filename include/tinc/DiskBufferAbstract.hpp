@@ -54,9 +54,15 @@ public:
     return m_fileName;
   }
 
-  virtual bool updateData(std::string filename) = 0;
+  /**
+   * @brief Update buffer from file
+   * @param filename
+   * @return true if succesfully loaded file
+   */
+  virtual bool loadData(std::string filename) = 0;
 
-  std::string getBaseFileName() { return m_fileName; }
+  std::string getBaseFileName() { return m_baseFileName; }
+  void setBaseFileName(std::string name) { m_baseFileName = name; }
 
   void setPath(std::string path) { m_path = path; }
   std::string getPath() { return m_path; }
@@ -77,10 +83,9 @@ public:
     return outName;
   }
 
-  void doneWritingFile(std::string filename) {}
-
 protected:
   std::string m_fileName;
+  std::string m_baseFileName;
   std::string m_path;
   std::shared_ptr<al::ParameterString> m_trigger;
 
@@ -90,7 +95,7 @@ protected:
   uint64_t m_roundRobinSize{0};
 
   std::string makeNextFileName() {
-    std::string outName = m_fileName;
+    std::string outName = m_baseFileName;
     if (m_roundRobinSize > 0) {
       if (m_roundRobinCounter >= m_roundRobinSize) {
         m_roundRobinCounter = 0;
@@ -102,12 +107,12 @@ protected:
   }
 
   std::string makeFileName(uint64_t index) {
-    auto ext = al::File::extension(m_fileName);
+    auto ext = al::File::extension(m_baseFileName);
     std::string newName;
     if (ext.size() > 0) {
-      newName = m_fileName.substr(0, m_fileName.size() - ext.size());
+      newName = m_baseFileName.substr(0, m_baseFileName.size() - ext.size());
     } else {
-      newName = m_fileName;
+      newName = m_baseFileName;
     }
     newName += "_" + std::to_string(index) + ext;
     return newName;

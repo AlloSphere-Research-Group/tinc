@@ -1,5 +1,6 @@
 #include "al/graphics/al_Shader.hpp"
 #include "al/graphics/al_Shapes.hpp"
+#include "al/io/al_Imgui.hpp"
 
 #include "tinc/vis/AtomRenderer.hpp"
 
@@ -64,60 +65,132 @@ void AtomRenderer::init() {
 
   instancing_shader.compile(instancing_vert, instancing_frag);
 
-  mMarkerScale = 0.01f;
+  auto buffer = mBuffer.getWritable();
+  buffer->setType(FLOAT);
+  mBuffer.doneWriting(buffer);
+  //  mMarkerScale = 0.01f;
 }
 
 void AtomRenderer::setDataBoundaries(al::BoundingBoxData &b) {
   dataBoundary = b;
 }
 
-void AtomRenderer::draw(al::Graphics &g, float scale,
+void AtomRenderer::draw(al::Graphics &g,
                         std::map<std::string, AtomData> &atomData,
-                        std::vector<float> &mAligned4fData) {
+                        std::vector<float> &aligned4fData) {
   g.polygonFill();
-  // now draw data with custom shaderg.shader(instancing_mesh0.shader);
+
+  updateShader(g);
+
+  {
+    g.pushMatrix();
+    applyTransformations(g);
+    size_t cumulativeCount = 0;
+    for (auto data : atomData) {
+      assert((int)aligned4fData.size() >=
+             (cumulativeCount + data.second.counts) * 4);
+
+      int cumulativeCount = 0;
+      //    if (mShowRadius == 1.0f) {
+
+      //      g.shader().uniform("markerScale", data.second.radius *
+      //      mAtomMarkerSize);
+      //      //                std::cout << data.radius << std::endl;
+      //    } else {
+      //      g.shader().uniform("markerScale", mAtomMarkerSize);
+      //    }
+      renderInstances(g, aligned4fData.data() + (cumulativeCount * 4),
+                      data.second.counts);
+
+      cumulativeCount += data.second.counts;
+    }
+  }
+}
+
+void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
+                                std::map<std::string, AtomData> &atomData) {
+  NetCDFData newData;
+
+  newData.setType(FLOAT);
+  auto &dataVector = newData.getVector<float>();
+  dataVector.resize(positions.size() * 4);
+  auto dataIt = dataVector.begin();
+  auto atomMapIt = atomData.begin();
+  int counter = 0;
+  al::Color color{0.5, 0.5, 0};
+  float h, s, v;
+  //  color = atomMapIt->second.color;
+  ImGui::ColorConvertRGBtoHSV(color.r, color.g, color.b, h, s, v);
+  counter = 0;
+  for (auto &pos : positions) {
+    *dataIt = pos.x;
+    dataIt++;
+    *dataIt = pos.y;
+    dataIt++;
+    *dataIt = pos.z;
+    dataIt++;
+    *dataIt = h;
+    dataIt++;
+
+    counter++;
+    if (counter == atomMapIt->second.counts) {
+      color = atomMapIt->second.color;
+      ImGui::ColorConvertRGBtoHSV(color.r, color.g, color.b, h, s, v);
+      counter = 0;
+    }
+  }
+  mBuffer.setData(newData);
+}
+
+void AtomRenderer::setPositions(float *positions, size_t length) {
+  NetCDFData newData;
+  newData.setType(FLOAT);
+  auto &dataVector = newData.getVector<float>();
+  dataVector.resize(length);
+  memcpy(dataVector.data(), positions, length * sizeof(float));
+  mBuffer.setData(newData);
+}
+
+void tinc::AtomRenderer::update(double dt) {}
+
+void AtomRenderer::onProcess(Graphics &g) {
+  updateShader(g);
+  auto buffer = mBuffer.get();
+  auto &dataVector = buffer->getVector<float>();
+  {
+    g.pushMatrix();
+    applyTransformations(g);
+    renderInstances(g, dataVector.data(), dataVector.size() / 4);
+    g.popMatrix();
+  }
+}
+
+void AtomRenderer::renderInstances(Graphics &g, float *aligned4fData,
+                                   size_t count) {
+
+  instancingMesh.attrib_data(count * 4 * sizeof(float), aligned4fData, count);
+
+  g.polygonFill();
+  g.shader().uniform("is_line", 0.0f);
+  instancingMesh.draw();
+
+  g.shader().uniform("is_line", 1.0f);
+  g.polygonLine();
+  instancingMesh.draw();
+  g.polygonFill();
+}
+
+void AtomRenderer::updateShader(Graphics &g) {
   g.shader(instancingMesh.shader);
   g.shader().uniform("layerSeparation", mLayerSeparation);
   g.shader().uniform("is_omni", 1.0f);
-  g.shader().uniform("eye_sep", scale * g.lens().eyeSep() * g.eye() / 2.0f);
+  g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
   // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
   g.shader().uniform("foc_len", g.lens().focalLength());
-  g.shader().uniform("clipped_mult", mClippedMultiplier);
+  g.shader().uniform("alpha", mAlpha);
+  g.shader().uniform("markerScale", mAtomMarkerSize);
+
   g.update();
-
-  renderInstances(g, scale, atomData, mAligned4fData);
-}
-
-void AtomRenderer::renderInstances(Graphics &g, float scale,
-                                   std::map<std::string, AtomData> &atomData,
-                                   std::vector<float> &aligned4fData) {
-
-  int cumulativeCount = 0;
-  for (auto data : atomData) {
-    if (mShowRadius == 1.0f) {
-
-      g.shader().uniform("markerScale", data.second.radius * mAtomMarkerSize *
-                                            mMarkerScale / scale);
-      //                std::cout << data.radius << std::endl;
-    } else {
-      g.shader().uniform("markerScale", mAtomMarkerSize * mMarkerScale / scale);
-    }
-    int count = data.second.counts;
-    assert((int)aligned4fData.size() >= (cumulativeCount + count) * 4);
-    instancingMesh.attrib_data(count * 4 * sizeof(float),
-                               aligned4fData.data() + (cumulativeCount * 4),
-                               count);
-    cumulativeCount += count;
-
-    g.polygonFill();
-    g.shader().uniform("is_line", 0.0f);
-    instancingMesh.draw();
-
-    g.shader().uniform("is_line", 1.0f);
-    g.polygonLine();
-    instancingMesh.draw();
-    g.polygonFill();
-  }
 }
 
 void SlicingAtomRenderer::init() {
@@ -158,29 +231,38 @@ void SlicingAtomRenderer::setDataBoundaries(BoundingBoxData &b) {
   mSlicingPlaneThickness.max(b.max.z - b.min.z);
 }
 
-void SlicingAtomRenderer::draw(Graphics &g, float scale,
+void SlicingAtomRenderer::draw(Graphics &g,
                                std::map<std::string, AtomData> &atomData,
                                std::vector<float> &aligned4fData) {
 
   //  int cumulativeCount = 0;
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
-  g.shader(instancingMesh.shader);
-  g.shader().uniform("is_omni", 1.0f);
-  g.shader().uniform("eye_sep", scale * g.lens().eyeSep() * g.eye() / 2.0f);
-  // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
-  g.shader().uniform("foc_len", g.lens().focalLength());
+  updateShader(g);
 
-  g.shader().uniform("dataScale", 1.0f / ((mSlicingPlanePoint.getHint("maxy") -
-                                           mSlicingPlanePoint.getHint("miny")) *
-                                          scale));
-  g.shader().uniform("layerSeparation", mLayerSeparation);
-  g.shader().uniform("plane_point", mSlicingPlanePoint.get());
-  g.shader().uniform("plane_normal", mSlicingPlaneNormal.get().normalized());
-  g.shader().uniform("second_plane_distance", mSlicingPlaneThickness);
+  size_t cumulativeCount = 0;
+  for (auto data : atomData) {
+    assert((int)aligned4fData.size() >=
+           (cumulativeCount + data.second.counts) * 4);
+    int cumulativeCount = 0;
+    renderInstances(g, aligned4fData.data() + (cumulativeCount * 4),
+                    data.second.counts);
 
-  g.shader().uniform("clipped_mult", mClippedMultiplier);
-  g.update();
-  renderInstances(g, scale, atomData, aligned4fData);
+    cumulativeCount += data.second.counts;
+  }
+}
+
+void SlicingAtomRenderer::update(double dt) {}
+
+void SlicingAtomRenderer::onProcess(Graphics &g) {
+  updateShader(g);
+  auto buffer = mBuffer.get();
+  auto &dataVector = buffer->getVector<float>();
+  {
+    g.pushMatrix();
+    applyTransformations(g);
+    renderInstances(g, dataVector.data(), dataVector.size() / 4);
+    g.popMatrix();
+  }
 }
 
 void SlicingAtomRenderer::nextLayer() {
@@ -206,4 +288,22 @@ void SlicingAtomRenderer::resetSlicing() {
   mSliceRotationRoll.set(0);
   mSliceRotationPitch.set(0);
   //      std::cout << mSlicingPlaneThickness.get() <<std::endl;
+}
+
+void SlicingAtomRenderer::updateShader(Graphics &g) {
+  g.shader(instancingMesh.shader);
+  g.shader().uniform("layerSeparation", mLayerSeparation);
+  g.shader().uniform("is_omni", 1.0f);
+  g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
+  // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
+  g.shader().uniform("foc_len", g.lens().focalLength());
+  g.shader().uniform("alpha", mAlpha);
+  g.shader().uniform("markerScale", mAtomMarkerSize);
+
+  g.shader().uniform("plane_point", mSlicingPlanePoint.get());
+  g.shader().uniform("plane_normal", mSlicingPlaneNormal.get().normalized());
+  g.shader().uniform("second_plane_distance", mSlicingPlaneThickness);
+  g.shader().uniform("clipped_mult", mClippedMultiplier);
+
+  g.update();
 }

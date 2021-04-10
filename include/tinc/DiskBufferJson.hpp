@@ -45,16 +45,26 @@ public:
                  std::string path = "", uint16_t size = 2)
       : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
 
-  bool writeJson(nlohmann::json &newData, std::string filename = "") {
-    // Currently single file buffer. Implement round robin mode to avoid
-    // blocking
-    std::unique_lock<std::mutex> lk(m_writeLock);
-    // output to json file on disk
-    if (filename.size() == 0) {
-      filename = getCurrentFileName();
+protected:
+  bool parseFile(std::string fileName,
+                 std::shared_ptr<nlohmann::json> newData) override {
+    bool ret = false;
+    try {
+      std::ifstream file(m_path + fileName);
+      if (file.good()) {
+        //          std::cout << "file" << std::endl;
+        *newData = nlohmann::json::parse(file);
+        ret = true;
+      }
+    } catch (std::exception & /*e*/) {
+      std::cerr << "ERROR: parsing json file" << std::endl;
+      ret = false;
     }
+    return ret;
+  }
 
-    std::ofstream of(filename, std::ofstream::out);
+  bool encodeData(std::string fileName, nlohmann::json &newData) override {
+    std::ofstream of(fileName, std::ofstream::out);
     if (of.good()) {
       of << newData.dump(2);
       of.close();
@@ -67,21 +77,7 @@ public:
       return false;
     }
 
-    return updateData(filename);
-  }
-
-protected:
-  bool parseFile(std::ifstream &file,
-                 std::shared_ptr<nlohmann::json> newData) override {
-
-    try {
-      std::cout << "file" << std::endl;
-      *newData = nlohmann::json::parse(file);
-      return true;
-    } catch (std::exception &e) {
-      std::cerr << "ERROR: parsing json file" << std::endl;
-      return false;
-    }
+    return true;
   }
 };
 

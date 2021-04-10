@@ -33,6 +33,8 @@
  * authors: Andres Cabrera, Kon Hyong Kim, Keehong Youn
  */
 
+#include "tinc/vis/SceneObject.hpp"
+
 #include "al/graphics/al_Graphics.hpp"
 
 //#undef CIEXYZ
@@ -87,35 +89,57 @@ typedef struct {
   al::Color color;
 } AtomData;
 
-class AtomRenderer {
+class AtomRenderer : public SceneObject {
 public:
-  al::BoundingBoxData dataBoundary;
-
-  al::Parameter mAtomMarkerSize{"AtomMarkerSize", "", 0.4, 0.0, 5.0};
-  al::ParameterBool mShowRadius{"ShowAtomRadius", "", 1};
-
-  // Increase layer separation (Z- axis scaling) in perspectiveView
-  al::Parameter mLayerSeparation{"LayerSeparation", "", 0, 0, 3};
-  al::ParameterChoice mShowAtoms{"ShowAtoms"};
-  al::Parameter mClippedMultiplier{"ClippedMultiplier", "", 0.3, 0.0, 2.0};
-
-  al::ShaderProgram instancing_shader;
-  InstancingMesh instancingMesh;
-
-  float mMarkerScale; // Global marker scaling factor
+  AtomRenderer(std::string id, std::string filename = "positions.nc",
+               std::string path = "", uint16_t size = 2)
+      : SceneObject(id, filename, path, size),
+        mAtomMarkerSize("atomMarkerSize", id, 0.4, 0.0, 5.0),
+        mLayerSeparation("layerSeparation", id, 0, 0, 3),
+        mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0, 0.0, 1.0) {
+    registerParameter(mAtomMarkerSize);
+    registerParameter(mLayerSeparation);
+    registerParameter(mShowAtoms);
+    registerParameter(mAlpha);
+  }
 
   virtual void init();
 
   virtual void setDataBoundaries(al::BoundingBoxData &b);
 
-  virtual void draw(al::Graphics &g, float scale,
-                    std::map<std::string, AtomData> &atomData,
+  virtual void draw(al::Graphics &g, std::map<std::string, AtomData> &atomData,
                     std::vector<float> &aligned4fData);
 
+  void setPositions(std::vector<al::Vec3f> &positions,
+                    std::map<std::string, AtomData> &atomData);
+  /**
+   * @brief setPositions
+   * @param positions pointer to x,y,z,h
+   * @param length total lenght of array. atom count = lenght/4
+   *
+   * Each atom is represented by 4 elements in the array
+   */
+  void setPositions(float *positions, size_t length);
+
+  void update(double dt) override;
+  void onProcess(al::Graphics &g) override;
+
+  // Parameters
+  al::Parameter mAtomMarkerSize;
+  // Increase layer separation (Z- axis scaling) in perspectiveView
+  // TODO change to Vec3 to allow scaling in any direction ( place in
+  // SceneObject)
+  al::Parameter mLayerSeparation;
+  al::ParameterChoice mShowAtoms;
+  al::Parameter mAlpha;
+
+  // Internal data
+  al::BoundingBoxData dataBoundary;
+  al::ShaderProgram instancing_shader;
+  InstancingMesh instancingMesh;
+
 protected:
-  void renderInstances(al::Graphics &g, float scale,
-                       std::map<std::string, AtomData> &atomData,
-                       std::vector<float> &aligned4fData);
+  void renderInstances(al::Graphics &g, float *aligned4fData, size_t count);
 
   std::string instancing_vert =
       R"(
@@ -123,7 +147,6 @@ protected:
 // Uniforms from allolib
 uniform mat4 al_ModelViewMatrix;
 uniform mat4 al_ProjectionMatrix;
-uniform float dataScale;
 uniform float markerScale;
 uniform float layerSeparation;
 uniform float is_line;
@@ -134,6 +157,7 @@ uniform float foc_len;
 //uniform float far_clip;
 //uniform float near_clip;
 uniform float clipped_mult;
+uniform float alpha;
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec4 offset; // 4th component w is used for color
 out vec4 color;
@@ -201,12 +225,12 @@ void main()
 
     if (is_line > 0.5) {
         local_scale = 1.03;
-        color = vec4(hsv2rgb(vec3(offset.w, 1.0, 1.0)), 1.0)* colormult * reflectivity;
+        color = vec4(hsv2rgb(vec3(offset.w, 1.0, 1.0)), alpha)* colormult * reflectivity;
     } else {
-        color = vec4(hsv2rgb(vec3(offset.w, 1.0, 0.85)), 1.0)* colormult* reflectivity;
+        color = vec4(hsv2rgb(vec3(offset.w, 1.0, 0.85)), alpha)* colormult* reflectivity;
     }
 
-    vec4 p = vec4(local_scale * markerScale * position.xyz, 0.0) + (mesh_center * dataScale);
+    vec4 p = vec4(local_scale * markerScale * position.xyz, 0.0) + (mesh_center);
     if (is_omni > 0.5) {
         gl_Position = al_ProjectionMatrix * stereo_displace(al_ModelViewMatrix * p, eye_sep, foc_len);
     } else {
@@ -235,33 +259,47 @@ void main()
   })";
   }
 
+  virtual void updateShader(al::Graphics &g);
+
 private:
 };
 
 class SlicingAtomRenderer : public AtomRenderer {
 public:
-  al::ParameterVec3 mSlicingPlanePoint{"SlicingPlanePoint", "",
-                                       al::Vec3f(0.0f, 0.0, 0.0)};
-  al::ParameterVec3 mSlicingPlaneNormal{"SliceNormal", "",
-                                        al::Vec3f(0.0f, 0.0f, 1.0)};
-  al::Parameter mSlicingPlaneThickness{"SlicingPlaneThickness", "", 3.0, 0.0f,
-                                       30.0f};
+  al::ParameterVec3 mSlicingPlanePoint;
+  al::ParameterVec3 mSlicingPlaneNormal;
+  al::Parameter mSlicingPlaneThickness;
+  al::Parameter mSliceRotationPitch;
+  al::Parameter mSliceRotationRoll;
+  al::Parameter mClippedMultiplier;
 
-  al::Parameter mSliceRotationPitch{"SliceRotationPitch", "SliceAngles", 0.0,
-                                    -M_PI, M_PI};
-  al::Parameter mSliceRotationRoll{"SliceRotationRoll", "SliceAngles", 0.0,
-                                   -M_PI / 2.0, M_PI / 2.0};
+  SlicingAtomRenderer(std::string id, std::string filename = "positions.nc",
+                      std::string path = "", uint16_t size = 2)
+      : AtomRenderer(id, filename, path, size),
+        mSlicingPlanePoint("SlicingPlanePoint", id, al::Vec3f(0.0f, 0.0, 0.0)),
+        mSlicingPlaneNormal("SliceNormal", id, al::Vec3f(0.0f, 0.0f, 1.0)),
+        mSlicingPlaneThickness("SlicingPlaneThickness", id, 3.0, 0.0f, 30.0f),
+        mSliceRotationPitch("SliceRotationPitch", id, 0.0, -M_PI, M_PI),
+        mSliceRotationRoll("SliceRotationRoll", id, 0.0, -M_PI / 2.0,
+                           M_PI / 2.0),
+        mClippedMultiplier("clippedMultiplier", id, 0.3, 0.0, 2.0) {
 
-  al::Parameter mSliceAtomMarkerFactor{"sliceAtomMarkerFactor", "", 1.0, 0.0,
-                                       5.0};
+    registerParameters(mSlicingPlanePoint, mSlicingPlaneNormal,
+                       mSlicingPlaneThickness, mSliceRotationPitch,
+                       mSliceRotationRoll, mClippedMultiplier);
+    mSlicingPlaneNormal.setHint("hide", 1.0);
+  }
 
   virtual void init() override;
 
   virtual void setDataBoundaries(al::BoundingBoxData &b) override;
 
-  virtual void draw(al::Graphics &g, float scale,
-                    std::map<std::string, AtomData> &atomData,
+  virtual void draw(al::Graphics &g, std::map<std::string, AtomData> &atomData,
                     std::vector<float> &aligned4fData) override;
+
+  void update(double dt) override;
+  void onProcess(al::Graphics &g) override;
+
   void nextLayer();
 
   void previousLayer();
@@ -285,6 +323,8 @@ protected:
       }
   })";
   }
+
+  void updateShader(al::Graphics &g) override;
 };
 
 } // namespace tinc

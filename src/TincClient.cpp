@@ -1,7 +1,7 @@
 #include "tinc/TincClient.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
-#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/DiskBufferNetCDFData.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/ProcessorGraph.hpp"
