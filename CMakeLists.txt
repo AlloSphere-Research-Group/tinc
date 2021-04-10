@@ -57,7 +57,6 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferAbstract.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferImage.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferJson.hpp
-    ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDF.hpp
     ${TINC_INCLUDE_PATH}/tinc/DiskBufferNetCDFData.hpp
     ${TINC_INCLUDE_PATH}/tinc/DistributedPath.hpp
     ${TINC_INCLUDE_PATH}/tinc/IdObject.hpp
