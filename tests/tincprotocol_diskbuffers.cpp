@@ -3,7 +3,7 @@
 #include "tinc/DiskBuffer.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
-#include "tinc/DiskBufferNetCDF.hpp"
+#include "tinc/DiskBufferNetCDFData.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
 
@@ -37,7 +37,7 @@ TEST(DiskBuffer, Connection) {
   al::Image::saveImage(imageName, pix.data(), 3, 3);
 
   // update the buffer with the new data
-  imageBuffer.updateData(imageName);
+  imageBuffer.loadData(imageName);
 
   tserver << imageBuffer;
 

@@ -6,16 +6,7 @@ option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
 option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
 option(TINC_CODE_COVERAGE "Enable Code coverage for tests" OFF)
 
-add_custom_command(
-  OUTPUT foo.hh
-  COMMAND
-  DEPENDS ${SOURCE_FILES} /tmp/bin/create_foo_hh main.cpp
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
-
-
 set(TINC_SRC
-
     ${CMAKE_CURRENT_LIST_DIR}/src/CacheManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPool.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPoolNetCDF.cpp
@@ -163,6 +154,7 @@ if(WIN32)
     set(NETCDF4_INSTALL_ROOT "C:/Program Files/netCDF 4.7.4/" CACHE STRING
         "Path to installation directory of netCDF4.")
 else()
+    # TODO run build_deps.sh script if netcdf not found.
     set(NETCDF4_INSTALL_ROOT "" CACHE STRING
         "Path to installation directory of netCDF4. Leave blanc if using build_deps script")
 endif()
