@@ -104,7 +104,7 @@ bool DiskBuffer<DataType>::loadData(std::string filename) {
   if (filename.size() > 0) {
     m_fileName = filename;
   }
-  std::shared_ptr<DataType> newData = getWritable();
+  std::shared_ptr<DataType> newData = BufferManager<DataType>::getWritable();
   auto ret = parseFile(filename, newData);
   if (ret) {
     doneWriting(newData);
