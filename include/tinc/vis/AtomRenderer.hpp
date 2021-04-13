@@ -313,7 +313,7 @@ protected:
   bool is_highlighted(vec3 point) {
       vec3 difference = point - plane_point;
       float proj = dot(plane_normal, difference);
-      if (proj >= 0 &&  proj <= second_plane_distance) {
+      if (proj >= 0 &&  proj <= second_plane_distance && second_plane_distance != 0.0) {
           return true;
       } else {
           return false;
