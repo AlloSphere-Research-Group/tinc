@@ -296,7 +296,7 @@ protected:
         goto done;
       }
 #else
-      if ((retval = nc_get_var_long(ncid, varid, data.data()))) {
+      if ((retval = nc_get_var(ncid, varid, data.data()))) {
         goto done;
       }
 #endif
@@ -308,7 +308,7 @@ protected:
         goto done;
       }
 #else
-      if ((retval = nc_get_var_ulong(ncid, varid, data.data()))) {
+      if ((retval = nc_get_var(ncid, varid, data.data()))) {
         goto done;
       }
 #endif
@@ -424,7 +424,7 @@ protected:
             continue;
           }
 #else
-          if ((retval = nc_get_att_ulong(ncid, varid, name, &val))) {
+          if ((retval = nc_get_att(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
@@ -541,6 +541,7 @@ protected:
     int ndims = 1;
     int varidp;
     nc_type atttype;
+    int dimids[1] = {dimid};
 
     if ((retval = nc_create((m_path + fileName).c_str(), NC_CLOBBER, &ncid))) {
       goto done;
@@ -551,7 +552,7 @@ protected:
       goto done;
     }
 
-    int dimids[1] = {dimid};
+    dimids[0] = dimid;
     if ((retval = nc_def_var(ncid, mDataFieldName.c_str(), xtype, ndims, dimids,
                              &varidp))) {
       goto done;
