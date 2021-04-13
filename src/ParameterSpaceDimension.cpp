@@ -388,18 +388,22 @@ void ParameterSpaceDimension::conformSpace() {
       param.set(max);
     }
   } break;
+
     // FIXME complete support for all types
 
     //  case al::DiscreteParameterValues::DOUBLE: {
     //    valueDbl = *(static_cast<double *>(value));
     //  } break;
-    //  case al::DiscreteParameterValues::UINT8: {
+    //  case al::DiscreteParameterValues::BOOL: {
     //    valueDbl = *(static_cast<uint8_t *>(value));
     //  } break;
     //  case al::DiscreteParameterValues::INT64: {
     //    valueDbl = *(static_cast<int64_t *>(value));
     //  } break;
     //  case al::DiscreteParameterValues::UINT64: {
+    //    valueDbl = *(static_cast<uint64_t *>(value));
+    //  } break;
+    //  case al::DiscreteParameterValues::STRING: {
     //    valueDbl = *(static_cast<uint64_t *>(value));
     //  } break;
   }

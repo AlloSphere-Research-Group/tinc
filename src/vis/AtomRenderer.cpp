@@ -182,7 +182,7 @@ void AtomRenderer::renderInstances(Graphics &g, float *aligned4fData,
 
 void AtomRenderer::updateShader(Graphics &g) {
   g.shader(instancingMesh.shader);
-  g.shader().uniform("layerSeparation", mLayerSeparation);
+  g.shader().uniform("dataScale", mDataScale.get());
   g.shader().uniform("is_omni", 1.0f);
   g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
   // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
@@ -292,7 +292,7 @@ void SlicingAtomRenderer::resetSlicing() {
 
 void SlicingAtomRenderer::updateShader(Graphics &g) {
   g.shader(instancingMesh.shader);
-  g.shader().uniform("layerSeparation", mLayerSeparation);
+  g.shader().uniform("dataScale", mDataScale.get());
   g.shader().uniform("is_omni", 1.0f);
   g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);
   // g.shader().uniform("eye_sep", g.lens().eyeSep() * g.eye() / 2.0f);

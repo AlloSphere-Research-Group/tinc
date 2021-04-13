@@ -94,16 +94,16 @@ public:
   AtomRenderer(std::string id, std::string filename = "positions.nc",
                std::string path = "", uint16_t size = 2)
       : SceneObject(id, filename, path, size),
-        mAtomMarkerSize("atomMarkerSize", id, 0.4, 0.0, 5.0),
-        mLayerSeparation("layerSeparation", id, 0, 0, 3),
-        mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0, 0.0, 1.0) {
+        mDataScale("dataScale", id, {1.0, 1.0, 1.0}),
+        mAtomMarkerSize("atomMarkerSize", id, 0.4, 0.0, 5.0f),
+        mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0f, 0.0f, 1.0f) {
     registerParameter(mAtomMarkerSize);
-    registerParameter(mLayerSeparation);
+    registerParameter(mDataScale);
     registerParameter(mShowAtoms);
     registerParameter(mAlpha);
   }
 
-  virtual void init();
+  virtual void init() override;
 
   virtual void setDataBoundaries(al::BoundingBoxData &b);
 
@@ -125,11 +125,8 @@ public:
   void onProcess(al::Graphics &g) override;
 
   // Parameters
+  al::ParameterVec3 mDataScale;
   al::Parameter mAtomMarkerSize;
-  // Increase layer separation (Z- axis scaling) in perspectiveView
-  // TODO change to Vec3 to allow scaling in any direction ( place in
-  // SceneObject)
-  al::Parameter mLayerSeparation;
   al::ParameterChoice mShowAtoms;
   al::Parameter mAlpha;
 
@@ -148,7 +145,7 @@ protected:
 uniform mat4 al_ModelViewMatrix;
 uniform mat4 al_ProjectionMatrix;
 uniform float markerScale;
-uniform float layerSeparation;
+uniform vec3 dataScale;
 uniform float is_line;
 uniform float is_omni;
 uniform float eye_sep;
@@ -207,7 +204,7 @@ const float PI_2 = 1.57079632679489661923;
 
 void main()
 {
-    vec4 mesh_center = offset * vec4(1.0, 1.0, 1.0 + layerSeparation, 1.0);
+    vec4 mesh_center = offset * vec4(dataScale, 1.0);
     mesh_center.w = 1.0;
 
     float colormult = 1.0;

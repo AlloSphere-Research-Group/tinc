@@ -65,7 +65,6 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
         entry.sourceInfo.tincId == sourceInfo.tincId &&
         entry.sourceInfo.type == sourceInfo.type) {
       auto entryArguments = entry.sourceInfo.arguments;
-      bool argsMatch = false;
       if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size()) {
         size_t matchCount = 0;
         for (const auto &sourceArg : sourceInfo.arguments) {
