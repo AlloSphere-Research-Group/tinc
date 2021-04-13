@@ -86,7 +86,43 @@ public:
 
   ~NetCDFData() {
     if (dataVector) {
-      delete dataVector;
+      switch (ncDataType) {
+      case SHORT:
+        delete static_cast<std::vector<int16_t> *>(dataVector);
+        break;
+      case INT:
+        delete static_cast<std::vector<int32_t> *>(dataVector);
+        break;
+      case FLOAT:
+        delete static_cast<std::vector<float> *>(dataVector);
+        break;
+      case DOUBLE:
+        delete static_cast<std::vector<double> *>(dataVector);
+        break;
+      case UBYTE:
+      case CHAR:
+        delete static_cast<std::vector<uint8_t> *>(dataVector);
+        break;
+      case USHORT:
+        delete static_cast<std::vector<uint16_t> *>(dataVector);
+        break;
+      case UINT:
+        delete static_cast<std::vector<int32_t> *>(dataVector);
+        break;
+      case INT64:
+        delete static_cast<std::vector<int64_t> *>(dataVector);
+        break;
+      case UINT64:
+        delete static_cast<std::vector<uint64_t> *>(dataVector);
+        break;
+      case STRING:
+        delete static_cast<std::vector<std::string> *>(dataVector);
+        std::cerr << "string not yet supported in DisnkBufferNetCDF"
+                  << std::endl;
+        break;
+      case BYTE:
+        delete static_cast<std::vector<int8_t> *>(dataVector);
+      }
     }
   }
 
@@ -255,15 +291,27 @@ protected:
     } else if (xtypep == NC_INT64) {
       auto &data = newData->getVector<int64_t>();
       data.resize(lenp);
+#ifdef AL_WINDOWS
       if ((retval = nc_get_var_longlong(ncid, varid, data.data()))) {
         goto done;
       }
+#else
+      if ((retval = nc_get_var_long(ncid, varid, data.data()))) {
+        goto done;
+      }
+#endif
     } else if (xtypep == NC_UINT64) {
       auto &data = newData->getVector<uint64_t>();
       data.resize(lenp);
+#ifdef AL_WINDOWS
       if ((retval = nc_get_var_ulonglong(ncid, varid, data.data()))) {
         goto done;
       }
+#else
+      if ((retval = nc_get_var_ulong(ncid, varid, data.data()))) {
+        goto done;
+      }
+#endif
     } else if (xtypep == NC_STRING) {
       std::cerr << "string not yet supported in DisnkBufferNetCDF" << std::endl;
       //        auto &data = newData->get<uint64_t>();
@@ -356,17 +404,31 @@ protected:
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_INT64) {
           int64_t val;
+#ifdef AL_WINDOWS
           if ((retval = nc_get_att_longlong(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
+#else
+          if ((retval = nc_get_att_long(ncid, varid, name, &val))) {
+            std::cerr << "ERROR getting attribute value" << std::endl;
+            continue;
+          }
+#endif
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_UINT64) {
           uint64_t val;
+#ifdef AL_WINDOWS
           if ((retval = nc_get_att_ulonglong(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
+#else
+          if ((retval = nc_get_att_ulong(ncid, varid, name, &val))) {
+            std::cerr << "ERROR getting attribute value" << std::endl;
+            continue;
+          }
+#endif
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_STRING) {
           std::cerr << "string not yet supported in DiskBufferNetCDF"
@@ -478,6 +540,7 @@ protected:
     char name[32];
     int ndims = 1;
     int varidp;
+    nc_type atttype;
 
     if ((retval = nc_create((m_path + fileName).c_str(), NC_CLOBBER, &ncid))) {
       goto done;
@@ -496,7 +559,7 @@ protected:
 
     // attributes
     for (auto &attr : newData.attributes) {
-      nc_type atttype = attr.second.type;
+      atttype = attr.second.type;
 
       if (atttype == NC_SHORT) {
         int16_t val = attr.second.valueInt64;
