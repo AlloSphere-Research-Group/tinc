@@ -64,7 +64,7 @@ def disk_buffer_to_dict(db):
         pass
     return d
 
-from tinc_client import *
+from tinc import *
 tclient = TincClient()
 
 time.sleep(0.5)
