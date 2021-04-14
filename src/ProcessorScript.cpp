@@ -246,7 +246,8 @@ std::string ProcessorScript::makeCommandLine() {
 bool ProcessorScript::runCommand(const std::string &command) {
 
   if (mVerbose) {
-    std::cout << "ProcessorScript command: " << command << std::endl;
+    std::cout << "ProcessorScript " << mId << " command: " << command
+              << std::endl;
   }
   std::array<char, 128> buffer{0};
   std::string output;

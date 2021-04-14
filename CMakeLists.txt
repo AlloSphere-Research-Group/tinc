@@ -135,7 +135,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
 )
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python/tinc_protocol_pb2.py
-                   COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src -I=${CMAKE_CURRENT_LIST_DIR}/src --python_out=${CMAKE_CURRENT_LIST_DIR}/tinc-python/tinc-python ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
+                   COMMAND ${CMAKE_CURRENT_LIST_DIR}/external/protobuf-build-${CMAKE_BUILD_TYPE}/protoc -I=${CMAKE_CURRENT_LIST_DIR}/external/protobuf/src -I=${CMAKE_CURRENT_LIST_DIR}/src --python_out=${CMAKE_CURRENT_LIST_DIR}/tinc-python/ ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
                    DEPENDS protobufProject ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.proto
 )
 

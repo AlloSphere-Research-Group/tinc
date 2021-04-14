@@ -541,7 +541,7 @@ protected:
     int ndims = 1;
     int varidp;
     nc_type atttype;
-    int dimids[1] = {dimid};
+    int dimids[1];
 
     if ((retval = nc_create((m_path + fileName).c_str(), NC_CLOBBER, &ncid))) {
       goto done;
