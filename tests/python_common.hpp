@@ -25,7 +25,7 @@ public:
   std::string pythonCodeStart = R"(
 import time
 import sys
-#sys.path.append('../../tinc-python')
+from tinc import *
 
 def parameter_to_dict(p):
     d = p.__dict__.copy()
@@ -64,7 +64,6 @@ def disk_buffer_to_dict(db):
         pass
     return d
 
-from tinc import *
 tclient = TincClient()
 
 time.sleep(0.5)
