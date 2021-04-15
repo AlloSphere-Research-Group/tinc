@@ -404,17 +404,10 @@ protected:
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_INT64) {
           int64_t val;
-#ifdef AL_WINDOWS
           if ((retval = nc_get_att_longlong(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-#else
-          if ((retval = nc_get_att_long(ncid, varid, name, &val))) {
-            std::cerr << "ERROR getting attribute value" << std::endl;
-            continue;
-          }
-#endif
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_UINT64) {
           uint64_t val;
