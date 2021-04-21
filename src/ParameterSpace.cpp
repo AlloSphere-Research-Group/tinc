@@ -211,6 +211,45 @@ std::string ParameterSpace::getCurrentRelativeRunPath() {
   return generateRelativeRunPath(indices, this);
 }
 
+std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames) {
+  std::vector<ParameterSpaceDimension *> dimensions;
+  for (auto dimName : dimNames) {
+    auto *dim = getDimension(dimName);
+    if (dim) {
+      dimensions.push_back(dim);
+    }
+  }
+  if (dimensions.size() > 1) {
+    auto dimIt = dimensions.begin();
+    auto ids = (*dimIt)->getCurrentIds();
+    dimIt++;
+    while (dimIt != dimensions.end() && ids.size() > 1) {
+      auto dimIds = (*dimIt)->getCurrentIds();
+      std::vector<std::string> idsToRemove;
+      for (auto id : ids) {
+        auto pos = std::find(dimIds.begin(), dimIds.end(), id);
+        if (pos == dimIds.end()) {
+          idsToRemove.push_back(id);
+        }
+      }
+      for (auto id : idsToRemove) {
+        ids.erase(std::find(ids.begin(), ids.end(), id));
+      }
+    }
+    if (ids.size() == 1) {
+      return ids[0];
+    } else {
+      std::cerr << __FUNCTION__ << " Could not find common id." << std::endl;
+    }
+
+  } else {
+    std::cerr << __FUNCTION__
+              << ": Less than two valid dimensions provided. No id returned"
+              << std::endl;
+    return std::string();
+  }
+}
+
 std::vector<std::string> ParameterSpace::dimensionNames() {
   std::unique_lock<std::mutex> lk(mDimensionsLock);
   std::vector<std::string> dimensionNames;

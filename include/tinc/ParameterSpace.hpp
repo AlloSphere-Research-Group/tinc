@@ -138,6 +138,16 @@ public:
   std::string getCurrentRelativeRunPath();
 
   /**
+   * @brief Resolve common id for dimensions
+   * @param dims
+   * @return
+   *
+   * When dimensions have the same value mapped to multiple ids, the id can
+   * be resolved through the combination with other dimensions
+   */
+  std::string getCommonId(std::vector<std::string> dimNames);
+
+  /**
    * @brief Returns the names of all dimensions
    */
   std::vector<std::string> dimensionNames();

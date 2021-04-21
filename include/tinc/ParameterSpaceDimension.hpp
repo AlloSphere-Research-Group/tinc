@@ -140,6 +140,16 @@ public:
   size_t getCurrentIndex();
 
   /**
+   * @brief get all index for current value in parameter space
+   * @return vector of indeces
+   *
+   * If the parameter space has been defined so that one value can be mapped to
+   * multiple ids, this function will return all indeces at which the current
+   * value occurs.
+   */
+  std::vector<size_t> getCurrentIndeces();
+
+  /**
    * @brief get current id
    * @return id
    *
@@ -147,6 +157,14 @@ public:
    * string is returned.
    */
   std::string getCurrentId();
+
+  /**
+   * @brief getCurrentIds
+   * @return
+   *
+   * See getCurrentIndeces()
+   */
+  std::vector<std::string> getCurrentIds();
 
   /**
    * @brief set representation type for dimension.
@@ -207,7 +225,6 @@ public:
    */
   size_t size();
 
-  // FIXME implement sort
   void sort();
 
   /**

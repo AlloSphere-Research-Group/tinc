@@ -340,3 +340,51 @@ TEST(ParameterSpace, DataDirectories) {
     EXPECT_TRUE(!al::File::isDirectory(path));
   }
 }
+
+TEST(ParameterSpace, CommonId) {
+  tinc::ParameterSpace ps{"PS"};
+  auto dimension1 =
+      ps.newDimension("dim1", tinc::ParameterSpaceDimension::VALUE);
+  auto dimension2 =
+      ps.newDimension("dim2", tinc::ParameterSpaceDimension::VALUE);
+
+  // Set possible values for dimensions
+  dimension1->setSpaceValues<float>({0.1, 0.1, 0.2, 0.2, 0.3, 0.3});
+  dimension1->setSpaceIds({"A", "B", "C", "D", "E", "F"});
+  dimension1->conformSpace();
+
+  dimension2->setSpaceValues<float>({10.1, 10.2, 10.1, 10.2, 10.1, 10.2});
+  dimension2->setSpaceIds({"A", "B", "C", "D", "E", "F"});
+  dimension2->conformSpace();
+
+  dimension1->setCurrentIndex(0);
+  dimension2->setCurrentIndex(0);
+
+  EXPECT_EQ(dimension1->getCurrentIds(), (std::vector<std::string>{"A", "B"}));
+  dimension1->stepIncrement();
+  EXPECT_EQ(dimension1->getCurrentId(), "C");
+  EXPECT_EQ(dimension1->getCurrentIds(), (std::vector<std::string>{"C", "D"}));
+
+  dimension1->stepIncrement();
+  EXPECT_EQ(dimension1->getCurrentId(), "E");
+  EXPECT_EQ(dimension1->getCurrentIds(), (std::vector<std::string>{"E", "F"}));
+
+  EXPECT_EQ(dimension2->getCurrentIds(),
+            (std::vector<std::string>{"A", "C", "E"}));
+  dimension1->stepIncrement();
+  EXPECT_EQ(dimension1->getCurrentId(), "B");
+  EXPECT_EQ(dimension1->getCurrentIds(),
+            (std::vector<std::string>{"B", "D", "F"}));
+
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "F");
+  dimension2->stepDecrease();
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "E");
+  dimension1->stepDecrease();
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "D");
+  dimension2->stepDecrease();
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "C");
+  dimension1->stepDecrease();
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "B");
+  dimension2->stepDecrease();
+  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "A");
+}

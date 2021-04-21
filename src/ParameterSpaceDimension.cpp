@@ -2,7 +2,9 @@
 
 #include "al/ui/al_DiscreteParameterValues.hpp"
 
+#include <algorithm>
 #include <limits>
+#include <numeric> // std::iota
 
 using namespace tinc;
 
@@ -104,7 +106,26 @@ size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
 
 void ParameterSpaceDimension::sort() {
 
-  // FIXME implement sort
+  std::vector<size_t> sortedIndeces(mSpaceValues.size());
+  std::iota(sortedIndeces.begin(), sortedIndeces.end(), 0);
+
+  auto values = mSpaceValues.getValues<float>();
+  std::stable_sort(
+      sortedIndeces.begin(), sortedIndeces.end(),
+      [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+  std::vector<float> sortedValues(mSpaceValues.size());
+  auto ids = mSpaceValues.getIds();
+  std::vector<std::string> sortedIds(ids.size());
+  assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+  for (size_t i = 0; i < mSpaceValues.size(); i++) {
+    sortedValues[i] = values[sortedIndeces[i]];
+    if (sortedIds.size() > 0) {
+      sortedIds[i] = ids[sortedIndeces[i]];
+    }
+  }
+  setSpaceValues(sortedValues);
+  setSpaceIds(sortedIds);
 }
 
 void ParameterSpaceDimension::clear(al::Socket *src) {
@@ -142,6 +163,10 @@ size_t ParameterSpaceDimension::getCurrentIndex() {
   return getIndexForValue(mParameterValue->toFloat());
 }
 
+std::vector<size_t> ParameterSpaceDimension::getCurrentIndeces() {
+  return mSpaceValues.getIndecesForValue(getCurrentValue());
+}
+
 void ParameterSpaceDimension::setCurrentIndex(size_t index) {
   // TODO avoid converting to float
   mParameterValue->fromFloat(mSpaceValues.at(index));
@@ -149,6 +174,10 @@ void ParameterSpaceDimension::setCurrentIndex(size_t index) {
 
 std::string ParameterSpaceDimension::getCurrentId() {
   return mSpaceValues.idAt(getCurrentIndex());
+}
+
+std::vector<std::string> ParameterSpaceDimension::getCurrentIds() {
+  return mSpaceValues.getIdsForValue(getCurrentValue());
 }
 
 size_t ParameterSpaceDimension::getIndexForValue(float value) {
@@ -184,16 +213,34 @@ void ParameterSpaceDimension::stepIncrement() {
   if (curIndex < mSpaceValues.size() - 1) {
     // Check if we have an element above to compare to
     float nextTemp = mSpaceValues.at(curIndex + 1);
+    size_t stride = 1;
+    while (nextTemp == temp) {
+      stride++;
+      if ((curIndex + stride) == mSpaceValues.size()) {
+        //            we are at the last index
+        return;
+      }
+      nextTemp = mSpaceValues.at(curIndex + stride);
+    }
     if (nextTemp > temp) {
       // Element above is greater, so increment index and load
-      setCurrentIndex(curIndex + 1);
-    } else if (curIndex > 0) {
+      setCurrentIndex(curIndex + stride);
+    } else if (curIndex >= stride) {
       // If element above is not greater and we have  space
-      setCurrentIndex(curIndex - 1);
+      setCurrentIndex(curIndex - stride);
     }
   } else {
-    if (mSpaceValues.at(curIndex - 1) > temp) {
-      setCurrentIndex(curIndex - 1);
+    float nextTemp = mSpaceValues.at(curIndex - 1);
+    while (nextTemp == temp) {
+      curIndex--;
+      if (curIndex == 0) {
+        //            we are at the last index
+        return;
+      }
+      nextTemp = mSpaceValues.at(curIndex);
+    }
+    if (nextTemp > temp) {
+      setCurrentIndex(curIndex);
     }
   }
 }
@@ -281,6 +328,7 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
 }
 
 void ParameterSpaceDimension::conformSpace() {
+  sort();
   switch (mSpaceValues.getDataType()) {
   case al::DiscreteParameterValues::FLOAT: {
     auto &param = getParameter<al::Parameter>();
