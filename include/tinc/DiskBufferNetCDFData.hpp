@@ -404,24 +404,43 @@ protected:
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_INT64) {
           int64_t val;
-          if ((retval = nc_get_att_longlong(ncid, varid, name, &val))) {
-            std::cerr << "ERROR getting attribute value" << std::endl;
-            continue;
+          if (std::is_same<int64_t, long long>::value) {
+            if ((retval = nc_get_att_longlong(
+                     ncid, varid, name, reinterpret_cast<long long *>(&val)))) {
+              std::cerr << "ERROR getting attribute value" << std::endl;
+              continue;
+            }
+          } else if (std::is_same<int64_t, long>::value) {
+            if ((retval = nc_get_att_long(ncid, varid, name,
+                                          reinterpret_cast<long *>(&val)))) {
+              std::cerr << "ERROR getting attribute value" << std::endl;
+              continue;
+            }
+          } else {
+            std::cerr << "int64_t not supported properly" << std::endl;
+            return false;
           }
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_UINT64) {
           uint64_t val;
-#ifdef AL_WINDOWS
-          if ((retval = nc_get_att_ulonglong(ncid, varid, name, &val))) {
-            std::cerr << "ERROR getting attribute value" << std::endl;
-            continue;
+          if (std::is_same<uint64_t, unsigned long long>::value) {
+            if ((retval = nc_get_att_ulonglong(
+                     ncid, varid, name,
+                     reinterpret_cast<unsigned long long *>(&val)))) {
+              std::cerr << "ERROR getting attribute value" << std::endl;
+              continue;
+            }
+          } else if (std::is_same<uint64_t, unsigned long>::value) {
+            if ((retval =
+                     nc_get_att(ncid, varid, name,
+                                reinterpret_cast<unsigned long *>(&val)))) {
+              std::cerr << "ERROR getting attribute value" << std::endl;
+              continue;
+            }
+          } else {
+            std::cerr << "uint64_t not supported properly" << std::endl;
+            return false;
           }
-#else
-          if ((retval = nc_get_att(ncid, varid, name, &val))) {
-            std::cerr << "ERROR getting attribute value" << std::endl;
-            continue;
-          }
-#endif
           newData->attributes[name] = VariantValue(val);
         } else if (xtypep == NC_STRING) {
           std::cerr << "string not yet supported in DiskBufferNetCDF"
@@ -448,7 +467,7 @@ protected:
           }
           newData->attributes[name] = VariantValue(val);
         } else {
-          std::cerr << "Usupported NC type" << std::endl;
+          std::cerr << "Unsupported NC type" << std::endl;
           return false;
         }
       }
