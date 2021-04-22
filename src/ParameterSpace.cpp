@@ -664,6 +664,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
       pdim->conformSpace();
+      pdim->sort();
       pdim->mRepresentationType = ParameterSpaceDimension::VALUE;
       //    std::cout << "internal state " << i << ":" << groupName
       //              << " length: " << lenp << std::endl;
@@ -713,19 +714,21 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
 
-      // FIXME this looks wrong, what should it do?
+      // Here we get a vector of char * from the ids dimension
+      // We don't need to allocate the char * as netcdf provides allocated
+      // null terminated strings
       std::vector<char *> idData;
-      idData.resize(lenp * 80);
+      idData.resize(lenp);
       if ((retval =
                nc_get_var_string(parameters_ids[i], varid, idData.data()))) {
         return false;
       }
       int varid;
-      if ((retval = nc_inq_varid(state_grp_ids[i], "values", &varid))) {
+      if ((retval = nc_inq_varid(parameters_ids[i], "values", &varid))) {
         return false;
       }
       nc_type nctypeid;
-      if ((retval = nc_inq_vartype(state_grp_ids[i], varid, &nctypeid))) {
+      if ((retval = nc_inq_vartype(parameters_ids[i], varid, &nctypeid))) {
         return false;
       }
 
@@ -743,6 +746,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
       pdim->setSpaceIds(newIds);
       pdim->conformSpace();
+      pdim->sort();
 
       pdim->mRepresentationType = ParameterSpaceDimension::ID;
 
@@ -779,6 +783,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       }
 
       pdim->conformSpace();
+      pdim->sort();
       pdim->mRepresentationType = ParameterSpaceDimension::INDEX;
     }
   } else {

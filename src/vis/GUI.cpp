@@ -14,10 +14,15 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
     std::string dimensionText = dim->getName() + ":" + dim->getCurrentId();
     ImGui::Text("%s", dimensionText.c_str());
   } else if (dim->size() > 1) {
+    size_t multipleIds = dim->getCurrentIds().size();
+    if (multipleIds == 0) {
+      multipleIds = 1;
+    }
     if (dim->getSpaceRepresentationType() == ParameterSpaceDimension::ID) {
       int v = dim->getCurrentIndex();
-      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
-        dim->setCurrentIndex(v);
+      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0,
+                           (dim->size() / multipleIds) - 1)) {
+        dim->setCurrentIndex(v * multipleIds);
       }
       ImGui::SameLine();
       if (ImGui::Button("-")) {
@@ -28,12 +33,17 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
         dim->stepIncrement();
       }
       ImGui::SameLine();
-      ImGui::Text("%s", dim->getCurrentId().c_str());
+      if (multipleIds == 1) {
+        ImGui::Text("%s", dim->getCurrentId().c_str());
+      } else {
+        ImGui::Text("%f", dim->getCurrentValue());
+      }
     } else if (dim->getSpaceRepresentationType() ==
                ParameterSpaceDimension::INDEX) {
       int v = dim->getCurrentIndex();
-      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0, dim->size() - 1)) {
-        dim->setCurrentIndex(v);
+      if (ImGui::SliderInt(dim->getName().c_str(), &v, 0,
+                           (dim->size() / multipleIds) - 1)) {
+        dim->setCurrentIndex(v * multipleIds);
       }
       ImGui::SameLine();
       if (ImGui::Button("-")) {
@@ -44,7 +54,11 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
         dim->stepIncrement();
       }
       ImGui::SameLine();
-      ImGui::Text("%s", dim->getCurrentId().c_str());
+      if (multipleIds == 1) {
+        ImGui::Text("%s", dim->getCurrentId().c_str());
+      } else {
+        ImGui::Text("%f", dim->getCurrentValue());
+      }
     } else if (dim->getSpaceRepresentationType() ==
                ParameterSpaceDimension::VALUE) {
       float value = dim->getCurrentValue();

@@ -177,7 +177,11 @@ std::string ParameterSpaceDimension::getCurrentId() {
 }
 
 std::vector<std::string> ParameterSpaceDimension::getCurrentIds() {
-  return mSpaceValues.getIdsForValue(getCurrentValue());
+  if (mSpaceValues.getIds().size() > 0) {
+    return mSpaceValues.getIdsForValue(getCurrentValue());
+  } else {
+    return {};
+  }
 }
 
 size_t ParameterSpaceDimension::getIndexForValue(float value) {
