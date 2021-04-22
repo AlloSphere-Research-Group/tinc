@@ -35,7 +35,7 @@ int main() {
   // the same dimensions
   ps2.readFromNetCDF();
 
-  for (auto dimensionName : ps2.dimensionNames()) {
+  for (auto dimensionName : ps2.getDimensionNames()) {
     std::cout << " ---- Dimension: " << dimensionName << std::endl;
     auto dim = ps2.getDimension(dimensionName);
 

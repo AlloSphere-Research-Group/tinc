@@ -16,7 +16,7 @@ TEST(ParameterSpace, Basic) {
   auto dim2 = ps.newDimension("dim2");
   auto dim3 = ps.newDimension("dim3");
 
-  auto dimensionNames = ps.dimensionNames();
+  auto dimensionNames = ps.getDimensionNames();
   EXPECT_EQ(dimensionNames.size(), 3);
   EXPECT_EQ(dimensionNames.at(0), "dim1");
   EXPECT_EQ(dimensionNames.at(1), "dim2");
@@ -24,7 +24,7 @@ TEST(ParameterSpace, Basic) {
 
   ps.removeDimension("dim1");
 
-  EXPECT_EQ(ps.dimensionNames().size(), 2);
+  EXPECT_EQ(ps.getDimensionNames().size(), 2);
   ps.clear();
 
   EXPECT_EQ(ps.getDimensions().size(), 0);
@@ -372,19 +372,21 @@ TEST(ParameterSpace, CommonId) {
   EXPECT_EQ(dimension2->getCurrentIds(),
             (std::vector<std::string>{"A", "C", "E"}));
   dimension1->stepIncrement();
-  EXPECT_EQ(dimension1->getCurrentId(), "B");
-  EXPECT_EQ(dimension1->getCurrentIds(),
-            (std::vector<std::string>{"B", "D", "F"}));
+  EXPECT_EQ(dimension1->getCurrentId(), "E");
+  EXPECT_EQ(dimension1->getCurrentIds(), (std::vector<std::string>{"E", "F"}));
 
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "F");
+  dimension2->stepIncrement();
+  EXPECT_EQ(ps.getCommonId(), "F");
   dimension2->stepDecrease();
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "E");
+  EXPECT_EQ(ps.getCommonId(), "E");
   dimension1->stepDecrease();
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "D");
+  dimension2->stepIncrement();
+  EXPECT_EQ(ps.getCommonId(), "D");
   dimension2->stepDecrease();
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "C");
+  EXPECT_EQ(ps.getCommonId(), "C");
   dimension1->stepDecrease();
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "B");
+  dimension2->stepIncrement();
+  EXPECT_EQ(ps.getCommonId(), "B");
   dimension2->stepDecrease();
-  EXPECT_EQ(ps.getCommonId({"dim1", "dim2"}), "A");
+  EXPECT_EQ(ps.getCommonId(), "A");
 }

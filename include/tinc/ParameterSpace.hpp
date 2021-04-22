@@ -145,12 +145,12 @@ public:
    * When dimensions have the same value mapped to multiple ids, the id can
    * be resolved through the combination with other dimensions
    */
-  std::string getCommonId(std::vector<std::string> dimNames);
+  std::string getCommonId(std::vector<std::string> dimNames = {});
 
   /**
    * @brief Returns the names of all dimensions
    */
-  std::vector<std::string> dimensionNames();
+  std::vector<std::string> getDimensionNames();
 
   /**
    * @brief Determines if dimensionName is a dimension that affeects the
@@ -305,6 +305,12 @@ public:
   void setCurrentPathTemplate(std::string pathTemplate) {
     mCurrentPathTemplate = pathTemplate;
   }
+
+  /**
+   * @brief Return current path template
+   * @return
+   */
+  std::string getCurrentPathTemplate() { return mCurrentPathTemplate; }
 
   /**
    * @brief function that generated relative paths according to current values.

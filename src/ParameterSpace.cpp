@@ -174,7 +174,7 @@ ParameterSpace::runningPaths(std::vector<std::string> fixedDimensions) {
 
   std::map<std::string, size_t> currentIndices;
 
-  std::vector<std::string> dimNames = dimensionNames();
+  std::vector<std::string> dimNames = getDimensionNames();
   for (auto &dimensionName : dimNames) {
     auto dimension = getDimension(dimensionName);
     if (isFilesystemDimension(dimension->getName()) &&
@@ -213,9 +213,12 @@ std::string ParameterSpace::getCurrentRelativeRunPath() {
 
 std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames) {
   std::vector<ParameterSpaceDimension *> dimensions;
-  for (auto dimName : dimNames) {
+  if (dimNames.size() == 0) {
+    dimNames = getDimensionNames();
+  }
+  for (auto &dimName : dimNames) {
     auto *dim = getDimension(dimName);
-    if (dim) {
+    if (dim && dim->getCurrentIds().size() > 1) {
       dimensions.push_back(dim);
     }
   }
@@ -226,13 +229,13 @@ std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames) {
     while (dimIt != dimensions.end() && ids.size() > 1) {
       auto dimIds = (*dimIt)->getCurrentIds();
       std::vector<std::string> idsToRemove;
-      for (auto id : ids) {
+      for (auto &id : ids) {
         auto pos = std::find(dimIds.begin(), dimIds.end(), id);
         if (pos == dimIds.end()) {
           idsToRemove.push_back(id);
         }
       }
-      for (auto id : idsToRemove) {
+      for (auto &id : idsToRemove) {
         ids.erase(std::find(ids.begin(), ids.end(), id));
       }
     }
@@ -250,7 +253,7 @@ std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames) {
   }
 }
 
-std::vector<std::string> ParameterSpace::dimensionNames() {
+std::vector<std::string> ParameterSpace::getDimensionNames() {
   std::unique_lock<std::mutex> lk(mDimensionsLock);
   std::vector<std::string> dimensionNames;
   for (auto &dim : mDimensions) {
@@ -365,7 +368,7 @@ void ParameterSpace::sweep(Processor &processor,
   uint64_t sweepTotal = 1;
   mSweepRunning = true;
   if (dimensionNames_.size() == 0) {
-    dimensionNames_ = dimensionNames();
+    dimensionNames_ = getDimensionNames();
   }
   for (auto &dimensionName : dimensionNames_) {
     auto dim = getDimension(dimensionName);
@@ -952,7 +955,7 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
     registerDimension(newDim);
   }
 
-  auto dimNames = dimensionNames();
+  auto dimNames = getDimensionNames();
 
   std::map<std::string, size_t> currentIndices;
   for (auto dimension : mDimensions) {
