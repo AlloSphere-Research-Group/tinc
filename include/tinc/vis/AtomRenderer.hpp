@@ -103,13 +103,16 @@ public:
     registerParameter(mAlpha);
   }
 
+  // PositionedVOice callbacks
   virtual void init() override;
-
-  virtual void setDataBoundaries(al::BoundingBoxData &b);
+  void update(double dt) override;
+  void onProcess(al::Graphics &g) override;
 
   virtual void draw(al::Graphics &g, std::map<std::string, AtomData> &atomData,
                     std::vector<float> &aligned4fData);
 
+  // AtomRenderer specific functions
+  virtual void setDataBoundaries(al::BoundingBoxData &b);
   void setPositions(std::vector<al::Vec3f> &positions,
                     std::map<std::string, AtomData> &atomData);
   /**
@@ -120,9 +123,6 @@ public:
    * Each atom is represented by 4 elements in the array
    */
   void setPositions(float *positions, size_t length);
-
-  void update(double dt) override;
-  void onProcess(al::Graphics &g) override;
 
   // Parameters
   al::ParameterVec3 mDataScale;
@@ -263,7 +263,8 @@ private:
 
 class SlicingAtomRenderer : public AtomRenderer {
 public:
-  al::ParameterVec3 mSlicingPlanePoint;
+  al::ParameterVec3 mSlicingPlaneCorner;
+  al::Parameter mSlicingPlaneSize;
   al::ParameterVec3 mSlicingPlaneNormal;
   al::Parameter mSlicingPlaneThickness;
   al::Parameter mSliceRotationPitch;
@@ -271,53 +272,53 @@ public:
   al::Parameter mClippedMultiplier;
 
   SlicingAtomRenderer(std::string id, std::string filename = "positions.nc",
-                      std::string path = "", uint16_t size = 2)
-      : AtomRenderer(id, filename, path, size),
-        mSlicingPlanePoint("SlicingPlanePoint", id, al::Vec3f(0.0f, 0.0, 0.0)),
-        mSlicingPlaneNormal("SliceNormal", id, al::Vec3f(0.0f, 0.0f, 1.0)),
-        mSlicingPlaneThickness("SlicingPlaneThickness", id, 3.0, 0.0f, 30.0f),
-        mSliceRotationPitch("SliceRotationPitch", id, 0.0, -M_PI, M_PI),
-        mSliceRotationRoll("SliceRotationRoll", id, 0.0, -M_PI / 2.0,
-                           M_PI / 2.0),
-        mClippedMultiplier("clippedMultiplier", id, 0.3, 0.0, 2.0) {
+                      std::string path = "", uint16_t size = 2);
 
-    registerParameters(mSlicingPlanePoint, mSlicingPlaneNormal,
-                       mSlicingPlaneThickness, mSliceRotationPitch,
-                       mSliceRotationRoll, mClippedMultiplier);
-    mSlicingPlaneNormal.setHint("hide", 1.0);
-  }
-
+  // Positioned voice callbacks
   virtual void init() override;
+  void update(double dt) override;
+  void onProcess(al::Graphics &g) override;
 
+  // Atom render callbacks
   virtual void setDataBoundaries(al::BoundingBoxData &b) override;
 
   virtual void draw(al::Graphics &g, std::map<std::string, AtomData> &atomData,
                     std::vector<float> &aligned4fData) override;
 
-  void update(double dt) override;
-  void onProcess(al::Graphics &g) override;
-
+  // SlicingAtomRender specific functions
   void nextLayer();
-
   void previousLayer();
-
   void resetSlicing();
 
 protected:
   const std::string is_highlighted_func() override {
     return R"( // Region Plane information
   uniform vec3 plane_normal = vec3(0, 0, -1);
+  uniform vec3 plane_vector1;
+  uniform vec3 plane_vector2;
   uniform vec3 plane_point = vec3(0.5, 0.5, 0.5);
   uniform float second_plane_distance = 3.0;
+  uniform float slice_size = 1.0;
 
   bool is_highlighted(vec3 point) {
+
       vec3 difference = point - plane_point;
-      float proj = dot(plane_normal, difference);
-      if (proj >= 0 &&  proj <= second_plane_distance && second_plane_distance != 0.0) {
-          return true;
-      } else {
-          return false;
-      }
+
+      float projX = dot(plane_vector1, difference);
+      bool withinX = projX >= 0 &&
+          projX <= slice_size && slice_size != 0.0;
+
+       //withinX = true;
+      float projY = dot(plane_vector2, difference);
+      bool withinY = projY >= 0 &&
+          projY <= slice_size && slice_size != 0.0;
+
+        //withinY = true;
+      float projZ = dot(plane_normal, difference);
+      bool withinZ = projZ >= 0 &&
+          projZ <= second_plane_distance && second_plane_distance != 0.0;
+
+      return withinX && withinY && withinZ;
   })";
   }
 

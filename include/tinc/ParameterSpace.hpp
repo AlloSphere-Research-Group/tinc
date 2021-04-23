@@ -400,12 +400,20 @@ public:
    * This callback is called when dimension metadata has changed or a
    * dimension is added. When a dimension is new, the new dimension has not yet
    * been added to the parameter space.
+   *
+   * If dimension was not registered correctly we will be in an inconsistent
+   * state, and user will be warned. assert will fail to trigger crash on debug
+   * builds.
    */
   std::function<void(ParameterSpaceDimension *changedDimension,
                      ParameterSpace *ps, al::Socket *src)>
       onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
-                               ParameterSpace *ps,
-                               al::Socket *src = nullptr) {};
+                               ParameterSpace *ps, al::Socket *src = nullptr) {
+        // Avoid compiler warnings
+        (void)changedDimension;
+        (void)ps;
+        (void)src;
+      };
 
   /**
    * This callback is called when dimension is removed
@@ -435,18 +443,13 @@ protected:
    * dimension is added. When a dimension is new, the new dimension has not yet
    * been added to the parameter space.
    *
-   * If dimension was not registered correctly we will be in an inconsistent
-   * state, and user will be warned. assert will fail to trigger crash on debug
-   * builds.
    */
   // std::function<void(ParameterSpaceDimension *changedDimension,
   //                    ParameterSpace *ps, al::Socket *src)>
   //     onDimensionRegister = [](ParameterSpaceDimension *changedDimension,
   //                              ParameterSpace *ps, al::Socket *src = nullptr)
   //                              {
-  //       (void)changedDimension;
-  //       (void)ps;
-  //       (void)src;
+
   //     };
 
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mDimensions;
