@@ -55,6 +55,9 @@ struct CacheEntry {
   bool stale{false};
 };
 
+/**
+ * @brief The CacheManager class
+ */
 class CacheManager {
 public:
   CacheManager(DistributedPath cachePath = DistributedPath("tinc_cache.json"));
