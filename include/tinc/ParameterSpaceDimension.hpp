@@ -188,6 +188,11 @@ public:
   RepresentationType getSpaceRepresentationType() {
     return mRepresentationType;
   }
+  /**
+   * @brief get number of elements to jump to move to next value
+   * @return
+   */
+  size_t getSpaceStride() { return mSpaceValues.stride(); }
 
   /**
    * The parameter instance holds the current value.

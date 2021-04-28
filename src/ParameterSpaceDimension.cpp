@@ -214,18 +214,10 @@ void ParameterSpaceDimension::stepIncrement() {
   }
   size_t curIndex = getCurrentIndex();
   float temp = mParameterValue->toFloat();
-  if (curIndex < mSpaceValues.size() - 1) {
+  size_t stride = mSpaceValues.stride();
+  if (curIndex < mSpaceValues.size() - stride) {
     // Check if we have an element above to compare to
-    float nextTemp = mSpaceValues.at(curIndex + 1);
-    size_t stride = 1;
-    while (nextTemp == temp) {
-      stride++;
-      if ((curIndex + stride) == mSpaceValues.size()) {
-        //            we are at the last index
-        return;
-      }
-      nextTemp = mSpaceValues.at(curIndex + stride);
-    }
+    float nextTemp = mSpaceValues.at(curIndex + stride);
     if (nextTemp > temp) {
       // Element above is greater, so increment index and load
       setCurrentIndex(curIndex + stride);
@@ -234,7 +226,7 @@ void ParameterSpaceDimension::stepIncrement() {
       setCurrentIndex(curIndex - stride);
     }
   } else {
-    float nextTemp = mSpaceValues.at(curIndex - 1);
+    float nextTemp = mSpaceValues.at(curIndex - stride);
     while (nextTemp == temp) {
       curIndex--;
       if (curIndex == 0) {

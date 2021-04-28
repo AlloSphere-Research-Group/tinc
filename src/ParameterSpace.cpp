@@ -373,7 +373,9 @@ void ParameterSpace::sweep(Processor &processor,
   for (auto &dimensionName : dimensionNames_) {
     auto dim = getDimension(dimensionName);
     if (dim) {
-      sweepTotal *= dim->size();
+      if (dim->size() > 0) {
+        sweepTotal *= dim->size();
+      }
     } else {
       std::cerr << __FUNCTION__
                 << " ERROR: dimension not found: " << dimensionName
@@ -431,7 +433,8 @@ void ParameterSpace::sweep(Processor &processor,
     auto currentDimension = dimensionNames_.begin();
     while (currentDimension != dimensionNames_.end()) {
       auto dim = getDimension(*currentDimension);
-      if (dim->getCurrentIndex() == dim->size() - 1) {
+      auto stride = dim->getSpaceStride();
+      if (stride == 0 || (dim->getCurrentIndex() == dim->size() - stride)) {
         dim->setCurrentIndex(0);
       } else {
         dim->stepIncrement();
