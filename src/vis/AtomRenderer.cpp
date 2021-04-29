@@ -229,15 +229,15 @@ SlicingAtomRenderer::SlicingAtomRenderer(std::string id, std::string filename,
       mSlicingPlaneCorner("SlicingPlaneCorner", id, al::Vec3f(0.0f, 0.0, 0.0)),
       mSlicingPlaneSize("SlicingPlaneSize", id, 1.0f, 0.0f, 30.f),
       mSlicingPlaneNormal("SliceNormal", id, al::Vec3f(0.0f, 0.0f, 1.0f)),
-      mSlicingPlaneThickness("SlicingPlaneThickness", id, 3.0f, 0.0f, 30.0f),
+      mSlicingPlaneThickness("SlicingPlaneThickness", id, 0.2f, 0.0f, 30.0f),
       mSliceRotationPitch("SliceRotationPitch", id, 0.0, -M_PI, M_PI),
-      mSliceRotationRoll("SliceRotationRoll", id, 0.0, -M_PI / 2.0f,
-                         M_PI / 2.0f),
+      mSliceRotationYaw("SliceRotationYaw", id, 0.0, -M_PI, M_PI),
+      mSliceRotationRoll("SliceRotationRoll", id, 0.0, -M_PI, M_PI),
       mClippedMultiplier("clippedMultiplier", id, 0.3f, 0.0, 2.0f) {
 
   registerParameters(mSlicingPlaneCorner, mSlicingPlaneSize,
                      mSlicingPlaneNormal, mSlicingPlaneThickness,
-                     mSliceRotationPitch, mSliceRotationRoll,
+                     mSliceRotationPitch, mSliceRotationYaw, mSliceRotationRoll,
                      mClippedMultiplier);
   mSlicingPlaneNormal.setHint("hide", 1.0);
 }
@@ -246,24 +246,31 @@ void SlicingAtomRenderer::init() {
   AtomRenderer::init();
 
   mSliceRotationPitch.registerChangeCallback([this](float value) {
-    mSlicingPlaneNormal.setNoCalls(Vec3f(sin(mSliceRotationRoll),
-                                         cos(mSliceRotationRoll) * sin(value),
-                                         cos(value))
-                                       .normalize());
+    mSlicingPlaneQuat.fromEuler(mSliceRotationYaw, value, mSliceRotationRoll);
+    mSlicingPlaneNormal.setNoCalls(
+        mSlicingPlaneQuat.rotate(al::Vec3f(0.f, 0.f, 1.f)));
+  });
+
+  mSliceRotationYaw.registerChangeCallback([this](float value) {
+    mSlicingPlaneQuat.fromEuler(value, mSliceRotationPitch, mSliceRotationRoll);
+    mSlicingPlaneNormal.setNoCalls(
+        mSlicingPlaneQuat.rotate(al::Vec3f(0.f, 0.f, 1.f)));
   });
 
   mSliceRotationRoll.registerChangeCallback([this](float value) {
-    mSlicingPlaneNormal.setNoCalls(Vec3f(sin(value),
-                                         cos(value) * sin(mSliceRotationPitch),
-                                         cos(mSliceRotationPitch))
-                                       .normalize());
+    mSlicingPlaneQuat.fromEuler(mSliceRotationYaw, mSliceRotationPitch, value);
+    mSlicingPlaneNormal.setNoCalls(
+        mSlicingPlaneQuat.rotate(al::Vec3f(0.f, 0.f, 1.f)));
   });
 
   mSlicingPlaneNormal.registerChangeCallback([this](Vec3f value) {
-    value = value.normalized();
-    float pitch = std::atan(value.y / value.z);
-    float roll = std::atan(value.x / value.z);
+    value.normalize();
+    mSlicingPlaneQuat =
+        al::Quatf::getRotationTo(al::Vec3f(0.f, 0.f, 1.f), value);
+    float pitch, yaw, roll;
+    mSlicingPlaneQuat.toEuler(yaw, pitch, roll);
     mSliceRotationPitch.setNoCalls(pitch);
+    mSliceRotationYaw.setNoCalls(yaw);
     mSliceRotationRoll.setNoCalls(roll);
   });
 }
@@ -337,6 +344,7 @@ void SlicingAtomRenderer::resetSlicing() {
 
   mSlicingPlaneThickness = mSlicingPlaneThickness.max();
   mSliceRotationRoll.set(0);
+  mSliceRotationYaw.set(0);
   mSliceRotationPitch.set(0);
   //      std::cout << mSlicingPlaneThickness.get() <<std::endl;
 }
@@ -354,17 +362,9 @@ void SlicingAtomRenderer::updateShader(Graphics &g) {
   g.shader().uniform("plane_point", mSlicingPlaneCorner.get());
   g.shader().uniform("plane_normal", mSlicingPlaneNormal.get().normalized());
 
-  auto planeVector1 =
-      mSlicingPlaneNormal.get().rotate(-M_PI * 0.5, 0, 2).normalized();
+  Vec3f planeVector1 = mSlicingPlaneQuat.rotate(al::Vec3f(1.f, 0.f, 0.f));
+  Vec3f planeVector2 = mSlicingPlaneQuat.rotate(al::Vec3f(0.f, 1.f, 0.f));
   g.shader().uniform("plane_vector1", planeVector1);
-
-  auto planeVector2 =
-      mSlicingPlaneNormal.get().rotate(M_PI * 0.5, 2, 0).normalized();
-  //  auto planeVector1 = mSlicingPlaneNormal.get().normalized().rotate(
-  //      mSliceRotationPitch, 0.0f, 2.0);
-  //  auto planeVector2 = mSlicingPlaneNormal.get().normalized().rotate(
-  //      -mSliceRotationRoll, 0.0, 1.0f);
-
   g.shader().uniform("plane_vector2", planeVector2);
 
   g.shader().uniform("slice_size", mSlicingPlaneSize.get());

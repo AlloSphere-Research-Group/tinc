@@ -266,8 +266,10 @@ public:
   al::ParameterVec3 mSlicingPlaneCorner;
   al::Parameter mSlicingPlaneSize;
   al::ParameterVec3 mSlicingPlaneNormal;
+  al::Quatf mSlicingPlaneQuat;
   al::Parameter mSlicingPlaneThickness;
   al::Parameter mSliceRotationPitch;
+  al::Parameter mSliceRotationYaw;
   al::Parameter mSliceRotationRoll;
   al::Parameter mClippedMultiplier;
 
@@ -308,12 +310,10 @@ protected:
       bool withinX = projX >= 0 &&
           projX <= slice_size && slice_size != 0.0;
 
-       //withinX = true;
       float projY = dot(plane_vector2, difference);
       bool withinY = projY >= 0 &&
           projY <= slice_size && slice_size != 0.0;
 
-        //withinY = true;
       float projZ = dot(plane_normal, difference);
       bool withinZ = projZ >= 0 &&
           projZ <= second_plane_distance && second_plane_distance != 0.0;
