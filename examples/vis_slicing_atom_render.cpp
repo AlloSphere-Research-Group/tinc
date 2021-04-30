@@ -41,7 +41,7 @@ class MyApp : public al::App {
     atomData["S"] =
         AtomData{(int)atomPositions.size(), "S", 1.0, al::Color(1.0, 1.0, 0)};
     atoms.setPositions(atomPositions, atomData);
-    atoms.mSlicingPlaneCorner.set({0, 0, atoms.dataBoundary.min.z});
+    atoms.mSlicingPlaneCorner.set({0, 0, 0});
     atoms.mAtomMarkerSize.set(0.03);
 
     for (auto *param : atoms.parameters()) {
@@ -85,8 +85,7 @@ class MyApp : public al::App {
         g.pushMatrix();
         g.polygonLine();
         g.translate(atoms.mSlicingPlaneCorner.get());
-        g.rotate(atoms.mSliceRotationPitch * 360.0f / (M_2PI), 1.0f, 0.0, 0.0);
-        g.rotate(atoms.mSliceRotationRoll * 360.0f / (M_2PI), 0.0, -1.0f, 0.0);
+        g.rotate(atoms.mSlicingPlaneQuat);
         g.scale(atoms.mSlicingPlaneSize, atoms.mSlicingPlaneSize,
                 atoms.mSlicingPlaneThickness.get());
         g.color(0.8f, 0.8f, 1.0f, 0.9f);
