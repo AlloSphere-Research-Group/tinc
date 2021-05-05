@@ -222,7 +222,7 @@ protected:
     int ncid, retval;
 
 #ifdef TINC_HAS_NETCDF
-    if ((retval = nc_open((m_path + fileName).c_str(), NC_NOWRITE, &ncid))) {
+    if ((retval = nc_open((getPath() + fileName).c_str(), NC_NOWRITE, &ncid))) {
       goto done;
     }
     int varid;
@@ -555,7 +555,8 @@ protected:
     nc_type atttype;
     int dimids[1];
 
-    if ((retval = nc_create((m_path + fileName).c_str(), NC_CLOBBER, &ncid))) {
+    if ((retval =
+             nc_create((getPath() + fileName).c_str(), NC_CLOBBER, &ncid))) {
       goto done;
     }
 

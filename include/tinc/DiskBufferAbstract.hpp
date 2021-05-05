@@ -83,6 +83,10 @@ public:
     return outName;
   }
 
+  void registerUpdateCallback(std::function<void(bool)> cb) {
+    mUpdateCallbacks.push_back(cb);
+  }
+
 protected:
   std::string m_fileName;
   std::string m_baseFileName;
@@ -93,6 +97,8 @@ protected:
 
   uint64_t m_roundRobinCounter{0};
   uint64_t m_roundRobinSize{0};
+
+  std::vector<std::function<void(bool)>> mUpdateCallbacks;
 
   std::string makeNextFileName() {
     std::string outName = m_baseFileName;

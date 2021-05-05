@@ -50,7 +50,7 @@ protected:
                  std::shared_ptr<nlohmann::json> newData) override {
     bool ret = false;
     try {
-      std::ifstream file(m_path + fileName);
+      std::ifstream file(getPath() + fileName);
       if (file.good()) {
         //          std::cout << "file" << std::endl;
         *newData = nlohmann::json::parse(file);
@@ -64,7 +64,7 @@ protected:
   }
 
   bool encodeData(std::string fileName, nlohmann::json &newData) override {
-    std::ofstream of(fileName, std::ofstream::out);
+    std::ofstream of(getPath() + fileName, std::ofstream::out);
     if (of.good()) {
       of << newData.dump(2);
       of.close();

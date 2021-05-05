@@ -49,9 +49,13 @@ public:
                    std::string filename = "") {
 
     if (filename.size() == 0) {
-      filename = getCurrentFileName();
+      filename = getFilenameForWriting();
     }
-    al::Image::saveImage(filename, newData, width, height);
+    if (!al::Image::saveImage(getPath() + filename, newData, width, height)) {
+      std::cerr << __FILE__ << ":" << __LINE__
+                << " ERROR writing image file: " << getPath() + filename
+                << std::endl;
+    }
 
     return loadData(filename);
   };
@@ -60,7 +64,7 @@ protected:
   bool parseFile(std::string fileName,
                  std::shared_ptr<al::Image> newData) override {
     bool ret = false;
-    if (newData->load(m_path + fileName)) {
+    if (newData->load(getPath() + fileName)) {
       BufferManager<al::Image>::doneWriting(newData);
       ret = true;
     } else {
@@ -72,7 +76,7 @@ protected:
   bool encodeData(std::string fileName, al::Image &newData) override {
     bool ret = false;
 
-    if (newData.save(m_path + fileName)) {
+    if (newData.save(getPath() + fileName)) {
       ret = true;
     } else {
       std::cerr << "Error writing Image: " << m_path + m_fileName << std::endl;

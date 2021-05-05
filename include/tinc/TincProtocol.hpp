@@ -215,6 +215,8 @@ public:
     return mParameterSpaces;
   }
 
+  DiskBufferAbstract *getDiskBuffer(std::string name);
+
   /**
    * @brief activate a network barrier
    * @param group group to make the barrier for. 0 is all.
@@ -332,6 +334,7 @@ protected:
 
   bool processCommandParameter(void *any, al::Socket *src);
   bool processCommandParameterSpace(void *any, al::Socket *src);
+  bool processCommandDiskBuffer(void *any, al::Socket *src);
   bool processCommandDataPool(void *any, al::Socket *src);
 
   // send proto message (No checks. sends to dst socket)
@@ -361,6 +364,7 @@ protected:
   // Dimensions that were allocated by this class
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
   std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
+  std::vector<std::shared_ptr<DiskBufferAbstract>> mLocalDBs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;

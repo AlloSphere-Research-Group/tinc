@@ -11,7 +11,8 @@
 #include "al/types/al_Color.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-// This example shows usage of a DiskBuffer that is exposed to the network. This
+// This example shows usage of the different DiskBuffer types.
+// The buffers are exposed to the network so this
 // example can be used by itself, but can also be controlled through python.
 
 using namespace tinc;
@@ -39,15 +40,22 @@ public:
 
     // generating example image
     std::vector<unsigned char> pix;
-    for (size_t i = 0; i < 9; i++) {
-      al::Colori c = al::HSV(al::rnd::uniform(), 1.0, 1.0);
+    size_t size = 64;
+    float hue = al::rnd::uniform() * 0.5;
+    float hueIncrement = al::rnd::uniform() * 0.01;
+    for (size_t i = 0; i < (size * size); i++) {
+      al::Colori c = al::HSV(hue, 1.0, 1.0);
+      hue += hueIncrement;
+      if (hue > 1.0) {
+        hue -= 1.0;
+      }
       pix.push_back(c.r);
       pix.push_back(c.g);
       pix.push_back(c.b);
     }
 
     // update the buffer with the new data
-    imageBuffer.writePixels(pix.data(), 3, 3);
+    imageBuffer.writePixels(pix.data(), size, size);
     reportText.set(std::string("Created " + imageBuffer.getCurrentFileName()));
   }
 
@@ -67,59 +75,19 @@ public:
   }
 
   void generateNc() {
-    auto ncName = netcdfBuffer.getCurrentFileName();
-#define NDIMS 1
-    int ncid, x_dimid, varid;
-    int dimids[NDIMS];
 
-    int retval;
+    NetCDFData data;
+    // Type must be set before getting the vector.
+    data.setType(NetCDFTypes::DOUBLE);
 
-    // generating example data
-    std::vector<double> exampleData;
+    auto &exampleData = data.getVector<double>();
     exampleData.push_back(al::rnd::normal());
     exampleData.push_back(al::rnd::normal());
     exampleData.push_back(al::rnd::normal());
     exampleData.push_back(al::rnd::normal());
+    netcdfBuffer.setData(data);
 
-    /* Create the file. The NC_CLOBBER parameter tells netCDF to
-     * overwrite this file, if it already exists.*/
-    if ((retval = nc_create(ncName.c_str(), NC_NETCDF4 | NC_CLOBBER, &ncid))) {
-      return;
-    }
-
-    /* Define the dimensions. NetCDF will hand back an ID for each. */
-    if ((retval = nc_def_dim(ncid, "double", exampleData.size(), &x_dimid))) {
-      return;
-    }
-    dimids[0] = x_dimid;
-
-    /* Define the variable.*/
-    if ((retval = nc_def_var(ncid, "data", NC_DOUBLE, NDIMS, dimids, &varid))) {
-      return;
-    }
-
-    /* End define mode. This tells netCDF we are done defining
-     * metadata. */
-    if ((retval = nc_enddef(ncid))) {
-      return;
-    }
-
-    /* Write the pretend data to the file. Although netCDF supports
-     * reading and writing subsets of data, in this case we write all
-     * the data in one operation. */
-    if ((retval = nc_put_var_double(ncid, varid, exampleData.data()))) {
-      return;
-    }
-
-    /* Close the file. This frees up any internal netCDF resources
-     * associated with the file, and flushes any buffers. */
-    if ((retval = nc_close(ncid))) {
-      return;
-    }
-
-    // update the buffer with the new data
-    netcdfBuffer.loadData(ncName);
-    reportText.set(std::string("Created " + ncName));
+    reportText.set(std::string("Created " + netcdfBuffer.getCurrentFileName()));
   }
 
   // Application virtual functions
@@ -131,9 +99,14 @@ public:
     gui.init();
 
     // Register trigger callbacks
-    newImage.registerChangeCallback([&](bool value) { generateImage(); });
-    newJson.registerChangeCallback([&](bool value) { generateJson(); });
-    newNc.registerChangeCallback([&](bool value) { generateNc(); });
+    newImage.registerChangeCallback([&](bool /*value*/) { generateImage(); });
+    newJson.registerChangeCallback([&](bool /*value*/) { generateJson(); });
+    newNc.registerChangeCallback([&](bool /*value*/) { generateNc(); });
+
+    // Allow round robin mode for disk buffers
+    imageBuffer.enableRoundRobin(4);
+    jsonBuffer.enableRoundRobin(5);
+    netcdfBuffer.enableRoundRobin(6);
 
     // Expose buffers on TINC server
     tincServer << imageBuffer << jsonBuffer << netcdfBuffer;
@@ -146,21 +119,21 @@ public:
       imageReport.set(true);
 
       auto imageData = imageBuffer.get();
-      // code to utilize new image data
+      // place here code to utilize new image data
     }
 
     if (jsonBuffer.newDataAvailable()) {
       jsonReport.set(true);
 
       auto jsonData = jsonBuffer.get();
-      // code to utilize new json data
+      // place here code to utilize new json data
     }
 
     if (netcdfBuffer.newDataAvailable()) {
       ncReport.set(true);
 
       auto ncData = netcdfBuffer.get();
-      // code to utilize the new netcdf data
+      // place here code to utilize the new netcdf data
     }
   }
   void onDraw(al::Graphics &g) override {
@@ -168,7 +141,10 @@ public:
     gui.draw(g);
   }
 
-  void onExit() override { gui.cleanup(); }
+  void onExit() override {
+    tincServer.stop(); // Not closing the server leaves a running thread
+    gui.cleanup();
+  }
 };
 
 int main() {

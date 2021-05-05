@@ -69,17 +69,11 @@ public:
    */
   std::string setData(DataType &newData);
 
-  void registerUpdateCallback(std::function<void(bool)> cb) {
-    mUpdateCallbacks.push_back(cb);
-  }
-
 protected:
   virtual bool parseFile(std::string fileName,
                          std::shared_ptr<DataType> newData) = 0;
 
   virtual bool encodeData(std::string fileName, DataType &newData) = 0;
-
-  std::vector<std::function<void(bool)>> mUpdateCallbacks;
 };
 
 // ----------------------------------
@@ -93,6 +87,9 @@ DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
   m_baseFileName = fileName;
   if (path.size() > 0) {
     m_path = al::File::conformDirectory(path);
+    if (!al::File::exists(m_path)) {
+      al::Dir::make(m_path);
+    }
   } else {
     m_path = "";
   }

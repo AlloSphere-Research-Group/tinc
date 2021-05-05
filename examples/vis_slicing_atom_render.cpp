@@ -8,6 +8,12 @@ using namespace tinc;
 
 class MyApp : public al::App {
 
+  void onInit() override {
+    atoms.init();
+    atoms.registerWithTincServer(tserver);
+    tserver.start();
+  }
+
   void onCreate() override {
     // Move back so we can see the scene
     nav().set(al::Pose{{0, 0, 4}});
@@ -51,7 +57,6 @@ class MyApp : public al::App {
     gui.init();
   }
 
-  void onInit() override { atoms.init(); }
   void onAnimate(double dt) override {
     atoms.update(dt);
     rotation += 0.15;
@@ -115,12 +120,17 @@ class MyApp : public al::App {
     return true;
   }
 
-  void onExit() override { gui.cleanup(); }
+  void onExit() override {
+    gui.cleanup();
+    tserver.stop();
+  }
 
 private:
   SlicingAtomRenderer atoms{"atoms", "atoms.nc"};
   al::ControlGUI gui;
   al::Mesh boxMesh;
+
+  TincServer tserver;
 
   std::vector<al::Vec3f> atomPositions;
   float rotation = 0;

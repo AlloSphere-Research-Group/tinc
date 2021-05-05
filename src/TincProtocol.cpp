@@ -558,6 +558,24 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
   return confMessages;
 }
 
+TincMessage createConfigureDiskBufferMessage(DiskBufferAbstract *dp) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CONFIGURE);
+  msg.set_objecttype(ObjectType::DISK_BUFFER);
+  ConfigureDiskBuffer confMessage;
+  confMessage.set_id(dp->getId());
+  confMessage.set_configurationkey(DiskBufferConfigureType::CURRENT_FILE);
+  google::protobuf::Any *configValue = confMessage.configurationvalue().New();
+  ParameterValue val;
+  val.set_valuestring(dp->getCurrentFileName());
+  configValue->PackFrom(val);
+  confMessage.set_allocated_configurationvalue(configValue);
+  auto details = msg.details().New();
+  details->PackFrom(confMessage);
+  msg.set_allocated_details(details);
+  return msg;
+}
+
 TincMessage createConfigureDataPoolMessage(DataPool *dp) {
   TincMessage msg;
   msg.set_messagetype(MessageType::CONFIGURE);
@@ -1067,6 +1085,8 @@ bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   }
   mDiskBuffers.push_back(&db);
 
+  db.registerUpdateCallback([this](bool ok) {});
+
   // Broadcast registered DiskBuffer
   sendRegisterMessage(&db, nullptr, src);
   sendConfigureMessage(&db, nullptr, src);
@@ -1288,6 +1308,15 @@ ParameterSpace *TincProtocol::getParameterSpace(std::string name) {
   for (auto *ps : mParameterSpaces) {
     if (ps->getId() == name) {
       return ps;
+    }
+  }
+  return nullptr;
+}
+
+DiskBufferAbstract *TincProtocol::getDiskBuffer(std::string name) {
+  for (auto *db : mDiskBuffers) {
+    if (db->getId() == name) {
+      return db;
     }
   }
   return nullptr;
@@ -1712,7 +1741,53 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
-  // FIXME implement
+
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterDiskBuffer>()) {
+    std::cerr << __FUNCTION__
+              << ": Register Disk Buffer message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RegisterDiskBuffer command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+
+  if (mVerbose) {
+    std::cout << " Registering DiskBuffer " << id << std::endl;
+  }
+
+  for (auto &ps : mDiskBuffers) {
+    if (ps->getId() == id) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": DiskBuffer " << id
+                  << " already registered." << std::endl;
+      }
+      return true;
+    }
+  }
+  auto path = command.path();
+  auto baseFilename = command.basefilename();
+
+  if (command.type() == DiskBufferType::JSON) {
+    mLocalDBs.emplace_back(
+        std::make_shared<DiskBufferJson>(id, baseFilename, path));
+  } else if (command.type() == DiskBufferType::NETCDF) {
+    mLocalDBs.emplace_back(
+        std::make_shared<DiskBufferNetCDFData>(id, baseFilename, path));
+  } else if (command.type() == DiskBufferType::IMAGE) {
+    mLocalDBs.emplace_back(
+        std::make_shared<DiskBufferImage>(id, baseFilename, path));
+  } else {
+
+    std::cout << __FUNCTION__ << ": DiskBuffer type not supported."
+              << std::endl;
+    return false;
+  }
+
+  registerDiskBuffer(*mLocalDBs.back(), src);
+
   return true;
 }
 
@@ -1806,16 +1881,20 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
 
   DiskBufferType type = DiskBufferType::BINARY;
 
-  if (strcmp(typeid(db).name(), typeid(DiskBufferNetCDFData).name()) == 0) {
+  if (dynamic_cast<DiskBufferNetCDFData *>(db)) {
     type = DiskBufferType::NETCDF;
-  } else if (strcmp(typeid(db).name(), typeid(DiskBufferImage).name()) == 0) {
+  } else if (dynamic_cast<DiskBufferImage *>(db)) {
     type = DiskBufferType::IMAGE;
-  } else if (strcmp(typeid(db).name(), typeid(DiskBufferJson).name()) == 0) {
+  } else if (dynamic_cast<DiskBufferJson *>(db)) {
     type = DiskBufferType::JSON;
+  } else {
+    // FIXME implement missing types
+    type = DiskBufferType::BINARY;
   }
   details.set_type(type);
   details.set_basefilename(db->getBaseFileName());
-  // TODO prepend node's root directory
+  // TODO separate node path from relative path. Perhaps through a global path
+  // map?
   std::string path = al::File::currentPath() + db->getPath();
   details.set_path(path);
 
@@ -2113,7 +2192,12 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
 
 void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
                                         al::Socket *src) {
-  // TODO implement
+  auto msg = createConfigureDiskBufferMessage(p);
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
+  }
 }
 
 void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
@@ -2459,7 +2543,7 @@ bool TincProtocol::readCommandMessage(int objectType, void *any,
     // return sendProcessors(src);
     break;
   case ObjectType::DISK_BUFFER:
-    // return processConfigureDiskBuffer(any, src);
+    return processCommandDiskBuffer(any, src);
     break;
   case ObjectType::DATA_POOL:
     return processCommandDataPool(any, src);
@@ -2654,6 +2738,23 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
                             src);
   }
   return false;
+}
+
+bool TincProtocol::processCommandDiskBuffer(void *any, al::Socket *src) {
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<Command>()) {
+    std::cerr << __FUNCTION__ << ": Command message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+  Command incomingCommand;
+  details->UnpackTo(&incomingCommand);
+  uint64_t commandNumber = incomingCommand.message_id();
+  auto dblId = incomingCommand.id().id();
+
+  if (incomingCommand.details().Is<DataPoolCommandSlice>()) {
+  }
+  return true;
 }
 
 bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
