@@ -209,6 +209,11 @@ void main()
 
     float colormult = 1.0;
     if (!is_highlighted(offset.xyz)) {
+        if (clipped_mult == 0) {
+            // Don't draw anything if completely clipped
+            gl_Position = vec4(0,0,0, 0);
+            return;
+        }
         if (is_line > 0.5) {
         colormult = clipped_mult * 0.3;
         } else {
@@ -228,6 +233,7 @@ void main()
     }
 
     vec4 p = vec4(local_scale * markerScale * position.xyz, 0.0) + (mesh_center);
+
     if (is_omni > 0.5) {
         gl_Position = al_ProjectionMatrix * stereo_displace(al_ModelViewMatrix * p, eye_sep, foc_len);
     } else {
