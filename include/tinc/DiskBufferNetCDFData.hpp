@@ -555,8 +555,8 @@ protected:
     nc_type atttype;
     int dimids[1];
 
-    if ((retval =
-             nc_create((getPath() + fileName).c_str(), NC_CLOBBER, &ncid))) {
+    if ((retval = nc_create((getPath() + fileName).c_str(),
+                            NC_CLOBBER | NC_NETCDF4, &ncid))) {
       goto done;
     }
 
