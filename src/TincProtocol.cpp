@@ -1085,7 +1085,12 @@ bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   }
   mDiskBuffers.push_back(&db);
 
-  db.registerUpdateCallback([this](bool ok) {});
+  db.registerUpdateCallback([&](bool ok) {
+    if (ok) {
+      // TODO send more granular messages, not everything.
+      sendConfigureMessage(&db, nullptr, nullptr);
+    }
+  });
 
   // Broadcast registered DiskBuffer
   sendRegisterMessage(&db, nullptr, src);

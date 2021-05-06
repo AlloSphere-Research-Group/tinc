@@ -43,8 +43,14 @@ time.sleep(0.5)
 
 db = tclient.get_disk_buffer("nc")
 
+olddata = db.data.tolist()
+
+db.data = [0,1,2,3,4]
+db.data = [5,6,7,8]
+db.data = [0,1,2,3,4,5]
+db.data = [5,6,7,8, 9]
 #print(db.data)
-test_output = [db.get_path(), db.get_base_filename(), db.get_current_filename(), db.data.tolist()]
+test_output = [db.get_path(), db.get_base_filename(), db.get_current_filename(), olddata]
 
 #print(type(db.data))
 #print(type(db.data[0]))
@@ -71,5 +77,8 @@ tclient.stop()
   for (int i = 0; i < elementCount; i++) {
     EXPECT_EQ(output[3][i], v[i]);
   }
+
+  auto &newData = ncBuffer.get()->getVector<float>();
+  EXPECT_EQ(newData, std::vector<float>({5, 6, 7, 8, 9}));
   tserver.stop();
 }

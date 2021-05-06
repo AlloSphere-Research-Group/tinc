@@ -106,6 +106,7 @@ bool DiskBuffer<DataType>::loadData(std::string filename) {
   if (ret) {
     BufferManager<DataType>::doneWriting(newData);
   }
+  lk.unlock();
   for (auto cb : mUpdateCallbacks) {
     cb(ret);
   }

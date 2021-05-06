@@ -212,6 +212,7 @@ public:
    * @brief Set name of variable in NetCDF file
    * @param name
    */
+  // TODO propagate this to TincClients
   void setDataFieldName(std::string name) { mDataFieldName = name; }
 
 protected:
@@ -223,6 +224,9 @@ protected:
 
 #ifdef TINC_HAS_NETCDF
     if ((retval = nc_open((getPath() + fileName).c_str(), NC_NOWRITE, &ncid))) {
+      std::cout << __FILE__ << ":" << __LINE__
+                << " ERROR opening netcdf file:" << getPath() + fileName
+                << std::endl;
       goto done;
     }
     int varid;
@@ -476,7 +480,8 @@ protected:
     ret = true;
   done:
     if ((retval = nc_close(ncid))) {
-      std::cerr << "ERROR closing NetCDF file" << std::endl;
+      std::cerr << __FILE__ << ":" << __LINE__ << "ERROR closing NetCDF file "
+                << getPath() + fileName << std::endl;
     }
 #endif
     return ret;
@@ -636,6 +641,10 @@ protected:
     }
     return true;
   done:
+    if ((retval = nc_close(ncid))) {
+      std::cerr << "ERROR closing NetCDF file" << std::endl;
+      goto done;
+    }
 #endif
     return false;
   }
