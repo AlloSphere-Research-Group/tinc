@@ -11,6 +11,7 @@ TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
     : SceneObject(id, filename, path, size),
       trajectoryWidth("width", id, 0.1, 0.0001, 0.5),
       alpha("alpha", id, 0.8, 0.0, 1.0) {
+
   trajectoryWidth.registerChangeCallback([&](float value) {
     // Force a reload. New value will be used in update()
     mBuffer.doneWriting(mBuffer.get());
@@ -19,6 +20,7 @@ TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
     // Force a reload. New value will be in in update()
     mBuffer.doneWriting(mBuffer.get());
   });
+  setTrajectory(std::vector<al::Vec3f>{}, {});
   registerParameter(alpha);
   registerParameter(trajectoryWidth);
 }
@@ -45,7 +47,7 @@ void TrajectoryRender::setTrajectory(std::vector<al::Vec3f> positions,
     }
   }
 
-  newData.setType(NC_FLOAT);
+  newData.setType(NetCDFTypes::FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(positions.size() * 3 + colors.size() * 3);
   auto dataIt = dataVector.begin();
@@ -92,7 +94,7 @@ void TrajectoryRender::setTrajectory(
     }
   }
 
-  newData.setType(NC_FLOAT);
+  newData.setType(NetCDFTypes::FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(positions.size() * 6 + colors.size() * 3);
   auto dataIt = dataVector.begin();
@@ -213,6 +215,15 @@ void TrajectoryRender::update(double dt) {
             counter--;
             continue;
           }
+
+          al::Vec3f thisMovement;
+          thisMovement.x = *dataIt;
+          dataIt++;
+          thisMovement.y = *dataIt;
+          dataIt++;
+          thisMovement.z = *dataIt;
+          dataIt++;
+
           if (arrangement == DATA_POS_REL) {
             al::HSV hsvColor(0.5 * float(counter) / pointCount, 1.0, 1.0);
             ImGui::ColorConvertHSVtoRGB(hsvColor.h, hsvColor.s, hsvColor.v, c.r,
@@ -226,14 +237,6 @@ void TrajectoryRender::update(double dt) {
             dataIt++;
           }
           c.a = alpha;
-
-          al::Vec3f thisMovement;
-          thisMovement.x = *dataIt;
-          dataIt++;
-          thisMovement.y = *dataIt;
-          dataIt++;
-          thisMovement.z = *dataIt;
-          dataIt++;
 
           al::Vec3f thisPoint = previousPoint + thisMovement;
           addMarkerToMesh(previousPoint, thisPoint, c);

@@ -17,8 +17,8 @@ public:
   typedef enum {
     DATA_POS_REL = 0,
     DATA_POS_ABS,
-    DATA_POS_ABS_RGB,
-    DATA_POS_REL_RGB
+    DATA_POS_REL_RGB,
+    DATA_POS_ABS_RGB
   } DataArrangement;
 
   void setTrajectory(std::vector<al::Vec3f> positions,
