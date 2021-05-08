@@ -263,8 +263,12 @@ void SlicingAtomRenderer::init() {
         mSlicingPlaneQuat.rotate(al::Vec3f(0.f, 0.f, 1.f)));
   });
 
-  mSlicingPlaneNormal.registerChangeCallback([this](Vec3f value) {
+  mSlicingPlaneNormal.setProcessingCallback([this](Vec3f value) {
     value.normalize();
+    return value;
+  });
+
+  mSlicingPlaneNormal.registerChangeCallback([this](Vec3f value) {
     mSlicingPlaneQuat =
         al::Quatf::getRotationTo(al::Vec3f(0.f, 0.f, 1.f), value);
     float pitch, yaw, roll;
