@@ -211,11 +211,13 @@ std::string ParameterSpace::getCurrentRelativeRunPath() {
   return generateRelativeRunPath(indices, this);
 }
 
-std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames) {
+std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames,
+                                        std::map<std::string, size_t> indices) {
   std::vector<ParameterSpaceDimension *> dimensions;
   if (dimNames.size() == 0) {
     dimNames = getDimensionNames();
   }
+
   for (auto &dimName : dimNames) {
     auto *dim = getDimension(dimName);
     if (dim && dim->getCurrentIds().size() > 1) {
@@ -270,7 +272,7 @@ bool ParameterSpace::isFilesystemDimension(std::string dimensionName) {
     std::map<std::string, size_t> indices;
     indices[dim->getName()] = {0};
     auto path0 = generateRelativeRunPath(indices, this);
-    indices[dim->getName()] = {1};
+    indices[dim->getName()] = {dim->getSpaceStride()};
     auto path1 = generateRelativeRunPath(indices, this);
     if (path0 != path1) {
       return true;
@@ -297,7 +299,7 @@ bool ParameterSpace::incrementIndices(
 
   for (auto &dimensionIndex : currentIndices) {
     auto dimension = getDimension(dimensionIndex.first);
-    dimensionIndex.second++;
+    dimensionIndex.second += dimension->getSpaceStride();
     if (dimensionIndex.second >= dimension->size()) {
       dimensionIndex.second = 0;
     } else {
@@ -833,6 +835,7 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
     auto endPos = fileTemplate.find("%%", beginPos + 2);
     if (endPos != std::string::npos) {
       auto token = fileTemplate.substr(beginPos + 2, endPos - beginPos - 2);
+
       std::string representation;
       auto representationSeparation = token.find(":");
       if (representationSeparation != std::string::npos) {
@@ -841,69 +844,95 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
       }
       bool replaced = false;
 
-      auto indexOverride = indices.find(token);
-      if (indexOverride != indices.end()) {
-        // Use provided index instead of current values
-        auto &index = indexOverride->second;
-        auto dim = getDimension(indexOverride->first);
-        if (representation.size() == 0) {
-          switch (dim->getSpaceRepresentationType()) {
-          case ParameterSpaceDimension::ID:
-            representation = "ID";
-            break;
-          case ParameterSpaceDimension::VALUE:
-            representation = "VALUE";
-            break;
-          case ParameterSpaceDimension::INDEX:
-            representation = "INDEX";
-            break;
-          }
-        }
-        if (representation == "ID") {
-          resolvedName += dim->idAt(index);
-        } else if (representation == "VALUE") {
-          resolvedName += std::to_string(dim->at(index));
-        } else if (representation == "INDEX") {
-          resolvedName += std::to_string(index);
-        } else {
-          std::cerr << "Representation error: " << representation << std::endl;
-        }
+      std::vector<std::string> allTokens;
+      auto multiSeparation = token.find(",");
+      size_t currentIndex = 0;
+      while (multiSeparation != std::string::npos) {
+        representation = token.substr(representationSeparation + 1);
+        allTokens.push_back(token.substr(currentIndex, multiSeparation));
+        currentIndex += multiSeparation + 1;
+        multiSeparation = token.find(",", currentIndex);
+      }
+      if ((currentIndex < representationSeparation ||
+           representationSeparation != std::string::npos) &&
+          currentIndex < endPos) {
+        allTokens.push_back(
+            token.substr(currentIndex, endPos - currentIndex - 2));
+      }
 
-        replaced = true;
+      if (allTokens.size() > 1) {
+        auto commonId = getCommonId(allTokens, indices);
+
+        if (commonId.size() > 0) {
+          resolvedName += commonId;
+          replaced = true;
+        }
       } else {
-        // Use current value
-        for (auto dim : getDimensions()) {
-          if (dim->getName() == token) {
-            if (representation.size() == 0) {
-              switch (dim->getSpaceRepresentationType()) {
-              case ParameterSpaceDimension::ID:
-                representation = "ID";
-                break;
-              case ParameterSpaceDimension::VALUE:
-                representation = "VALUE";
-                break;
-              case ParameterSpaceDimension::INDEX:
-                representation = "INDEX";
-                break;
-              }
+        auto indexOverride = indices.find(token);
+        if (indexOverride != indices.end()) {
+          // Use provided index instead of current values
+          auto &index = indexOverride->second;
+          auto dim = getDimension(indexOverride->first);
+          if (representation.size() == 0) {
+            switch (dim->getSpaceRepresentationType()) {
+            case ParameterSpaceDimension::ID:
+              representation = "ID";
+              break;
+            case ParameterSpaceDimension::VALUE:
+              representation = "VALUE";
+              break;
+            case ParameterSpaceDimension::INDEX:
+              representation = "INDEX";
+              break;
             }
-            if (representation == "ID") {
-              resolvedName += dim->getCurrentId();
-            } else if (representation == "VALUE") {
-              resolvedName += std::to_string(dim->getCurrentValue());
-            } else if (representation == "INDEX") {
-              auto index = dim->getCurrentIndex();
-              if (index == SIZE_MAX) {
-                index = 0;
-              }
-              resolvedName += std::to_string(index);
-            } else {
-              std::cerr << "Representation error: " << representation
-                        << std::endl;
-            }
+          }
+          if (representation == "ID") {
+            resolvedName += dim->idAt(index);
+          } else if (representation == "VALUE") {
+            resolvedName += std::to_string(dim->at(index));
+          } else if (representation == "INDEX") {
+            resolvedName += std::to_string(index);
+          } else {
+            std::cerr << "Representation error: " << representation
+                      << std::endl;
+          }
 
-            replaced = true;
-            break;
+          replaced = true;
+        } else {
+          // Use current value
+          for (auto dim : getDimensions()) {
+            if (dim->getName() == token) {
+              if (representation.size() == 0) {
+                switch (dim->getSpaceRepresentationType()) {
+                case ParameterSpaceDimension::ID:
+                  representation = "ID";
+                  break;
+                case ParameterSpaceDimension::VALUE:
+                  representation = "VALUE";
+                  break;
+                case ParameterSpaceDimension::INDEX:
+                  representation = "INDEX";
+                  break;
+                }
+              }
+              if (representation == "ID") {
+                resolvedName += dim->getCurrentId();
+              } else if (representation == "VALUE") {
+                resolvedName += std::to_string(dim->getCurrentValue());
+              } else if (representation == "INDEX") {
+                auto index = dim->getCurrentIndex();
+                if (index == SIZE_MAX) {
+                  index = 0;
+                }
+                resolvedName += std::to_string(index);
+              } else {
+                std::cerr << "Representation error: " << representation
+                          << std::endl;
+              }
+
+              replaced = true;
+              break;
+            }
           }
         }
       }

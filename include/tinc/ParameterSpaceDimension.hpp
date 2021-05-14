@@ -264,6 +264,9 @@ public:
    * @param values pointer to array of values
    * @param idprefix prefix for auto generated ids
    * @param src source socket if this function is called from the network
+   *
+   * You will need to call conformSpace() to ensure value and minimum and
+   * maximum are update to reflect the parameter space.
    */
   template <typename SpaceDataType>
   void setSpaceValues(std::vector<SpaceDataType> values,

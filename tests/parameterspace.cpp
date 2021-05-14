@@ -390,3 +390,43 @@ TEST(ParameterSpace, CommonId) {
   dimension2->stepDecrease();
   EXPECT_EQ(ps.getCommonId(), "A");
 }
+
+TEST(ParameterSpace, MultiIDDimensions) {
+  ParameterSpace ps;
+  ps.setRootPath(TINC_TESTS_SOURCE_DIR "/data");
+
+  // This internal dimension determines the index into the elements found in
+  // results.json
+  auto internalDim = ps.newDimension("internal");
+  internalDim->setSpaceValues(
+      std::vector<float>{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7});
+  internalDim->conformSpace();
+  auto externalDim1 = ps.newDimension("external1", ParameterSpaceDimension::ID);
+  auto externalDim2 =
+      ps.newDimension("external2", ParameterSpaceDimension::VALUE);
+  externalDim1->setSpaceValues(std::vector<float>{10.0, 10.0, 10.1, 10.1});
+  externalDim1->setSpaceIds(
+      {"folderA_1", "folderA_2", "folderB_1", "folderB_2"});
+  externalDim1->conformSpace();
+  externalDim2->setSpaceValues(std::vector<float>{1, 1, 2, 2});
+  externalDim2->setSpaceIds(
+      {"folderA_1", "folderB_1", "folderA_2", "folderB_2"});
+  externalDim2->conformSpace();
+
+  ps.setCurrentPathTemplate("%%external1,external2%%/");
+  EXPECT_TRUE(
+      al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderA_1/"));
+  externalDim1->setCurrentValue(10.1);
+  EXPECT_TRUE(
+      al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderB_1/"));
+  externalDim2->setCurrentValue(2);
+  EXPECT_TRUE(
+      al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderB_2/"));
+  externalDim1->setCurrentValue(10.0);
+  EXPECT_TRUE(
+      al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderA_2/"));
+  externalDim2->setCurrentValue(1);
+  EXPECT_TRUE(
+      al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderA_1/"));
+  std::cout << std::endl;
+}

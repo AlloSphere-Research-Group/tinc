@@ -140,12 +140,14 @@ public:
   /**
    * @brief Resolve common id for dimensions
    * @param dims
+   * @param indeces map containing override values
    * @return
    *
    * When dimensions have the same value mapped to multiple ids, the id can
    * be resolved through the combination with other dimensions
    */
-  std::string getCommonId(std::vector<std::string> dimNames = {});
+  std::string getCommonId(std::vector<std::string> dimNames = {},
+                          std::map<std::string, size_t> indices = {});
 
   /**
    * @brief Returns the names of all dimensions
@@ -351,6 +353,12 @@ public:
    * example:
    * "value_%%ParameterValue:INDEX%%" will replace "%%ParameterValue:INDEX%%"
    * with the current index for ParameterValue.
+   * For parameters that have mutiple ids for the same value, you can specify
+   * any muber of parameters separated by commas. the function getCommonId()
+   * will be called. For example, for %%param1,param2%% the common id for the
+   * their current values will be inserted. Any representation type (ID, VALUE,
+   * INDEX) is ignored, as only ids are used. Using this method can be useful as
+   * it can avoid having to define a custom generateRelativeRunPath() function
    */
   std::string resolveFilename(std::string fileTemplate,
                               std::map<std::string, size_t> indeces = {});
