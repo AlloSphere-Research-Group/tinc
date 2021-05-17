@@ -227,9 +227,17 @@ std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames,
   if (dimensions.size() > 1) {
     auto dimIt = dimensions.begin();
     auto ids = (*dimIt)->getCurrentIds();
+    if (indices.find((*dimIt)->getName()) != indices.end()) {
+      ids =
+          (*dimIt)->getIdsForValue((*dimIt)->at(indices[(*dimIt)->getName()]));
+    }
     dimIt++;
     while (dimIt != dimensions.end() && ids.size() > 1) {
       auto dimIds = (*dimIt)->getCurrentIds();
+      if (indices.find((*dimIt)->getName()) != indices.end()) {
+        dimIds = (*dimIt)->getIdsForValue(
+            (*dimIt)->at(indices[(*dimIt)->getName()]));
+      }
       std::vector<std::string> idsToRemove;
       for (auto &id : ids) {
         auto pos = std::find(dimIds.begin(), dimIds.end(), id);
@@ -240,6 +248,7 @@ std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames,
       for (auto &id : idsToRemove) {
         ids.erase(std::find(ids.begin(), ids.end(), id));
       }
+      dimIt++;
     }
     if (ids.size() == 1) {
       return ids[0];
@@ -251,8 +260,8 @@ std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames,
     std::cerr << __FUNCTION__
               << ": Less than two valid dimensions provided. No id returned"
               << std::endl;
-    return std::string();
   }
+  return std::string();
 }
 
 std::vector<std::string> ParameterSpace::getDimensionNames() {

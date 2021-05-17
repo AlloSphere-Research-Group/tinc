@@ -66,8 +66,8 @@ DataPool::createDataSlice(std::string field,
   size_t dimCount = fieldSize;
   for (auto sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
-    if (dim) {
-      dimCount *= dim->size();
+    if (dim && dim->getSpaceStride() > 0) {
+      dimCount *= dim->size() / dim->getSpaceStride();
     } else {
       std::cerr << "ERROR: Unknown dimension: " << sliceDimension << std::endl;
       return std::string();
@@ -86,8 +86,11 @@ DataPool::createDataSlice(std::string field,
       // TODO should we perform a  copy of the parameter space to avoid race
       // conditions?
       // sliceDimension is a dimension that affects filesystem paths.
-      size_t dimCount = dim->size();
-      values.reserve(dimCount);
+      size_t thisDimCount = dim->size();
+      if (dim->getSpaceStride() > 1) {
+        thisDimCount /= dim->getSpaceStride();
+      }
+      values.reserve(thisDimCount);
 
       auto dataPaths = getAllPaths(fixedDims);
       for (auto directory : dataPaths) {

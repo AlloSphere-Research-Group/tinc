@@ -248,6 +248,13 @@ public:
    */
   std::string idAt(size_t index);
 
+  /**
+   * @brief get all ids for a value
+   * @param value
+   * @return ids
+   */
+  std::vector<std::string> getIdsForValue(float value);
+
   // Discrete parameter space values
   /**
    * @brief Set possible values in the parameter space dimension
@@ -325,11 +332,12 @@ public:
 
   /**
    * @brief Adjust range according to current values in parameter space
+   * @return true if conform was succesful and space is consistent
    *
    * The minimum and maximum value are stored separately from the values
    * the parameter can take, so you must set them manually or use this function.
    */
-  void conformSpace();
+  bool conformSpace();
 
   /**
    * @brief provide a deep copy of the parameter space

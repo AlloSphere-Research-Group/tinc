@@ -146,6 +146,10 @@ std::string ParameterSpaceDimension::idAt(size_t index) {
   return mSpaceValues.idAt(index);
 }
 
+std::vector<std::string> ParameterSpaceDimension::getIdsForValue(float value) {
+  return mSpaceValues.getIdsForValue(value);
+}
+
 float ParameterSpaceDimension::getCurrentValue() {
   if (mSpaceValues.size() > 0) {
     return mSpaceValues.at(getCurrentIndex());
@@ -323,8 +327,9 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
   return mSpaceValues.getIds();
 }
 
-void ParameterSpaceDimension::conformSpace() {
+bool ParameterSpaceDimension::conformSpace() {
   sort();
+  // TODO we should also validate stride in this function
   switch (mSpaceValues.getDataType()) {
   case al::DiscreteParameterValues::FLOAT: {
     auto &param = getParameter<al::Parameter>();
@@ -451,6 +456,7 @@ void ParameterSpaceDimension::conformSpace() {
     //    valueDbl = *(static_cast<uint64_t *>(value));
     //  } break;
   }
+  return true;
 }
 
 std::shared_ptr<ParameterSpaceDimension> ParameterSpaceDimension::deepCopy() {
