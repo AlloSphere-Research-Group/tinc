@@ -64,3 +64,7 @@ TEST(ProtocolParameterSpace, Connection) {
   tclient.stop();
   tserver.stop();
 }
+
+TEST(ProtocolParameterSpace, PathTemplate) {
+    // Check propagation and resolution of path template in client
+}
