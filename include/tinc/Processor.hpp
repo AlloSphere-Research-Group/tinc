@@ -264,6 +264,24 @@ public:
     return registerParameter(newParam);
   }
 
+  /**
+   * @brief Register a dependency
+   * @param param
+   * @return
+   *
+   * A dependency is a parameter that affects the result of this processor but
+   * does not trigger computation
+   */
+  Processor &registerDependency(al::ParameterMeta &param) {
+    mDependencies.push_back(&param);
+    return *this;
+  }
+  /**
+   * @brief Return the dependencies registered with this Processor
+   * @return
+   */
+  std::vector<al::ParameterMeta *> getDependencies() { return mDependencies; }
+
   typedef std::map<std::string, VariantValue> Configuration;
 
   /**
@@ -285,6 +303,7 @@ protected:
   bool mUseCache{false};
 
   std::vector<al::ParameterMeta *> mParameters;
+  std::vector<al::ParameterMeta *> mDependencies;
 
   void callStartCallbacks();
   void callDoneCallbacks(bool result);

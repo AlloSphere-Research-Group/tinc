@@ -65,7 +65,10 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
         entry.sourceInfo.tincId == sourceInfo.tincId &&
         entry.sourceInfo.type == sourceInfo.type) {
       auto entryArguments = entry.sourceInfo.arguments;
-      if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size()) {
+      auto entryDependencies = entry.sourceInfo.dependencies;
+      if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size() &&
+          sourceInfo.dependencies.size() ==
+              entry.sourceInfo.dependencies.size()) {
         size_t matchCount = 0;
         for (const auto &sourceArg : sourceInfo.arguments) {
           for (auto arg = entryArguments.begin(); arg != entryArguments.end();
@@ -105,8 +108,47 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
             }
           }
         }
-        if (matchCount == sourceInfo.arguments.size() &&
-            entryArguments.size() == 0) {
+        for (const auto &sourceDep : sourceInfo.dependencies) {
+          for (auto arg = entryDependencies.begin();
+               arg != entryDependencies.end(); arg++) {
+            if (sourceDep.id == arg->id) {
+              if (sourceDep.value.type == arg->value.type) {
+                if (sourceDep.value.type == VARIANT_DOUBLE ||
+                    sourceDep.value.type == VARIANT_FLOAT) {
+                  if (sourceDep.value.valueDouble == arg->value.valueDouble) {
+                    entryDependencies.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else if (sourceDep.value.type == VARIANT_INT32 ||
+                           sourceDep.value.type == VARIANT_INT64) {
+                  if (sourceDep.value.valueInt64 == arg->value.valueInt64) {
+                    entryDependencies.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else if (sourceDep.value.type == VARIANT_STRING) {
+                  if (sourceDep.value.valueStr == arg->value.valueStr) {
+                    entryDependencies.erase(arg);
+                    matchCount++;
+                    break;
+                  }
+                } else {
+                  std::cerr << "ERROR: Unsupported type for dependency value"
+                            << std::endl;
+                }
+              } else {
+                std::cout << "ERROR: type mismatch for dependency in cache. "
+                             "Ignoring cache"
+                          << std::endl;
+                continue;
+              }
+            }
+          }
+        }
+        if (matchCount ==
+                sourceInfo.arguments.size() + sourceInfo.dependencies.size() &&
+            entryArguments.size() == 0 && entryDependencies.size() == 0) {
           return entry.filenames;
         }
       } else {
@@ -136,11 +178,16 @@ void CacheManager::updateFromDisk() {
   std::ifstream f(mCachePath.filePath());
   if (f.good()) {
     nlohmann::json j;
-    f >> j;
+    try {
+      f >> j;
+    } catch (const std::exception &e) {
+      std::cerr << "Cache json parsing failed: " << e.what() << std::endl;
+      return;
+    }
     try {
       mValidator.validate(j);
     } catch (const std::exception &e) {
-      std::cerr << "Validation failed, here is why: " << e.what() << std::endl;
+      std::cerr << "Cache json validation failed: " << e.what() << std::endl;
       return;
     }
     if (j["tincMetaVersionMajor"] != TINC_META_VERSION_MAJOR ||
@@ -226,6 +273,13 @@ void CacheManager::updateFromDisk() {
 
 void CacheManager::writeToDisk() {
   std::unique_lock<std::mutex> lk(mCacheLock);
+  if (al::File::exists(mCachePath.filePath())) {
+    // Keep backup in case writing metadata fails.
+    if (al::File::exists(mCachePath.filePath() + ".bak")) {
+      al::File::remove(mCachePath.filePath() + ".bak");
+    }
+    al::File::copy(mCachePath.filePath(), mCachePath.filePath() + ".bak");
+  }
   std::ofstream o(mCachePath.filePath());
   if (o.good()) {
     nlohmann::json j;

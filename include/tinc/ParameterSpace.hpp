@@ -187,8 +187,8 @@ public:
    * processor or can replace the current value of a parameter with that name
    */
   bool runProcess(Processor &processor,
-                  std::map<std::string, VariantValue> args = {},
-                  std::map<std::string, VariantValue> dependencies = {},
+                  const std::map<std::string, VariantValue> &args = {},
+                  const std::map<std::string, VariantValue> &dependencies = {},
                   bool recompute = false);
 
   /**
