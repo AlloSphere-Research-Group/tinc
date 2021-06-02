@@ -297,8 +297,8 @@ void CacheManager::updateFromDisk() {
                         << std::endl;
             }
           }
+          e.sourceInfo.arguments.push_back(std::move(newArg));
         }
-        e.sourceInfo.arguments.push_back(std::move(newArg));
       }
       for (auto &arg : entry["sourceInfo"]["dependencies"]) {
         SourceArgument newArg;
@@ -359,8 +359,8 @@ void CacheManager::updateFromDisk() {
                         << std::endl;
             }
           }
+          e.sourceInfo.dependencies.push_back(std::move(newArg));
         }
-        e.sourceInfo.dependencies.push_back(std::move(newArg));
       }
       for (auto arg : entry["sourceInfo"]["fileDependencies"]) {
         FileDependency fileDep;
