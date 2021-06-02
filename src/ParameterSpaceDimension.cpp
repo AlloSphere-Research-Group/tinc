@@ -29,7 +29,7 @@ ParameterSpaceDimension::ParameterSpaceDimension(std::string name,
     mParameterValue = new al::ParameterInt64(name, group);
     break;
   default:
-    throw std::exception("Data type for dimension not supported.");
+    throw std::invalid_argument("Data type for dimension not supported.");
   }
 }
 
