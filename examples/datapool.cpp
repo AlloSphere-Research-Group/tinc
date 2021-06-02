@@ -37,9 +37,11 @@ int main() {
       in.close();
     }
     j["value"].push_back(
-        dataCreator.configuration["internalValuesDim"].valueDouble *
-        (1.0 + std::stoi(dataCreator.configuration["dirDim"].valueStr.substr(
-                   sizeof("datapool_directory_") - 1))));
+        dataCreator.configuration["internalValuesDim"].get<double>() *
+        (1.0 +
+         std::stoi(
+             dataCreator.configuration["dirDim"].get<std::string>().substr(
+                 sizeof("datapool_directory_") - 1))));
 
     std::ofstream out("datapool_data.json");
     if (out.good()) {

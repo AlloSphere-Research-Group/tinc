@@ -34,7 +34,6 @@
  */
 
 #ifdef AL_WINDOWS
-#define NOMINMAX
 #include <Windows.h>
 #undef far
 #endif
@@ -68,7 +67,6 @@ class ParameterSpaceDimension {
   friend class TincProtocol;
 
 public:
-  using Datatype = al::DiscreteParameterValues::Datatype;
   typedef enum { VALUE = 0x00, INDEX = 0x01, ID = 0x02 } RepresentationType;
 
   /**
@@ -79,8 +77,9 @@ public:
    *
    * Dimensions can have names and belong to groups.
    */
-  ParameterSpaceDimension(std::string name, std::string group = "",
-                          Datatype dataType = Datatype::FLOAT);
+  ParameterSpaceDimension(
+      std::string name, std::string group = "",
+      al::VariantType dataType = al::VariantType::VARIANT_FLOAT);
   /**
    * @brief construct a ParameterSpaceDimension from a ParameterMeta *
    * @param param
@@ -319,9 +318,7 @@ public:
    * int8, int16 and in32 are all handled by ParameterInt that uses a 32 bit
    * representation.
    */
-  al::DiscreteParameterValues::Datatype getSpaceDataType() {
-    return mSpaceValues.getDataType();
-  }
+  al::VariantType getSpaceDataType() { return mSpaceValues.getDataType(); }
 
   /**
    * @brief Get index in space for value

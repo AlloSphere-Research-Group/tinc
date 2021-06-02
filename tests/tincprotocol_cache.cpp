@@ -59,17 +59,17 @@ TEST(Cache, ReadWriteEntry) {
 
   SourceArgument arg_int;
   arg_int.id = "int";
-  arg_int.value = 450;
+  arg_int.setValue((int32_t)450);
   sourceInfo.arguments.push_back(arg_int);
 
   SourceArgument arg_float;
   arg_float.id = "float";
-  arg_float.value = 4.05;
+  arg_float.setValue(4.05f);
   sourceInfo.arguments.push_back(arg_float);
 
   SourceArgument arg_string;
   arg_string.id = "string";
-  arg_string.value = "hello";
+  arg_string.setValue(std::string("hello"));
   sourceInfo.arguments.push_back(arg_string);
 
   // Add dependencies
@@ -108,33 +108,42 @@ TEST(Cache, ReadWriteEntry) {
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.size(), 3);
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).id, "int");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value.type, VARIANT_INT64);
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value.valueInt64, 450);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value->type(),
+            al::VariantType::VARIANT_INT32);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value->get<int32_t>(), 450);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).id, "float");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).value.type, VARIANT_DOUBLE);
-  EXPECT_FLOAT_EQ(entries[0].sourceInfo.arguments.at(1).value.valueDouble,
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).value->type(),
+            al::VariantType::VARIANT_FLOAT);
+  EXPECT_FLOAT_EQ(entries[0].sourceInfo.arguments.at(1).value->get<float>(),
                   4.05);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).id, "string");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value.type, VARIANT_STRING);
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value.valueStr, "hello");
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value->type(),
+            al::VariantType::VARIANT_STRING);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value->get<std::string>(),
+            "hello");
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.size(), 3);
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).id, "int");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value.type, VARIANT_INT64);
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value.valueInt64, 450);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value->type(),
+            al::VariantType::VARIANT_INT32);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value->get<int32_t>(),
+            450);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).id, "float");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).value.type,
-            VARIANT_DOUBLE);
-  EXPECT_FLOAT_EQ(entries[0].sourceInfo.dependencies.at(1).value.valueDouble,
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).value->type(),
+            al::VariantType::VARIANT_FLOAT);
+  EXPECT_FLOAT_EQ(entries[0].sourceInfo.dependencies.at(1).value->get<float>(),
                   4.05);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).id, "string");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.type,
-            VARIANT_STRING);
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value.valueStr, "hello");
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value->type(),
+            al::VariantType::VARIANT_STRING);
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value->get<std::string>(),
+            "hello");
+
+  // TODO ML test all types for arguments and dependencies
 }
 
 TEST(Cache, ParameterSpace) {
@@ -148,7 +157,7 @@ TEST(Cache, ParameterSpace) {
   auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::INDEX);
   auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::ID);
 
-  float values[5] = {0.1, 0.2, 0.3, 0.4, 0.5};
+  float values[5] = {0.1f, 0.2f, 0.3f, 0.4f, 0.5f};
   dim2->setSpaceValues(values, 5, "xx");
 
   float dim3Values[6];
@@ -169,9 +178,9 @@ TEST(Cache, ParameterSpace) {
   processor.setOutputFileNames({"cache_ps.txt"});
   processor.processingFunction = [&]() {
     // Compute a value
-    float value = processor.configuration["dim1"].valueDouble *
-                      processor.configuration["dim2"].valueDouble +
-                  processor.configuration["dim3"].valueDouble;
+    float value = processor.configuration["dim1"].get<float>() *
+                      processor.configuration["dim2"].get<float>() +
+                  processor.configuration["dim3"].get<float>();
 
     auto filenames = processor.getOutputFileNames();
 

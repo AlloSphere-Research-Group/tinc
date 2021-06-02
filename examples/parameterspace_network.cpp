@@ -12,9 +12,8 @@ struct MyApp : public al::App {
   tinc::TincServer tserv;
 
   void prepareParameterSpace() {
-    auto dirDim =
-        ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID,
-                        tinc::ParameterSpaceDimension::Datatype::UINT8);
+    auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID,
+                                  al::VariantType::VARIANT_UINT8);
     uint8_t values[] = {0, 2, 4, 6, 8};
     dirDim->appendSpaceValues(values, 5, "datapool_directory_");
     dirDim->conformSpace();

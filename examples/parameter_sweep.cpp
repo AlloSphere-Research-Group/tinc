@@ -1,5 +1,5 @@
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 #include "al/io/al_File.hpp"
 
@@ -33,12 +33,13 @@ int main() {
 
   processor.processingFunction = [&]() {
     std::string text =
-        processor.configuration["dim1"].valueStr + " -- " +
-        std::to_string(processor.configuration["dim2"].valueInt64) + " -- " +
-        std::to_string(processor.configuration["inner_param"].valueDouble);
+        processor.configuration["dim1"].get<std::string>() + " -- " +
+        std::to_string(processor.configuration["dim2"].get<uint64_t>()) +
+        " -- " +
+        std::to_string(processor.configuration["inner_param"].get<float>());
 
     std::cout << "Writing value: "
-              << processor.configuration["inner_param"].valueDouble << " to: "
+              << processor.configuration["inner_param"].get<float>() << " to: "
               << processor.getRunningDirectory() +
                      processor.getOutputFileNames()[0]
               << std::endl;

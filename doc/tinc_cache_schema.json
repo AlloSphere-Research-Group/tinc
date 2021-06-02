@@ -99,6 +99,9 @@
                     "id": {
                       "type": "string"
                     },
+                    "nctype": {
+                      "type": "int"
+                    },
                     "value": {}
                   },
                   "additionalProperties": false
@@ -111,6 +114,9 @@
                   "properties": {
                     "id": {
                       "type": "string"
+                    },
+                    "nctype": {
+                      "type": "int"
                     },
                     "value": {}
                   },

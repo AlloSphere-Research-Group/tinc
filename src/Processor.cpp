@@ -148,18 +148,23 @@ bool Processor::writeMeta() {
 
   // TODO add date and other important information.
 
+  // TODO ML verify support for the rest of the types
   for (auto option : configuration) {
-    switch (option.second.type) {
-    case VARIANT_STRING:
-      j[option.first] = option.second.valueStr;
+    switch (option.second.type()) {
+    case al::VariantType::VARIANT_STRING:
+      j[option.first] = option.second.get<std::string>();
       break;
-    case VARIANT_INT64:
-    case VARIANT_INT32:
-      j[option.first] = option.second.valueInt64;
+    case al::VariantType::VARIANT_INT64:
+      j[option.first] = option.second.get<int64_t>();
       break;
-    case VARIANT_DOUBLE:
-    case VARIANT_FLOAT:
-      j[option.first] = option.second.valueDouble;
+    case al::VariantType::VARIANT_INT32:
+      j[option.first] = option.second.get<int32_t>();
+      break;
+    case al::VariantType::VARIANT_DOUBLE:
+      j[option.first] = option.second.get<double>();
+      break;
+    case al::VariantType::VARIANT_FLOAT:
+      j[option.first] = option.second.get<float>();
       break;
     }
   }

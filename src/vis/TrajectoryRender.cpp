@@ -31,11 +31,12 @@ void TrajectoryRender::setTrajectory(std::vector<al::Vec3f> positions,
 
   NetCDFData newData;
   if (colors.size() == 0) {
-    newData.attributes["dataArrangement"] = VariantValue((int64_t)DATA_POS_REL);
+    newData.attributes["dataArrangement"] =
+        al::VariantValue((int16_t)DATA_POS_REL);
   } else {
     if (colors.size() != positions.size() - 1) {
       newData.attributes["dataArrangement"] =
-          VariantValue((int64_t)DATA_POS_REL);
+          al::VariantValue((int16_t)DATA_POS_REL);
       colors.clear();
       std::cout << __FILE__ << ":" << __LINE__
                 << " colors and postions size mismatch. Ignoring colors."
@@ -43,7 +44,7 @@ void TrajectoryRender::setTrajectory(std::vector<al::Vec3f> positions,
 
     } else {
       newData.attributes["dataArrangement"] =
-          VariantValue((int64_t)DATA_POS_REL_RGB);
+          al::VariantValue((int16_t)DATA_POS_REL_RGB);
     }
   }
 
@@ -78,11 +79,12 @@ void TrajectoryRender::setTrajectory(
 
   NetCDFData newData;
   if (colors.size() == 0) {
-    newData.attributes["dataArrangement"] = VariantValue((int64_t)DATA_POS_ABS);
+    newData.attributes["dataArrangement"] =
+        al::VariantValue((int16_t)DATA_POS_ABS);
   } else {
     if (colors.size() != positions.size() - 1) {
       newData.attributes["dataArrangement"] =
-          VariantValue((int64_t)DATA_POS_REL);
+          al::VariantValue((int16_t)DATA_POS_REL);
       colors.clear();
       std::cout << __FILE__ << ":" << __LINE__
                 << " colors and postions size mismatch. Ignoring colors."
@@ -90,7 +92,7 @@ void TrajectoryRender::setTrajectory(
 
     } else {
       newData.attributes["dataArrangement"] =
-          VariantValue((int64_t)DATA_POS_ABS_RGB);
+          al::VariantValue((int16_t)DATA_POS_ABS_RGB);
     }
   }
 
@@ -189,7 +191,7 @@ void TrajectoryRender::update(double dt) {
 
     if (newData->attributes.find("dataArrangement") !=
         newData->attributes.end()) {
-      auto arrangement = newData->attributes["dataArrangement"].valueInt64;
+      auto arrangement = newData->attributes["dataArrangement"].get<int16_t>();
 
       if (arrangement == DATA_POS_REL || arrangement == DATA_POS_REL_RGB) {
         al::Vec3f previousPoint(0, 0, 0);

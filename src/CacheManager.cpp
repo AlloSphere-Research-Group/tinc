@@ -35,7 +35,7 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
   } else {
     try {
       updateFromDisk();
-    } catch (std::exception &e) {
+    } catch (std::exception & /*e*/) {
       std::string backupFilename = mCachePath.filePath() + ".old";
       size_t count = 0;
       while (al::File::exists(mCachePath.filePath() + std::to_string(count))) {
@@ -56,6 +56,47 @@ void CacheManager::appendEntry(CacheEntry &entry) {
   mEntries.push_back(entry);
 }
 
+std::vector<CacheEntry> CacheManager::entries(size_t count) {
+  std::unique_lock<std::mutex> lk(mCacheLock);
+  if (count == 0 || count >= mEntries.size()) {
+    return mEntries;
+  }
+  std::vector<CacheEntry> e;
+  size_t offset = mEntries.size() - count;
+  e.insert(e.begin(), mEntries.begin() + offset, mEntries.end());
+  return e;
+}
+
+// TODO move to allolib
+bool valueMatch(const al::VariantValue &v1, const al::VariantValue &v2) {
+  if (v1.type() == v2.type()) {
+    if (v1.type() == al::VariantType::VARIANT_FLOAT) {
+      if (v1.get<float>() == v2.get<float>()) {
+        return true;
+      }
+    } else if (v1.type() == al::VariantType::VARIANT_DOUBLE) {
+      if (v1.get<double>() == v2.get<double>()) {
+        return true;
+      }
+    } else if (v1.type() == al::VariantType::VARIANT_INT32) {
+      if (v1.get<int32_t>() == v2.get<int32_t>()) {
+        return true;
+      }
+    } else if (v1.type() == al::VariantType::VARIANT_INT64) {
+      if (v1.get<int64_t>() == v2.get<int64_t>()) {
+        return true;
+      }
+    } else if (v1.type() == al::VariantType::VARIANT_STRING) {
+      if (v1.get<std::string>() == v2.get<std::string>()) {
+        return true;
+      }
+    } else {
+      std::cerr << "ERROR: Unsupported type for argument value" << std::endl;
+    }
+  }
+  return false;
+}
+
 std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
                                                  bool verifyHash) {
   std::unique_lock<std::mutex> lk(mCacheLock);
@@ -64,8 +105,8 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
             sourceInfo.commandLineArguments &&
         entry.sourceInfo.tincId == sourceInfo.tincId &&
         entry.sourceInfo.type == sourceInfo.type) {
-      auto entryArguments = entry.sourceInfo.arguments;
-      auto entryDependencies = entry.sourceInfo.dependencies;
+      auto &entryArguments = entry.sourceInfo.arguments;
+      auto &entryDependencies = entry.sourceInfo.dependencies;
       if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size() &&
           sourceInfo.dependencies.size() ==
               entry.sourceInfo.dependencies.size()) {
@@ -74,81 +115,34 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
           for (auto arg = entryArguments.begin(); arg != entryArguments.end();
                arg++) {
             if (sourceArg.id == arg->id) {
-              if (sourceArg.value.type == arg->value.type) {
-                if (sourceArg.value.type == VARIANT_DOUBLE ||
-                    sourceArg.value.type == VARIANT_FLOAT) {
-                  if (sourceArg.value.valueDouble == arg->value.valueDouble) {
-                    entryArguments.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else if (sourceArg.value.type == VARIANT_INT32 ||
-                           sourceArg.value.type == VARIANT_INT64) {
-                  if (sourceArg.value.valueInt64 == arg->value.valueInt64) {
-                    entryArguments.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else if (sourceArg.value.type == VARIANT_STRING) {
-                  if (sourceArg.value.valueStr == arg->value.valueStr) {
-                    entryArguments.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else {
-                  std::cerr << "ERROR: Unsupported type for argument value"
-                            << std::endl;
-                }
-              } else {
-                std::cout << "ERROR: type mismatch for argument in cache. "
-                             "Ignoring cache"
-                          << std::endl;
-                continue;
+              if (valueMatch(*arg->value, *sourceArg.value)) {
+                //                entryArguments.erase(arg);
+                matchCount++;
+                break;
               }
+            } else {
+              std::cout << "ERROR: type mismatch for argument in cache. "
+                           "Ignoring cache"
+                        << std::endl;
+              continue;
             }
           }
         }
         for (const auto &sourceDep : sourceInfo.dependencies) {
           for (auto arg = entryDependencies.begin();
                arg != entryDependencies.end(); arg++) {
+
             if (sourceDep.id == arg->id) {
-              if (sourceDep.value.type == arg->value.type) {
-                if (sourceDep.value.type == VARIANT_DOUBLE ||
-                    sourceDep.value.type == VARIANT_FLOAT) {
-                  if (sourceDep.value.valueDouble == arg->value.valueDouble) {
-                    entryDependencies.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else if (sourceDep.value.type == VARIANT_INT32 ||
-                           sourceDep.value.type == VARIANT_INT64) {
-                  if (sourceDep.value.valueInt64 == arg->value.valueInt64) {
-                    entryDependencies.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else if (sourceDep.value.type == VARIANT_STRING) {
-                  if (sourceDep.value.valueStr == arg->value.valueStr) {
-                    entryDependencies.erase(arg);
-                    matchCount++;
-                    break;
-                  }
-                } else {
-                  std::cerr << "ERROR: Unsupported type for dependency value"
-                            << std::endl;
-                }
-              } else {
-                std::cout << "ERROR: type mismatch for dependency in cache. "
-                             "Ignoring cache"
-                          << std::endl;
-                continue;
+              if (valueMatch(*arg->value, *sourceDep.value)) {
+                //                entryArguments.erase(arg);
+                matchCount++;
+                break;
               }
             }
           }
         }
         if (matchCount ==
-                sourceInfo.arguments.size() + sourceInfo.dependencies.size() &&
-            entryArguments.size() == 0 && entryDependencies.size() == 0) {
+            sourceInfo.arguments.size() + sourceInfo.dependencies.size()) {
           return entry.filenames;
         }
       } else {
@@ -159,6 +153,24 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
     }
   }
   return {};
+}
+
+void CacheManager::clearCache() {
+  std::unique_lock<std::mutex> lk(mCacheLock);
+  updateFromDisk();
+  for (auto &entry : mEntries) {
+    for (auto filenames : entry.filenames) {
+      for (auto file : filenames) {
+        if (al::File::remove(mCachePath.path() + file)) {
+          std::cerr << __FILE__ << ":" << __LINE__
+                    << " Error removing cache file: "
+                    << mCachePath.path() + file << std::endl;
+        }
+      }
+    }
+  }
+  mEntries.clear();
+  writeToDisk();
 }
 
 std::string CacheManager::cacheDirectory() {
@@ -226,29 +238,129 @@ void CacheManager::updateFromDisk() {
           entry["sourceInfo"]["workingPath"]["rootPath"];
       e.sourceInfo.hash = entry["sourceInfo"]["hash"];
 
-      for (auto arg : entry["sourceInfo"]["arguments"]) {
+      for (auto &arg : entry["sourceInfo"]["arguments"]) {
         SourceArgument newArg;
         newArg.id = arg["id"];
-        if (arg["value"].is_number_float()) {
-          newArg.value = arg["value"].get<double>();
-        } else if (arg["value"].is_number_integer()) {
-          newArg.value = arg["value"].get<int64_t>();
-        } else if (arg["value"].is_string()) {
-          newArg.value = arg["value"].get<std::string>();
+        if (arg.find("nctype") !=
+            arg.end()) { // TODO: Temporary should be removed for release
+          if (arg["nctype"] == 0) {
+            if (arg["value"].is_number_float()) {
+              *newArg.value = arg["value"].get<double>();
+            } else if (arg["value"].is_number_integer()) {
+              *newArg.value = arg["value"].get<int64_t>();
+            } else if (arg["value"].is_string()) {
+              *newArg.value = arg["value"].get<std::string>();
+            }
+          } else {
+            if (arg["nctype"] > 0 &&
+                arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
+              switch ((al::VariantType)arg["nctype"]) {
+              case al::VariantType::VARIANT_INT64:
+                *newArg.value = arg["value"].get<int64_t>();
+                break;
+              case al::VariantType::VARIANT_INT32:
+                *newArg.value = arg["value"].get<int32_t>();
+                break;
+              case al::VariantType::VARIANT_INT16:
+                *newArg.value = arg["value"].get<int16_t>();
+                break;
+              case al::VariantType::VARIANT_INT8:
+                *newArg.value = arg["value"].get<int8_t>();
+                break;
+              case al::VariantType::VARIANT_UINT64:
+                *newArg.value = arg["value"].get<uint64_t>();
+                break;
+              case al::VariantType::VARIANT_UINT32:
+                *newArg.value = arg["value"].get<uint32_t>();
+                break;
+              case al::VariantType::VARIANT_UINT16:
+                *newArg.value = arg["value"].get<uint16_t>();
+                break;
+              case al::VariantType::VARIANT_UINT8:
+                *newArg.value = arg["value"].get<uint8_t>();
+                break;
+              case al::VariantType::VARIANT_DOUBLE:
+                *newArg.value = arg["value"].get<double>();
+                break;
+              case al::VariantType::VARIANT_FLOAT:
+                *newArg.value = arg["value"].get<float>();
+                break;
+              case al::VariantType::VARIANT_STRING:
+              case al::VariantType::VARIANT_NONE:
+                break;
+              default:
+                break;
+              }
+
+            } else {
+              std::cerr << "Invalid type for argument " << arg["nctype"]
+                        << std::endl;
+            }
+          }
         }
-        e.sourceInfo.arguments.push_back(newArg);
+        e.sourceInfo.arguments.push_back(std::move(newArg));
       }
-      for (auto arg : entry["sourceInfo"]["dependencies"]) {
+      for (auto &arg : entry["sourceInfo"]["dependencies"]) {
         SourceArgument newArg;
         newArg.id = arg["id"];
-        if (arg["value"].is_number_float()) {
-          newArg.value = arg["value"].get<double>();
-        } else if (arg["value"].is_number_integer()) {
-          newArg.value = arg["value"].get<int64_t>();
-        } else if (arg["value"].is_string()) {
-          newArg.value = arg["value"].get<std::string>();
+        if (arg.find("nctype") !=
+            arg.end()) { // TODO: Temporary should be removed for release
+          if (arg["nctype"] == 0) {
+            if (arg["value"].is_number_float()) {
+              *newArg.value = arg["value"].get<double>();
+            } else if (arg["value"].is_number_integer()) {
+              *newArg.value = arg["value"].get<int64_t>();
+            } else if (arg["value"].is_string()) {
+              *newArg.value = arg["value"].get<std::string>();
+            }
+          } else {
+            if (arg["nctype"] > 0 &&
+                arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
+              switch ((al::VariantType)arg["nctype"]) {
+              case al::VariantType::VARIANT_INT64:
+                *newArg.value = arg["value"].get<int64_t>();
+                break;
+              case al::VariantType::VARIANT_INT32:
+                *newArg.value = arg["value"].get<int32_t>();
+                break;
+              case al::VariantType::VARIANT_INT16:
+                *newArg.value = arg["value"].get<int16_t>();
+                break;
+              case al::VariantType::VARIANT_INT8:
+                *newArg.value = arg["value"].get<int8_t>();
+                break;
+              case al::VariantType::VARIANT_UINT64:
+                *newArg.value = arg["value"].get<uint64_t>();
+                break;
+              case al::VariantType::VARIANT_UINT32:
+                *newArg.value = arg["value"].get<uint32_t>();
+                break;
+              case al::VariantType::VARIANT_UINT16:
+                *newArg.value = arg["value"].get<uint16_t>();
+                break;
+              case al::VariantType::VARIANT_UINT8:
+                *newArg.value = arg["value"].get<uint8_t>();
+                break;
+              case al::VariantType::VARIANT_DOUBLE:
+                *newArg.value = arg["value"].get<double>();
+                break;
+              case al::VariantType::VARIANT_FLOAT:
+                *newArg.value = arg["value"].get<float>();
+                break;
+              case al::VariantType::VARIANT_STRING:
+              case al::VariantType::VARIANT_NONE:
+                break;
+              default:
+                break;
+              }
+
+            } else {
+              std::cerr << "Invalid type for dependency " << arg["nctype"]
+                        << std::endl;
+            }
+          }
         }
-        e.sourceInfo.dependencies.push_back(newArg);
+        e.sourceInfo.dependencies.push_back(std::move(newArg));
       }
       for (auto arg : entry["sourceInfo"]["fileDependencies"]) {
         FileDependency fileDep;
@@ -316,33 +428,41 @@ void CacheManager::writeToDisk() {
       entry["sourceInfo"]["arguments"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["dependencies"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["fileDependencies"] = std::vector<nlohmann::json>();
-      for (auto arg : e.sourceInfo.arguments) {
+      for (auto &arg : e.sourceInfo.arguments) {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
-        if (arg.value.type == VARIANT_DOUBLE ||
-            arg.value.type == VARIANT_FLOAT) {
-          newArg["value"] = arg.value.valueDouble;
-        } else if (arg.value.type == VARIANT_INT32 ||
-                   arg.value.type == VARIANT_INT64) {
-          newArg["value"] = arg.value.valueInt64;
-        } else if (arg.value.type == VARIANT_STRING) {
-          newArg["value"] = arg.value.valueStr;
+        newArg["nctype"] = arg.value->type();
+        // TODO ML support all types
+        if (arg.value->type() == al::VariantType::VARIANT_DOUBLE) {
+          newArg["value"] = arg.value->get<double>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_FLOAT) {
+          newArg["value"] = arg.value->get<float>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_INT32) {
+          newArg["value"] = arg.value->get<int32_t>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_INT64) {
+          newArg["value"] = arg.value->get<int64_t>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_STRING) {
+          newArg["value"] = arg.value->get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();
         }
         entry["sourceInfo"]["arguments"].push_back(newArg);
       }
-      for (auto arg : e.sourceInfo.dependencies) {
+      for (auto &arg : e.sourceInfo.dependencies) {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
-        if (arg.value.type == VARIANT_DOUBLE ||
-            arg.value.type == VARIANT_FLOAT) {
-          newArg["value"] = arg.value.valueDouble;
-        } else if (arg.value.type == VARIANT_INT32 ||
-                   arg.value.type == VARIANT_INT64) {
-          newArg["value"] = arg.value.valueInt64;
-        } else if (arg.value.type == VARIANT_STRING) {
-          newArg["value"] = arg.value.valueStr;
+        // TODO ML support all types
+        newArg["nctype"] = arg.value->type();
+        if (arg.value->type() == al::VariantType::VARIANT_DOUBLE) {
+          newArg["value"] = arg.value->get<double>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_FLOAT) {
+          newArg["value"] = arg.value->get<float>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_INT32) {
+          newArg["value"] = arg.value->get<int32_t>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_INT64) {
+          newArg["value"] = arg.value->get<int64_t>();
+        } else if (arg.value->type() == al::VariantType::VARIANT_STRING) {
+          newArg["value"] = arg.value->get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();
         }
