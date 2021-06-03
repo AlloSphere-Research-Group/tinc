@@ -108,40 +108,42 @@ TEST(Cache, ReadWriteEntry) {
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.size(), 3);
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).id, "int");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).getValue().type(),
             al::VariantType::VARIANT_INT32);
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).value->get<int32_t>(), 450);
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(0).getValue().get<int32_t>(),
+            450);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).id, "float");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(1).getValue().type(),
             al::VariantType::VARIANT_FLOAT);
-  EXPECT_FLOAT_EQ(entries[0].sourceInfo.arguments.at(1).value->get<float>(),
+  EXPECT_FLOAT_EQ(entries[0].sourceInfo.arguments.at(1).getValue().get<float>(),
                   4.05);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).id, "string");
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).getValue().type(),
             al::VariantType::VARIANT_STRING);
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).value->get<std::string>(),
+  EXPECT_EQ(entries[0].sourceInfo.arguments.at(2).getValue().get<std::string>(),
             "hello");
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.size(), 3);
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).id, "int");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).getValue().type(),
             al::VariantType::VARIANT_INT32);
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).value->get<int32_t>(),
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).getValue().get<int32_t>(),
             450);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).id, "float");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(1).getValue().type(),
             al::VariantType::VARIANT_FLOAT);
-  EXPECT_FLOAT_EQ(entries[0].sourceInfo.dependencies.at(1).value->get<float>(),
-                  4.05);
+  EXPECT_FLOAT_EQ(
+      entries[0].sourceInfo.dependencies.at(1).getValue().get<float>(), 4.05);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).id, "string");
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value->type(),
+  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).getValue().type(),
             al::VariantType::VARIANT_STRING);
-  EXPECT_EQ(entries[0].sourceInfo.dependencies.at(2).value->get<std::string>(),
-            "hello");
+  EXPECT_EQ(
+      entries[0].sourceInfo.dependencies.at(2).getValue().get<std::string>(),
+      "hello");
 
   // TODO ML test all types for arguments and dependencies
 }

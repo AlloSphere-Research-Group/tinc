@@ -22,7 +22,8 @@ struct UserInfo {
   bool server{false};
 };
 
-struct SourceArgument {
+class SourceArgument {
+public:
   SourceArgument() {}
   SourceArgument(const SourceArgument &src) {
     id = src.id;
@@ -87,6 +88,10 @@ struct SourceArgument {
     value = std::make_unique<al::VariantValue>(value_);
   }
   std::string id;
+
+  al::VariantValue getValue() const;
+
+private:
   std::unique_ptr<al::VariantValue> value;
 };
 

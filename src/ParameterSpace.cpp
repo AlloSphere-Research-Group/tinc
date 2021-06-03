@@ -1426,16 +1426,16 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       arg.id = dim->getName();
       auto *param = dim->getParameterMeta();
       if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterBool *p =
                      dynamic_cast<al::ParameterBool *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterString *p =
                      dynamic_cast<al::ParameterString *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       }
       // TODO implement support for all types
       /*else if (al::ParameterVec3 *p =
@@ -1453,16 +1453,16 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         } */
       else if (al::ParameterMenu *p =
                    dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterChoice *p =
                      dynamic_cast<al::ParameterChoice *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else {
         std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
                   << std::endl;
-        arg.value = std::make_unique<al::VariantValue>();
+        arg.setValue(al::VariantValue());
       }
       entry.sourceInfo.arguments.push_back(std::move(arg));
     }
@@ -1471,16 +1471,16 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       SourceArgument arg;
       arg.id = param->getName();
       if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterBool *p =
                      dynamic_cast<al::ParameterBool *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterString *p =
                      dynamic_cast<al::ParameterString *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       }
       // TODO implement support for all types
       /*else if (al::ParameterVec3 *p =
@@ -1498,16 +1498,16 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         } */
       else if (al::ParameterMenu *p =
                    dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::ParameterChoice *p =
                      dynamic_cast<al::ParameterChoice *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.value = std::make_unique<al::VariantValue>(p->get());
+        arg.setValue(p->get());
       } else {
         std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
                   << std::endl;
-        arg.value = std::make_unique<al::VariantValue>();
+        arg.setValue(al::VariantValue());
       }
       entry.sourceInfo.dependencies.push_back(std::move(arg));
     }

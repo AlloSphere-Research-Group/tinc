@@ -115,7 +115,7 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
           for (auto arg = entryArguments.begin(); arg != entryArguments.end();
                arg++) {
             if (sourceArg.id == arg->id) {
-              if (valueMatch(*arg->value, *sourceArg.value)) {
+              if (valueMatch(arg->getValue(), sourceArg.getValue())) {
                 //                entryArguments.erase(arg);
                 matchCount++;
                 break;
@@ -133,7 +133,7 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
                arg != entryDependencies.end(); arg++) {
 
             if (sourceDep.id == arg->id) {
-              if (valueMatch(*arg->value, *sourceDep.value)) {
+              if (valueMatch(arg->getValue(), sourceDep.getValue())) {
                 //                entryArguments.erase(arg);
                 matchCount++;
                 break;
@@ -245,45 +245,45 @@ void CacheManager::updateFromDisk() {
             arg.end()) { // TODO: Temporary should be removed for release
           if (arg["nctype"] == 0) {
             if (arg["value"].is_number_float()) {
-              *newArg.value = arg["value"].get<double>();
+              newArg.setValue(arg["value"].get<double>());
             } else if (arg["value"].is_number_integer()) {
-              *newArg.value = arg["value"].get<int64_t>();
+              newArg.setValue(arg["value"].get<int64_t>());
             } else if (arg["value"].is_string()) {
-              *newArg.value = arg["value"].get<std::string>();
+              newArg.setValue(arg["value"].get<std::string>());
             }
           } else {
             if (arg["nctype"] > 0 &&
                 arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
               switch ((al::VariantType)arg["nctype"]) {
               case al::VariantType::VARIANT_INT64:
-                *newArg.value = arg["value"].get<int64_t>();
+                newArg.setValue(arg["value"].get<int64_t>());
                 break;
               case al::VariantType::VARIANT_INT32:
-                *newArg.value = arg["value"].get<int32_t>();
+                newArg.setValue(arg["value"].get<int32_t>());
                 break;
               case al::VariantType::VARIANT_INT16:
-                *newArg.value = arg["value"].get<int16_t>();
+                newArg.setValue(arg["value"].get<int16_t>());
                 break;
               case al::VariantType::VARIANT_INT8:
-                *newArg.value = arg["value"].get<int8_t>();
+                newArg.setValue(arg["value"].get<int8_t>());
                 break;
               case al::VariantType::VARIANT_UINT64:
-                *newArg.value = arg["value"].get<uint64_t>();
+                newArg.setValue(arg["value"].get<uint64_t>());
                 break;
               case al::VariantType::VARIANT_UINT32:
-                *newArg.value = arg["value"].get<uint32_t>();
+                newArg.setValue(arg["value"].get<uint32_t>());
                 break;
               case al::VariantType::VARIANT_UINT16:
-                *newArg.value = arg["value"].get<uint16_t>();
+                newArg.setValue(arg["value"].get<uint16_t>());
                 break;
               case al::VariantType::VARIANT_UINT8:
-                *newArg.value = arg["value"].get<uint8_t>();
+                newArg.setValue(arg["value"].get<uint8_t>());
                 break;
               case al::VariantType::VARIANT_DOUBLE:
-                *newArg.value = arg["value"].get<double>();
+                newArg.setValue(arg["value"].get<double>());
                 break;
               case al::VariantType::VARIANT_FLOAT:
-                *newArg.value = arg["value"].get<float>();
+                newArg.setValue(arg["value"].get<float>());
                 break;
               case al::VariantType::VARIANT_STRING:
               case al::VariantType::VARIANT_NONE:
@@ -307,45 +307,45 @@ void CacheManager::updateFromDisk() {
             arg.end()) { // TODO: Temporary should be removed for release
           if (arg["nctype"] == 0) {
             if (arg["value"].is_number_float()) {
-              *newArg.value = arg["value"].get<double>();
+              newArg.setValue(arg["value"].get<double>());
             } else if (arg["value"].is_number_integer()) {
-              *newArg.value = arg["value"].get<int64_t>();
+              newArg.setValue(arg["value"].get<int64_t>());
             } else if (arg["value"].is_string()) {
-              *newArg.value = arg["value"].get<std::string>();
+              newArg.setValue(arg["value"].get<std::string>());
             }
           } else {
             if (arg["nctype"] > 0 &&
                 arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
               switch ((al::VariantType)arg["nctype"]) {
               case al::VariantType::VARIANT_INT64:
-                *newArg.value = arg["value"].get<int64_t>();
+                newArg.setValue(arg["value"].get<int64_t>());
                 break;
               case al::VariantType::VARIANT_INT32:
-                *newArg.value = arg["value"].get<int32_t>();
+                newArg.setValue(arg["value"].get<int32_t>());
                 break;
               case al::VariantType::VARIANT_INT16:
-                *newArg.value = arg["value"].get<int16_t>();
+                newArg.setValue(arg["value"].get<int16_t>());
                 break;
               case al::VariantType::VARIANT_INT8:
-                *newArg.value = arg["value"].get<int8_t>();
+                newArg.setValue(arg["value"].get<int8_t>());
                 break;
               case al::VariantType::VARIANT_UINT64:
-                *newArg.value = arg["value"].get<uint64_t>();
+                newArg.setValue(arg["value"].get<uint64_t>());
                 break;
               case al::VariantType::VARIANT_UINT32:
-                *newArg.value = arg["value"].get<uint32_t>();
+                newArg.setValue(arg["value"].get<uint32_t>());
                 break;
               case al::VariantType::VARIANT_UINT16:
-                *newArg.value = arg["value"].get<uint16_t>();
+                newArg.setValue(arg["value"].get<uint16_t>());
                 break;
               case al::VariantType::VARIANT_UINT8:
-                *newArg.value = arg["value"].get<uint8_t>();
+                newArg.setValue(arg["value"].get<uint8_t>());
                 break;
               case al::VariantType::VARIANT_DOUBLE:
-                *newArg.value = arg["value"].get<double>();
+                newArg.setValue(arg["value"].get<double>());
                 break;
               case al::VariantType::VARIANT_FLOAT:
-                *newArg.value = arg["value"].get<float>();
+                newArg.setValue(arg["value"].get<float>());
                 break;
               case al::VariantType::VARIANT_STRING:
               case al::VariantType::VARIANT_NONE:
@@ -431,18 +431,18 @@ void CacheManager::writeToDisk() {
       for (auto &arg : e.sourceInfo.arguments) {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
-        newArg["nctype"] = arg.value->type();
+        newArg["nctype"] = arg.getValue().type();
         // TODO ML support all types
-        if (arg.value->type() == al::VariantType::VARIANT_DOUBLE) {
-          newArg["value"] = arg.value->get<double>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_FLOAT) {
-          newArg["value"] = arg.value->get<float>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_INT32) {
-          newArg["value"] = arg.value->get<int32_t>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_INT64) {
-          newArg["value"] = arg.value->get<int64_t>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_STRING) {
-          newArg["value"] = arg.value->get<std::string>();
+        if (arg.getValue().type() == al::VariantType::VARIANT_DOUBLE) {
+          newArg["value"] = arg.getValue().get<double>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_FLOAT) {
+          newArg["value"] = arg.getValue().get<float>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT32) {
+          newArg["value"] = arg.getValue().get<int32_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT64) {
+          newArg["value"] = arg.getValue().get<int64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
+          newArg["value"] = arg.getValue().get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();
         }
@@ -452,17 +452,17 @@ void CacheManager::writeToDisk() {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
         // TODO ML support all types
-        newArg["nctype"] = arg.value->type();
-        if (arg.value->type() == al::VariantType::VARIANT_DOUBLE) {
-          newArg["value"] = arg.value->get<double>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_FLOAT) {
-          newArg["value"] = arg.value->get<float>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_INT32) {
-          newArg["value"] = arg.value->get<int32_t>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_INT64) {
-          newArg["value"] = arg.value->get<int64_t>();
-        } else if (arg.value->type() == al::VariantType::VARIANT_STRING) {
-          newArg["value"] = arg.value->get<std::string>();
+        newArg["nctype"] = arg.getValue().type();
+        if (arg.getValue().type() == al::VariantType::VARIANT_DOUBLE) {
+          newArg["value"] = arg.getValue().get<double>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_FLOAT) {
+          newArg["value"] = arg.getValue().get<float>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT32) {
+          newArg["value"] = arg.getValue().get<int32_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT64) {
+          newArg["value"] = arg.getValue().get<int64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
+          newArg["value"] = arg.getValue().get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();
         }
@@ -507,4 +507,12 @@ void CacheManager::tincSchemaFormatChecker(const std::string &format,
     //    throw std::invalid_argument("value is not a good something");
   } else
     throw std::logic_error("Don't know how to validate " + format);
+}
+
+al::VariantValue SourceArgument::getValue() const {
+  if (value) {
+    return *value;
+  } else {
+    return al::VariantValue();
+  }
 }

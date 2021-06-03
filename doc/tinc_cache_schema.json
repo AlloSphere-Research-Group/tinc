@@ -100,7 +100,7 @@
                       "type": "string"
                     },
                     "nctype": {
-                      "type": "int"
+                      "type": "integer"
                     },
                     "value": {}
                   },
@@ -116,7 +116,7 @@
                       "type": "string"
                     },
                     "nctype": {
-                      "type": "int"
+                      "type": "integer"
                     },
                     "value": {}
                   },
