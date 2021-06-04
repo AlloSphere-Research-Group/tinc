@@ -50,7 +50,7 @@ jobs:
       - run:
           name: Code coverage report
           command: |
-            for filename in `find . | egrep 'src\/.*\.cpp/gm'`;
+            for filename in `find . | egrep 'src\/.*\.cpp'`;
             do
               echo $filename;
               gcov -n -o . $filename > /dev/null;
