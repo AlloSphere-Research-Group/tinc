@@ -1,8 +1,8 @@
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/ProcessorGraph.hpp"
 #include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 #include "tinc/TincServer.hpp"
 
 using namespace al;
@@ -34,12 +34,12 @@ struct MyApp : public App {
 
     // Define processing functions
     process1.processingFunction = [&]() {
-      data1 = mainChain.configuration["value"].valueDouble + 1.0;
+      data1 = mainChain.configuration["value"].get<double>() + 1.0;
       return true;
     };
 
     process2.processingFunction = [&]() {
-      data2 = -1.0 * mainChain.configuration["value"].valueDouble;
+      data2 = -1.0 * mainChain.configuration["value"].get<double>();
       return true;
     };
 

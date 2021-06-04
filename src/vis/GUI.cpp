@@ -19,7 +19,7 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
       multipleIds = 1;
     }
     if (dim->getSpaceRepresentationType() == ParameterSpaceDimension::ID) {
-      int v = dim->getCurrentIndex();
+      int v = (int)dim->getCurrentIndex();
       if (ImGui::SliderInt(dim->getName().c_str(), &v, 0,
                            (dim->size() / multipleIds) - 1)) {
         dim->setCurrentIndex(v * multipleIds);
@@ -64,26 +64,23 @@ void drawControl(tinc::ParameterSpaceDimension *dim) {
       float value = dim->getCurrentValue();
       size_t previousIndex = dim->getCurrentIndex();
       bool changed = false;
-      if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+      if (dim->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
         changed = ImGui::SliderFloat(dim->getName().c_str(), &value,
                                      dim->getParameter<al::Parameter>().min(),
                                      dim->getParameter<al::Parameter>().max());
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::UINT8) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
         int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
                                    dim->getParameter<al::ParameterInt>().min(),
                                    dim->getParameter<al::ParameterInt>().max());
         value = intValue;
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::INT32) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
         int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
                                    dim->getParameter<al::ParameterInt>().min(),
                                    dim->getParameter<al::ParameterInt>().max());
         value = intValue;
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::UINT32) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
         int intValue = dim->getParameter<al::ParameterInt>().get();
         changed = ImGui::SliderInt(dim->getName().c_str(), &intValue,
                                    dim->getParameter<al::ParameterInt>().min(),

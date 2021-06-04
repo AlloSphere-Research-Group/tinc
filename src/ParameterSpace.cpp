@@ -42,9 +42,10 @@ ParameterSpaceDimension *ParameterSpace::getDimension(std::string name,
   return nullptr;
 }
 
-ParameterSpaceDimension *ParameterSpace::newDimension(
-    std::string name, ParameterSpaceDimension::RepresentationType type,
-    al::DiscreteParameterValues::Datatype datatype, std::string group) {
+ParameterSpaceDimension *
+ParameterSpace::newDimension(std::string name,
+                             ParameterSpaceDimension::RepresentationType type,
+                             al::VariantType datatype, std::string group) {
   // FIXME check if dimension exists already and return existing one
   auto newDim =
       std::make_shared<ParameterSpaceDimension>(name, group, datatype);
@@ -133,9 +134,27 @@ ParameterSpaceDimension *ParameterSpace::registerDimension(
     mDimensions.push_back(dimension);
     lk.unlock();
     onDimensionRegister(dimension.get(), this, src);
+  } else if (al::ParameterInt64 *p = dynamic_cast<al::ParameterInt64 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](int64_t value) {
+      int64_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
 
   } else {
-    // FIXME implement for all parameter types
+    // FIXME ML implement for all parameter types
     std::cerr << "Support for parameter type not implemented in dimension "
               << __FILE__ << ":" << __LINE__ << std::endl;
   }
@@ -319,8 +338,9 @@ bool ParameterSpace::incrementIndices(
 }
 
 bool ParameterSpace::runProcess(
-    Processor &processor, const std::map<std::string, VariantValue> &args,
-    const std::map<std::string, VariantValue> &dependencies, bool recompute) {
+    Processor &processor, const std::map<std::string, al::VariantValue> &args,
+    const std::map<std::string, al::VariantValue> &dependencies,
+    bool recompute) {
 
   if (auto *procChain = dynamic_cast<ProcessorGraph *>(&processor)) {
     // TODO enable async processing of processor chain
@@ -353,7 +373,7 @@ bool ParameterSpace::runProcess(
             assert(dim->getCurrentIndex() <
                    std::numeric_limits<int64_t>::max());
             processor.configuration[dim->getName()] =
-                (int64_t)dim->getCurrentIndex();
+                (uint64_t)dim->getCurrentIndex();
           }
         }
       }
@@ -373,7 +393,7 @@ bool ParameterSpace::runProcess(
 
 void ParameterSpace::sweep(Processor &processor,
                            std::vector<std::string> dimensionNames_,
-                           std::map<std::string, VariantValue> dependencies,
+                           std::map<std::string, al::VariantValue> dependencies,
                            bool recompute) {
   uint64_t sweepCount = 0;
   uint64_t sweepTotal = 1;
@@ -399,7 +419,7 @@ void ParameterSpace::sweep(Processor &processor,
       continue;
     }
     // TODO support other types apart from float
-    dependencies[dep->getName()] = VariantValue(dep->toFloat());
+    dependencies[dep->getName()] = al::VariantValue(dep->toFloat());
   }
 
   std::map<std::string, size_t> previousIndices;
@@ -412,7 +432,7 @@ void ParameterSpace::sweep(Processor &processor,
   }
 
   while (mSweepRunning) {
-    std::map<std::string, VariantValue> args;
+    std::map<std::string, al::VariantValue> args;
     {
       std::unique_lock<std::mutex> lk(mDimensionsLock);
       for (auto &dim : mDimensions) {
@@ -422,7 +442,7 @@ void ParameterSpace::sweep(Processor &processor,
           args[dim->getName()] = dim->getCurrentId();
         } else if (dim->mRepresentationType == ParameterSpaceDimension::INDEX) {
           assert(dim->getCurrentIndex() < std::numeric_limits<int64_t>::max());
-          args[dim->getName()] = (int64_t)dim->getCurrentIndex();
+          args[dim->getName()] = (uint64_t)dim->getCurrentIndex();
         }
       }
     }
@@ -598,29 +618,29 @@ bool readNetCDFValues(int grpid, ParameterSpaceDimension *pdim) {
 }
 
 #ifdef TINC_HAS_HDF5
-ParameterSpaceDimension::Datatype nctypeToTincType(nc_type nctype) {
+al::VariantType nctypeToTincType(nc_type nctype) {
   // TODO complete support for all netcdf types
   switch (nctype) {
   case NC_STRING:
-    return ParameterSpaceDimension::Datatype::STRING;
+    return al::VariantType::VARIANT_STRING;
   case NC_FLOAT:
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return al::VariantType::VARIANT_FLOAT;
   case NC_DOUBLE:
-    return ParameterSpaceDimension::Datatype::DOUBLE;
+    return al::VariantType::VARIANT_DOUBLE;
   case NC_BYTE:
-    return ParameterSpaceDimension::Datatype::INT8;
+    return al::VariantType::VARIANT_INT8;
   case NC_UBYTE:
-    return ParameterSpaceDimension::Datatype::UINT8;
+    return al::VariantType::VARIANT_UINT8;
   case NC_INT:
-    return ParameterSpaceDimension::Datatype::INT32;
+    return al::VariantType::VARIANT_INT32;
   case NC_UINT:
-    return ParameterSpaceDimension::Datatype::UINT32;
+    return al::VariantType::VARIANT_UINT32;
   case NC_INT64:
-    return ParameterSpaceDimension::Datatype::INT64;
+    return al::VariantType::VARIANT_INT64;
   case NC_UINT64:
-    return ParameterSpaceDimension::Datatype::UINT64;
+    return al::VariantType::VARIANT_UINT64;
   }
-  return ParameterSpaceDimension::Datatype::FLOAT;
+  return al::VariantType::VARIANT_FLOAT;
 }
 #endif
 
@@ -1078,7 +1098,7 @@ bool writeNetCDFValues(int datagrpid,
     std::cerr << nc_strerror(retval) << std::endl;
     return false;
   }
-  if (ps->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+  if (ps->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
     int dimidsp[1] = {dimid};
     if ((retval =
              nc_def_var(datagrpid, "values", NC_FLOAT, 1, dimidsp, &varid))) {
@@ -1093,7 +1113,7 @@ bool writeNetCDFValues(int datagrpid,
 
     std::vector<float> values = ps->getSpaceValues<float>();
     nc_put_var(datagrpid, varid, values.data());
-  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::UINT8) {
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -1110,7 +1130,7 @@ bool writeNetCDFValues(int datagrpid,
     std::vector<uint8_t> valuesInt = ps->getSpaceValues<uint8_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
 
-  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::INT32) {
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -1126,7 +1146,7 @@ bool writeNetCDFValues(int datagrpid,
 
     std::vector<int32_t> valuesInt = ps->getSpaceValues<int32_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
-  } else if (ps->getSpaceDataType() == al::DiscreteParameterValues::UINT32) {
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
@@ -1406,20 +1426,16 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       arg.id = dim->getName();
       auto *param = dim->getParameterMeta();
       if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
+        arg.setValue(p->get());
       } else if (al::ParameterBool *p =
                      dynamic_cast<al::ParameterBool *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
+        arg.setValue(p->get());
       } else if (al::ParameterString *p =
                      dynamic_cast<al::ParameterString *>(param)) {
-        arg.value.valueStr = p->get();
-        arg.value.type = VARIANT_STRING;
+        arg.setValue(p->get());
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       }
       // TODO implement support for all types
       /*else if (al::ParameterVec3 *p =
@@ -1437,75 +1453,63 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         } */
       else if (al::ParameterMenu *p =
                    dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else if (al::ParameterChoice *p =
                      dynamic_cast<al::ParameterChoice *>(param)) {
-        assert(p->get() < INT64_MAX);
-        // TODO safeguard against possible overflow.
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.value.valueInt64 = p->get() ? 1 : 0;
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else {
         std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
                   << std::endl;
+        arg.setValue(al::VariantValue());
       }
-      entry.sourceInfo.arguments.push_back(arg);
+      entry.sourceInfo.arguments.push_back(std::move(arg));
     }
 
     for (auto *param : processor.getDependencies()) {
       SourceArgument arg;
       arg.id = param->getName();
       if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
+        arg.setValue(p->get());
       } else if (al::ParameterBool *p =
                      dynamic_cast<al::ParameterBool *>(param)) {
-        arg.value.valueDouble = p->get();
-        arg.value.type = VARIANT_DOUBLE;
+        arg.setValue(p->get());
       } else if (al::ParameterString *p =
                      dynamic_cast<al::ParameterString *>(param)) {
-        arg.value.valueStr = p->get();
-        arg.value.type = VARIANT_STRING;
+        arg.setValue(p->get());
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       }
       // TODO implement support for all types
       /*else if (al::ParameterVec3 *p =
-                   dynamic_cast<al::ParameterVec3 *>(param)) {
-        mParameterValue = new al::ParameterVec3(*p);
-      } else if (al::ParameterVec4 *p =
-                   dynamic_cast<al::ParameterVec4 *>(param)) {
-        mParameterValue = new al::ParameterVec4(*p);
-      } else if (al::ParameterColor *p =
-                   dynamic_cast<al::ParameterColor *>(param)) {
-        mParameterValue = new al::ParameterColor(*p);
-      } else if (al::ParameterPose *p =
-                   dynamic_cast<al::ParameterPose *>(param)) {
-        mParameterValue = new al::ParameterPose(*p);
-      } */
+                     dynamic_cast<al::ParameterVec3 *>(param)) {
+          mParameterValue = new al::ParameterVec3(*p);
+        } else if (al::ParameterVec4 *p =
+                     dynamic_cast<al::ParameterVec4 *>(param)) {
+          mParameterValue = new al::ParameterVec4(*p);
+        } else if (al::ParameterColor *p =
+                     dynamic_cast<al::ParameterColor *>(param)) {
+          mParameterValue = new al::ParameterColor(*p);
+        } else if (al::ParameterPose *p =
+                     dynamic_cast<al::ParameterPose *>(param)) {
+          mParameterValue = new al::ParameterPose(*p);
+        } */
       else if (al::ParameterMenu *p =
                    dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else if (al::ParameterChoice *p =
                      dynamic_cast<al::ParameterChoice *>(param)) {
-        assert(p->get() < INT64_MAX);
-        // TODO safeguard against possible overflow.
-        arg.value.valueInt64 = p->get();
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.value.valueInt64 = p->get() ? 1 : 0;
-        arg.value.type = VARIANT_INT64;
+        arg.setValue(p->get());
       } else {
         std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
                   << std::endl;
+        arg.setValue(al::VariantValue());
       }
-      entry.sourceInfo.dependencies.push_back(arg);
+      entry.sourceInfo.dependencies.push_back(std::move(arg));
     }
 
     auto cacheFiles = mCacheManager->findCache(entry.sourceInfo);

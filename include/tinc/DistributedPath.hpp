@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include <string>
 
@@ -47,10 +47,18 @@ public:
   std::string relativePath;
   std::string rootPath;
 
-  std::string filePath() { return rootPath + relativePath + filename; }
+  /**
+   * @brief full path including filename
+   * @return
+   */
+  std::string filePath();
 
-  std::string path() { return rootPath + relativePath; }
+  /**
+   * @brief full path without including filename
+   * @return
+   */
+  std::string path();
 };
-}
+} // namespace tinc
 
 #endif // DISTRIBUTEDPATH_HPP

@@ -524,20 +524,20 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
     for (auto &id : dim->getSpaceIds()) {
       valuesMessage.add_ids(id);
     }
-    if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+    if (dim->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
       for (auto &value : dim->getSpaceValues<float>()) {
         valuesMessage.add_values()->set_valuefloat(value);
       }
-    } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT8) {
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
       for (auto &value : dim->getSpaceValues<uint8_t>()) {
         // we utilize variable encoding of protobuf to handle 1 byte ints
         valuesMessage.add_values()->set_valueuint32(value);
       }
-    } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::INT32) {
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
       for (auto &value : dim->getSpaceValues<int32_t>()) {
         valuesMessage.add_values()->set_valueint32(value);
       }
-    } else if (dim->getSpaceDataType() == al::DiscreteParameterValues::UINT32) {
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
       for (auto &value : dim->getSpaceValues<uint32_t>()) {
         valuesMessage.add_values()->set_valueuint32(value);
       }
@@ -801,7 +801,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         idsIt = sv.ids().end();
       }
       dim->clear(src);
-      if (dim->getSpaceDataType() == al::DiscreteParameterValues::FLOAT) {
+      if (dim->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
         std::vector<float> newValues;
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
@@ -821,8 +821,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         } else {
           dim->conformSpace();
         }
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::UINT8) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
         std::vector<uint8_t> newValues;
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
@@ -841,8 +840,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         } else {
           dim->conformSpace();
         }
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::INT32) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
         std::vector<int32_t> newValues;
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
@@ -861,8 +859,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         } else {
           dim->conformSpace();
         }
-      } else if (dim->getSpaceDataType() ==
-                 al::DiscreteParameterValues::UINT32) {
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
         std::vector<uint32_t> newValues;
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
@@ -2162,14 +2159,16 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     confMessage.set_configurationkey(config.first);
     google::protobuf::Any *configValue = confMessage.configurationvalue().New();
     ParameterValue val;
-    if (config.second.type == VARIANT_DOUBLE ||
-        config.second.type == VARIANT_FLOAT) {
-      val.set_valuedouble(config.second.valueDouble);
-    } else if (config.second.type == VARIANT_INT64 ||
-               config.second.type == VARIANT_INT32) {
-      val.set_valueint64(config.second.valueInt64);
-    } else if (config.second.type == VARIANT_STRING) {
-      val.set_valuestring(config.second.valueStr);
+    if (config.second.type() == al::VariantType::VARIANT_DOUBLE) {
+      val.set_valuedouble(config.second.get<double>());
+    } else if (config.second.type() == al::VariantType::VARIANT_FLOAT) {
+      val.set_valuedouble(config.second.get<float>());
+    } else if (config.second.type() == al::VariantType::VARIANT_INT64) {
+      val.set_valueint64(config.second.get<int64_t>());
+    } else if (config.second.type() == al::VariantType::VARIANT_INT32) {
+      val.set_valueint64(config.second.get<int32_t>());
+    } else if (config.second.type() == al::VariantType::VARIANT_STRING) {
+      val.set_valuestring(config.second.get<std::string>());
     }
     configValue->PackFrom(val);
     auto details = msg.details().New();

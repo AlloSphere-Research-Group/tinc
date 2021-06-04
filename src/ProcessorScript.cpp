@@ -125,16 +125,19 @@ std::string ProcessorScript::writeJsonConfig() {
   parametersToConfig(j);
 
   for (auto c : configuration) {
-    if (c.second.type == VARIANT_STRING) {
-      j[c.first] = c.second.valueStr;
+    if (c.second.type() == al::VariantType::VARIANT_STRING) {
+      j[c.first] = c.second.get<std::string>();
 
-    } else if (c.second.type == VARIANT_INT64 ||
-               c.second.type == VARIANT_INT32) {
-      j[c.first] = c.second.valueInt64;
+    } else if (c.second.type() == al::VariantType::VARIANT_INT64) {
+      j[c.first] = c.second.get<int64_t>();
 
-    } else if (c.second.type == VARIANT_DOUBLE ||
-               c.second.type == VARIANT_FLOAT) {
-      j[c.first] = c.second.valueDouble;
+    } else if (c.second.type() == al::VariantType::VARIANT_INT32) {
+      j[c.first] = c.second.get<int32_t>();
+
+    } else if (c.second.type() == al::VariantType::VARIANT_DOUBLE) {
+      j[c.first] = c.second.get<double>();
+    } else if (c.second.type() == al::VariantType::VARIANT_FLOAT) {
+      j[c.first] = c.second.get<float>();
     }
   }
 
@@ -221,25 +224,29 @@ void ProcessorScript::parametersToConfig(nlohmann::json &j) {
 
 std::string ProcessorScript::makeCommandLine() {
   std::string commandLine = mScriptCommand + " ";
+  // TODO ML complete for all types
   for (auto &flag : configuration) {
-    switch (flag.second.type) {
-    case VARIANT_STRING:
-      commandLine += flag.second.commandFlag + flag.second.valueStr + " ";
+    switch (flag.second.type()) {
+    case al::VariantType::VARIANT_STRING:
+      commandLine += flag.second.get<std::string>() + " ";
 
       break;
-    case VARIANT_INT64:
-    case VARIANT_INT32:
-      commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.valueInt64) + " ";
+    case al::VariantType::VARIANT_INT64:
+      commandLine += std::to_string(flag.second.get<int64_t>()) + " ";
       break;
-    case VARIANT_DOUBLE:
-    case VARIANT_FLOAT:
-      commandLine += flag.second.commandFlag +
-                     std::to_string(flag.second.valueDouble) + " ";
+    case al::VariantType::VARIANT_INT32:
+      commandLine += std::to_string(flag.second.get<int32_t>()) + " ";
+      break;
+    case al::VariantType::VARIANT_DOUBLE:
+      commandLine += std::to_string(flag.second.get<double>()) + " ";
+      break;
+    case al::VariantType::VARIANT_FLOAT:
+      commandLine += std::to_string(flag.second.get<float>()) + " ";
 
       break;
     }
   }
+
   return commandLine;
 }
 
@@ -307,18 +314,23 @@ bool ProcessorScript::writeMeta() {
 
   // TODO add date and other important information.
 
+  // TODO ML support all types
   for (auto option : configuration) {
-    switch (option.second.type) {
-    case VARIANT_STRING:
-      j[option.first] = option.second.valueStr;
+    switch (option.second.type()) {
+    case al::VariantType::VARIANT_STRING:
+      j[option.first] = option.second.get<std::string>();
       break;
-    case VARIANT_INT64:
-    case VARIANT_INT32:
-      j[option.first] = option.second.valueInt64;
+    case al::VariantType::VARIANT_INT64:
+      j[option.first] = option.second.get<int64_t>();
       break;
-    case VARIANT_DOUBLE:
-    case VARIANT_FLOAT:
-      j[option.first] = option.second.valueDouble;
+    case al::VariantType::VARIANT_INT32:
+      j[option.first] = option.second.get<int32_t>();
+      break;
+    case al::VariantType::VARIANT_DOUBLE:
+      j[option.first] = option.second.get<double>();
+      break;
+    case al::VariantType::VARIANT_FLOAT:
+      j[option.first] = option.second.get<float>();
       break;
     }
   }

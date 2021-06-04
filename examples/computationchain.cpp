@@ -1,8 +1,8 @@
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/ProcessorGraph.hpp"
 #include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -54,7 +54,7 @@ struct MyApp : public App {
 
     // Define processing functions
     process1.processingFunction = [&]() {
-      data1 = mainChain.configuration["value"].valueDouble + 1.0;
+      data1 = mainChain.configuration["value"].get<double>() + 1.0;
       al_sleep(0.5);
       std::cout << "Done processing 1" << std::endl;
       return true;
@@ -62,7 +62,7 @@ struct MyApp : public App {
 
     process2.processingFunction = [&]() {
       data2 = -1.0;
-      al_sleep(mainChain.configuration["value"].valueDouble);
+      al_sleep(mainChain.configuration["value"].get<double>());
       std::cout << "Done processing 2" << std::endl;
       return true;
     };

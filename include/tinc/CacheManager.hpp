@@ -4,8 +4,8 @@
 #include "nlohmann/json-schema.hpp"
 #include "nlohmann/json.hpp"
 
+#include "al/types/al_VariantValue.hpp"
 #include "tinc/DistributedPath.hpp"
-#include "tinc/VariantValue.hpp"
 
 #include <cinttypes>
 #include <mutex>
@@ -22,9 +22,86 @@ struct UserInfo {
   bool server{false};
 };
 
-struct SourceArgument {
+class SourceArgument {
+public:
+  SourceArgument() {}
+  SourceArgument(const SourceArgument &src) {
+    id = src.id;
+    copyValueFromSource(*this, src);
+  }
+  SourceArgument &operator=(const SourceArgument &other) {
+    if (this != &other) // not a self-assignment
+    {
+      this->id = other.id;
+      copyValueFromSource(*this, other);
+    }
+    return *this;
+  }
+  // Move constructor
+  SourceArgument(SourceArgument &&that) noexcept { swap(*this, that); }
+
+  // Move assignment operator
+  SourceArgument &operator=(SourceArgument &&that) {
+    swap(*this, that);
+    return *this;
+  }
+
+  friend void swap(SourceArgument &lhs, SourceArgument &rhs) noexcept {
+    std::swap(lhs.value, rhs.value);
+    std::swap(lhs.id, rhs.id);
+  }
+
+  static void copyValueFromSource(SourceArgument &dst,
+                                  const SourceArgument &src) {
+    switch (src.getValue().type()) {
+    case al::VariantType::VARIANT_NONE:
+      //      dst.setValue();
+      break;
+    case al::VariantType::VARIANT_INT64:
+      dst.setValue(src.getValue().get<int64_t>());
+      break;
+    case al::VariantType::VARIANT_INT32:
+      dst.setValue(src.getValue().get<int32_t>());
+      break;
+    case al::VariantType::VARIANT_INT16:
+      dst.setValue(src.getValue().get<int16_t>());
+      break;
+    case al::VariantType::VARIANT_INT8:
+      dst.setValue(src.getValue().get<int8_t>());
+      break;
+    case al::VariantType::VARIANT_UINT64:
+      dst.setValue(src.getValue().get<uint64_t>());
+      break;
+    case al::VariantType::VARIANT_UINT32:
+      dst.setValue(src.getValue().get<uint32_t>());
+      break;
+    case al::VariantType::VARIANT_UINT16:
+      dst.setValue(src.getValue().get<uint16_t>());
+      break;
+    case al::VariantType::VARIANT_UINT8:
+      dst.setValue(src.getValue().get<uint8_t>());
+      break;
+    case al::VariantType::VARIANT_DOUBLE:
+      dst.setValue(src.getValue().get<double>());
+      break;
+    case al::VariantType::VARIANT_FLOAT:
+      dst.setValue(src.getValue().get<float>());
+      break;
+    case al::VariantType::VARIANT_STRING:
+      dst.setValue(src.getValue().get<std::string>());
+      break;
+    }
+  }
+
+  template <typename T> void setValue(T value_) {
+    value = std::make_unique<al::VariantValue>(value_);
+  }
   std::string id;
-  VariantValue value;
+
+  al::VariantValue getValue() const;
+
+private:
+  std::unique_ptr<al::VariantValue> value;
 };
 
 struct FileDependency {
@@ -33,7 +110,35 @@ struct FileDependency {
   uint64_t size;
 };
 
-struct SourceInfo {
+class SourceInfo {
+public:
+  SourceInfo() {}
+  SourceInfo(const SourceInfo &src) { copyValueFromSource(*this, src); }
+  SourceInfo &operator=(const SourceInfo &other) {
+    if (this != &other) // not a self-assignment
+    {
+      copyValueFromSource(*this, other);
+    }
+    return *this;
+  }
+
+  static void copyValueFromSource(SourceInfo &dst, const SourceInfo &src) {
+
+    dst.type = src.type;
+    dst.tincId = src.tincId;
+    dst.commandLineArguments = src.commandLineArguments;
+    dst.workingPath = src.workingPath;
+    dst.hash = src.hash;
+    for (auto &arg : src.arguments) {
+      dst.arguments.push_back(arg);
+    }
+    for (auto &dep : src.dependencies) {
+      dst.dependencies.push_back(dep);
+    }
+    dst.fileDependencies = src.fileDependencies;
+  }
+
+  // Write copy/move constructor. Write copy operator
   std::string type;
   std::string
       tincId; // TODO add heuristics to match source even if id has changed.
@@ -70,19 +175,23 @@ public:
 
   /**
    * @brief Get all in memory entries
+   * @param count Number of most recent entries to get
    * @return vector of CacheEntry objects
+   *
+   * If count is 0, or greater than the number of entries, all the entries are
+   * returned.
    */
-  std::vector<CacheEntry> entries() { return mEntries; };
+  std::vector<CacheEntry> entries(size_t count = 0);
 
   std::vector<std::string> findCache(const SourceInfo &sourceInfo,
                                      bool verifyHash = true);
   /**
    * @brief Clear all cached files, and cache information.
+   *
+   * Although this function will only delete files listed in the cache file, it
+   * should be used with caution.
    */
-  void clearCache() {
-    throw "Mot implemented yet.";
-    // TODO implement clear cache
-  }
+  void clearCache();
 
   /**
    * @brief Get full cache path

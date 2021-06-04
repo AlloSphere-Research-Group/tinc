@@ -33,9 +33,9 @@
  * authors: Andres Cabrera
  */
 
+#include "al/types/al_VariantValue.hpp"
 #include "tinc/IdObject.hpp"
 #include "tinc/ParameterSpaceDimension.hpp"
-#include "tinc/VariantValue.hpp"
 
 #include "al/scene/al_PolySynth.hpp"
 
@@ -282,7 +282,7 @@ public:
    */
   std::vector<al::ParameterMeta *> getDependencies() { return mDependencies; }
 
-  typedef std::map<std::string, VariantValue> Configuration;
+  typedef std::map<std::string, al::VariantValue> Configuration;
 
   /**
    * @brief Current internal configuration key value pairs

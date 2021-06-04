@@ -1,5 +1,5 @@
-#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ParameterSpace.hpp"
+#include "tinc/ProcessorCpp.hpp"
 
 #include "al/app/al_App.hpp"
 #include "al/graphics/al_Font.hpp"
@@ -102,9 +102,10 @@ struct MyApp : public App {
 
     processor.prepareFunction = [&]() {
       std::string name =
-          "out_" + processor.configuration["dim1"].valueStr + "_" +
-          std::to_string(processor.configuration["dim2"].valueInt64) + "_" +
-          std::to_string(processor.configuration["inner_param"].valueDouble) +
+          "out_" + processor.configuration["dim1"].get<std::string>() + "_" +
+          std::to_string(processor.configuration["dim2"].get<uint64_t>()) +
+          "_" +
+          std::to_string(processor.configuration["inner_param"].get<float>()) +
           ".txt";
       processor.setOutputFileNames({name});
       return true;
@@ -113,9 +114,10 @@ struct MyApp : public App {
     // processing function takes longer than one second
     processor.processingFunction = [&]() {
       std::string text =
-          processor.configuration["dim1"].valueStr + " -- " +
-          std::to_string(processor.configuration["dim2"].valueInt64) + " -- " +
-          std::to_string(processor.configuration["inner_param"].valueDouble);
+          processor.configuration["dim1"].get<std::string>() + " -- " +
+          std::to_string(processor.configuration["dim2"].get<uint64_t>()) +
+          " -- " +
+          std::to_string(processor.configuration["inner_param"].get<float>());
 
       std::ofstream f(processor.getOutputDirectory() +
                       processor.getOutputFileNames()[0]);

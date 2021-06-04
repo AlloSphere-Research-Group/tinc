@@ -33,8 +33,8 @@
  * authors: Andres Cabrera
  */
 
+#include "al/types/al_VariantValue.hpp"
 #include "tinc/DiskBuffer.hpp"
-#include "tinc/VariantValue.hpp"
 
 #ifdef TINC_HAS_NETCDF
 #include <netcdf.h>
@@ -81,7 +81,7 @@ typedef enum {
 
 class NetCDFData {
 public:
-  std::map<std::string, VariantValue> attributes;
+  std::map<std::string, al::VariantValue> attributes;
   void *dataVector{nullptr};
 
   ~NetCDFData() {
@@ -363,49 +363,49 @@ protected:
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_INT) {
           int32_t val;
           if ((retval = nc_get_att_int(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_FLOAT) {
           float val;
           if ((retval = nc_get_att_float(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_DOUBLE) {
           double val;
           if ((retval = nc_get_att_double(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_UBYTE) {
           uint8_t val;
           if ((retval = nc_get_att_ubyte(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_USHORT) {
           uint16_t val;
           if ((retval = nc_get_att_ushort(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_UINT) {
           uint32_t val;
           if ((retval = nc_get_att_uint(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_INT64) {
           int64_t val;
           if (std::is_same<int64_t, long long>::value) {
@@ -424,7 +424,7 @@ protected:
             std::cerr << "int64_t not supported properly" << std::endl;
             return false;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_UINT64) {
           uint64_t val;
           if (std::is_same<uint64_t, unsigned long long>::value) {
@@ -445,7 +445,7 @@ protected:
             std::cerr << "uint64_t not supported properly" << std::endl;
             return false;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_STRING) {
           std::cerr << "string not yet supported in DiskBufferNetCDF"
                     << std::endl;
@@ -462,14 +462,14 @@ protected:
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else if (xtypep == NC_BYTE) {
           int8_t val;
           if ((retval = nc_get_att_schar(ncid, varid, name, &val))) {
             std::cerr << "ERROR getting attribute value" << std::endl;
             continue;
           }
-          newData->attributes[name] = VariantValue(val);
+          newData->attributes[name] = al::VariantValue(val);
         } else {
           std::cerr << "Unsupported NC type" << std::endl;
           return false;
@@ -554,7 +554,7 @@ protected:
     int *nattsp = nullptr;
     int ncid;
     int dimid;
-    char name[32];
+    //    char name[32];
     int ndims = 1;
     int varidp;
     nc_type atttype;
@@ -578,34 +578,34 @@ protected:
 
     // attributes
     for (auto &attr : newData.attributes) {
-      atttype = attr.second.type;
+      atttype = attr.second.type();
 
       if (atttype == NC_SHORT) {
-        int16_t val = attr.second.valueInt64;
+        int16_t val = attr.second.get<int16_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_INT) {
-        int32_t val = attr.second.valueInt64;
+        int32_t val = attr.second.get<int32_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_FLOAT) {
-        float val = attr.second.valueDouble;
+        float val = attr.second.get<float>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_DOUBLE) {
-        double val = attr.second.valueDouble;
+        double val = attr.second.get<double>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_UBYTE) {
-        uint8_t val = attr.second.valueInt64;
+        uint8_t val = attr.second.get<uint8_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_USHORT) {
-        uint16_t val = attr.second.valueInt64;
+        uint16_t val = attr.second.get<uint16_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_UINT) {
-        uint32_t val = attr.second.valueInt64;
+        uint32_t val = attr.second.get<uint32_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_INT64) {
-        int64_t val = attr.second.valueInt64;
+        int64_t val = attr.second.get<int64_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_UINT64) {
-        uint64_t val = attr.second.valueInt64;
+        uint64_t val = attr.second.get<uint64_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_STRING) {
         std::cerr << "string not yet supported in DiskBufferNetCDF"
@@ -616,10 +616,10 @@ protected:
         //            goto done;
         //        }
       } else if (atttype == NC_CHAR) {
-        uint8_t val = attr.second.valueInt64;
+        uint8_t val = attr.second.get<uint8_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else if (atttype == NC_BYTE) {
-        int8_t val = attr.second.valueInt64;
+        int8_t val = attr.second.get<int8_t>();
         nc_put_att(ncid, varidp, attr.first.c_str(), atttype, 1, &val);
       } else {
         std::cerr << "Usupported NC type" << std::endl;

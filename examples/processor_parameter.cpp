@@ -1,8 +1,8 @@
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/ProcessorGraph.hpp"
 #include "tinc/ProcessorCpp.hpp"
+#include "tinc/ProcessorGraph.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -25,7 +25,7 @@ struct MyApp : public App {
     // the configuration member and the old value is available from the
     // parameter as the new value has not been applied at this point
     process.processingFunction = [&]() {
-      std::cout << "new value: " << process.configuration["value"].valueDouble
+      std::cout << "new value: " << process.configuration["value"].get<float>()
                 << " previous value " << value.get() << std::endl;
       return true;
     };

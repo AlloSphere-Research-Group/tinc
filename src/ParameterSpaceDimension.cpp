@@ -8,51 +8,58 @@
 
 using namespace tinc;
 
-ParameterSpaceDimension::ParameterSpaceDimension(
-    std::string name, std::string group,
-    ParameterSpaceDimension::Datatype dataType)
+ParameterSpaceDimension::ParameterSpaceDimension(std::string name,
+                                                 std::string group,
+                                                 al::VariantType dataType)
     : mSpaceValues(dataType) {
+  mParamInternal = true;
+
   // FIXME define how we will handle all data types
-  mParamInternal = true; // FIXME crash if unsupported data type on destrcutor
+  // FIXME ML support all types
   switch (dataType) {
-  case Datatype::FLOAT:
+  case al::VariantType::VARIANT_FLOAT:
     mParameterValue = new al::Parameter(name, group);
     break;
-  case Datatype::UINT8:
-  case Datatype::INT8:
-  case Datatype::INT32:
+  case al::VariantType::VARIANT_UINT8:
+  case al::VariantType::VARIANT_INT8:
+  case al::VariantType::VARIANT_INT32:
     mParameterValue = new al::ParameterInt(name, group);
     break;
+  case al::VariantType::VARIANT_INT64:
+    mParameterValue = new al::ParameterInt64(name, group);
+    break;
+  default:
+    throw std::invalid_argument("Data type for dimension not supported.");
   }
 }
 
-ParameterSpaceDimension::Datatype dataTypeForParam(al::ParameterMeta *param) {
+al::VariantType dataTypeForParam(al::ParameterMeta *param) {
   if (dynamic_cast<al::Parameter *>(param)) {
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return al::VariantType::VARIANT_FLOAT;
   } else if (dynamic_cast<al::ParameterBool *>(param)) {
-    return ParameterSpaceDimension::Datatype::BOOL;
+    return al::VariantType::VARIANT_BOOL;
   } else if (dynamic_cast<al::ParameterString *>(param)) {
-    return ParameterSpaceDimension::Datatype::STRING;
+    return al::VariantType::VARIANT_STRING;
   } else if (dynamic_cast<al::ParameterInt *>(param)) {
-    return ParameterSpaceDimension::Datatype::INT32;
+    return al::VariantType::VARIANT_INT32;
   } else if (dynamic_cast<al::ParameterVec3 *>(param)) {
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return al::VariantType::VARIANT_FLOAT;
   } else if (dynamic_cast<al::ParameterVec4 *>(param)) {
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return al::VariantType::VARIANT_FLOAT;
   } else if (dynamic_cast<al::ParameterColor *>(param)) {
-    return ParameterSpaceDimension::Datatype::FLOAT;
+    return al::VariantType::VARIANT_FLOAT;
   } else if (dynamic_cast<al::ParameterPose *>(param)) {
-    return ParameterSpaceDimension::Datatype::DOUBLE;
+    return al::VariantType::VARIANT_DOUBLE;
   } else if (dynamic_cast<al::ParameterMenu *>(param)) {
-    return ParameterSpaceDimension::Datatype::INT32;
+    return al::VariantType::VARIANT_INT32;
   } else if (dynamic_cast<al::ParameterChoice *>(param)) {
-    return ParameterSpaceDimension::Datatype::UINT64;
+    return al::VariantType::VARIANT_UINT64;
   } else if (dynamic_cast<al::Trigger *>(param)) {
-    return ParameterSpaceDimension::Datatype::BOOL;
+    return al::VariantType::VARIANT_BOOL;
   }
   // FIXME complete implementation
   assert(0 == 1);
-  return ParameterSpaceDimension::Datatype::FLOAT;
+  return al::VariantType::VARIANT_FLOAT;
 }
 
 ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
@@ -193,7 +200,7 @@ size_t ParameterSpaceDimension::getIndexForValue(float value) {
 }
 
 ParameterSpaceDimension::~ParameterSpaceDimension() {
-  if (mParamInternal) {
+  if (mParamInternal && mParameterValue) {
     delete mParameterValue;
   }
 }
@@ -331,7 +338,7 @@ bool ParameterSpaceDimension::conformSpace() {
   sort();
   // TODO we should also validate stride in this function
   switch (mSpaceValues.getDataType()) {
-  case al::DiscreteParameterValues::FLOAT: {
+  case al::VariantType::VARIANT_FLOAT: {
     auto &param = getParameter<al::Parameter>();
     float max = std::numeric_limits<float>::lowest();
     float min = std::numeric_limits<float>::max();
@@ -352,7 +359,7 @@ bool ParameterSpaceDimension::conformSpace() {
       param.set(max);
     }
   } break;
-  case al::DiscreteParameterValues::UINT8: {
+  case al::VariantType::VARIANT_UINT8: {
     auto &param = getParameter<al::ParameterInt>();
     uint8_t max = std::numeric_limits<uint8_t>::lowest();
     uint8_t min = std::numeric_limits<uint8_t>::max();
@@ -373,7 +380,7 @@ bool ParameterSpaceDimension::conformSpace() {
       param.set(max);
     }
   } break;
-  case al::DiscreteParameterValues::INT8: {
+  case al::VariantType::VARIANT_INT8: {
     auto &param = getParameter<al::ParameterInt>();
     int8_t max = std::numeric_limits<int8_t>::lowest();
     int8_t min = std::numeric_limits<int8_t>::max();
@@ -394,7 +401,7 @@ bool ParameterSpaceDimension::conformSpace() {
       param.set(max);
     }
   } break;
-  case al::DiscreteParameterValues::INT32: {
+  case al::VariantType::VARIANT_INT32: {
     auto &param = getParameter<al::ParameterInt>();
     int32_t max = std::numeric_limits<int32_t>::lowest();
     int32_t min = std::numeric_limits<int32_t>::max();
@@ -415,7 +422,7 @@ bool ParameterSpaceDimension::conformSpace() {
       param.set(max);
     }
   } break;
-  case al::DiscreteParameterValues::UINT32: {
+  case al::VariantType::VARIANT_UINT32: {
     auto &param = getParameter<al::ParameterInt>();
     uint32_t max = std::numeric_limits<uint32_t>::lowest();
     uint32_t min = std::numeric_limits<uint32_t>::max();
@@ -438,7 +445,7 @@ bool ParameterSpaceDimension::conformSpace() {
     }
   } break;
 
-    // FIXME complete support for all types
+    // FIXME ML complete support for all types
 
     //  case al::DiscreteParameterValues::DOUBLE: {
     //    valueDbl = *(static_cast<double *>(value));

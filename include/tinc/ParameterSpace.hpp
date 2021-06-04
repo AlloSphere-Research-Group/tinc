@@ -87,8 +87,7 @@ public:
   newDimension(std::string name,
                ParameterSpaceDimension::RepresentationType type =
                    ParameterSpaceDimension::VALUE,
-               al::DiscreteParameterValues::Datatype datatype =
-                   al::DiscreteParameterValues::FLOAT,
+               al::VariantType datatype = al::VariantType::VARIANT_FLOAT,
                std::string group = "");
 
   /**
@@ -186,10 +185,11 @@ public:
    * The args map can provide additional configuration arguments to the
    * processor or can replace the current value of a parameter with that name
    */
-  bool runProcess(Processor &processor,
-                  const std::map<std::string, VariantValue> &args = {},
-                  const std::map<std::string, VariantValue> &dependencies = {},
-                  bool recompute = false);
+  bool
+  runProcess(Processor &processor,
+             const std::map<std::string, al::VariantValue> &args = {},
+             const std::map<std::string, al::VariantValue> &dependencies = {},
+             bool recompute = false);
 
   /**
    * @brief sweep the parameter space across all or specified dimensions
@@ -198,7 +198,7 @@ public:
    * @param recompute force recompute if true
    */
   void sweep(Processor &processor, std::vector<std::string> dimensionNames = {},
-             std::map<std::string, VariantValue> dependencies = {},
+             std::map<std::string, al::VariantValue> dependencies = {},
              bool recompute = false);
 
   /**
