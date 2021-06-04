@@ -13,7 +13,7 @@ namespace tinc {
  * @brief The SceneObject class
  *
  * When you make a SceneObject subclass, you must implement the use of the scale
- * parameter.
+ * parameter in onProcess(GRaphics &)
  */
 class SceneObject : public al::PositionedVoice {
 public:
@@ -28,6 +28,8 @@ public:
   };
 
   al::ParameterVec3 scale;
+
+  std::shared_ptr<NetCDFData> getData();
 
 protected:
   DiskBufferNetCDFData mBuffer;
