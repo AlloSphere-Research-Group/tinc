@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/DataPool.hpp"
 
@@ -41,6 +41,17 @@ namespace tinc {
  */
 class DataPoolNetCDF : public DataPool {
 public:
+  DataPoolNetCDF(std::string id, ParameterSpace &ps,
+                 std::string sliceCacheDir = std::string())
+      : DataPool(id, ps, sliceCacheDir) {
+    mType = DataPoolType::DATAPOOL_NETCDF;
+  }
+
+  DataPoolNetCDF(ParameterSpace &ps, std::string sliceCacheDir = std::string())
+      : DataPool(ps, sliceCacheDir) {
+    mType = DataPoolType::DATAPOOL_NETCDF;
+  }
+
 protected:
   virtual std::vector<std::string> listFieldInFile(std::string file);
   virtual bool getFieldFromFile(std::string field, std::string file,
@@ -50,6 +61,6 @@ protected:
 
 private:
 };
-}
+} // namespace tinc
 
 #endif // DATAPOOLNETCDF_HPP

@@ -31,11 +31,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/ParameterSpace.hpp"
 
 namespace tinc {
+
+typedef enum {
+  DATAPOOL_JSON = 0,
+  DATAPOOL_NETCDF = 1,
+  DATAPOOL_USER
+} DataPoolType;
+
 /**
  * @brief The DataPool class gathers data files across directories that span a
  * parameter space
@@ -133,6 +140,11 @@ public:
         return mParameterSpace->runningPaths(fixedDimensions);
       };
 
+  /**
+   * @brief type of the data pool. Set on constructor, can't change.
+   */
+  const DataPoolType getType() { return mType; }
+
 protected:
   virtual std::vector<std::string> listFieldInFile(std::string file) = 0;
   virtual bool getFieldFromFile(std::string field, std::string file,
@@ -141,12 +153,13 @@ protected:
                                 size_t length) = 0;
 
   std::string getFileType(std::string file);
+  DataPoolType mType{DataPoolType::DATAPOOL_USER};
 
 private:
   ParameterSpace *mParameterSpace;
   std::string mSliceCacheDirectory;
   std::map<std::string, std::string> mDataFilenames;
 };
-}
+} // namespace tinc
 
 #endif // DATAPOT_HPP

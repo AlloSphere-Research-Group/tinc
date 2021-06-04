@@ -217,6 +217,8 @@ public:
 
   DiskBufferAbstract *getDiskBuffer(std::string name);
 
+  DataPool *getDataPool(std::string name);
+
   /**
    * @brief activate a network barrier
    * @param group group to make the barrier for. 0 is all.

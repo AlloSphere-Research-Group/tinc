@@ -102,10 +102,17 @@ message RegisterProcessor {
   string runningDirectory = 7;
 }
 
+enum DataPoolTypes {
+    DATAPOOLTYPE_JSON = 0;
+    DATAPOOLTYPE_NETCDF = 1;
+    DATAPOOLTYPE_USER = 2;
+}
+
 message RegisterDataPool {
   string id = 1;
   string parameterSpaceId = 2;
   string cacheDirectory = 3;
+  DataPoolTypes type = 4;
 }
 
 message RegisterDiskBuffer {
@@ -239,6 +246,15 @@ message ParameterSpaceRequestRootPath {
 message ParameterSpaceRequestRootPathReply {
     string path = 1;
 }
+
+// Request DiskBuffer current file slice
+//message DiskBufferCommandFile {
+//}
+
+//message DiskBufferCommandFileReply {
+//    string filename = 1;
+//}
+
 
 // Request DataPool slice
 message DataPoolCommandSlice {

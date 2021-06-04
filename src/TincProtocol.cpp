@@ -1324,6 +1324,15 @@ DiskBufferAbstract *TincProtocol::getDiskBuffer(std::string name) {
   return nullptr;
 }
 
+DataPool *TincProtocol::getDataPool(std::string name) {
+  for (auto *dp : mDataPools) {
+    if (dp->getId() == name) {
+      return dp;
+    }
+  }
+  return nullptr;
+}
+
 void TincProtocol::markBusy() {
   std::unique_lock<std::mutex> lk(mBusyCountLock);
   assert(mBusyCount < UINT32_MAX);
@@ -1921,6 +1930,7 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
   details.set_id(dp->getId());
   details.set_parameterspaceid(dp->getParameterSpace().getId());
   details.set_cachedirectory(dp->getCacheDirectory());
+  details.set_type((::tinc::DataPoolTypes)dp->getType());
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
