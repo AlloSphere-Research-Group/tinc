@@ -40,46 +40,42 @@ public:
 
   static void copyValueFromSource(SourceArgument &dst,
                                   const SourceArgument &src) {
-    switch (src.value->type()) {
+    switch (src.getValue().type()) {
     case al::VariantType::VARIANT_NONE:
-      dst.value = std::make_unique<al::VariantValue>();
+      //      dst.setValue();
       break;
     case al::VariantType::VARIANT_INT64:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<int64_t>());
+      dst.setValue(src.getValue().get<int64_t>());
       break;
     case al::VariantType::VARIANT_INT32:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<int32_t>());
+      dst.setValue(src.getValue().get<int32_t>());
       break;
     case al::VariantType::VARIANT_INT16:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<int16_t>());
+      dst.setValue(src.getValue().get<int16_t>());
       break;
     case al::VariantType::VARIANT_INT8:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<int8_t>());
+      dst.setValue(src.getValue().get<int8_t>());
       break;
     case al::VariantType::VARIANT_UINT64:
-      dst.value =
-          std::make_unique<al::VariantValue>(src.value->get<uint64_t>());
+      dst.setValue(src.getValue().get<uint64_t>());
       break;
     case al::VariantType::VARIANT_UINT32:
-      dst.value =
-          std::make_unique<al::VariantValue>(src.value->get<uint32_t>());
+      dst.setValue(src.getValue().get<uint32_t>());
       break;
     case al::VariantType::VARIANT_UINT16:
-      dst.value =
-          std::make_unique<al::VariantValue>(src.value->get<uint16_t>());
+      dst.setValue(src.getValue().get<uint16_t>());
       break;
     case al::VariantType::VARIANT_UINT8:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<uint8_t>());
+      dst.setValue(src.getValue().get<uint8_t>());
       break;
     case al::VariantType::VARIANT_DOUBLE:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<double>());
+      dst.setValue(src.getValue().get<double>());
       break;
     case al::VariantType::VARIANT_FLOAT:
-      dst.value = std::make_unique<al::VariantValue>(src.value->get<float>());
+      dst.setValue(src.getValue().get<float>());
       break;
     case al::VariantType::VARIANT_STRING:
-      dst.value =
-          std::make_unique<al::VariantValue>(src.value->get<std::string>());
+      dst.setValue(src.getValue().get<std::string>());
       break;
     }
   }
