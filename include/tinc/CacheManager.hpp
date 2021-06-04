@@ -37,6 +37,19 @@ public:
     }
     return *this;
   }
+  // Move constructor
+  SourceArgument(SourceArgument &&that) noexcept { swap(*this, that); }
+
+  // Move assignment operator
+  SourceArgument &operator=(SourceArgument &&that) {
+    swap(*this, that);
+    return *this;
+  }
+
+  friend void swap(SourceArgument &lhs, SourceArgument &rhs) noexcept {
+    std::swap(lhs.value, rhs.value);
+    std::swap(lhs.id, rhs.id);
+  }
 
   static void copyValueFromSource(SourceArgument &dst,
                                   const SourceArgument &src) {
@@ -97,7 +110,35 @@ struct FileDependency {
   uint64_t size;
 };
 
-struct SourceInfo {
+class SourceInfo {
+public:
+  SourceInfo() {}
+  SourceInfo(const SourceInfo &src) { copyValueFromSource(*this, src); }
+  SourceInfo &operator=(const SourceInfo &other) {
+    if (this != &other) // not a self-assignment
+    {
+      copyValueFromSource(*this, other);
+    }
+    return *this;
+  }
+
+  static void copyValueFromSource(SourceInfo &dst, const SourceInfo &src) {
+
+    dst.type = src.type;
+    dst.tincId = src.tincId;
+    dst.commandLineArguments = src.commandLineArguments;
+    dst.workingPath = src.workingPath;
+    dst.hash = src.hash;
+    for (auto &arg : src.arguments) {
+      dst.arguments.push_back(arg);
+    }
+    for (auto &dep : src.dependencies) {
+      dst.dependencies.push_back(dep);
+    }
+    dst.fileDependencies = src.fileDependencies;
+  }
+
+  // Write copy/move constructor. Write copy operator
   std::string type;
   std::string
       tincId; // TODO add heuristics to match source even if id has changed.

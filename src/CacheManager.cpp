@@ -286,6 +286,8 @@ void CacheManager::updateFromDisk() {
                 newArg.setValue(arg["value"].get<float>());
                 break;
               case al::VariantType::VARIANT_STRING:
+                newArg.setValue(arg["value"].get<std::string>());
+                break;
               case al::VariantType::VARIANT_NONE:
                 break;
               default:
@@ -348,6 +350,8 @@ void CacheManager::updateFromDisk() {
                 newArg.setValue(arg["value"].get<float>());
                 break;
               case al::VariantType::VARIANT_STRING:
+                newArg.setValue(arg["value"].get<std::string>());
+                break;
               case al::VariantType::VARIANT_NONE:
                 break;
               default:
