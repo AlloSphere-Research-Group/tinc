@@ -57,9 +57,12 @@ public:
   /**
    * @brief Update buffer from file
    * @param filename
+   * @param notify if true, the notification callbacks are called
    * @return true if succesfully loaded file
+   *
+   * You should normally call this function without setting the notify argument.
    */
-  virtual bool loadData(std::string filename) = 0;
+  virtual bool loadData(std::string filename, bool notify = true) = 0;
 
   std::string getBaseFileName() { return m_baseFileName; }
   void setBaseFileName(std::string name) { m_baseFileName = name; }
@@ -87,6 +90,18 @@ public:
     mUpdateCallbacks.push_back(cb);
   }
 
+  /**
+   * @brief register a function to be called when this object generates new
+   * buffer data
+   * @param cb
+   *
+   * If this object is registered with a TINC server or client, this function
+   * will only be called if the data creation is local to the node.
+   */
+  void registerNotifyCallback(std::function<void(bool)> cb) {
+    mNotifyCallbacks.push_back(cb);
+  }
+
 protected:
   std::string m_fileName;
   std::string m_baseFileName;
@@ -99,6 +114,7 @@ protected:
   uint64_t m_roundRobinSize{0};
 
   std::vector<std::function<void(bool)>> mUpdateCallbacks;
+  std::vector<std::function<void(bool)>> mNotifyCallbacks;
 
   std::string makeNextFileName() {
     std::string outName = m_baseFileName;

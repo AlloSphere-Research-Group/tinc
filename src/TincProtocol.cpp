@@ -1082,7 +1082,7 @@ bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   }
   mDiskBuffers.push_back(&db);
 
-  db.registerUpdateCallback([&](bool ok) {
+  db.registerNotifyCallback([&](bool ok) {
     if (ok) {
       // TODO send more granular messages, not everything.
       sendConfigureMessage(&db, nullptr, nullptr);
@@ -1553,6 +1553,10 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 }
 
 void TincProtocol::processRequestParameters(al::Socket *dst) {
+
+  if (mVerbose) {
+    std::cout << "Server received Request Parameters" << std::endl;
+  }
   for (auto *dim : mParameterSpaceDimensions) {
     sendRegisterMessage(dim, dst);
     sendConfigureMessage(dim, dst);
@@ -1560,6 +1564,9 @@ void TincProtocol::processRequestParameters(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Server received Request ParameterSpaces" << std::endl;
+  }
   for (auto &ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
     sendConfigureMessage(ps, dst);
@@ -1572,6 +1579,9 @@ void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Server received Request Processors" << std::endl;
+  }
   for (auto *p : mProcessors) {
     sendRegisterMessage(p, dst);
     sendConfigureMessage(p, dst);
@@ -1579,6 +1589,9 @@ void TincProtocol::processRequestProcessors(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Server received Request DiskBuffers" << std::endl;
+  }
   for (auto *db : mDiskBuffers) {
     sendRegisterMessage(db, dst);
     sendConfigureMessage(db, dst);
@@ -1586,6 +1599,9 @@ void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestDataPools(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Server received Request DataPools" << std::endl;
+  }
   for (auto *dp : mDataPools) {
     sendRegisterMessage(dp, dst);
     sendConfigureMessage(dp, dst);
@@ -1974,6 +1990,10 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
     return false;
   }
 
+  if (mVerbose) {
+    std::cout << "Server received Configure Parameter message" << std::endl;
+  }
+
   ConfigureParameter conf;
   details->UnpackTo(&conf);
   auto addr = conf.id();
@@ -2005,6 +2025,11 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Server received Configure ParameterSpace message"
+              << std::endl;
   }
 
   ConfigureParameterSpace conf;
@@ -2084,6 +2109,10 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
 
 bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
   // FIXME implement
+  if (mVerbose) {
+    std::cout << "Server received Configure Processor message [not implemented]"
+              << std::endl;
+  }
   return true;
 }
 
@@ -2093,6 +2122,10 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Server received Configure DiskBuffer message " << std::endl;
   }
 
   ConfigureDiskBuffer conf;
@@ -2106,7 +2139,7 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
         if (conf.configurationvalue().Is<ParameterValue>()) {
           ParameterValue file;
           conf.configurationvalue().UnpackTo(&file);
-          if (!db->loadData(file.valuestring())) {
+          if (!db->loadData(file.valuestring(), false)) {
             std::cerr << __FUNCTION__ << ": Error updating DiskBuffer " << id
                       << " from file " << file.valuestring() << std::endl;
             return false;
@@ -2130,6 +2163,10 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
 
 bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
   // FIXME implement
+  if (mVerbose) {
+    std::cout << "Server received Configure DataPool message [not implemented]"
+              << std::endl;
+  }
   return true;
 }
 
@@ -2890,7 +2927,10 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   }
 
   if (mVerbose) {
-    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
+    //    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
+    std::cout << __FUNCTION__ << ": Sending "
+              << ObjectType_Name(((TincMessage *)&msg)->objecttype())
+              << " bytes " << size << std::endl;
   }
   auto bytes = dst->send(buffer, size + sizeof(size_t));
   if (bytes != size + sizeof(size_t)) {

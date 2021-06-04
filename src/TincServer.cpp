@@ -72,9 +72,6 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::CONFIGURE:
-        if (verbose()) {
-          std::cout << "Server received Configure message" << std::endl;
-        }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
                     << std::endl;

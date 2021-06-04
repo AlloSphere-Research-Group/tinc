@@ -12,6 +12,7 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPoolNetCDF.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DataPoolJson.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DiskBuffer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/DiskBufferNetCDFData.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/DistributedPath.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/IdObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/ParameterSpace.cpp
