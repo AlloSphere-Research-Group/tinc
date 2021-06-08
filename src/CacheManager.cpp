@@ -121,7 +121,7 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
                 break;
               }
             } else {
-              std::cout << "ERROR: type mismatch for argument in cache. "
+              std::cout << "ERROR: argument in cache. "
                            "Ignoring cache"
                         << std::endl;
               continue;
@@ -436,15 +436,31 @@ void CacheManager::writeToDisk() {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
         newArg["nctype"] = arg.getValue().type();
-        // TODO ML support all types
+        // TODO ML support all types. Done.
         if (arg.getValue().type() == al::VariantType::VARIANT_DOUBLE) {
           newArg["value"] = arg.getValue().get<double>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_FLOAT) {
           newArg["value"] = arg.getValue().get<float>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT8) {
+          newArg["value"] = arg.getValue().get<int8_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT8) {
+          newArg["value"] = arg.getValue().get<uint8_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT16) {
+          newArg["value"] = arg.getValue().get<int16_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT16) {
+          newArg["value"] = arg.getValue().get<uint16_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_INT32) {
           newArg["value"] = arg.getValue().get<int32_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT32) {
+          newArg["value"] = arg.getValue().get<uint32_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_INT64) {
           newArg["value"] = arg.getValue().get<int64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT64) {
+          newArg["value"] = arg.getValue().get<uint64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_CHAR) {
+          newArg["value"] = arg.getValue().get<char>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_BOOL) {
+          newArg["value"] = arg.getValue().get<bool>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
           newArg["value"] = arg.getValue().get<std::string>();
         } else {
@@ -455,16 +471,28 @@ void CacheManager::writeToDisk() {
       for (auto &arg : e.sourceInfo.dependencies) {
         nlohmann::json newArg;
         newArg["id"] = arg.id;
-        // TODO ML support all types
+        // TODO ML support all types. Done.
         newArg["nctype"] = arg.getValue().type();
         if (arg.getValue().type() == al::VariantType::VARIANT_DOUBLE) {
           newArg["value"] = arg.getValue().get<double>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_FLOAT) {
           newArg["value"] = arg.getValue().get<float>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT8) {
+          newArg["value"] = arg.getValue().get<int8_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT8) {
+          newArg["value"] = arg.getValue().get<uint8_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_INT16) {
+          newArg["value"] = arg.getValue().get<int16_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT16) {
+          newArg["value"] = arg.getValue().get<uint16_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_INT32) {
           newArg["value"] = arg.getValue().get<int32_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT32) {
+          newArg["value"] = arg.getValue().get<uint32_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_INT64) {
           newArg["value"] = arg.getValue().get<int64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT64) {
+          newArg["value"] = arg.getValue().get<uint64_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
           newArg["value"] = arg.getValue().get<std::string>();
         } else {

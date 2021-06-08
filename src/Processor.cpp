@@ -148,7 +148,7 @@ bool Processor::writeMeta() {
 
   // TODO add date and other important information.
 
-  // TODO ML verify support for the rest of the types
+  // TODO ML verify support for the rest of the types. Done.
   for (auto option : configuration) {
     switch (option.second.type()) {
     case al::VariantType::VARIANT_STRING:
@@ -157,14 +157,40 @@ bool Processor::writeMeta() {
     case al::VariantType::VARIANT_INT64:
       j[option.first] = option.second.get<int64_t>();
       break;
+    case al::VariantType::VARIANT_UINT64:
+      j[option.first] = option.second.get<uint64_t>();
+      break;
     case al::VariantType::VARIANT_INT32:
       j[option.first] = option.second.get<int32_t>();
+      break;
+    case al::VariantType::VARIANT_UINT32:
+      j[option.first] = option.second.get<uint32_t>();
+      break;
+    case al::VariantType::VARIANT_INT16:
+      j[option.first] = option.second.get<int16_t>();
+      break;
+    case al::VariantType::VARIANT_UINT16:
+      j[option.first] = option.second.get<uint16_t>();
+      break;
+    case al::VariantType::VARIANT_INT8:
+      j[option.first] = option.second.get<int8_t>();
+      break;
+    case al::VariantType::VARIANT_UINT8:
+      j[option.first] = option.second.get<uint8_t>();
       break;
     case al::VariantType::VARIANT_DOUBLE:
       j[option.first] = option.second.get<double>();
       break;
     case al::VariantType::VARIANT_FLOAT:
       j[option.first] = option.second.get<float>();
+      break;
+    case al::VariantType::VARIANT_CHAR:
+      j[option.first] = option.second.get<char>();
+      break;
+    case al::VariantType::VARIANT_BOOL:
+      j[option.first] = option.second.get<bool>();
+      break;
+    case al::VariantType::VARIANT_NONE:
       break;
     }
   }
