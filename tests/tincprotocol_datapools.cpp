@@ -10,7 +10,7 @@
 
 using namespace tinc;
 
-TEST(DataPool, Connection) {
+TEST(DataPoolProtocol, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
@@ -31,8 +31,9 @@ TEST(DataPool, Connection) {
   tserver.stop();
 }
 
-TEST(DataPool, Slice) {
+TEST(DataPoolProtocol, Metadata) {
   TincServer tserver;
+  //  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
   // Set up parameter space and data pool
@@ -54,15 +55,74 @@ TEST(DataPool, Slice) {
   DataPoolJson dp{"dp", ps, "sliceCache"};
   dp.registerDataFile("results.json", "internal");
 
+  tserver << dp; // Should register everything
+
   // Connect client
 
   TincClient tclient;
+  //  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
-
-  al::al_sleep(0.5); // Give time to connect
 
   // Now set values from client and slice data pool
 
+  while (!tclient.getDataPool("dp")) {
+    al::al_sleep(0.1);
+  };
+
+  auto externalDataPool =
+      static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
+
+  auto regFiles = dp.getRegisteredDataFiles();
+  auto clientRegFiles = externalDataPool->getRegisteredDataFiles();
+
+  EXPECT_EQ(regFiles.size(), clientRegFiles.size());
+
+  for (auto &regFile : regFiles) {
+
+    EXPECT_EQ(regFile.second, clientRegFiles[regFile.first]);
+  }
+
+  tclient.stop();
+  tserver.stop();
+}
+
+TEST(DataPoolProtocol, Slice) {
+  TincServer tserver;
+  //  tserver.setVerbose(true);
+  EXPECT_TRUE(tserver.start());
+
+  // Set up parameter space and data pool
+  ParameterSpace ps{"ps"};
+
+  ps.setRootPath(TINC_TESTS_SOURCE_DIR "/data");
+
+  // This internal dimension determines the index into the elements found in
+  // results.json
+  auto internalDim = ps.newDimension("internal");
+  internalDim->setSpaceValues(
+      std::vector<float>{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7});
+  auto externalDim = ps.newDimension("external", ParameterSpaceDimension::ID);
+  externalDim->setSpaceValues(std::vector<float>{10.0, 10.1, 10.2});
+  externalDim->setSpaceIds({"folder1", "folder2", "folder3"});
+
+  ps.setCurrentPathTemplate("%%external:ID%%/");
+
+  DataPoolJson dp{"dp", ps, "sliceCache"};
+  dp.registerDataFile("results.json", "internal");
+
+  tserver << dp; // Should register dp dependencies
+
+  // Connect client
+
+  TincClient tclient;
+  //  tclient.setVerbose(true);
+  EXPECT_TRUE(tclient.start());
+
+  // Now set values from client and slice data pool
+
+  while (!tclient.getDataPool("dp")) {
+    al::al_sleep(0.1);
+  };
   auto internalDimClient = tclient.getDimension("internal");
   auto externalDimClient = tclient.getDimension("external");
 
@@ -91,7 +151,7 @@ TEST(DataPool, Slice) {
   EXPECT_EQ(data[1], 5);
   EXPECT_EQ(data[2], 1);
 
-  externalDimClient->setCurrentValue(0.4);
+  internalDimClient->setCurrentValue(0.4);
 
   sliceSize = externalDataPool->readDataSlice("field1", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
@@ -182,8 +242,6 @@ TEST(DataPool, Slice) {
   EXPECT_EQ(data[7], 4);
 
   al::al_sleep(0.5); // Give time to connect
-
-  // TODO check that the parameter space details are correct
 
   tclient.stop();
   tserver.stop();

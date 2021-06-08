@@ -111,7 +111,7 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
 
 size_t ParameterSpaceDimension::size() { return mSpaceValues.size(); }
 
-void ParameterSpaceDimension::sort() {
+void ParameterSpaceDimension::sort(al::Socket *src) {
 
   std::vector<size_t> sortedIndeces(mSpaceValues.size());
   std::iota(sortedIndeces.begin(), sortedIndeces.end(), 0);
@@ -131,8 +131,8 @@ void ParameterSpaceDimension::sort() {
       sortedIds[i] = ids[sortedIndeces[i]];
     }
   }
-  setSpaceValues(sortedValues);
-  setSpaceIds(sortedIds);
+  setSpaceValues(sortedValues, "", src);
+  setSpaceIds(sortedIds, src);
 }
 
 void ParameterSpaceDimension::clear(al::Socket *src) {
@@ -334,8 +334,8 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
   return mSpaceValues.getIds();
 }
 
-bool ParameterSpaceDimension::conformSpace() {
-  sort();
+bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
+  sort(src);
   // TODO we should also validate stride in this function
   switch (mSpaceValues.getDataType()) {
   case al::VariantType::VARIANT_FLOAT: {
@@ -350,13 +350,13 @@ bool ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
-    param.max(max);
-    param.min(min);
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<float>::max()) {
-      param.set(min);
+      param.set(min, src->valueSource());
     } else if (param.get() > max &&
                max != std::numeric_limits<float>::lowest()) {
-      param.set(max);
+      param.set(max, src->valueSource());
     }
   } break;
   case al::VariantType::VARIANT_UINT8: {
@@ -371,13 +371,13 @@ bool ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
-    param.max(max);
-    param.min(min);
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<uint8_t>::max()) {
-      param.set(min);
+      param.set(min, src->valueSource());
     } else if (param.get() > max &&
                max != std::numeric_limits<uint8_t>::lowest()) {
-      param.set(max);
+      param.set(max, src->valueSource());
     }
   } break;
   case al::VariantType::VARIANT_INT8: {
@@ -392,13 +392,13 @@ bool ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
-    param.max(max);
-    param.min(min);
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
-      param.set(min);
+      param.set(min, src->valueSource());
     } else if (param.get() > max &&
                max != std::numeric_limits<int8_t>::lowest()) {
-      param.set(max);
+      param.set(max, src->valueSource());
     }
   } break;
   case al::VariantType::VARIANT_INT32: {
@@ -413,13 +413,13 @@ bool ParameterSpaceDimension::conformSpace() {
         min = value;
       }
     }
-    param.max(max);
-    param.min(min);
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
-      param.set(min);
+      param.set(min, src->valueSource());
     } else if (param.get() > max &&
                max != std::numeric_limits<int32_t>::lowest()) {
-      param.set(max);
+      param.set(max, src->valueSource());
     }
   } break;
   case al::VariantType::VARIANT_UINT32: {
@@ -429,19 +429,19 @@ bool ParameterSpaceDimension::conformSpace() {
     for (auto value : getSpaceValues<int32_t>()) {
 
       if (value > param.max()) {
-        param.max(value);
+        param.max(value, src->valueSource());
       }
       if (value < param.min()) {
-        param.min(value);
+        param.min(value, src->valueSource());
       }
     }
-    param.max(max);
-    param.min(min);
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
-      param.set(min);
+      param.set(min, src->valueSource());
     } else if (param.get() > max &&
                max != std::numeric_limits<int32_t>::lowest()) {
-      param.set(max);
+      param.set(max, src->valueSource());
     }
   } break;
 

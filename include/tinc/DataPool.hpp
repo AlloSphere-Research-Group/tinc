@@ -70,6 +70,26 @@ public:
   void registerDataFile(std::string filename, std::string dimensionInFile);
 
   /**
+   * @brief get registered data files
+   * @return key is the filename and vlaue is the name of the dimension that
+   * file contains
+   *
+   * The dimension name in the output names the dimension whose changes have
+   * produced the values in the fields in the file
+   */
+  std::map<std::string, std::string> getRegisteredDataFiles() {
+    return mDataFilenames;
+  }
+
+  /**
+   * @brief Clear list of registered data files
+   */
+  void clearRegisteredFiles() {
+    mDataFilenames.clear();
+    // TODO send to clients
+  }
+
+  /**
    * @brief Get parameter space that controls this data pool
    * @return the parameter space
    */
@@ -126,7 +146,7 @@ public:
    */
   std::string getCacheDirectory() { return mSliceCacheDirectory; }
 
-  void setCacheDirectory(std::string cacheDirectory);
+  void setCacheDirectory(std::string cacheDirectory, al::Socket *src = nullptr);
 
   std::vector<std::string> listFields(bool verifyConsistency = false);
 

@@ -16,16 +16,13 @@ DataPool::DataPool(ParameterSpace &ps, std::string sliceCacheDir)
   if (sliceCacheDir.size() == 0) {
     sliceCacheDir = al::File::currentPath();
   }
-  setCacheDirectory(sliceCacheDir);
-}
-
-void DataPool::registerDataFile(std::string filename,
-                                std::string dimensionInFile) {
-  if (mDataFilenames.find(filename) != mDataFilenames.end()) {
-    std::cout << "DataPool: Overwriting dimension in file " << filename
-              << std::endl;
+  auto cacheDirectory = al::File::conformDirectory(sliceCacheDir);
+  if (!al::File::exists(cacheDirectory)) {
+    if (!al::Dir::make(cacheDirectory)) {
+      std::cerr << "ERROR creating directory: " << cacheDirectory << std::endl;
+    }
   }
-  mDataFilenames[filename] = dimensionInFile;
+  mSliceCacheDirectory = cacheDirectory;
 }
 
 DataPool::DataPool(std::string id, ParameterSpace &ps,
@@ -35,7 +32,23 @@ DataPool::DataPool(std::string id, ParameterSpace &ps,
   if (sliceCacheDir.size() == 0) {
     sliceCacheDir = al::File::currentPath();
   }
-  setCacheDirectory(sliceCacheDir);
+  auto cacheDirectory = al::File::conformDirectory(sliceCacheDir);
+  if (!al::File::exists(cacheDirectory)) {
+    if (!al::Dir::make(cacheDirectory)) {
+      std::cerr << "ERROR creating directory: " << cacheDirectory << std::endl;
+    }
+  }
+  mSliceCacheDirectory = cacheDirectory;
+}
+
+void DataPool::registerDataFile(std::string filename,
+                                std::string dimensionInFile) {
+  if (mDataFilenames.find(filename) != mDataFilenames.end()) {
+    std::cout << "DataPool: Overwriting dimension in file " << filename
+              << std::endl;
+  }
+  mDataFilenames[filename] = dimensionInFile;
+  // TODO send to clients
 }
 
 std::string DataPool::createDataSlice(std::string field,
@@ -96,8 +109,9 @@ DataPool::createDataSlice(std::string field,
       for (auto directory : dataPaths) {
         for (auto file : mDataFilenames) {
           auto fullPath = al::File::conformDirectory(directory) + file.first;
-          if (!al::File::isRelativePath(fullPath)) {
-            fullPath = al::File::absolutePath(fullPath);
+          if (al::File::isRelativePath(fullPath)) {
+            fullPath = mParameterSpace->getRootPath() +
+                       al::File::absolutePath(fullPath);
           }
           if (file.second == sliceDimension) {
             // The file contains the slice.
@@ -137,7 +151,7 @@ DataPool::createDataSlice(std::string field,
       }
     }
     filename += sliceDimension + "_";
-    mParameterSpace->getDimension(sliceDimension)->getCurrentId();
+    //    mParameterSpace->getDimension(sliceDimension)->getCurrentId();
   }
 storedata:
   for (auto dim : mParameterSpace->getDimensions()) {
@@ -231,7 +245,7 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
   }
 }
 
-void DataPool::setCacheDirectory(std::string cacheDirectory) {
+void DataPool::setCacheDirectory(std::string cacheDirectory, al::Socket *src) {
   cacheDirectory = al::File::conformDirectory(cacheDirectory);
   if (!al::File::exists(cacheDirectory)) {
     if (!al::Dir::make(cacheDirectory)) {
@@ -239,7 +253,7 @@ void DataPool::setCacheDirectory(std::string cacheDirectory) {
     }
   }
   mSliceCacheDirectory = cacheDirectory;
-  modified();
+  modified(src);
 }
 
 std::vector<std::string> DataPool::listFields(bool verifyConsistency) {

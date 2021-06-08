@@ -68,8 +68,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
           std::cout << "Client received Remove message" << std::endl;
         }
         if (!readRemoveMessage(objectType, (void *)&details, src)) {
-          std::cerr << __FUNCTION__ << ": Error processing Remove message"
-                    << std::endl;
+          std::cerr << __FUNCTION__ << ": Error processing Remove "
+                    << ObjectType_Name(
+                           ((TincMessage *)&tincMessage)->objecttype())
+                    << " message" << std::endl;
         }
         break;
       case MessageType::REGISTER:
@@ -77,8 +79,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
           std::cout << "Client received Register message" << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
-          std::cerr << __FUNCTION__ << ": Error processing Register message"
-                    << std::endl;
+          std::cerr << __FUNCTION__ << ": Error processing Register "
+                    << ObjectType_Name(
+                           ((TincMessage *)&tincMessage)->objecttype())
+                    << " message" << std::endl;
         }
         break;
       case MessageType::CONFIGURE:
@@ -86,8 +90,10 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
           std::cout << "Client received Configure message" << std::endl;
         }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
-          std::cerr << __FUNCTION__ << ": Error processing Configure message"
-                    << std::endl;
+          std::cerr << __FUNCTION__ << ": Error processing Configure "
+                    << ObjectType_Name(
+                           ((TincMessage *)&tincMessage)->objecttype())
+                    << " message" << std::endl;
         }
         break;
       case MessageType::COMMAND:
@@ -199,7 +205,9 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
         std::cout << "Client sending message to " << mSocket.address() << ":"
                   << mSocket.port() << std::endl;
       }
-      return sendProtobufMessage(msg, &mSocket);
+      if (mSocket.opened()) {
+        return sendProtobufMessage(msg, &mSocket);
+      }
     }
   } else {
     if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {

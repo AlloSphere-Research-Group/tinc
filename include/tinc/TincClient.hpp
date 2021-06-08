@@ -69,6 +69,16 @@ public:
     TincProtocol::requestParameterSpaces(&mSocket);
   }
 
+  inline void synchronize() {
+    requestParameters();
+    requestParameterSpaces();
+    requestProcessors();
+    requestDiskBuffers();
+    requestDataPools();
+
+    waitForServer();
+  }
+
   /**
    * @brief Wait for lock, then wait for unlock.
    * @param group group to make the barrier for. 0 is all.
@@ -86,7 +96,7 @@ public:
    */
   bool waitForServer(float timeoutsec = 0.0);
 
-  void setVerbose(bool verbose);
+  void setVerbose(bool verbose = true);
   bool verbose() { return TincProtocol::mVerbose; }
 
 protected:
@@ -94,6 +104,8 @@ protected:
   void processBarrierUnlock(al::Socket *src, uint64_t barrierConsecutive);
 
   void processStatusMessage(void *message);
+
+  virtual void onConnection(al::Socket *newConnection) { synchronize(); };
 
 private:
   // Network barriers

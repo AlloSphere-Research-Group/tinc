@@ -64,3 +64,12 @@ tclient.stop()
 
   tserver.stop();
 }
+
+TEST(PythonClient, PythonOnly) {
+  // TODO test that data pool slices read in python are correct
+}
+
+TEST(PythonClient, PythonClient) {
+  // TODO test that data pool slices from a C++ server are read in python
+  // correctly
+}

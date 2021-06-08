@@ -367,6 +367,7 @@ protected:
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
   std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
   std::vector<std::shared_ptr<DiskBufferAbstract>> mLocalDBs;
+  std::vector<std::shared_ptr<DataPool>> mLocalDPs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;
