@@ -252,8 +252,7 @@ void CacheManager::updateFromDisk() {
               newArg.setValue(arg["value"].get<std::string>());
             }
           } else {
-            if (arg["nctype"] > 0 &&
-                arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
+            if (arg["nctype"] > 0) {
               switch ((al::VariantType)arg["nctype"]) {
               case al::VariantType::VARIANT_INT64:
                 newArg.setValue(arg["value"].get<int64_t>());
@@ -288,6 +287,9 @@ void CacheManager::updateFromDisk() {
               case al::VariantType::VARIANT_STRING:
                 newArg.setValue(arg["value"].get<std::string>());
                 break;
+              case al::VariantType::VARIANT_BOOL:
+                newArg.setValue(arg["value"].get<bool>());
+                break;
               case al::VariantType::VARIANT_NONE:
                 break;
               default:
@@ -316,8 +318,7 @@ void CacheManager::updateFromDisk() {
               newArg.setValue(arg["value"].get<std::string>());
             }
           } else {
-            if (arg["nctype"] > 0 &&
-                arg["nctype"] <= al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
+            if (arg["nctype"] > 0) {
               switch ((al::VariantType)arg["nctype"]) {
               case al::VariantType::VARIANT_INT64:
                 newArg.setValue(arg["value"].get<int64_t>());
@@ -348,6 +349,9 @@ void CacheManager::updateFromDisk() {
                 break;
               case al::VariantType::VARIANT_FLOAT:
                 newArg.setValue(arg["value"].get<float>());
+                break;
+              case al::VariantType::VARIANT_BOOL:
+                newArg.setValue(arg["value"].get<bool>());
                 break;
               case al::VariantType::VARIANT_STRING:
                 newArg.setValue(arg["value"].get<std::string>());
@@ -493,6 +497,8 @@ void CacheManager::writeToDisk() {
           newArg["value"] = arg.getValue().get<int64_t>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_UINT64) {
           newArg["value"] = arg.getValue().get<uint64_t>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_BOOL) {
+          newArg["value"] = arg.getValue().get<bool>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
           newArg["value"] = arg.getValue().get<std::string>();
         } else {
