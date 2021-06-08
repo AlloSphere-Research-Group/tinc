@@ -31,11 +31,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/ParameterSpace.hpp"
 
 namespace tinc {
+
+typedef enum {
+  DATAPOOL_JSON = 0,
+  DATAPOOL_NETCDF = 1,
+  DATAPOOL_USER
+} DataPoolType;
+
 /**
  * @brief The DataPool class gathers data files across directories that span a
  * parameter space
@@ -61,6 +68,26 @@ public:
    * It should be present in all data paths for the parameter space.
    */
   void registerDataFile(std::string filename, std::string dimensionInFile);
+
+  /**
+   * @brief get registered data files
+   * @return key is the filename and vlaue is the name of the dimension that
+   * file contains
+   *
+   * The dimension name in the output names the dimension whose changes have
+   * produced the values in the fields in the file
+   */
+  std::map<std::string, std::string> getRegisteredDataFiles() {
+    return mDataFilenames;
+  }
+
+  /**
+   * @brief Clear list of registered data files
+   */
+  void clearRegisteredFiles() {
+    mDataFilenames.clear();
+    // TODO send to clients
+  }
 
   /**
    * @brief Get parameter space that controls this data pool
@@ -119,7 +146,7 @@ public:
    */
   std::string getCacheDirectory() { return mSliceCacheDirectory; }
 
-  void setCacheDirectory(std::string cacheDirectory);
+  void setCacheDirectory(std::string cacheDirectory, al::Socket *src = nullptr);
 
   std::vector<std::string> listFields(bool verifyConsistency = false);
 
@@ -133,6 +160,11 @@ public:
         return mParameterSpace->runningPaths(fixedDimensions);
       };
 
+  /**
+   * @brief type of the data pool. Set on constructor, can't change.
+   */
+  const DataPoolType getType() { return mType; }
+
 protected:
   virtual std::vector<std::string> listFieldInFile(std::string file) = 0;
   virtual bool getFieldFromFile(std::string field, std::string file,
@@ -141,12 +173,13 @@ protected:
                                 size_t length) = 0;
 
   std::string getFileType(std::string file);
+  DataPoolType mType{DataPoolType::DATAPOOL_USER};
 
 private:
   ParameterSpace *mParameterSpace;
   std::string mSliceCacheDirectory;
   std::map<std::string, std::string> mDataFilenames;
 };
-}
+} // namespace tinc
 
 #endif // DATAPOT_HPP

@@ -102,10 +102,17 @@ message RegisterProcessor {
   string runningDirectory = 7;
 }
 
+enum DataPoolTypes {
+    DATAPOOLTYPE_JSON = 0;
+    DATAPOOLTYPE_NETCDF = 1;
+    DATAPOOLTYPE_USER = 2;
+}
+
 message RegisterDataPool {
   string id = 1;
   string parameterSpaceId = 2;
   string cacheDirectory = 3;
+  DataPoolTypes type = 4;
 }
 
 message RegisterDiskBuffer {
@@ -156,6 +163,8 @@ message ConfigureParameter {
 enum ParameterSpaceConfigureType {
     ADD_PARAMETER = 0;
     REMOVE_PARAMETER = 1;
+    CURRENT_TEMPLATE = 2;
+    ROOT_PATH = 3;
 }
 
 message ConfigureParameterSpace {
@@ -182,6 +191,11 @@ message ConfigureDiskBuffer {
 
 enum DataPoolConfigureType {
     SLICE_CACHE_DIR = 0;
+    DATA_FILES = 1;
+}
+message DataPoolDataFiles {
+  repeated string filename = 1;
+  repeated string dimension = 2;
 }
 
 message ConfigureDataPool {
@@ -239,6 +253,15 @@ message ParameterSpaceRequestRootPath {
 message ParameterSpaceRequestRootPathReply {
     string path = 1;
 }
+
+// Request DiskBuffer current file slice
+//message DiskBufferCommandFile {
+//}
+
+//message DiskBufferCommandFileReply {
+//    string filename = 1;
+//}
+
 
 // Request DataPool slice
 message DataPoolCommandSlice {

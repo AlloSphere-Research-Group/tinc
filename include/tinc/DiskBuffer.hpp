@@ -60,7 +60,7 @@ public:
    * Whenever overriding this function, you must make sure you call the
    * update callbacks in mUpdateCallbacks
    */
-  bool loadData(std::string filename = "") override;
+  bool loadData(std::string filename = "", bool notify = true) override;
 
   /**
    * @brief Write data from memory to disk buffer and then load it.
@@ -96,7 +96,7 @@ DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
 }
 
 template <class DataType>
-bool DiskBuffer<DataType>::loadData(std::string filename) {
+bool DiskBuffer<DataType>::loadData(std::string filename, bool notify) {
   std::unique_lock<std::mutex> lk(m_writeLock);
   if (filename.size() > 0) {
     m_fileName = filename;
@@ -109,6 +109,11 @@ bool DiskBuffer<DataType>::loadData(std::string filename) {
   lk.unlock();
   for (auto cb : mUpdateCallbacks) {
     cb(ret);
+  }
+  if (notify) {
+    for (auto cb : mNotifyCallbacks) {
+      cb(ret);
+    }
   }
   return ret;
 }

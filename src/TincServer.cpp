@@ -72,9 +72,6 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::CONFIGURE:
-        if (verbose()) {
-          std::cout << "Server received Configure message" << std::endl;
-        }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
                     << std::endl;
@@ -348,7 +345,9 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
           std::cout << "Server sending message to " << connection->address()
                     << ":" << connection->port() << std::endl;
         }
-        ret &= sendProtobufMessage(msg, connection.get());
+        if (connection->opened()) {
+          ret &= sendProtobufMessage(msg, connection.get());
+        }
       }
     }
   } else {
@@ -358,7 +357,9 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
         std::cout << "Server sending message to " << dst->address() << ":"
                   << dst->port() << std::endl;
       }
-      ret &= sendProtobufMessage(msg, dst);
+      if (dst->opened()) {
+        ret &= sendProtobufMessage(msg, dst);
+      }
     }
   }
 

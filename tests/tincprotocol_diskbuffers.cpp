@@ -15,10 +15,9 @@ using namespace tinc;
 
 TEST(DiskBuffer, DiskBufferImage) {
   TincServer tserver;
-  // tserver.setVerbose(true);
+  //  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
-  // TODO create disk buffers of different types
   DiskBufferImage db{"db", "test.png", "db_path"};
 
   // generating example image

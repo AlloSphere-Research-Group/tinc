@@ -229,7 +229,7 @@ public:
    */
   size_t size();
 
-  void sort();
+  void sort(al::Socket *src = nullptr);
 
   /**
    * @brief Clear the parameter space
@@ -334,7 +334,7 @@ public:
    * The minimum and maximum value are stored separately from the values
    * the parameter can take, so you must set them manually or use this function.
    */
-  bool conformSpace();
+  bool conformSpace(al::Socket *src = nullptr);
 
   /**
    * @brief provide a deep copy of the parameter space

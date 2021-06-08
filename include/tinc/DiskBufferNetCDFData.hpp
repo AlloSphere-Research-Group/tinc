@@ -84,103 +84,10 @@ public:
   std::map<std::string, al::VariantValue> attributes;
   void *dataVector{nullptr};
 
-  ~NetCDFData() {
-    if (dataVector) {
-      switch (ncDataType) {
-      case SHORT:
-        delete static_cast<std::vector<int16_t> *>(dataVector);
-        break;
-      case INT:
-        delete static_cast<std::vector<int32_t> *>(dataVector);
-        break;
-      case FLOAT:
-        delete static_cast<std::vector<float> *>(dataVector);
-        break;
-      case DOUBLE:
-        delete static_cast<std::vector<double> *>(dataVector);
-        break;
-      case UBYTE:
-      case CHAR:
-        delete static_cast<std::vector<uint8_t> *>(dataVector);
-        break;
-      case USHORT:
-        delete static_cast<std::vector<uint16_t> *>(dataVector);
-        break;
-      case UINT:
-        delete static_cast<std::vector<int32_t> *>(dataVector);
-        break;
-      case INT64:
-        delete static_cast<std::vector<int64_t> *>(dataVector);
-        break;
-      case UINT64:
-        delete static_cast<std::vector<uint64_t> *>(dataVector);
-        break;
-      case STRING:
-        delete static_cast<std::vector<std::string> *>(dataVector);
-        std::cerr << "string not yet supported in DisnkBufferNetCDF"
-                  << std::endl;
-        break;
-      case BYTE:
-        delete static_cast<std::vector<int8_t> *>(dataVector);
-      }
-    }
-  }
+  ~NetCDFData();
 
-  int getType() { return ncDataType; }
-  void setType(int type) {
-    if (type == ncDataType) {
-      return;
-    }
-    if (dataVector) {
-      delete dataVector;
-    }
-    dataVector = nullptr;
-#ifdef TINC_HAS_NETCDF
-    switch (type) {
-    case NC_SHORT:
-      dataVector = new std::vector<int16_t>;
-      break;
-    case NC_INT:
-      dataVector = new std::vector<int32_t>;
-      break;
-    case NC_FLOAT:
-      dataVector = new std::vector<float>;
-      break;
-    case NC_DOUBLE:
-      dataVector = new std::vector<double>;
-      break;
-    case NC_UBYTE:
-    case NC_CHAR:
-      dataVector = new std::vector<uint8_t>;
-      break;
-    case NC_USHORT:
-      dataVector = new std::vector<uint16_t>;
-      break;
-    case NC_UINT:
-      dataVector = new std::vector<int32_t>;
-      break;
-    case NC_INT64:
-      dataVector = new std::vector<int64_t>;
-      break;
-    case NC_UINT64:
-      dataVector = new std::vector<uint64_t>;
-      break;
-    case NC_STRING:
-      dataVector = new std::vector<std::string>;
-
-      std::cerr << "string not yet supported in DisnkBufferNetCDF" << std::endl;
-      break;
-    case NC_BYTE:
-      dataVector = new std::vector<int8_t>;
-
-    case NC_NAT:
-    default:
-      ncDataType = NC_NAT;
-      return;
-    }
-    ncDataType = type;
-  }
-#endif
+  int getType();
+  void setType(int type);
 
   template <class DataType> std::vector<DataType> &getVector() {
     if (!dataVector) {
@@ -190,7 +97,9 @@ public:
   }
 
 private:
-  int ncDataType{0};
+  al::VariantType ncDataType{al::VariantType::VARIANT_NONE};
+
+  void deleteData();
 };
 
 // TODO we should have the option to check if there is already a file on disk

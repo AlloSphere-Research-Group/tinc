@@ -22,8 +22,6 @@ TEST(ProtocolParameterSpace, Connection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  tclient.requestParameterSpaces();
-
   al::al_sleep(0.2); // Give time to connect
   auto client_ps = tclient.getParameterSpace("paramspace");
 
@@ -65,6 +63,57 @@ TEST(ProtocolParameterSpace, Connection) {
   tserver.stop();
 }
 
+
+TEST(ProtocolParameterSpace, RootPath) {
+    TincServer tserver;
+    EXPECT_TRUE(tserver.start());
+
+    ParameterSpace ps{"paramspace"};
+    ps.setRootPath("rootpath");
+
+    tserver << ps;
+
+    TincClient tclient;
+    EXPECT_TRUE(tclient.start());
+
+    while (!tclient.getParameterSpace("paramspace")) {
+        al::al_sleep(0.1);
+    }
+
+    auto client_ps = tclient.getParameterSpace("paramspace");
+
+    EXPECT_EQ(ps.getRootPath(), client_ps->getRootPath());
+    // FIXME isSamePath broken for this case...
+    EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(),
+                                     client_ps->getRootPath()));
+
+    tclient.stop();
+    tserver.stop();
+}
+
 TEST(ProtocolParameterSpace, PathTemplate) {
-    // Check propagation and resolution of path template in client
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpace ps{"paramspace"};
+  ps.setCurrentPathTemplate("greattemplate");
+
+  tserver << ps;
+
+  TincClient tclient;
+  EXPECT_TRUE(tclient.start());
+
+  while (!tclient.getParameterSpace("paramspace")) {
+    al::al_sleep(0.1);
+  }
+
+  auto client_ps = tclient.getParameterSpace("paramspace");
+
+  EXPECT_EQ(ps.getCurrentPathTemplate(), client_ps->getCurrentPathTemplate());
+  // FIXME isSamePath broken for this case...
+  EXPECT_TRUE(al::File::isSamePath(ps.getCurrentPathTemplate(),
+                                   client_ps->getCurrentPathTemplate()));
+
+  tclient.stop();
+  tserver.stop();
 }

@@ -64,6 +64,15 @@ def disk_buffer_to_dict(db):
         pass
     return d
 
+def datapool_to_dict(dp):
+    d = dp.__dict__.copy()
+
+    try:
+        del d["tinc_client"]
+    except:
+        pass
+    return d
+
 tclient = TincClient()
 
 time.sleep(0.5)

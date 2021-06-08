@@ -8,8 +8,8 @@
 
 using namespace tinc;
 
-bool DataPool::getFieldFromFile(std::string field, std::string file,
-                                size_t dimensionInFileIndex, void *data) {
+bool DataPoolNetCDF::getFieldFromFile(std::string field, std::string file,
+                                      size_t dimensionInFileIndex, void *data) {
   // FIXME implement
   //  std::ifstream f(file);
   //  if (!f.good()) {
@@ -22,8 +22,8 @@ bool DataPool::getFieldFromFile(std::string field, std::string file,
   return true;
 }
 
-bool DataPool::getFieldFromFile(std::string field, std::string file, void *data,
-                                size_t length) {
+bool DataPoolNetCDF::getFieldFromFile(std::string field, std::string file,
+                                      void *data, size_t length) {
 
   // FIXME implement
   //  auto fileType = getFileType(file);

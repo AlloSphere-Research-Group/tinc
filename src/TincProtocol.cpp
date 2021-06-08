@@ -1,3 +1,5 @@
+#include "tinc/DataPoolJson.hpp"
+#include "tinc/DataPoolNetCDF.hpp"
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDFData.hpp"
@@ -544,7 +546,7 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
     } else {
       std::cerr << "Other types not supported yet" << std::endl;
     }
-    // FIXME support the rest of the types
+    // FIXME ML support the rest of the types
     auto confValue = confMessage.configurationvalue().New();
     confValue->PackFrom(valuesMessage);
     confMessage.set_allocated_configurationvalue(confValue);
@@ -554,6 +556,54 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
     msg.set_allocated_details(detailsAny);
     confMessages.push_back(msg);
   }
+
+  return confMessages;
+}
+
+std::vector<TincMessage>
+createConfigureParameterSpaceMessage(ParameterSpace *ps) {
+  std::vector<TincMessage> confMessages;
+
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CONFIGURE);
+  msg.set_objecttype(ObjectType::PARAMETER_SPACE);
+
+  ConfigureParameterSpace confMessage;
+  confMessage.set_id(ps->getId());
+  confMessage.set_configurationkey(
+      ParameterSpaceConfigureType::CURRENT_TEMPLATE);
+
+  ParameterValue valuesMessage;
+  valuesMessage.set_valuestring(ps->getCurrentPathTemplate());
+
+  auto confValue = confMessage.configurationvalue().New();
+  confValue->PackFrom(valuesMessage);
+  confMessage.set_allocated_configurationvalue(confValue);
+
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(confMessage);
+  msg.set_allocated_details(detailsAny);
+  confMessages.push_back(msg);
+
+  TincMessage msg2;
+  msg2.set_messagetype(MessageType::CONFIGURE);
+  msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
+
+  ConfigureParameterSpace confMessage2;
+  confMessage2.set_id(ps->getId());
+  confMessage2.set_configurationkey(ParameterSpaceConfigureType::ROOT_PATH);
+
+  ParameterValue valuesMessage2;
+  valuesMessage2.set_valuestring(ps->getRootPath());
+
+  auto confValue2 = confMessage2.configurationvalue().New();
+  confValue2->PackFrom(valuesMessage2);
+  confMessage2.set_allocated_configurationvalue(confValue2);
+
+  google::protobuf::Any *detailsAny2 = msg2.details().New();
+  detailsAny2->PackFrom(confMessage2);
+  msg2.set_allocated_details(detailsAny2);
+  confMessages.push_back(msg2);
 
   return confMessages;
 }
@@ -576,7 +626,9 @@ TincMessage createConfigureDiskBufferMessage(DiskBufferAbstract *dp) {
   return msg;
 }
 
-TincMessage createConfigureDataPoolMessage(DataPool *dp) {
+std::vector<TincMessage> createConfigureDataPoolMessage(DataPool *dp) {
+  std::vector<TincMessage> msgs;
+
   TincMessage msg;
   msg.set_messagetype(MessageType::CONFIGURE);
   msg.set_objecttype(ObjectType::DATA_POOL);
@@ -591,7 +643,29 @@ TincMessage createConfigureDataPoolMessage(DataPool *dp) {
   auto details = msg.details().New();
   details->PackFrom(confMessage);
   msg.set_allocated_details(details);
-  return msg;
+
+  msgs.push_back(msg);
+
+  TincMessage msg2;
+  msg2.set_messagetype(MessageType::CONFIGURE);
+  msg2.set_objecttype(ObjectType::DATA_POOL);
+  ConfigureDataPool confMessage2;
+  confMessage2.set_id(dp->getId());
+  confMessage2.set_configurationkey(DataPoolConfigureType::DATA_FILES);
+  DataPoolDataFiles dataFiles;
+  for (auto &df : dp->getRegisteredDataFiles()) {
+    dataFiles.add_filename(df.first);
+    dataFiles.add_dimension(df.second);
+  }
+  google::protobuf::Any *configValue2 = confMessage2.configurationvalue().New();
+  configValue2->PackFrom(dataFiles);
+  confMessage2.set_allocated_configurationvalue(configValue2);
+  auto details2 = msg2.details().New();
+  details2->PackFrom(confMessage2);
+  msg2.set_allocated_details(details2);
+
+  msgs.push_back(msg2);
+  return msgs;
 }
 
 TincMessage createConfigureParameterSpaceAdd(ParameterSpace *ps,
@@ -815,11 +889,11 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 
         dim->setSpaceValues(newValues, "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 || newValues.size() == 0) {
+        if (newIds.size() == 0 && newValues.size() == 0) {
           std::cout << __FUNCTION__
                     << "Warning: got empty parameter space values" << std::endl;
         } else {
-          dim->conformSpace();
+          dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
         std::vector<uint8_t> newValues;
@@ -834,11 +908,11 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 || newValues.size() == 0) {
+        if (newIds.size() == 0 && newValues.size() == 0) {
           std::cout << __FUNCTION__
                     << "Warning: got empty parameter space values" << std::endl;
         } else {
-          dim->conformSpace();
+          dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
         std::vector<int32_t> newValues;
@@ -853,11 +927,11 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 || newValues.size() == 0) {
+        if (newIds.size() == 0 && newValues.size() == 0) {
           std::cout << __FUNCTION__
                     << "Warning: got empty parameter space values" << std::endl;
         } else {
-          dim->conformSpace();
+          dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
         std::vector<uint32_t> newValues;
@@ -872,11 +946,11 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 || newValues.size() == 0) {
+        if (newIds.size() == 0 && newValues.size() == 0) {
           std::cout << __FUNCTION__
                     << "Warning: got empty parameter space values" << std::endl;
         } else {
-          dim->conformSpace();
+          dim->conformSpace(src);
         }
         // FIXME add all types
       } else {
@@ -1082,7 +1156,7 @@ bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   }
   mDiskBuffers.push_back(&db);
 
-  db.registerUpdateCallback([&](bool ok) {
+  db.registerNotifyCallback([&](bool ok) {
     if (ok) {
       // TODO send more granular messages, not everything.
       sendConfigureMessage(&db, nullptr, nullptr);
@@ -1114,13 +1188,18 @@ bool TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   // FIXME check register order datapool -> ps
   registerParameterSpace(dp.getParameterSpace(), src);
 
-  // FIXME add input source to avoid repropagating
-  dp.modified = [&]() {
+  dp.modified = [&](al::Socket *src = nullptr) {
     auto msg = createConfigureDataPoolMessage(&dp);
-    sendTincMessage(&msg);
+    sendTincMessage(&msg, nullptr, src->valueSource());
   };
 
-  // Broadcast registered DataPool
+  // Broadcast registered DataPool and dependencies
+
+  for (auto *p : dp.getParameterSpace().getDimensions()) {
+    sendRegisterMessage(p, nullptr, src);
+  }
+  sendRegisterMessage(&(dp.getParameterSpace()), nullptr, src);
+
   sendRegisterMessage(&dp, nullptr, src);
   sendConfigureMessage(&dp, nullptr, src);
   return true;
@@ -1319,6 +1398,15 @@ DiskBufferAbstract *TincProtocol::getDiskBuffer(std::string name) {
   for (auto *db : mDiskBuffers) {
     if (db->getId() == name) {
       return db;
+    }
+  }
+  return nullptr;
+}
+
+DataPool *TincProtocol::getDataPool(std::string name) {
+  for (auto *dp : mDataPools) {
+    if (dp->getId() == name) {
+      return dp;
     }
   }
   return nullptr;
@@ -1544,6 +1632,10 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 }
 
 void TincProtocol::processRequestParameters(al::Socket *dst) {
+
+  if (mVerbose) {
+    std::cout << "Protocol received Request Parameters" << std::endl;
+  }
   for (auto *dim : mParameterSpaceDimensions) {
     sendRegisterMessage(dim, dst);
     sendConfigureMessage(dim, dst);
@@ -1551,6 +1643,9 @@ void TincProtocol::processRequestParameters(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Protocol received Request ParameterSpaces" << std::endl;
+  }
   for (auto &ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
     sendConfigureMessage(ps, dst);
@@ -1563,6 +1658,9 @@ void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Protocol received Request Processors" << std::endl;
+  }
   for (auto *p : mProcessors) {
     sendRegisterMessage(p, dst);
     sendConfigureMessage(p, dst);
@@ -1570,6 +1668,9 @@ void TincProtocol::processRequestProcessors(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Protocol received Request DiskBuffers" << std::endl;
+  }
   for (auto *db : mDiskBuffers) {
     sendRegisterMessage(db, dst);
     sendConfigureMessage(db, dst);
@@ -1577,6 +1678,9 @@ void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
 }
 
 void TincProtocol::processRequestDataPools(al::Socket *dst) {
+  if (mVerbose) {
+    std::cout << "Protocol received Request DataPools" << std::endl;
+  }
   for (auto *dp : mDataPools) {
     sendRegisterMessage(dp, dst);
     sendConfigureMessage(dp, dst);
@@ -1794,8 +1898,67 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
-  // FIXME implement
-  return true;
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterDataPool>()) {
+    std::cerr << __FUNCTION__
+              << ": Register Data Pool message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RegisterDataPool command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+
+  if (mVerbose) {
+    std::cout << " Registering DataPool " << id << std::endl;
+  }
+
+  for (auto &dp : mDataPools) {
+    if (dp->getId() == id) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": DataPool " << id
+                  << " already registered." << std::endl;
+      }
+      return true;
+    }
+  }
+
+  auto psId = command.parameterspaceid();
+  auto cacheDir = command.cachedirectory();
+
+  auto ps = getParameterSpace(psId);
+
+  if (ps) {
+
+    if (command.type() == DataPoolTypes::DATAPOOLTYPE_JSON) {
+      mLocalDPs.emplace_back(std::make_shared<DataPoolJson>(id, *ps, cacheDir));
+    } else if (command.type() == DataPoolTypes::DATAPOOLTYPE_NETCDF) {
+      mLocalDPs.emplace_back(
+          std::make_shared<DataPoolNetCDF>(id, *ps, cacheDir));
+    } else if (command.type() == DataPoolTypes::DATAPOOLTYPE_USER) {
+
+      std::cout << __FUNCTION__ << ": DataPool **USER** types not supported."
+                << std::endl;
+      return false;
+    } else {
+
+      std::cout << __FUNCTION__ << ": DataPool type not supported."
+                << std::endl;
+      return false;
+    }
+
+    return registerDataPool(*mLocalDPs.back(), src);
+  } else {
+
+    std::cout
+        << __FUNCTION__
+        << ": ParameterSpace in DataPool not found. Datapool not registered."
+        << std::endl;
+    return false;
+  }
+
+  return false;
 }
 
 void TincProtocol::sendRegisterMessage(ParameterSpaceDimension *dim,
@@ -1858,17 +2021,17 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   detailsAny->PackFrom(registerProcMessage);
   msg.set_allocated_details(detailsAny);
 
-  if (src) {
-    sendTincMessage(&msg, dst, src->valueSource());
-  } else {
-    sendTincMessage(&msg, dst);
-  }
-
   if (dynamic_cast<ProcessorGraph *>(p)) {
     for (auto &childProcessor :
          dynamic_cast<ProcessorGraph *>(p)->getProcessors()) {
       sendRegisterMessage(childProcessor, dst, src);
     }
+  }
+
+  if (src) {
+    sendTincMessage(&msg, dst, src->valueSource());
+  } else {
+    sendTincMessage(&msg, dst);
   }
 }
 
@@ -1921,6 +2084,7 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
   details.set_id(dp->getId());
   details.set_parameterspaceid(dp->getParameterSpace().getId());
   details.set_cachedirectory(dp->getCacheDirectory());
+  details.set_type((::tinc::DataPoolTypes)dp->getType());
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
@@ -1930,8 +2094,6 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
   } else {
     sendTincMessage(&msg, dst);
   }
-
-  sendRegisterMessage(&dp->getParameterSpace(), dst, src);
 }
 
 bool TincProtocol::readConfigureMessage(int objectType, void *any,
@@ -1940,12 +2102,13 @@ bool TincProtocol::readConfigureMessage(int objectType, void *any,
   case ObjectType::PARAMETER:
     return processConfigureParameter(any, src);
   case ObjectType::PROCESSOR:
+    // FIXME implement configure processor
     //    return sendProcessors(src);
     break;
   case ObjectType::DISK_BUFFER:
     return processConfigureDiskBuffer(any, src);
   case ObjectType::DATA_POOL:
-    //    return sendDataPools(src);
+    return processConfigureDataPool(any, src);
     break;
   case ObjectType::PARAMETER_SPACE:
     return processConfigureParameterSpace(any, src);
@@ -1962,6 +2125,10 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Protocol received Configure Parameter message" << std::endl;
   }
 
   ConfigureParameter conf;
@@ -1995,6 +2162,11 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Protocol received Configure ParameterSpace message"
+              << std::endl;
   }
 
   ConfigureParameterSpace conf;
@@ -2058,6 +2230,24 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
                     << std::endl;
           return false;
         }
+      } else if (command == ParameterSpaceConfigureType::CURRENT_TEMPLATE) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue val;
+          conf.configurationvalue().UnpackTo(&val);
+          auto curTempl = val.valuestring();
+
+          ps->setCurrentPathTemplate(curTempl);
+          return true;
+        }
+      } else if (command == ParameterSpaceConfigureType::ROOT_PATH) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue val;
+          conf.configurationvalue().UnpackTo(&val);
+          auto curTempl = val.valuestring();
+
+          ps->setRootPath(curTempl);
+          return true;
+        }
       }
 
       std::cerr << __FUNCTION__
@@ -2074,6 +2264,11 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
 
 bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
   // FIXME implement
+  if (mVerbose) {
+    std::cout
+        << "Protocol received Configure Processor message [not implemented]"
+        << std::endl;
+  }
   return true;
 }
 
@@ -2083,6 +2278,10 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
               << std::endl;
     return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Protocol received Configure DiskBuffer message " << std::endl;
   }
 
   ConfigureDiskBuffer conf;
@@ -2096,7 +2295,7 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
         if (conf.configurationvalue().Is<ParameterValue>()) {
           ParameterValue file;
           conf.configurationvalue().UnpackTo(&file);
-          if (!db->loadData(file.valuestring())) {
+          if (!db->loadData(file.valuestring(), false)) {
             std::cerr << __FUNCTION__ << ": Error updating DiskBuffer " << id
                       << " from file " << file.valuestring() << std::endl;
             return false;
@@ -2119,8 +2318,57 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
 }
 
 bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
-  // FIXME implement
-  return true;
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<ConfigureDataPool>()) {
+    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  if (mVerbose) {
+    std::cout << "Protocol received Configure DataPool message " << std::endl;
+  }
+
+  ConfigureDataPool conf;
+  details->UnpackTo(&conf);
+  auto id = conf.id();
+  for (auto *dp : mDataPools) {
+    if (id == dp->getId()) {
+      DataPoolConfigureType command = conf.configurationkey();
+
+      if (command == DataPoolConfigureType::SLICE_CACHE_DIR) {
+        if (conf.configurationvalue().Is<ParameterValue>()) {
+          ParameterValue file;
+          conf.configurationvalue().UnpackTo(&file);
+          dp->setCacheDirectory(file.valuestring(), src);
+          return true;
+        }
+      } else if (command == DataPoolConfigureType::DATA_FILES) {
+        if (conf.configurationvalue().Is<DataPoolDataFiles>()) {
+          DataPoolDataFiles files;
+          conf.configurationvalue().UnpackTo(&files);
+          if (files.filename_size() != files.dimension_size()) {
+            std::cerr
+                << __FUNCTION__
+                << ": Error configuring DataPool DATA_FILES size mismatch "
+                << id << std::endl;
+          }
+          for (int i = 0; i < files.filename_size(); i++) {
+            dp->clearRegisteredFiles();
+            dp->registerDataFile(files.filename(i), files.dimension(i));
+          }
+
+          return true;
+        }
+      }
+      std::cerr << __FUNCTION__ << ": Error configuring DiskBuffer " << id
+                << std::endl;
+      return false;
+    }
+  }
+
+  std::cerr << __FUNCTION__ << ": Unable to find DataPool " << id << std::endl;
+  return false;
 }
 
 void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
@@ -2137,10 +2385,17 @@ void TincProtocol::sendConfigureMessage(ParameterSpaceDimension *dim,
 
 void TincProtocol::sendConfigureMessage(ParameterSpace *ps, al::Socket *dst,
                                         al::Socket *src) {
-  // FIXME currently no config message needs to be sent for PS itself
-  for (auto *dim : ps->getDimensions()) {
-    sendConfigureMessage(dim, dst, src);
+  auto msgs = createConfigureParameterSpaceMessage(ps);
+  for (auto &msg : msgs) {
+    if (src) {
+      sendTincMessage(&msg, dst, src->valueSource());
+    } else {
+      sendTincMessage(&msg, dst);
+    }
   }
+  //  for (auto *dim : ps->getDimensions()) {
+  //    sendConfigureMessage(dim, dst, src);
+  //  }
 }
 
 void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
@@ -2206,11 +2461,15 @@ void TincProtocol::sendConfigureMessage(DiskBufferAbstract *p, al::Socket *dst,
 
 void TincProtocol::sendConfigureMessage(DataPool *p, al::Socket *dst,
                                         al::Socket *src) {
-  auto msg = createConfigureDataPoolMessage(p);
+  auto msgs = createConfigureDataPoolMessage(p);
   if (src) {
-    sendTincMessage(&msg, dst, src->valueSource());
+    for (auto &msg : msgs) {
+      sendTincMessage(&msg, dst, src->valueSource());
+    }
   } else {
-    sendTincMessage(&msg, dst);
+    for (auto &msg : msgs) {
+      sendTincMessage(&msg, dst);
+    }
   }
 }
 
@@ -2880,7 +3139,11 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   }
 
   if (mVerbose) {
-    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
+    //    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
+    std::cout << __FUNCTION__ << ": Sending "
+              << MessageType_Name(((TincMessage *)&msg)->messagetype()) << " "
+              << ObjectType_Name(((TincMessage *)&msg)->objecttype())
+              << " bytes " << size << std::endl;
   }
   auto bytes = dst->send(buffer, size + sizeof(size_t));
   if (bytes != size + sizeof(size_t)) {

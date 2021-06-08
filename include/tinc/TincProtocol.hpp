@@ -217,6 +217,8 @@ public:
 
   DiskBufferAbstract *getDiskBuffer(std::string name);
 
+  DataPool *getDataPool(std::string name);
+
   /**
    * @brief activate a network barrier
    * @param group group to make the barrier for. 0 is all.
@@ -365,6 +367,7 @@ protected:
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
   std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
   std::vector<std::shared_ptr<DiskBufferAbstract>> mLocalDBs;
+  std::vector<std::shared_ptr<DataPool>> mLocalDPs;
 
   // Barriers
   int barrierWaitGranularTimeMs = 20;

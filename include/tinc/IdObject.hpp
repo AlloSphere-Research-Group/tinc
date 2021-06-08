@@ -37,6 +37,9 @@
 #include <iostream>
 #include <string>
 
+#include "al/io/al_Socket.hpp"
+//#include "tinc/TincServer.hpp"
+
 namespace tinc {
 
 class IdObject {
@@ -45,10 +48,12 @@ public:
 
   void setId(std::string id);
 
+  //  virtual void registerWithTincServer(TincServer & /*server*/) {}
+
   std::string getDocumentation() const;
   void setDocumentation(const std::string &documentation);
 
-  std::function<void()> modified = []() {};
+  std::function<void(al::Socket *src)> modified = [](al::Socket * /*src*/) {};
 
 protected:
   std::string mId;

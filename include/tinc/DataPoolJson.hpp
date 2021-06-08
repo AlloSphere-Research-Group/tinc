@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/DataPool.hpp"
 
@@ -43,21 +43,25 @@ class DataPoolJson : public DataPool {
 public:
   DataPoolJson(std::string id, ParameterSpace &ps,
                std::string sliceCacheDir = std::string())
-      : DataPool(id, ps, sliceCacheDir) {}
+      : DataPool(id, ps, sliceCacheDir) {
+    mType = DataPoolType::DATAPOOL_JSON;
+  }
 
   DataPoolJson(ParameterSpace &ps, std::string sliceCacheDir = std::string())
-      : DataPool(ps, sliceCacheDir) {}
+      : DataPool(ps, sliceCacheDir) {
+    mType = DataPoolType::DATAPOOL_JSON;
+  }
 
 protected:
-  virtual std::vector<std::string> listFieldInFile(std::string file);
+  std::vector<std::string> listFieldInFile(std::string file) override;
 
-  virtual bool getFieldFromFile(std::string field, std::string file,
-                                size_t dimensionInFileIndex, void *data);
-  virtual bool getFieldFromFile(std::string field, std::string file, void *data,
-                                size_t length);
+  bool getFieldFromFile(std::string field, std::string file,
+                        size_t dimensionInFileIndex, void *data) override;
+  bool getFieldFromFile(std::string field, std::string file, void *data,
+                        size_t length) override;
 
 private:
 };
-}
+} // namespace tinc
 
 #endif // DATAPOOLJSON_HPP
