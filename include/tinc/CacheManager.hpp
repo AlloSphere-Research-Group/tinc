@@ -90,10 +90,20 @@ public:
     case al::VariantType::VARIANT_STRING:
       dst.setValue(src.getValue().get<std::string>());
       break;
+    case al::VariantType::VARIANT_CHAR:
+      dst.setValue(src.getValue().get<char>());
+      break;
+    case al::VariantType::VARIANT_BOOL:
+      dst.setValue(src.getValue().get<bool>());
+      break;
+
     }
   }
 
   template <typename T> void setValue(T value_) {
+    value = std::make_unique<al::VariantValue>(value_);
+  }
+  void setValue(bool value_) {
     value = std::make_unique<al::VariantValue>(value_);
   }
   std::string id;
