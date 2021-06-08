@@ -126,26 +126,25 @@ TEST(DataPoolProtocol, Slice) {
   auto internalDimClient = tclient.getDimension("internal");
   auto externalDimClient = tclient.getDimension("external");
 
-  auto externalDataPool =
-      static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
+  auto dataPoolClient = static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
 
   internalDimClient->setCurrentValue(0.0);
   externalDimClient->setCurrentValue(10.0);
   double data[10];
   auto sliceSize =
-      externalDataPool->readDataSlice("field1", "external", data, 10);
+      dataPoolClient->readDataSlice("field1", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 0);
   EXPECT_EQ(data[1], 1);
   EXPECT_EQ(data[2], 5);
 
-  sliceSize = externalDataPool->readDataSlice("field2", "external", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field2", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 1);
   EXPECT_EQ(data[1], 0);
   EXPECT_EQ(data[2], 6);
 
-  sliceSize = externalDataPool->readDataSlice("field3", "external", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field3", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 4);
   EXPECT_EQ(data[1], 5);
@@ -153,26 +152,26 @@ TEST(DataPoolProtocol, Slice) {
 
   internalDimClient->setCurrentValue(0.4);
 
-  sliceSize = externalDataPool->readDataSlice("field1", "external", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field1", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 4);
   EXPECT_EQ(data[1], 5);
   EXPECT_EQ(data[2], 0);
 
-  sliceSize = externalDataPool->readDataSlice("field2", "external", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field2", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 5);
   EXPECT_EQ(data[1], 4);
   EXPECT_EQ(data[2], 1);
 
-  sliceSize = externalDataPool->readDataSlice("field3", "external", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field3", "external", data, 10);
   EXPECT_EQ(sliceSize, 3);
   EXPECT_EQ(data[0], 8);
   EXPECT_EQ(data[1], 0);
   EXPECT_EQ(data[2], 9);
 
   // Now test internal, where slicing occurs within a single file
-  sliceSize = externalDataPool->readDataSlice("field1", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field1", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 0);
   EXPECT_EQ(data[1], 1);
@@ -183,7 +182,7 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[6], 6);
   EXPECT_EQ(data[7], 7);
 
-  sliceSize = externalDataPool->readDataSlice("field2", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field2", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 1);
   EXPECT_EQ(data[1], 2);
@@ -194,7 +193,7 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[6], 7);
   EXPECT_EQ(data[7], 8);
 
-  sliceSize = externalDataPool->readDataSlice("field3", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field3", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 4);
   EXPECT_EQ(data[1], 5);
@@ -206,9 +205,9 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[7], 1);
 
   // This sets folder to be 'folder3'
-  externalDim->setCurrentValue(10.2);
+  externalDimClient->setCurrentValue(10.2);
 
-  sliceSize = externalDataPool->readDataSlice("field1", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field1", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 5);
   EXPECT_EQ(data[1], 7);
@@ -219,7 +218,7 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[6], 6);
   EXPECT_EQ(data[7], 4);
 
-  sliceSize = externalDataPool->readDataSlice("field2", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field2", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 6);
   EXPECT_EQ(data[1], 7);
@@ -230,7 +229,7 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[6], 5);
   EXPECT_EQ(data[7], 7);
 
-  sliceSize = externalDataPool->readDataSlice("field3", "internal", data, 10);
+  sliceSize = dataPoolClient->readDataSlice("field3", "internal", data, 10);
   EXPECT_EQ(sliceSize, 8);
   EXPECT_EQ(data[0], 1);
   EXPECT_EQ(data[1], 3);
