@@ -153,8 +153,144 @@ ParameterSpaceDimension *ParameterSpace::registerDimension(
     lk.unlock();
     onDimensionRegister(dimension.get(), this, src);
 
-  } else {
-    // FIXME ML implement for all parameter types
+  } else if (al::ParameterInt16 *p = dynamic_cast<al::ParameterInt16 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](int16_t value) {
+      int16_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterInt8 *p = dynamic_cast<al::ParameterInt8 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](int8_t value) {
+      int8_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterUInt64 *p = dynamic_cast<al::ParameterUInt64 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](uint64_t value) {
+      uint64_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterUInt32 *p = dynamic_cast<al::ParameterUInt32 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](uint32_t value) {
+      uint32_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterUInt16 *p = dynamic_cast<al::ParameterUInt16 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](uint16_t value) {
+      uint16_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterUInt8 *p = dynamic_cast<al::ParameterUInt8 *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](uint8_t value) {
+      uint8_t oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  } else if (al::ParameterDouble *p = dynamic_cast<al::ParameterDouble *>(
+                 dimension->getParameterMeta())) {
+
+    auto &param = *p;
+    param.registerChangeCallback([dimension, &param, this](double value) {
+      double oldValue = param.get();
+      param.setNoCalls(value);
+
+      this->updateParameterSpace(dimension.get());
+      this->onValueChange(dimension.get(), this);
+      param.setNoCalls(oldValue);
+      // The internal parameter will get set internally to the new value
+      // later on inside the Parameter classes
+    });
+
+    mDimensions.push_back(dimension);
+    lk.unlock();
+    onDimensionRegister(dimension.get(), this, src);
+
+  }
+
+  
+  else {
+    // FIXME ML implement for all parameter types. Done.
     std::cerr << "Support for parameter type not implemented in dimension "
               << __FILE__ << ":" << __LINE__ << std::endl;
   }
@@ -631,6 +767,10 @@ al::VariantType nctypeToTincType(nc_type nctype) {
     return al::VariantType::VARIANT_INT8;
   case NC_UBYTE:
     return al::VariantType::VARIANT_UINT8;
+  case NC_SHORT:
+    return al::VariantType::VARIANT_INT16;
+  case NC_USHORT:
+    return al::VariantType::VARIANT_UINT16;
   case NC_INT:
     return al::VariantType::VARIANT_INT32;
   case NC_UINT:
@@ -1436,6 +1576,30 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
         arg.setValue(p->get());
+      } else if (al::ParameterInt8 *p =
+                     dynamic_cast<al::ParameterInt8 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterInt16 *p =
+                     dynamic_cast<al::ParameterInt16 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterInt64 *p =
+                     dynamic_cast<al::ParameterInt64 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt8 *p =
+                     dynamic_cast<al::ParameterUInt8 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt16 *p =
+                     dynamic_cast<al::ParameterUInt16 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt32 *p =
+                     dynamic_cast<al::ParameterUInt32 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt64 *p =
+                     dynamic_cast<al::ParameterUInt64 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterDouble *p =
+                     dynamic_cast<al::ParameterDouble *>(param)) {
+        arg.setValue(p->get());
       }
       // TODO implement support for all types
       /*else if (al::ParameterVec3 *p =
@@ -1480,6 +1644,30 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         arg.setValue(p->get());
       } else if (al::ParameterInt *p =
                      dynamic_cast<al::ParameterInt *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterInt8 *p =
+                     dynamic_cast<al::ParameterInt8 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterInt16 *p =
+                     dynamic_cast<al::ParameterInt16 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterInt64 *p =
+                     dynamic_cast<al::ParameterInt64 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt8 *p =
+                     dynamic_cast<al::ParameterUInt8 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt16 *p =
+                     dynamic_cast<al::ParameterUInt16 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt32 *p =
+                     dynamic_cast<al::ParameterUInt32 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterUInt64 *p =
+                     dynamic_cast<al::ParameterUInt64 *>(param)) {
+        arg.setValue(p->get());
+      } else if (al::ParameterDouble *p =
+                     dynamic_cast<al::ParameterDouble *>(param)) {
         arg.setValue(p->get());
       }
       // TODO implement support for all types

@@ -15,18 +15,37 @@ ParameterSpaceDimension::ParameterSpaceDimension(std::string name,
   mParamInternal = true;
 
   // FIXME define how we will handle all data types
-  // FIXME ML support all types
+  // FIXME ML support all types. Done.
   switch (dataType) {
   case al::VariantType::VARIANT_FLOAT:
     mParameterValue = new al::Parameter(name, group);
     break;
-  case al::VariantType::VARIANT_UINT8:
+  case al::VariantType::VARIANT_DOUBLE:
+    mParameterValue = new al::ParameterDouble(name, group);
+    break;
   case al::VariantType::VARIANT_INT8:
+    mParameterValue = new al::ParameterInt8(name, group);
+    break;
+  case al::VariantType::VARIANT_INT16:
+    mParameterValue = new al::ParameterInt16(name, group);
+    break;
   case al::VariantType::VARIANT_INT32:
     mParameterValue = new al::ParameterInt(name, group);
     break;
   case al::VariantType::VARIANT_INT64:
     mParameterValue = new al::ParameterInt64(name, group);
+    break;
+  case al::VariantType::VARIANT_UINT8:
+    mParameterValue = new al::ParameterUInt8(name, group);
+    break;
+  case al::VariantType::VARIANT_UINT16:
+    mParameterValue = new al::ParameterUInt16(name, group);
+    break;
+  case al::VariantType::VARIANT_UINT32:
+    mParameterValue = new al::ParameterUInt32(name, group);
+    break;
+  case al::VariantType::VARIANT_UINT64:
+    mParameterValue = new al::ParameterUInt64(name, group);
     break;
   default:
     throw std::invalid_argument("Data type for dimension not supported.");
@@ -42,6 +61,22 @@ al::VariantType dataTypeForParam(al::ParameterMeta *param) {
     return al::VariantType::VARIANT_STRING;
   } else if (dynamic_cast<al::ParameterInt *>(param)) {
     return al::VariantType::VARIANT_INT32;
+  } else if (dynamic_cast<al::ParameterInt8 *>(param)) {
+    return al::VariantType::VARIANT_INT8;
+  } else if (dynamic_cast<al::ParameterInt16 *>(param)) {
+    return al::VariantType::VARIANT_INT16;
+  } else if (dynamic_cast<al::ParameterInt64 *>(param)) {
+    return al::VariantType::VARIANT_INT64;
+  } else if (dynamic_cast<al::ParameterUInt8 *>(param)) {
+    return al::VariantType::VARIANT_UINT8;
+  } else if (dynamic_cast<al::ParameterUInt16 *>(param)) {
+    return al::VariantType::VARIANT_UINT16;
+  } else if (dynamic_cast<al::ParameterUInt32 *>(param)) {
+    return al::VariantType::VARIANT_UINT32;
+  } else if (dynamic_cast<al::ParameterUInt64 *>(param)) {
+    return al::VariantType::VARIANT_UINT64;
+  } else if (dynamic_cast<al::ParameterDouble *>(param)) {
+    return al::VariantType::VARIANT_DOUBLE;
   } else if (dynamic_cast<al::ParameterVec3 *>(param)) {
     return al::VariantType::VARIANT_FLOAT;
   } else if (dynamic_cast<al::ParameterVec4 *>(param)) {
@@ -77,6 +112,22 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
       mParameterValue = new al::ParameterString(*p);
     } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
       mParameterValue = new al::ParameterInt(*p);
+    } else if (al::ParameterInt8 *p = dynamic_cast<al::ParameterInt8 *>(param)) {
+      mParameterValue = new al::ParameterInt8(*p);
+    } else if (al::ParameterInt16 *p = dynamic_cast<al::ParameterInt16 *>(param)) {
+      mParameterValue = new al::ParameterInt16(*p);
+    } else if (al::ParameterInt64 *p = dynamic_cast<al::ParameterInt64 *>(param)) {
+      mParameterValue = new al::ParameterInt64(*p);
+    } else if (al::ParameterUInt8 *p = dynamic_cast<al::ParameterUInt8 *>(param)) {
+      mParameterValue = new al::ParameterUInt8(*p);
+    } else if (al::ParameterUInt16 *p = dynamic_cast<al::ParameterUInt16 *>(param)) {
+      mParameterValue = new al::ParameterUInt16(*p);
+    } else if (al::ParameterUInt32 *p = dynamic_cast<al::ParameterUInt32 *>(param)) {
+      mParameterValue = new al::ParameterUInt32(*p);
+    } else if (al::ParameterUInt64 *p = dynamic_cast<al::ParameterUInt64 *>(param)) {
+      mParameterValue = new al::ParameterUInt64(*p);
+    } else if (al::ParameterDouble *p = dynamic_cast<al::ParameterDouble *>(param)) {
+      mParameterValue = new al::ParameterDouble(*p);
     } else if (al::ParameterVec3 *p =
                    dynamic_cast<al::ParameterVec3 *>(param)) {
       mParameterValue = new al::ParameterVec3(*p);
@@ -359,8 +410,50 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       param.set(max, src->valueSource());
     }
   } break;
+  case al::VariantType::VARIANT_DOUBLE: {
+    auto &param = getParameter<al::Parameter>();
+    double max = std::numeric_limits<double>::lowest();
+    double min = std::numeric_limits<double>::max();
+    for (auto value : getSpaceValues<double>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<double>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<double>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
+  case al::VariantType::VARIANT_INT8: {
+    auto &param = getParameter<al::ParameterInt8>();
+    int8_t max = std::numeric_limits<int8_t>::lowest();
+    int8_t min = std::numeric_limits<int8_t>::max();
+    for (auto value : getSpaceValues<int8_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<int8_t>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
   case al::VariantType::VARIANT_UINT8: {
-    auto &param = getParameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterUInt8>();
     uint8_t max = std::numeric_limits<uint8_t>::lowest();
     uint8_t min = std::numeric_limits<uint8_t>::max();
     for (auto value : getSpaceValues<uint8_t>()) {
@@ -380,11 +473,11 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       param.set(max, src->valueSource());
     }
   } break;
-  case al::VariantType::VARIANT_INT8: {
-    auto &param = getParameter<al::ParameterInt>();
-    int8_t max = std::numeric_limits<int8_t>::lowest();
-    int8_t min = std::numeric_limits<int8_t>::max();
-    for (auto value : getSpaceValues<int8_t>()) {
+  case al::VariantType::VARIANT_INT16: {
+    auto &param = getParameter<al::ParameterInt16>();
+    int16_t max = std::numeric_limits<int16_t>::lowest();
+    int16_t min = std::numeric_limits<int16_t>::max();
+    for (auto value : getSpaceValues<int16_t>()) {
       if (value > max) {
         max = value;
       }
@@ -394,10 +487,31 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
+    if (param.get() < min && min != std::numeric_limits<int16_t>::max()) {
       param.set(min, src->valueSource());
     } else if (param.get() > max &&
-               max != std::numeric_limits<int8_t>::lowest()) {
+               max != std::numeric_limits<int16_t>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
+  case al::VariantType::VARIANT_UINT16: {
+    auto &param = getParameter<al::ParameterUInt16>();
+    uint16_t max = std::numeric_limits<uint16_t>::lowest();
+    uint16_t min = std::numeric_limits<uint16_t>::max();
+    for (auto value : getSpaceValues<uint16_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<uint16_t>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<uint16_t>::lowest()) {
       param.set(max, src->valueSource());
     }
   } break;
@@ -423,10 +537,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
     }
   } break;
   case al::VariantType::VARIANT_UINT32: {
-    auto &param = getParameter<al::ParameterInt>();
+    auto &param = getParameter<al::ParameterUInt32>();
     uint32_t max = std::numeric_limits<uint32_t>::lowest();
     uint32_t min = std::numeric_limits<uint32_t>::max();
-    for (auto value : getSpaceValues<int32_t>()) {
+    for (auto value : getSpaceValues<uint32_t>()) {
 
       if (value > param.max()) {
         param.max(value, src->valueSource());
@@ -437,15 +551,78 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
+    if (param.get() < min && min != std::numeric_limits<uint32_t>::max()) {
       param.set(min, src->valueSource());
     } else if (param.get() > max &&
-               max != std::numeric_limits<int32_t>::lowest()) {
+               max != std::numeric_limits<uint32_t>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
+  case al::VariantType::VARIANT_INT64: {
+    auto &param = getParameter<al::ParameterInt64>();
+    int64_t max = std::numeric_limits<int64_t>::lowest();
+    int64_t min = std::numeric_limits<int64_t>::max();
+    for (auto value : getSpaceValues<int64_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<int64_t>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<int64_t>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
+  case al::VariantType::VARIANT_UINT64: {
+    auto &param = getParameter<al::ParameterUInt64>();
+    uint64_t max = std::numeric_limits<uint64_t>::lowest();
+    uint64_t min = std::numeric_limits<uint64_t>::max();
+    for (auto value : getSpaceValues<uint64_t>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<uint64_t>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<uint64_t>::lowest()) {
+      param.set(max, src->valueSource());
+    }
+  } break;
+  case al::VariantType::VARIANT_BOOL: {
+    auto &param = getParameter<al::ParameterBool>();
+    float max = std::numeric_limits<float>::lowest();
+    float min = std::numeric_limits<float>::max();
+    for (auto value : getSpaceValues<float>()) {
+      if (value > max) {
+        max = value;
+      }
+      if (value < min) {
+        min = value;
+      }
+    }
+    param.max(max, src->valueSource());
+    param.min(min, src->valueSource());
+    if (param.get() < min && min != std::numeric_limits<float>::max()) {
+      param.set(min, src->valueSource());
+    } else if (param.get() > max &&
+               max != std::numeric_limits<float>::lowest()) {
       param.set(max, src->valueSource());
     }
   } break;
 
-    // FIXME ML complete support for all types
+    // FIXME ML complete support for all types. Done.
 
     //  case al::DiscreteParameterValues::DOUBLE: {
     //    valueDbl = *(static_cast<double *>(value));
