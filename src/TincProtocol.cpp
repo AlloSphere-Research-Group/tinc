@@ -8,6 +8,8 @@
 #include "tinc/ProcessorGraph.hpp"
 #include "tinc/TincClient.hpp"
 
+#include "al/types/al_VariantValue.hpp"
+
 #include <iostream>
 #include <memory>
 
@@ -141,13 +143,18 @@ void createParameterValueMessage(al::ParameterMeta *param,
   ParameterValue val;
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
     val.set_valuefloat(p->get());
+    val.set_nctype(al::VariantType::VARIANT_FLOAT);
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
+    // FIXME ML change to bool
     val.set_valuefloat(p->get());
+    val.set_nctype(al::VariantType::VARIANT_FLOAT);
   } else if (al::ParameterString *p =
                  dynamic_cast<al::ParameterString *>(param)) {
     val.set_valuestring(p->get());
+    val.set_nctype(al::VariantType::VARIANT_STRING);
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
     val.set_valueint32(p->get());
+    val.set_nctype(al::VariantType::VARIANT_INT32);
   } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
     al::Vec3f v = p->get();
     auto *member = val.add_valuelist();
@@ -156,6 +163,9 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(v[1]);
     member = val.add_valuelist();
     member->set_valuefloat(v[2]);
+
+    val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                   al::VariantType::VARIANT_FLOAT);
   } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
     al::Vec4f v = p->get();
     auto *member = val.add_valuelist();
@@ -166,6 +176,8 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(v[2]);
     member = val.add_valuelist();
     member->set_valuefloat(v[3]);
+    val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                   al::VariantType::VARIANT_FLOAT);
   } else if (al::ParameterColor *p = dynamic_cast<al::ParameterColor *>(
                  param)) { // al::ParameterColor
     al::Color c = p->get();
@@ -177,6 +189,8 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuefloat(c.b);
     member = val.add_valuelist();
     member->set_valuefloat(c.a);
+    val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                   al::VariantType::VARIANT_FLOAT);
   } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
     al::Pose pose = p->get();
     auto *member = val.add_valuelist();
@@ -193,13 +207,18 @@ void createParameterValueMessage(al::ParameterMeta *param,
     member->set_valuedouble(pose.quat()[2]);
     member = val.add_valuelist();
     member->set_valuedouble(pose.quat()[3]);
+    val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                   al::VariantType::VARIANT_DOUBLE);
   } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
     val.set_valueint32(p->get());
+    val.set_nctype(al::VariantType::VARIANT_INT32);
   } else if (al::ParameterChoice *p =
                  dynamic_cast<al::ParameterChoice *>(param)) {
     val.set_valueuint64(p->get());
+    val.set_nctype(al::VariantType::VARIANT_UINT64);
   } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
     val.set_valuebool(p->get());
+    val.set_nctype(al::VariantType::VARIANT_BOOL);
   } else {
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
   }
@@ -222,6 +241,7 @@ createConfigureParameterFloatMessage(al::Parameter *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MIN);
     ParameterValue val;
     val.set_valuefloat(param->min());
+    val.set_nctype(al::VariantType::VARIANT_FLOAT);
     google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
     valueAny->PackFrom(val);
     confMessage.set_allocated_configurationvalue(valueAny);
@@ -242,6 +262,7 @@ createConfigureParameterFloatMessage(al::Parameter *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MAX);
     ParameterValue val;
     val.set_valuefloat(param->max());
+    val.set_nctype(al::VariantType::VARIANT_FLOAT);
     google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
     valueAny->PackFrom(val);
     confMessage.set_allocated_configurationvalue(valueAny);
@@ -299,6 +320,7 @@ createConfigureParameterIntMessage(al::ParameterInt *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MIN);
     ParameterValue val;
     val.set_valueint32(param->min());
+    val.set_nctype(al::VariantType::VARIANT_INT32);
     google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
     valueAny->PackFrom(val);
     confMessage.set_allocated_configurationvalue(valueAny);
@@ -319,6 +341,7 @@ createConfigureParameterIntMessage(al::ParameterInt *param) {
     confMessage.set_configurationkey(ParameterConfigureType::MAX);
     ParameterValue val;
     val.set_valueint32(param->max());
+    val.set_nctype(al::VariantType::VARIANT_INT32);
     google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
     valueAny->PackFrom(val);
     confMessage.set_allocated_configurationvalue(valueAny);
@@ -528,20 +551,28 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
     }
     if (dim->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
       for (auto &value : dim->getSpaceValues<float>()) {
-        valuesMessage.add_values()->set_valuefloat(value);
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valuefloat(value);
+        newValue->set_nctype(al::VariantType::VARIANT_FLOAT);
       }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
       for (auto &value : dim->getSpaceValues<uint8_t>()) {
         // we utilize variable encoding of protobuf to handle 1 byte ints
-        valuesMessage.add_values()->set_valueuint32(value);
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueuint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_UINT8);
       }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
       for (auto &value : dim->getSpaceValues<int32_t>()) {
-        valuesMessage.add_values()->set_valueint32(value);
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_INT32);
       }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
       for (auto &value : dim->getSpaceValues<uint32_t>()) {
-        valuesMessage.add_values()->set_valueuint32(value);
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueuint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_UINT32);
       }
     } else {
       std::cerr << "Other types not supported yet" << std::endl;
@@ -575,6 +606,7 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
 
   ParameterValue valuesMessage;
   valuesMessage.set_valuestring(ps->getCurrentPathTemplate());
+  valuesMessage.set_nctype(al::VariantType::VARIANT_STRING);
 
   auto confValue = confMessage.configurationvalue().New();
   confValue->PackFrom(valuesMessage);
@@ -595,6 +627,7 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
 
   ParameterValue valuesMessage2;
   valuesMessage2.set_valuestring(ps->getRootPath());
+  valuesMessage2.set_nctype(al::VariantType::VARIANT_STRING);
 
   auto confValue2 = confMessage2.configurationvalue().New();
   confValue2->PackFrom(valuesMessage2);
@@ -618,6 +651,7 @@ TincMessage createConfigureDiskBufferMessage(DiskBufferAbstract *dp) {
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
   val.set_valuestring(dp->getCurrentFileName());
+  val.set_nctype(al::VariantType::VARIANT_STRING);
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
   auto details = msg.details().New();
@@ -638,6 +672,7 @@ std::vector<TincMessage> createConfigureDataPoolMessage(DataPool *dp) {
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
   val.set_valuestring(dp->getCacheDirectory());
+  val.set_nctype(al::VariantType::VARIANT_STRING);
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
   auto details = msg.details().New();
@@ -679,6 +714,7 @@ TincMessage createConfigureParameterSpaceAdd(ParameterSpace *ps,
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
   val.set_valuestring(dim->getFullAddress());
+  val.set_nctype(al::VariantType::VARIANT_STRING);
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
   auto details = msg.details().New();
@@ -699,6 +735,7 @@ TincMessage createConfigureParameterSpaceRemove(ParameterSpace *ps,
   google::protobuf::Any *configValue = confMessage.configurationvalue().New();
   ParameterValue val;
   val.set_valuestring(dim->getFullAddress());
+  val.set_nctype(al::VariantType::VARIANT_STRING);
   configValue->PackFrom(val);
   confMessage.set_allocated_configurationvalue(configValue);
   auto details = msg.details().New();
@@ -721,7 +758,9 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
   const ParameterConfigureType &command = conf.configurationkey();
   ParameterValue v;
   confValue.UnpackTo(&v);
+  // TODO ML check and validate types in v.nctype()
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
+    // TODO ML validate that v.nctype() is correct
     if (command == ParameterConfigureType::VALUE) {
       p->set(v.valuefloat(), src->valueSource());
     } else if (command == ParameterConfigureType::MIN) {
@@ -875,6 +914,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         idsIt = sv.ids().end();
       }
       dim->clear(src);
+      // TODO allow overriding the type of the space remotely?
       if (dim->getSpaceDataType() == al::VariantType::VARIANT_FLOAT) {
         std::vector<float> newValues;
         std::vector<std::string> newIds;
@@ -889,10 +929,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
 
         dim->setSpaceValues(newValues, "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 && newValues.size() == 0) {
-          std::cout << __FUNCTION__
-                    << "Warning: got empty parameter space values" << std::endl;
-        } else {
+        if (newIds.size() != 0 && newValues.size() != 0) {
           dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
@@ -908,10 +945,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 && newValues.size() == 0) {
-          std::cout << __FUNCTION__
-                    << "Warning: got empty parameter space values" << std::endl;
-        } else {
+        if (newIds.size() != 0 && newValues.size() != 0) {
           dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
@@ -927,10 +961,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 && newValues.size() == 0) {
-          std::cout << __FUNCTION__
-                    << "Warning: got empty parameter space values" << std::endl;
-        } else {
+        if (newIds.size() != 0 && newValues.size() != 0) {
           dim->conformSpace(src);
         }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
@@ -946,10 +977,7 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         }
         dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
         dim->setSpaceIds(newIds, src);
-        if (newIds.size() == 0 && newValues.size() == 0) {
-          std::cout << __FUNCTION__
-                    << "Warning: got empty parameter space values" << std::endl;
-        } else {
+        if (newIds.size() != 0 && newValues.size() != 0) {
           dim->conformSpace(src);
         }
         // FIXME add all types
@@ -2414,16 +2442,22 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
     confMessage.set_configurationkey(config.first);
     google::protobuf::Any *configValue = confMessage.configurationvalue().New();
     ParameterValue val;
+    // TODO ML support all types
     if (config.second.type() == al::VariantType::VARIANT_DOUBLE) {
       val.set_valuedouble(config.second.get<double>());
+      val.set_nctype(al::VariantType::VARIANT_DOUBLE);
     } else if (config.second.type() == al::VariantType::VARIANT_FLOAT) {
       val.set_valuedouble(config.second.get<float>());
+      val.set_nctype(al::VariantType::VARIANT_FLOAT);
     } else if (config.second.type() == al::VariantType::VARIANT_INT64) {
       val.set_valueint64(config.second.get<int64_t>());
+      val.set_nctype(al::VariantType::VARIANT_INT64);
     } else if (config.second.type() == al::VariantType::VARIANT_INT32) {
       val.set_valueint64(config.second.get<int32_t>());
+      val.set_nctype(al::VariantType::VARIANT_INT32);
     } else if (config.second.type() == al::VariantType::VARIANT_STRING) {
       val.set_valuestring(config.second.get<std::string>());
+      val.set_nctype(al::VariantType::VARIANT_STRING);
     }
     configValue->PackFrom(val);
     auto details = msg.details().New();
@@ -2575,6 +2609,7 @@ void TincProtocol::sendValueMessage(float value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
   val.set_valuefloat(value);
+  val.set_nctype(al::VariantType::VARIANT_FLOAT);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
@@ -2597,6 +2632,7 @@ void TincProtocol::sendValueMessage(bool value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
   val.set_valuebool(value);
+  val.set_nctype(al::VariantType::VARIANT_BOOL);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
@@ -2619,6 +2655,7 @@ void TincProtocol::sendValueMessage(int32_t value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
   val.set_valueint32(value);
+  val.set_nctype(al::VariantType::VARIANT_INT32);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
@@ -2641,6 +2678,7 @@ void TincProtocol::sendValueMessage(uint64_t value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
   val.set_valueuint64(value);
+  val.set_nctype(al::VariantType::VARIANT_INT64);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
@@ -2663,6 +2701,7 @@ void TincProtocol::sendValueMessage(std::string value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
   ParameterValue val;
   val.set_valuestring(value);
+  val.set_nctype(al::VariantType::VARIANT_STRING);
   google::protobuf::Any *valueAny = confMessage.configurationvalue().New();
   valueAny->PackFrom(val);
   confMessage.set_allocated_configurationvalue(valueAny);
@@ -2685,6 +2724,8 @@ void TincProtocol::sendValueMessage(al::Vec3f value, std::string fullAddress,
 
   ParameterValue val;
   ParameterValue *member = val.add_valuelist();
+  val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                 al::VariantType::VARIANT_FLOAT);
   member->set_valuefloat(value[0]);
   member = val.add_valuelist();
   member->set_valuefloat(value[1]);
@@ -2712,6 +2753,8 @@ void TincProtocol::sendValueMessage(al::Vec4f value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
 
   ParameterValue val;
+  val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                 al::VariantType::VARIANT_FLOAT);
   ParameterValue *member = val.add_valuelist();
   member->set_valuefloat(value[0]);
   member = val.add_valuelist();
@@ -2742,6 +2785,8 @@ void TincProtocol::sendValueMessage(al::Color value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
 
   ParameterValue val;
+  val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                 al::VariantType::VARIANT_FLOAT);
   ParameterValue *member = val.add_valuelist();
   member->set_valuefloat(value.r);
   member = val.add_valuelist();
@@ -2772,6 +2817,8 @@ void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
   confMessage.set_configurationkey(ParameterConfigureType::VALUE);
 
   ParameterValue val;
+  val.set_nctype(al::VariantType::VARIANT_VECTOR_OFFSET +
+                 al::VariantType::VARIANT_DOUBLE);
   ParameterValue *member = val.add_valuelist();
   member->set_valuedouble(value.pos()[0]);
   member = val.add_valuelist();

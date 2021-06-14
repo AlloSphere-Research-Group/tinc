@@ -13,7 +13,7 @@ using namespace tinc;
 TEST(PythonClient, ParameterFloat) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
-  tserver.setVerbose(true);
+  //  tserver.setVerbose(true);
 
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
   tserver << p;

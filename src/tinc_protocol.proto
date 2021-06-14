@@ -79,7 +79,7 @@ message ObjectId {
 
 // Parameter data message
 message ParameterValue {
-// THis should be oneof, but 'repeated'is not allowed in oneof
+// This should be oneof, but 'repeated'is not allowed in oneof
     bool valueBool = 1;
     float valueFloat = 2;
     double valueDouble = 3;
@@ -89,6 +89,7 @@ message ParameterValue {
     fixed64 valueUint64 = 7; // often used as bitfields
     string valueString = 20;
     repeated ParameterValue valueList = 30;
+    uint32 nctype = 100;
 }
 
 // Registration Messages --------------------

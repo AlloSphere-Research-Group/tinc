@@ -5,6 +5,7 @@
 #include "al/scene/al_DynamicScene.hpp"
 
 #include "tinc/DiskBufferNetCDFData.hpp"
+#include "tinc/IdObject.hpp"
 #include "tinc/TincServer.hpp"
 
 namespace tinc {
@@ -15,7 +16,7 @@ namespace tinc {
  * When you make a SceneObject subclass, you must implement the use of the scale
  * parameter in onProcess(GRaphics &)
  */
-class SceneObject : public al::PositionedVoice {
+class SceneObject : public al::PositionedVoice /*, public IdObject*/ {
 public:
   SceneObject(std::string id = "", std::string filename = "",
               std::string path = "", uint16_t size = 2);

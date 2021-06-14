@@ -19,7 +19,16 @@ Here are some videos demonstrating the functionality and API of TINC
 
 [TINC: ParameterSpaces in Python](https://youtu.be/QWwW9XPRAdM)
 
+
 [TINC: Client in Python interacting with C++](https://youtu.be/xdXmISo4DeY)
+
+
+TINC can help:
+
+  * Connect the data analysis workflow from the HPC to the analysis on the
+  desktop by providing a unified interface to the output of parameter sweeps
+  spread in the filesystem.
+  * Provide interactive exploration of datasets through interactive computation.
 
 # Using TINC
 

@@ -389,8 +389,6 @@ void CacheManager::updateFromDisk() {
   }
 }
 
-// when creating the validator
-
 void CacheManager::writeToDisk() {
   std::unique_lock<std::mutex> lk(mCacheLock);
   if (al::File::exists(mCachePath.filePath())) {
@@ -545,6 +543,77 @@ void CacheManager::tincSchemaFormatChecker(const std::string &format,
     //    throw std::invalid_argument("value is not a good something");
   } else
     throw std::logic_error("Don't know how to validate " + format);
+}
+
+SourceArgument::SourceArgument(const SourceArgument &src) {
+  id = src.id;
+  copyValueFromSource(*this, src);
+}
+
+SourceArgument &SourceArgument::operator=(const SourceArgument &other) {
+  if (this != &other) // not a self-assignment
+  {
+    this->id = other.id;
+    copyValueFromSource(*this, other);
+  }
+  return *this;
+}
+
+void SourceArgument::copyValueFromSource(SourceArgument &dst,
+                                         const SourceArgument &src) {
+  switch (src.getValue().type()) {
+  case al::VariantType::VARIANT_NONE:
+    //      dst.setValue();
+    break;
+  case al::VariantType::VARIANT_INT64:
+    dst.setValue(src.getValue().get<int64_t>());
+    break;
+  case al::VariantType::VARIANT_INT32:
+    dst.setValue(src.getValue().get<int32_t>());
+    break;
+  case al::VariantType::VARIANT_INT16:
+    dst.setValue(src.getValue().get<int16_t>());
+    break;
+  case al::VariantType::VARIANT_INT8:
+    dst.setValue(src.getValue().get<int8_t>());
+    break;
+  case al::VariantType::VARIANT_UINT64:
+    dst.setValue(src.getValue().get<uint64_t>());
+    break;
+  case al::VariantType::VARIANT_UINT32:
+    dst.setValue(src.getValue().get<uint32_t>());
+    break;
+  case al::VariantType::VARIANT_UINT16:
+    dst.setValue(src.getValue().get<uint16_t>());
+    break;
+  case al::VariantType::VARIANT_UINT8:
+    dst.setValue(src.getValue().get<uint8_t>());
+    break;
+  case al::VariantType::VARIANT_DOUBLE:
+    dst.setValue(src.getValue().get<double>());
+    break;
+  case al::VariantType::VARIANT_FLOAT:
+    dst.setValue(src.getValue().get<float>());
+    break;
+  case al::VariantType::VARIANT_STRING:
+    dst.setValue(src.getValue().get<std::string>());
+    break;
+  case al::VariantType::VARIANT_CHAR:
+    dst.setValue(src.getValue().get<char>());
+    break;
+  case al::VariantType::VARIANT_BOOL:
+    dst.setValue(src.getValue().get<bool>());
+    break;
+  }
+}
+
+SourceArgument::SourceArgument(SourceArgument &&that) noexcept {
+  swap(*this, that);
+}
+
+SourceArgument &SourceArgument::operator=(SourceArgument &&that) {
+  swap(*this, that);
+  return *this;
 }
 
 al::VariantValue SourceArgument::getValue() const {

@@ -1,3 +1,6 @@
+// FOR strncpy_s
+#define __STDC_WANT_LIB_EXT1__ 1
+
 #include "tinc/ParameterSpace.hpp"
 #include "tinc/ProcessorGraph.hpp"
 
@@ -1130,7 +1133,7 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
 }
 
 void ParameterSpace::enableCache(std::string cachePath) {
-  al::PushDirectory(getRootPath());
+  al::PushDirectory dir(getRootPath());
   if (mCacheManager) {
     std::cout << "Warning cache already enabled. Overwriting previous settings"
               << std::endl;
@@ -1400,7 +1403,13 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
       size_t count[1] = {ids.size()};
       for (size_t i = 0; i < ids.size(); i++) {
         idArray[i] = (char *)calloc(ids[i].size(), sizeof(char));
+#ifdef __STDC_LIB_EXT1__
+        strncpy_s(idArray[i], ids.size(), ids[i].data(), ids[i].size());
+#elif defined(AL_WINDOWS)
+        strncpy_s(idArray[i], ids.size(), ids[i].data(), ids[i].size());
+#else
         strncpy(idArray[i], ids[i].data(), ids[i].size());
+#endif
       }
       if ((retval = nc_put_vara_string(datagrpid, varid, start, count,
                                        (const char **)idArray))) {

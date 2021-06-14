@@ -8,6 +8,8 @@
 
 #include "python_common.hpp"
 
+#include <filesystem>
+
 using namespace tinc;
 
 TEST(PythonClient, ParameterSpaces) {
@@ -286,6 +288,7 @@ TEST(PythonClient, ParameterSpace_Sweep) {
 
   ps.setCurrentPathTemplate("file_%%dim1%%_%%dim2%%");
   tserver << ps;
+  std::filesystem::remove_all("python_cache_test");
 
   std::string pythonCode = R"(
 #tclient.debug = True
@@ -300,7 +303,7 @@ time.sleep(0.1)
 ps = tclient.get_parameter_space("param_space")
 
 def proc(dim1, dim2, dim3):
-    print(f"sweep {dim1} {dim2} {dim3}")
+    #print(f"sweep {dim1} {dim2} {dim3}")
     return dim1*dim2*dim3
 
 ps.enable_cache("python_cache_test")
@@ -319,10 +322,9 @@ tclient.stop()
 
   tserver.stop();
 
-  EXPECT_TRUE(al::File::isDirectory("python_cache_test"));
-  auto dirEntries = al::itemListInDir("python_cache_test");
-
-  EXPECT_EQ(dirEntries.count(), 4 * 5 * 6);
+  CacheManager c({"tinc_cache.json", "python_cache_test", ""});
+  c.updateFromDisk();
+  EXPECT_EQ(c.entries().size(), dim1->size() * dim2->size() * dim3->size());
 
   auto output = ptest.readResults();
 }
