@@ -136,7 +136,7 @@ public:
    * config
    * @param enable
    */
-  void enableJsonConfig(bool enable);
+  void enableJsonConfig(bool enable = true);
 
   /**
    * @brief
@@ -155,12 +155,6 @@ public:
     // OUTPUT_DIR
   }
 
-  /**
-   * @brief enable creation of the json config file prior to running script
-   * @param enable
-   */
-  void enableJsonConfig(bool enable = true){mEnableJsonConfig = enable};
-
 protected:
   std::string writeJsonConfig();
 
@@ -173,7 +167,7 @@ protected:
 private:
   std::string mScriptCommand{"/usr/bin/python3"};
   std::string mScriptName;
-  bool mEnableJsonConfig{true};
+  //  bool mEnableJsonConfig{true};
 
   std::mutex mProcessingLock;
   int mMaxAsyncProcesses{4};
