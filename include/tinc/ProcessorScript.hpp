@@ -138,6 +138,29 @@ public:
    */
   void enableJsonConfig(bool enable);
 
+  /**
+   * @brief
+   * @param commandLineTemplate
+   *
+   * If a template is set, it will be populated by parameters and file names
+   * and passed to the command as the command line flags. If the template is
+   * used, the json config file is still created, unless enableJsonConfig(false)
+   * is called
+   */
+  void setCommandLineFlagTemplate(std::string commandLineTemplate) {
+    // TODO ML use ParameterSpace::resolveFilename() to resolve template
+    // parameters Then use addtional markers like &&INPUT:0&& to get input file
+    // 0 &&INPUT: && to get all input names separated by space or &&INPUT:,&& to
+    // separate by commas. Apart from INPUT, support OUTPUT, INPUT_DIR,
+    // OUTPUT_DIR
+  }
+
+  /**
+   * @brief enable creation of the json config file prior to running script
+   * @param enable
+   */
+  void enableJsonConfig(bool enable = true){mEnableJsonConfig = enable};
+
 protected:
   std::string writeJsonConfig();
 
