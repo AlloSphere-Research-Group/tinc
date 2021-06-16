@@ -291,7 +291,6 @@ ParameterSpaceDimension *ParameterSpace::registerDimension(
 
   }
 
-  
   else {
     // FIXME ML implement for all parameter types. Done.
     std::cerr << "Support for parameter type not implemented in dimension "
@@ -1566,7 +1565,6 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
 
     entry.sourceInfo.type = al::demangle(typeid(processor).name());
     entry.sourceInfo.tincId = processor.getId();
-    entry.sourceInfo.hash = "";                 // FIXME
     entry.sourceInfo.fileDependencies = {};     // FIXME
     entry.sourceInfo.commandLineArguments = ""; // FIXME
 
@@ -1753,7 +1751,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
   }
 
   if (mCacheManager) {
-    std::vector<std::string> cacheFilenames;
+    std::vector<FileDependency> cacheFiles;
     if (!cacheRestored) {
       for (auto filename : processor.getOutputFileNames()) {
         std::string parameterPrefix;
@@ -1777,7 +1775,13 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
                     << " Cache entry not created. " << std::endl;
           return ret;
         }
-        cacheFilenames.push_back(parameterPrefix + filename);
+        // TODO set modified, size and CRC/hash
+        std::string modified = "";
+        uint64_t size = 0;
+        std::string hash = "";
+        cacheFiles.push_back(
+            FileDependency{DistributedPath{parameterPrefix + filename, ""},
+                           modified, size, hash});
       }
 
       for (auto filename : processor.getInputFileNames()) {
@@ -1796,7 +1800,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       entry.timestampStart = ss.str();
       // Leave end timestamp for last
       //    entry.cacheHits = 23;
-      entry.filenames = cacheFilenames;
+      entry.files = cacheFiles;
       entry.stale = false; // FIXME
 
       entry.userInfo.userName = "User";    // FIXME

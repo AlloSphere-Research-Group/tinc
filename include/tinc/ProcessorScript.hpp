@@ -167,7 +167,7 @@ protected:
 private:
   std::string mScriptCommand{"/usr/bin/python3"};
   std::string mScriptName;
-  //  bool mEnableJsonConfig{true};
+  bool mEnableJsonConfig{true};
 
   std::mutex mProcessingLock;
   int mMaxAsyncProcesses{4};

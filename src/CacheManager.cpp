@@ -120,12 +120,12 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
                 matchCount++;
                 break;
               }
-            } else {
+            } /*else {
               std::cout << "ERROR: argument in cache. "
                            "Ignoring cache"
                         << std::endl;
               continue;
-            }
+            }*/
           }
         }
         for (const auto &sourceDep : sourceInfo.dependencies) {
@@ -143,7 +143,12 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
         }
         if (matchCount ==
             sourceInfo.arguments.size() + sourceInfo.dependencies.size()) {
-          return entry.filenames;
+          std::vector<std::string> files;
+          for (auto fentry : entry.files) {
+            // TODO ML do CRC, data and size check
+            files.push_back(fentry.file.filePath());
+          }
+          return files;
         }
       } else {
         // TODO develop mechanisms to recover stale cache
@@ -159,13 +164,12 @@ void CacheManager::clearCache() {
   std::unique_lock<std::mutex> lk(mCacheLock);
   updateFromDisk();
   for (auto &entry : mEntries) {
-    for (auto filenames : entry.filenames) {
-      for (auto file : filenames) {
-        if (al::File::remove(mCachePath.path() + file)) {
-          std::cerr << __FILE__ << ":" << __LINE__
-                    << " Error removing cache file: "
-                    << mCachePath.path() + file << std::endl;
-        }
+    for (auto file : entry.files) {
+      auto name = mCachePath.path() + file.file.filePath();
+      // TODO ML check CRC and size before removing
+      if (al::File::remove(name)) {
+        std::cerr << __FILE__ << ":" << __LINE__
+                  << " Error removing cache file: " << name << std::endl;
       }
     }
   }
@@ -216,7 +220,12 @@ void CacheManager::updateFromDisk() {
       CacheEntry e;
       e.timestampStart = entry["timestamp"]["start"];
       e.timestampEnd = entry["timestamp"]["end"];
-      e.filenames = entry["filenames"].get<std::vector<std::string>>();
+      e.files = {};
+
+      for (auto f : entry["files"]) {
+        e.files.emplace_back(FileDependency{DistributedPath(), f["modified"],
+                                            f["size"], f["hash"]});
+      }
 
       e.cacheHits = entry["cacheHits"];
       e.stale = entry["stale"];
@@ -236,7 +245,6 @@ void CacheManager::updateFromDisk() {
           entry["sourceInfo"]["workingPath"]["relativePath"];
       e.sourceInfo.workingPath.rootPath =
           entry["sourceInfo"]["workingPath"]["rootPath"];
-      e.sourceInfo.hash = entry["sourceInfo"]["hash"];
 
       for (auto &arg : entry["sourceInfo"]["arguments"]) {
         SourceArgument newArg;
@@ -409,7 +417,21 @@ void CacheManager::writeToDisk() {
       nlohmann::json entry;
       entry["timestamp"]["start"] = e.timestampStart;
       entry["timestamp"]["end"] = e.timestampEnd;
-      entry["filenames"] = e.filenames;
+      entry["files"] = {};
+
+      for (auto f : e.files) {
+        nlohmann::json fileObj;
+
+        fileObj["file"] = {};
+        fileObj["file"]["relativePath"] = f.file.relativePath;
+        fileObj["file"]["rootPath"] = f.file.rootPath;
+        fileObj["file"]["filename"] = f.file.filename;
+        fileObj["file"]["protocolId"] = f.file.protocolId;
+        fileObj["hash"] = f.hash;
+        fileObj["modified"] = f.modified;
+        fileObj["size"] = f.size;
+        entry["files"].push_back(fileObj);
+      }
 
       entry["cacheHits"] = e.cacheHits;
       entry["stale"] = e.stale;
@@ -430,7 +452,6 @@ void CacheManager::writeToDisk() {
           e.sourceInfo.workingPath.relativePath;
       entry["sourceInfo"]["workingPath"]["rootPath"] =
           e.sourceInfo.workingPath.rootPath;
-      entry["sourceInfo"]["hash"] = e.sourceInfo.hash;
       entry["sourceInfo"]["arguments"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["dependencies"] = std::vector<nlohmann::json>();
       entry["sourceInfo"]["fileDependencies"] = std::vector<nlohmann::json>();

@@ -47,6 +47,9 @@ public:
   std::string relativePath;
   std::string rootPath;
 
+  std::string protocolId; // Currently unused, should eventually allow for
+                          // https:// and other URL protocol prefixes
+
   /**
    * @brief full path including filename
    * @return

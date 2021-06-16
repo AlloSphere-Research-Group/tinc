@@ -42,7 +42,7 @@ TEST(Cache, ReadWriteEntry) {
   entry.timestampStart = startTimestamp;
   entry.timestampEnd = endTimestamp;
   entry.cacheHits = 23;
-  entry.filenames = {"hello", "world"};
+  entry.files = {std::string("hello"), std::string("world")};
   entry.stale = true;
 
   entry.userInfo.userName = "MyName";
@@ -54,7 +54,6 @@ TEST(Cache, ReadWriteEntry) {
   SourceInfo sourceInfo;
   sourceInfo.type = "SourceType";
   sourceInfo.tincId = "ProcessorId";
-  sourceInfo.hash = "SourceHash";
   sourceInfo.commandLineArguments = "args and args";
 
   SourceArgument arg_int8;
@@ -143,9 +142,9 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].timestampStart, startTimestamp);
   EXPECT_EQ(entries[0].timestampEnd, endTimestamp);
   EXPECT_EQ(entries[0].cacheHits, 23);
-  EXPECT_EQ(entries[0].filenames.size(), 2);
-  EXPECT_EQ(entries[0].filenames[0], "hello");
-  EXPECT_EQ(entries[0].filenames[1], "world");
+  EXPECT_EQ(entries[0].files.size(), 2);
+  //  EXPECT_EQ(entries[0].files[0], "hello");
+  //  EXPECT_EQ(entries[0].files[1], "world");
   EXPECT_TRUE(entries[0].stale);
 
   EXPECT_EQ(entries[0].userInfo.ip, "localhost");
@@ -157,7 +156,6 @@ TEST(Cache, ReadWriteEntry) {
 
   EXPECT_EQ(entries[0].sourceInfo.type, "SourceType");
   EXPECT_EQ(entries[0].sourceInfo.tincId, "ProcessorId");
-  EXPECT_EQ(entries[0].sourceInfo.hash, "SourceHash");
   EXPECT_EQ(entries[0].sourceInfo.commandLineArguments, "args and args");
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.size(), 12);
@@ -219,20 +217,21 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(9).getValue().type(),
             al::VariantType::VARIANT_DOUBLE);
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(9).getValue().get<double>(),
-             4.0512);
+            4.0512);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(10).id, "bool");
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(10).getValue().type(),
             al::VariantType::VARIANT_BOOL);
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(10).getValue().get<bool>(),
-                  true);
+            true);
 
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(11).id, "string");
   EXPECT_EQ(entries[0].sourceInfo.arguments.at(11).getValue().type(),
             al::VariantType::VARIANT_STRING);
-  EXPECT_EQ(entries[0].sourceInfo.arguments.at(11).getValue().get<std::string>(),
-            "hello");
-//
+  EXPECT_EQ(
+      entries[0].sourceInfo.arguments.at(11).getValue().get<std::string>(),
+      "hello");
+  //
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).id, "int8");
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(0).getValue().type(),
             al::VariantType::VARIANT_INT8);
@@ -291,13 +290,14 @@ TEST(Cache, ReadWriteEntry) {
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(9).getValue().type(),
             al::VariantType::VARIANT_DOUBLE);
   EXPECT_DOUBLE_EQ(
-      entries[0].sourceInfo.dependencies.at(9).getValue().get<double>(), 4.0512);
+      entries[0].sourceInfo.dependencies.at(9).getValue().get<double>(),
+      4.0512);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(10).id, "bool");
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(10).getValue().type(),
             al::VariantType::VARIANT_BOOL);
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(10).getValue().get<bool>(),
-                  true);
+            true);
 
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(11).id, "string");
   EXPECT_EQ(entries[0].sourceInfo.dependencies.at(11).getValue().type(),

@@ -52,9 +52,15 @@ private:
 };
 
 struct FileDependency {
+  FileDependency(std::string _file = std::string()) { file.filename = _file; }
+  FileDependency(DistributedPath file, std::string modified, uint64_t size,
+                 std::string hash)
+      : file(file), modified(modified), size(size), hash(hash) {}
   DistributedPath file;
   std::string modified;
-  uint64_t size;
+  uint64_t size = 0;
+  std::string hash; // Currently storing CRC32 as a string. Leave possibility to
+                    // change hash algorithm in the future
 };
 
 class SourceInfo {
@@ -75,7 +81,6 @@ public:
     dst.tincId = src.tincId;
     dst.commandLineArguments = src.commandLineArguments;
     dst.workingPath = src.workingPath;
-    dst.hash = src.hash;
     for (auto &arg : src.arguments) {
       dst.arguments.push_back(arg);
     }
@@ -91,7 +96,6 @@ public:
       tincId; // TODO add heuristics to match source even if id has changed.
   std::string commandLineArguments;
   DistributedPath workingPath{""};
-  std::string hash;
   std::vector<SourceArgument> arguments;
   std::vector<SourceArgument> dependencies;
   std::vector<FileDependency> fileDependencies;
@@ -100,7 +104,7 @@ public:
 struct CacheEntry {
   std::string timestampStart;
   std::string timestampEnd;
-  std::vector<std::string> filenames;
+  std::vector<FileDependency> files; // Files cached in this entry
   UserInfo userInfo;
   SourceInfo sourceInfo;
   uint64_t cacheHits{0};
