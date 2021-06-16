@@ -97,25 +97,26 @@ bool valueMatch(const al::VariantValue &v1, const al::VariantValue &v2) {
   return false;
 }
 
-std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
-                                                 bool verifyHash) {
+std::vector<std::string>
+CacheManager::findCache(const SourceInfo &querySourceInfo, bool verifyHash) {
   std::unique_lock<std::mutex> lk(mCacheLock);
-  for (const auto &entry : mEntries) {
-    if (entry.sourceInfo.commandLineArguments ==
-            sourceInfo.commandLineArguments &&
-        entry.sourceInfo.tincId == sourceInfo.tincId &&
-        entry.sourceInfo.type == sourceInfo.type) {
-      auto &entryArguments = entry.sourceInfo.arguments;
-      auto &entryDependencies = entry.sourceInfo.dependencies;
-      if (sourceInfo.arguments.size() == entry.sourceInfo.arguments.size() &&
-          sourceInfo.dependencies.size() ==
-              entry.sourceInfo.dependencies.size()) {
+  for (const auto &existingEntry : mEntries) {
+    if (existingEntry.sourceInfo.commandLineArguments ==
+            querySourceInfo.commandLineArguments &&
+        existingEntry.sourceInfo.tincId == querySourceInfo.tincId &&
+        existingEntry.sourceInfo.type == querySourceInfo.type) {
+      auto &entryArguments = existingEntry.sourceInfo.arguments;
+      auto &entryDependencies = existingEntry.sourceInfo.dependencies;
+      if (querySourceInfo.arguments.size() ==
+              existingEntry.sourceInfo.arguments.size() &&
+          querySourceInfo.dependencies.size() ==
+              existingEntry.sourceInfo.dependencies.size()) {
         size_t matchCount = 0;
-        for (const auto &sourceArg : sourceInfo.arguments) {
+        for (const auto &querySourceArg : querySourceInfo.arguments) {
           for (auto arg = entryArguments.begin(); arg != entryArguments.end();
                arg++) {
-            if (sourceArg.id == arg->id) {
-              if (valueMatch(arg->getValue(), sourceArg.getValue())) {
+            if (querySourceArg.id == arg->id) {
+              if (valueMatch(arg->getValue(), querySourceArg.getValue())) {
                 //                entryArguments.erase(arg);
                 matchCount++;
                 break;
@@ -128,7 +129,7 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
             }*/
           }
         }
-        for (const auto &sourceDep : sourceInfo.dependencies) {
+        for (const auto &sourceDep : querySourceInfo.dependencies) {
           for (auto arg = entryDependencies.begin();
                arg != entryDependencies.end(); arg++) {
 
@@ -141,10 +142,10 @@ std::vector<std::string> CacheManager::findCache(const SourceInfo &sourceInfo,
             }
           }
         }
-        if (matchCount ==
-            sourceInfo.arguments.size() + sourceInfo.dependencies.size()) {
+        if (matchCount == querySourceInfo.arguments.size() +
+                              querySourceInfo.dependencies.size()) {
           std::vector<std::string> files;
-          for (auto fentry : entry.files) {
+          for (auto fentry : existingEntry.files) {
             // TODO ML do CRC, data and size check
             files.push_back(fentry.file.filePath());
           }
@@ -223,8 +224,10 @@ void CacheManager::updateFromDisk() {
       e.files = {};
 
       for (auto f : entry["files"]) {
-        e.files.emplace_back(FileDependency{DistributedPath(), f["modified"],
-                                            f["size"], f["hash"]});
+        e.files.emplace_back(FileDependency{
+            DistributedPath(f["file"]["filename"], f["file"]["relativePath"],
+                            f["file"]["rootPath"], f["file"]["protocolId"]),
+            f["modified"], f["size"], f["hash"]});
       }
 
       e.cacheHits = entry["cacheHits"];

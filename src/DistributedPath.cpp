@@ -5,8 +5,9 @@
 using namespace tinc;
 
 DistributedPath::DistributedPath(std::string filename, std::string relativePath,
-                                 std::string rootPath)
-    : filename(filename), relativePath(relativePath), rootPath(rootPath) {}
+                                 std::string rootPath, std::string protocolId)
+    : filename(filename), relativePath(relativePath), rootPath(rootPath),
+      protocolId(protocolId) {}
 
 std::string DistributedPath::filePath() { return path() + filename; }
 
