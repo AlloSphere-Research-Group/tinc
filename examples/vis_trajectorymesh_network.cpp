@@ -22,7 +22,7 @@ class MyApp : public al::App {
     navControl().disable();
 
     tserver.start();
-    trajectory.registerWithTincServer(tserver);
+    trajectory.registerWithTinc(tserver);
   }
 
   void onAnimate(double dt) override { trajectory.update(dt); }

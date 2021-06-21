@@ -10,7 +10,7 @@ class MyApp : public al::App {
 
   void onInit() override {
     atoms.init();
-    atoms.registerWithTincServer(tserver);
+    atoms.registerWithTinc(tserver);
     tserver.start();
   }
 

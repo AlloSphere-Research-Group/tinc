@@ -21,7 +21,7 @@ public:
   SceneObject(std::string id = "", std::string filename = "",
               std::string path = "", uint16_t size = 2);
 
-  void registerWithTincServer(TincServer &server);
+  void registerWithTinc(TincProtocol &server);
 
   void applyTransformations(al::Graphics &g) override {
     al::PositionedVoice::applyTransformations(g);

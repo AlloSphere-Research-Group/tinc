@@ -11,10 +11,10 @@ SceneObject::SceneObject(std::string id, std::string filename, std::string path,
   *this << scale;
 }
 
-void SceneObject::registerWithTincServer(TincServer &server) {
-  server.registerDiskBuffer(mBuffer);
+void SceneObject::registerWithTinc(TincProtocol &tinc) {
+  tinc.registerDiskBuffer(mBuffer);
   for (auto *param : parameters()) {
-    server.registerParameter(*param);
+    tinc.registerParameter(*param);
   }
 }
 

@@ -1217,8 +1217,14 @@ bool TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   registerParameterSpace(dp.getParameterSpace(), src);
 
   dp.modified = [&](al::Socket *src = nullptr) {
-    auto msg = createConfigureDataPoolMessage(&dp);
-    sendTincMessage(&msg, nullptr, src->valueSource());
+    auto msgs = createConfigureDataPoolMessage(&dp);
+    for (auto &msg : msgs) {
+      if (src) {
+        sendTincMessage(&msg, nullptr, src->valueSource());
+      } else {
+        sendTincMessage(&msg, nullptr, nullptr);
+      }
+    }
   };
 
   // Broadcast registered DataPool and dependencies
@@ -1755,15 +1761,29 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
               << std::endl;
   }
 
-  for (auto &dim : mParameterSpaceDimensions) {
+  for (auto &dim : dimensions()) {
     if (dim->getName() == id && dim->getGroup() == group) {
       if (mVerbose) {
         // FIXME apply configuration (min, max, default) if found
-        std::cout << __FUNCTION__ << ": Parameter " << id
+        std::cout << __FUNCTION__ << ":" << __LINE__ << ": Parameter " << id
                   << " (Group: " << group << ") already registered."
                   << std::endl;
       }
       return true;
+    }
+  }
+  for (auto *ps : mParameterSpaces) {
+    for (auto *dim : ps->getDimensions()) {
+      if (dim->getName() == id && dim->getGroup() == group) {
+        if (mVerbose) {
+          // FIXME apply configuration (min, max, default) if found
+          std::cout << __FUNCTION__ << ":" << __LINE__ << ": Parameter " << id
+                    << " (Group: " << group
+                    << ") already registered in a parameter space."
+                    << std::endl;
+        }
+        return true;
+      }
     }
   }
 
