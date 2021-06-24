@@ -454,3 +454,24 @@ TEST(ParameterSpace, MultiIDDimensions) {
       al::File::isSamePath(ps.getCurrentRelativeRunPath(), "folderA_1/"));
   std::cout << std::endl;
 }
+
+TEST(ParameterSpace, ReadWriteNetCDFSpace) {
+
+  ParameterSpace ps;
+  // Create a parameter space
+
+  // TODO ML Implement
+
+  //    ps.writeToNetCDF();
+
+  //    ps.readFromNetCDF();
+
+  //    // test that the parameter space was written and read correctly for all
+  //    possible types
+
+  //    ps.writeToNetCDF("alternate_name.nc");
+
+  //    ps.readFromNetCDF("alternate_name.nc");
+
+  //    // Test that changin name is not an issue
+}

@@ -372,6 +372,8 @@ public:
    */
   void enableCache(std::string cachePath);
 
+  CacheEntry cacheEntryForProcessor(Processor &processor);
+
   /**
    * @brief Disable caching for the parameter space
    */

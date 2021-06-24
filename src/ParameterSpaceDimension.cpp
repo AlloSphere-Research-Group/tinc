@@ -112,21 +112,29 @@ ParameterSpaceDimension::ParameterSpaceDimension(al::ParameterMeta *param,
       mParameterValue = new al::ParameterString(*p);
     } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
       mParameterValue = new al::ParameterInt(*p);
-    } else if (al::ParameterInt8 *p = dynamic_cast<al::ParameterInt8 *>(param)) {
+    } else if (al::ParameterInt8 *p =
+                   dynamic_cast<al::ParameterInt8 *>(param)) {
       mParameterValue = new al::ParameterInt8(*p);
-    } else if (al::ParameterInt16 *p = dynamic_cast<al::ParameterInt16 *>(param)) {
+    } else if (al::ParameterInt16 *p =
+                   dynamic_cast<al::ParameterInt16 *>(param)) {
       mParameterValue = new al::ParameterInt16(*p);
-    } else if (al::ParameterInt64 *p = dynamic_cast<al::ParameterInt64 *>(param)) {
+    } else if (al::ParameterInt64 *p =
+                   dynamic_cast<al::ParameterInt64 *>(param)) {
       mParameterValue = new al::ParameterInt64(*p);
-    } else if (al::ParameterUInt8 *p = dynamic_cast<al::ParameterUInt8 *>(param)) {
+    } else if (al::ParameterUInt8 *p =
+                   dynamic_cast<al::ParameterUInt8 *>(param)) {
       mParameterValue = new al::ParameterUInt8(*p);
-    } else if (al::ParameterUInt16 *p = dynamic_cast<al::ParameterUInt16 *>(param)) {
+    } else if (al::ParameterUInt16 *p =
+                   dynamic_cast<al::ParameterUInt16 *>(param)) {
       mParameterValue = new al::ParameterUInt16(*p);
-    } else if (al::ParameterUInt32 *p = dynamic_cast<al::ParameterUInt32 *>(param)) {
+    } else if (al::ParameterUInt32 *p =
+                   dynamic_cast<al::ParameterUInt32 *>(param)) {
       mParameterValue = new al::ParameterUInt32(*p);
-    } else if (al::ParameterUInt64 *p = dynamic_cast<al::ParameterUInt64 *>(param)) {
+    } else if (al::ParameterUInt64 *p =
+                   dynamic_cast<al::ParameterUInt64 *>(param)) {
       mParameterValue = new al::ParameterUInt64(*p);
-    } else if (al::ParameterDouble *p = dynamic_cast<al::ParameterDouble *>(param)) {
+    } else if (al::ParameterDouble *p =
+                   dynamic_cast<al::ParameterDouble *>(param)) {
       mParameterValue = new al::ParameterDouble(*p);
     } else if (al::ParameterVec3 *p =
                    dynamic_cast<al::ParameterVec3 *>(param)) {
@@ -401,6 +409,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         min = value;
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<float>::max();
+      min = std::numeric_limits<float>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<float>::max()) {
@@ -421,6 +433,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       if (value < min) {
         min = value;
       }
+    }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<double>::max();
+      min = std::numeric_limits<double>::lowest();
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
@@ -443,6 +459,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         min = value;
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<int8_t>::max();
+      min = std::numeric_limits<int8_t>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
@@ -463,6 +483,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       if (value < min) {
         min = value;
       }
+    }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<uint8_t>::max();
+      min = std::numeric_limits<uint8_t>::lowest();
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
@@ -485,6 +509,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         min = value;
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<int16_t>::max();
+      min = std::numeric_limits<int16_t>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<int16_t>::max()) {
@@ -506,6 +534,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         min = value;
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<uint16_t>::max();
+      min = std::numeric_limits<uint16_t>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<uint16_t>::max()) {
@@ -526,6 +558,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       if (value < min) {
         min = value;
       }
+    }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<int32_t>::max();
+      min = std::numeric_limits<int32_t>::lowest();
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
@@ -549,6 +585,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         param.min(value, src->valueSource());
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<uint32_t>::max();
+      min = std::numeric_limits<uint32_t>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<uint32_t>::max()) {
@@ -569,6 +609,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       if (value < min) {
         min = value;
       }
+    }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<int64_t>::max();
+      min = std::numeric_limits<int64_t>::lowest();
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
@@ -591,6 +635,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
         min = value;
       }
     }
+    if (getSpaceValues<float>().size() == 0) {
+      max = std::numeric_limits<uint64_t>::max();
+      min = std::numeric_limits<uint64_t>::lowest();
+    }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());
     if (param.get() < min && min != std::numeric_limits<uint64_t>::max()) {
@@ -611,6 +659,10 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
       if (value < min) {
         min = value;
       }
+    }
+    if (getSpaceValues<float>().size() == 0) {
+      max = 1.0;
+      min = 0.0;
     }
     param.max(max, src->valueSource());
     param.min(min, src->valueSource());

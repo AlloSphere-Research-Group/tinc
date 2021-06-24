@@ -6,6 +6,9 @@
 
 #include "al/io/al_File.hpp"
 
+#define STB_DEFINE
+#include "stb.h"
+
 #define TINC_META_VERSION_MAJOR 1
 #define TINC_META_VERSION_MINOR 0
 
@@ -49,6 +52,31 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
       std::cerr << "Invalid cache format. Ignoring old cache." << std::endl;
     }
   }
+}
+
+int32_t CacheManager::computeCrc32(std::string filename) {
+  std::ifstream is(filename, std::ifstream::binary);
+  uint32_t crc = 0;
+  if (is) {
+    // get length of file:
+    is.seekg(0, is.end);
+    int length = is.tellg();
+    is.seekg(0, is.beg);
+
+    int toRead = length > 8192 ? 8192 : length;
+    while (length > 0) {
+      char buffer[8192];
+      is.read(buffer, toRead);
+      crc = stb_crc32_block(crc, (unsigned char *)buffer, toRead);
+      length -= toRead;
+      if (length < toRead) {
+        toRead = length;
+      }
+    }
+  } else {
+    // report error
+  }
+  return crc;
 }
 
 void CacheManager::appendEntry(CacheEntry &entry) {
@@ -98,7 +126,7 @@ bool valueMatch(const al::VariantValue &v1, const al::VariantValue &v2) {
 }
 
 std::vector<std::string>
-CacheManager::findCache(const SourceInfo &querySourceInfo, bool verifyHash) {
+CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
   std::unique_lock<std::mutex> lk(mCacheLock);
   for (const auto &existingEntry : mEntries) {
     if (existingEntry.sourceInfo.commandLineArguments ==
@@ -147,7 +175,34 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool verifyHash) {
           std::vector<std::string> files;
           for (auto fentry : existingEntry.files) {
             // TODO ML do CRC, data and size check
-            files.push_back(fentry.file.filePath());
+            if (validateFile) {
+              std::string filePath =
+                  mCachePath.path() + "/" + fentry.file.filePath();
+              auto modifiedTime = std::filesystem::last_write_time(filePath);
+              std::time_t cftime = __tinc_to_time_t(modifiedTime);
+              std::stringstream ss;
+              ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
+
+              uint64_t size = std::filesystem::file_size(filePath);
+
+              uint32_t crc = computeCrc32(filePath);
+              auto cachedCRC = std::stoul(fentry.hash);
+              if (fentry.modified != ss.str()) {
+                std::cerr << "ERROR modified mismatch" << std::endl;
+                return {};
+              }
+              if (fentry.size != size) {
+                std::cerr << "ERROR size mismatch" << std::endl;
+                return {};
+              }
+              if (cachedCRC != crc) {
+                std::cerr << "ERROR CRC mismatch" << std::endl;
+                return {};
+              }
+              files.push_back(fentry.file.filePath());
+            } else {
+              files.push_back(fentry.file.filePath());
+            }
           }
           return files;
         }
@@ -533,8 +588,8 @@ void CacheManager::writeToDisk() {
         newArg["file"]["filename"] = arg.file.filename;
         newArg["file"]["relativePath"] = arg.file.relativePath;
         newArg["file"]["rootPath"] = arg.file.rootPath;
-        newArg["modified"] = "";
-        newArg["size"] = 0; // TODO write modified and size values
+        newArg["modified"] = arg.modified;
+        newArg["size"] = arg.size;
         entry["sourceInfo"]["fileDependencies"].push_back(newArg);
       }
 
@@ -646,4 +701,37 @@ al::VariantValue SourceArgument::getValue() const {
   } else {
     return al::VariantValue();
   }
+}
+
+FileDependency &FileDependency::operator=(const FileDependency &other) {
+  if (this != &other) // not a self-assignment
+  {
+    copyValueFromSource(*this, other);
+  }
+  return *this;
+}
+
+void FileDependency::copyValueFromSource(FileDependency &dst,
+                                         const FileDependency &src) {
+  dst.file = src.file;
+  dst.modified = src.modified;
+  dst.size = src.size;
+  dst.hash = src.hash;
+}
+
+void SourceInfo::copyValueFromSource(SourceInfo &dst, const SourceInfo &src) {
+
+  dst.type = src.type;
+  dst.tincId = src.tincId;
+  dst.commandLineArguments = src.commandLineArguments;
+  dst.workingPath = src.workingPath;
+  dst.arguments.clear();
+  for (auto &arg : src.arguments) {
+    dst.arguments.push_back(arg);
+  }
+  dst.dependencies.clear();
+  for (auto &dep : src.dependencies) {
+    dst.dependencies.push_back(dep);
+  }
+  dst.fileDependencies = src.fileDependencies;
 }

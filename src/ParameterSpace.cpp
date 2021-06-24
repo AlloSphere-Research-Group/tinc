@@ -18,6 +18,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 
@@ -1225,6 +1226,7 @@ bool ParameterSpace::readFromNetCDF(std::string ncFile) {
                "ParameterSpaceDimension::loadFromNetCDF() does not work."
             << std::endl;
 #endif
+
   return true;
 }
 
@@ -1401,7 +1403,7 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
       size_t start[1] = {0};
       size_t count[1] = {ids.size()};
       for (size_t i = 0; i < ids.size(); i++) {
-        idArray[i] = (char *)calloc(ids[i].size(), sizeof(char));
+        idArray[i] = (char *)ids[i].c_str();
 #ifdef __STDC_LIB_EXT1__
         strncpy_s(idArray[i], ids.size(), ids[i].data(), ids[i].size());
 #elif defined(AL_WINDOWS)
@@ -1419,10 +1421,6 @@ bool ParameterSpace::writeToNetCDF(std::string fileName) {
         }
         free(idArray);
         return false;
-      }
-
-      for (size_t i = 0; i < ids.size(); i++) {
-        free(idArray[i]);
       }
       free(idArray);
     }
@@ -1552,6 +1550,149 @@ void ParameterSpace::updateParameterSpace(ParameterSpaceDimension *ps) {
   }
 }
 
+CacheEntry ParameterSpace::cacheEntryForProcessor(Processor &processor) {
+
+  CacheEntry entry;
+  entry.sourceInfo.type = al::demangle(typeid(processor).name());
+  entry.sourceInfo.tincId = processor.getId();
+  entry.sourceInfo.fileDependencies = {};     // FIXME
+  entry.sourceInfo.commandLineArguments = ""; // FIXME
+
+  for (auto dim : mDimensions) {
+    SourceArgument arg;
+    arg.id = dim->getName();
+    auto *param = dim->getParameterMeta();
+    if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterBool *p =
+                   dynamic_cast<al::ParameterBool *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterString *p =
+                   dynamic_cast<al::ParameterString *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt8 *p =
+                   dynamic_cast<al::ParameterInt8 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt16 *p =
+                   dynamic_cast<al::ParameterInt16 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt64 *p =
+                   dynamic_cast<al::ParameterInt64 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt8 *p =
+                   dynamic_cast<al::ParameterUInt8 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt16 *p =
+                   dynamic_cast<al::ParameterUInt16 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt32 *p =
+                   dynamic_cast<al::ParameterUInt32 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt64 *p =
+                   dynamic_cast<al::ParameterUInt64 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterDouble *p =
+                   dynamic_cast<al::ParameterDouble *>(param)) {
+      arg.setValue(p->get());
+    }
+    // TODO implement support for all types
+    /*else if (al::ParameterVec3 *p =
+                 dynamic_cast<al::ParameterVec3 *>(param)) {
+      mParameterValue = new al::ParameterVec3(*p);
+    } else if (al::ParameterVec4 *p =
+                 dynamic_cast<al::ParameterVec4 *>(param)) {
+      mParameterValue = new al::ParameterVec4(*p);
+    } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(param)) {
+      mParameterValue = new al::ParameterColor(*p);
+    } else if (al::ParameterPose *p =
+                 dynamic_cast<al::ParameterPose *>(param)) {
+      mParameterValue = new al::ParameterPose(*p);
+    } */
+    else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterChoice *p =
+                   dynamic_cast<al::ParameterChoice *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
+      arg.setValue(p->get());
+    } else {
+      std::cerr << __FUNCTION__ << ": Unsupported Parameter Type" << std::endl;
+      arg.setValue(al::VariantValue());
+    }
+    entry.sourceInfo.arguments.push_back(std::move(arg));
+  }
+
+  for (auto *param : processor.getDependencies()) {
+    SourceArgument arg;
+    arg.id = param->getName();
+    if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterBool *p =
+                   dynamic_cast<al::ParameterBool *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterString *p =
+                   dynamic_cast<al::ParameterString *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt8 *p =
+                   dynamic_cast<al::ParameterInt8 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt16 *p =
+                   dynamic_cast<al::ParameterInt16 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterInt64 *p =
+                   dynamic_cast<al::ParameterInt64 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt8 *p =
+                   dynamic_cast<al::ParameterUInt8 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt16 *p =
+                   dynamic_cast<al::ParameterUInt16 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt32 *p =
+                   dynamic_cast<al::ParameterUInt32 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterUInt64 *p =
+                   dynamic_cast<al::ParameterUInt64 *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterDouble *p =
+                   dynamic_cast<al::ParameterDouble *>(param)) {
+      arg.setValue(p->get());
+    }
+    // TODO implement support for all types
+    /*else if (al::ParameterVec3 *p =
+                 dynamic_cast<al::ParameterVec3 *>(param)) {
+      mParameterValue = new al::ParameterVec3(*p);
+    } else if (al::ParameterVec4 *p =
+                 dynamic_cast<al::ParameterVec4 *>(param)) {
+      mParameterValue = new al::ParameterVec4(*p);
+    } else if (al::ParameterColor *p =
+                 dynamic_cast<al::ParameterColor *>(param)) {
+      mParameterValue = new al::ParameterColor(*p);
+    } else if (al::ParameterPose *p =
+                 dynamic_cast<al::ParameterPose *>(param)) {
+      mParameterValue = new al::ParameterPose(*p);
+    } */
+    else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::ParameterChoice *p =
+                   dynamic_cast<al::ParameterChoice *>(param)) {
+      arg.setValue(p->get());
+    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
+      arg.setValue(p->get());
+    } else {
+      std::cerr << __FUNCTION__ << ": Unsupported Parameter Type" << std::endl;
+      arg.setValue(al::VariantValue());
+    }
+    entry.sourceInfo.dependencies.push_back(std::move(arg));
+  }
+  return entry;
+}
+
 bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
   std::time_t startTime =
       std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -1562,151 +1703,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
   // TODO this is overriding args passed
   if (mCacheManager) {
     // Create sourceInfo section for cache entr
-
-    entry.sourceInfo.type = al::demangle(typeid(processor).name());
-    entry.sourceInfo.tincId = processor.getId();
-    entry.sourceInfo.fileDependencies = {};     // FIXME
-    entry.sourceInfo.commandLineArguments = ""; // FIXME
-
-    for (auto dim : mDimensions) {
-      SourceArgument arg;
-      arg.id = dim->getName();
-      auto *param = dim->getParameterMeta();
-      if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterBool *p =
-                     dynamic_cast<al::ParameterBool *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterString *p =
-                     dynamic_cast<al::ParameterString *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt *p =
-                     dynamic_cast<al::ParameterInt *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt8 *p =
-                     dynamic_cast<al::ParameterInt8 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt16 *p =
-                     dynamic_cast<al::ParameterInt16 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt64 *p =
-                     dynamic_cast<al::ParameterInt64 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt8 *p =
-                     dynamic_cast<al::ParameterUInt8 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt16 *p =
-                     dynamic_cast<al::ParameterUInt16 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt32 *p =
-                     dynamic_cast<al::ParameterUInt32 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt64 *p =
-                     dynamic_cast<al::ParameterUInt64 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterDouble *p =
-                     dynamic_cast<al::ParameterDouble *>(param)) {
-        arg.setValue(p->get());
-      }
-      // TODO implement support for all types
-      /*else if (al::ParameterVec3 *p =
-                     dynamic_cast<al::ParameterVec3 *>(param)) {
-          mParameterValue = new al::ParameterVec3(*p);
-        } else if (al::ParameterVec4 *p =
-                     dynamic_cast<al::ParameterVec4 *>(param)) {
-          mParameterValue = new al::ParameterVec4(*p);
-        } else if (al::ParameterColor *p =
-                     dynamic_cast<al::ParameterColor *>(param)) {
-          mParameterValue = new al::ParameterColor(*p);
-        } else if (al::ParameterPose *p =
-                     dynamic_cast<al::ParameterPose *>(param)) {
-          mParameterValue = new al::ParameterPose(*p);
-        } */
-      else if (al::ParameterMenu *p =
-                   dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterChoice *p =
-                     dynamic_cast<al::ParameterChoice *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.setValue(p->get());
-      } else {
-        std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
-                  << std::endl;
-        arg.setValue(al::VariantValue());
-      }
-      entry.sourceInfo.arguments.push_back(std::move(arg));
-    }
-
-    for (auto *param : processor.getDependencies()) {
-      SourceArgument arg;
-      arg.id = param->getName();
-      if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterBool *p =
-                     dynamic_cast<al::ParameterBool *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterString *p =
-                     dynamic_cast<al::ParameterString *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt *p =
-                     dynamic_cast<al::ParameterInt *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt8 *p =
-                     dynamic_cast<al::ParameterInt8 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt16 *p =
-                     dynamic_cast<al::ParameterInt16 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterInt64 *p =
-                     dynamic_cast<al::ParameterInt64 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt8 *p =
-                     dynamic_cast<al::ParameterUInt8 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt16 *p =
-                     dynamic_cast<al::ParameterUInt16 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt32 *p =
-                     dynamic_cast<al::ParameterUInt32 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterUInt64 *p =
-                     dynamic_cast<al::ParameterUInt64 *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterDouble *p =
-                     dynamic_cast<al::ParameterDouble *>(param)) {
-        arg.setValue(p->get());
-      }
-      // TODO implement support for all types
-      /*else if (al::ParameterVec3 *p =
-                     dynamic_cast<al::ParameterVec3 *>(param)) {
-          mParameterValue = new al::ParameterVec3(*p);
-        } else if (al::ParameterVec4 *p =
-                     dynamic_cast<al::ParameterVec4 *>(param)) {
-          mParameterValue = new al::ParameterVec4(*p);
-        } else if (al::ParameterColor *p =
-                     dynamic_cast<al::ParameterColor *>(param)) {
-          mParameterValue = new al::ParameterColor(*p);
-        } else if (al::ParameterPose *p =
-                     dynamic_cast<al::ParameterPose *>(param)) {
-          mParameterValue = new al::ParameterPose(*p);
-        } */
-      else if (al::ParameterMenu *p =
-                   dynamic_cast<al::ParameterMenu *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::ParameterChoice *p =
-                     dynamic_cast<al::ParameterChoice *>(param)) {
-        arg.setValue(p->get());
-      } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-        arg.setValue(p->get());
-      } else {
-        std::cerr << __FUNCTION__ << ": Unsupported Parameter Type"
-                  << std::endl;
-        arg.setValue(al::VariantValue());
-      }
-      entry.sourceInfo.dependencies.push_back(std::move(arg));
-    }
-
+    entry = cacheEntryForProcessor(processor);
     auto cacheFiles = mCacheManager->findCache(entry.sourceInfo);
 
     // TODO caching is currently done by copying. There should also be an option
@@ -1775,21 +1772,37 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
                     << " Cache entry not created. " << std::endl;
           return ret;
         }
-        // TODO set modified, size and CRC/hash
-        std::string modified = "";
-        uint64_t size = 0;
-        std::string hash = "";
+        std::string filePath =
+            mCacheManager->cacheDirectory() + "/" + parameterPrefix + filename;
+        auto modifiedTime = std::filesystem::last_write_time(filePath);
+        std::time_t cftime = __tinc_to_time_t(modifiedTime);
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
+
+        uint64_t size = std::filesystem::file_size(filePath);
+        uint32_t crc = CacheManager::computeCrc32(filePath);
+        std::string hash = std::to_string(crc);
         cacheFiles.push_back(
             FileDependency{DistributedPath{parameterPrefix + filename, ""},
-                           modified, size, hash});
+                           ss.str(), size, hash});
       }
 
       for (auto filename : processor.getInputFileNames()) {
 
         FileDependency dep;
         dep.file = DistributedPath(filename); // TODO enrich meta data
-        dep.modified = "";
-        dep.size = 0; // TODO write size and modified
+        std::string filePath = mCacheManager->cacheDirectory() + "/" + filename;
+        auto modifiedTime = std::filesystem::last_write_time(filePath);
+        std::time_t cftime = __tinc_to_time_t(modifiedTime);
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
+        dep.modified = ss.str();
+
+        dep.size = std::filesystem::file_size(filePath);
+
+        uint32_t crc = CacheManager::computeCrc32(filename);
+        dep.hash = std::to_string(crc);
         entry.sourceInfo.fileDependencies.push_back(dep);
       }
 

@@ -7,7 +7,9 @@
 #include "al/types/al_VariantValue.hpp"
 #include "tinc/DistributedPath.hpp"
 
+#include <chrono>
 #include <cinttypes>
+#include <filesystem>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -56,11 +58,17 @@ struct FileDependency {
   FileDependency(DistributedPath file, std::string modified, uint64_t size,
                  std::string hash)
       : file(file), modified(modified), size(size), hash(hash) {}
+
+  FileDependency &operator=(const FileDependency &other);
+
   DistributedPath file;
   std::string modified;
   uint64_t size = 0;
   std::string hash; // Currently storing CRC32 as a string. Leave possibility to
                     // change hash algorithm in the future
+private:
+  static void copyValueFromSource(FileDependency &dst,
+                                  const FileDependency &src);
 };
 
 class SourceInfo {
@@ -75,20 +83,7 @@ public:
     return *this;
   }
 
-  static void copyValueFromSource(SourceInfo &dst, const SourceInfo &src) {
-
-    dst.type = src.type;
-    dst.tincId = src.tincId;
-    dst.commandLineArguments = src.commandLineArguments;
-    dst.workingPath = src.workingPath;
-    for (auto &arg : src.arguments) {
-      dst.arguments.push_back(arg);
-    }
-    for (auto &dep : src.dependencies) {
-      dst.dependencies.push_back(dep);
-    }
-    dst.fileDependencies = src.fileDependencies;
-  }
+  static void copyValueFromSource(SourceInfo &dst, const SourceInfo &src);
 
   // Write copy/move constructor. Write copy operator
   std::string type;
@@ -135,7 +130,7 @@ public:
   std::vector<CacheEntry> entries(size_t count = 0);
 
   std::vector<std::string> findCache(const SourceInfo &sourceInfo,
-                                     bool verifyHash = true);
+                                     bool validateFile = true);
   /**
    * @brief Clear all cached files, and cache information.
    *
@@ -174,6 +169,13 @@ public:
    */
   std::string dump();
 
+  /**
+   * @brief compute CRC32 for file
+   * @param filename
+   * @return the CRC
+   */
+  static int32_t computeCrc32(std::string filename);
+
 protected:
   DistributedPath mCachePath;
   std::mutex mCacheLock;
@@ -188,6 +190,15 @@ protected:
   nlohmann::json_schema::json_validator mValidator{nullptr,
                                                    tincSchemaFormatChecker};
 };
+
+// TODO temporary get rid of this once we use C++20
+template <typename TP> time_t __tinc_to_time_t(TP tp) {
+  using namespace std::chrono;
+  auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now() +
+                                                      system_clock::now());
+  return system_clock::to_time_t(sctp);
+}
+
 } // namespace tinc
 
 #endif // CACHEMANAGER_HPP

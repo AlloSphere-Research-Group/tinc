@@ -373,4 +373,65 @@ TEST(Cache, ParameterSpace) {
   dim3->setCurrentValue(0.02);
 
   ps.runProcess(processor);
+  ps.writeToNetCDF();
+}
+
+TEST(Cache, CRC) {
+
+  // This test relies on data created by TEST(Cache, ParameterSpace)
+
+  CacheManager cmanage(DistributedPath{"tinc_cache.json", "cache"});
+
+  cmanage.updateFromDisk();
+
+  ParameterSpace ps;
+  ps.readFromNetCDF();
+
+  // Create a processor;
+  ProcessorCpp processor("TincProcessor");
+  processor.setOutputFileNames({"cache_ps.txt"});
+  processor.processingFunction = [&]() {
+    // Compute a value
+    float value = processor.configuration["dim1"].get<float>() *
+                      processor.configuration["dim2"].get<float>() +
+                  processor.configuration["dim3"].get<float>();
+
+    auto filenames = processor.getOutputFileNames();
+
+    al::al_sleep(3); // Sleep for 3 seconds.
+    // Write it to file
+    std::ofstream f(filenames[0]);
+    f << std::to_string(value);
+    f.close();
+    return true;
+  };
+
+  auto dim1 = ps.getDimension("dim1");
+  auto dim2 = ps.getDimension("dim2");
+  auto dim3 = ps.getDimension("dim3");
+  dim1->setCurrentValue(0.5);
+  dim2->setCurrentValue(0.2);
+  dim3->setCurrentValue(0.02);
+
+  auto entry = ps.cacheEntryForProcessor(processor);
+
+  auto cacheFiles = cmanage.findCache(entry.sourceInfo);
+
+  EXPECT_EQ(cacheFiles.size(), 1);
+
+  // Now write something different to the file, to simulate something
+  // overwriting cache
+
+  std::ofstream of("cache/" + cacheFiles[0]);
+  of << "Dummy data";
+  of.close();
+
+  cacheFiles = cmanage.findCache(entry.sourceInfo);
+  // There should be no matches as CRC, date and size check fails
+  // What will happen when date is checked?
+  EXPECT_EQ(cacheFiles.size(), 0);
+
+  cacheFiles = cmanage.findCache(entry.sourceInfo, false);
+  // There should be a matches as CRC is not checked
+  EXPECT_EQ(cacheFiles.size(), 1);
 }

@@ -75,7 +75,7 @@ add_library(tinc ${TINC_SRC} ${TINC_HEADERS})
 
 # binaries are put into the ./bin directory by default
 set_target_properties(tinc PROPERTIES
-  CXX_STANDARD 14
+  CXX_STANDARD 17
   CXX_STANDARD_REQUIRED ON
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/bin
