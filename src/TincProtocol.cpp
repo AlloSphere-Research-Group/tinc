@@ -147,7 +147,7 @@ void createParameterValueMessage(al::ParameterMeta *param,
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
     // FIXME ML change to bool
     val.set_valuefloat(p->get());
-    val.set_nctype(al::VariantType::VARIANT_FLOAT);
+    val.set_nctype(al::VariantType::VARIANT_BOOL);
   } else if (al::ParameterString *p =
                  dynamic_cast<al::ParameterString *>(param)) {
     val.set_valuestring(p->get());
@@ -555,6 +555,12 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
         newValue->set_valuefloat(value);
         newValue->set_nctype(al::VariantType::VARIANT_FLOAT);
       }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_DOUBLE) {
+      for (auto &value : dim->getSpaceValues<double>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valuefloat(value);
+        newValue->set_nctype(al::VariantType::VARIANT_DOUBLE);
+      }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
       for (auto &value : dim->getSpaceValues<uint8_t>()) {
         // we utilize variable encoding of protobuf to handle 1 byte ints
@@ -562,11 +568,23 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
         newValue->set_valueuint32(value);
         newValue->set_nctype(al::VariantType::VARIANT_UINT8);
       }
-    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
-      for (auto &value : dim->getSpaceValues<int32_t>()) {
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT8) {
+      for (auto &value : dim->getSpaceValues<int8_t>()) {
         auto *newValue = valuesMessage.add_values();
         newValue->set_valueint32(value);
-        newValue->set_nctype(al::VariantType::VARIANT_INT32);
+        newValue->set_nctype(al::VariantType::VARIANT_INT8);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT16) {
+      for (auto &value : dim->getSpaceValues<uint16_t>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueuint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_UINT16);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT16) {
+      for (auto &value : dim->getSpaceValues<int16_t>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_INT16);
       }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
       for (auto &value : dim->getSpaceValues<uint32_t>()) {
@@ -574,10 +592,40 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
         newValue->set_valueuint32(value);
         newValue->set_nctype(al::VariantType::VARIANT_UINT32);
       }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
+      for (auto &value : dim->getSpaceValues<int32_t>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueint32(value);
+        newValue->set_nctype(al::VariantType::VARIANT_INT32);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT64) {
+      for (auto &value : dim->getSpaceValues<uint64_t>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueuint64(value);
+        newValue->set_nctype(al::VariantType::VARIANT_UINT64);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT64) {
+      for (auto &value : dim->getSpaceValues<int64_t>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valueint64(value);
+        newValue->set_nctype(al::VariantType::VARIANT_INT64);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_BOOL) {
+      for (auto &value : dim->getSpaceValues<float>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valuefloat(value);
+        newValue->set_nctype(al::VariantType::VARIANT_BOOL);
+      }
+    } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_STRING) {
+      for (auto &value : dim->getSpaceValues<std::string>()) {
+        auto *newValue = valuesMessage.add_values();
+        newValue->set_valuestring(value);
+        newValue->set_nctype(al::VariantType::VARIANT_STRING);
+      }
     } else {
       std::cerr << "Other types not supported yet" << std::endl;
     }
-    // FIXME ML support the rest of the types
+    // FIXME ML support the rest of the types.
     auto confValue = confMessage.configurationvalue().New();
     confValue->PackFrom(valuesMessage);
     confMessage.set_allocated_configurationvalue(confValue);
@@ -932,8 +980,56 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         if (newIds.size() != 0 && newValues.size() != 0) {
           dim->conformSpace(src);
         }
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT8) {
+        std::vector<int8_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() != 0 && newValues.size() != 0) {
+          dim->conformSpace(src);
+        }
       } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
         std::vector<uint8_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueuint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() != 0 && newValues.size() != 0) {
+          dim->conformSpace(src);
+        }
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT16) {
+        std::vector<int16_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() != 0 && newValues.size() != 0) {
+          dim->conformSpace(src);
+        }
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT16) {
+        std::vector<uint16_t> newValues;
         std::vector<std::string> newIds;
         newValues.reserve(values.size());
         for (auto &v : values) {
@@ -970,6 +1066,38 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
         newValues.reserve(values.size());
         for (auto &v : values) {
           newValues.push_back(v.valueuint32());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() != 0 && newValues.size() != 0) {
+          dim->conformSpace(src);
+        }
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_INT64) {
+        std::vector<int64_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueint64());
+          if (idsIt != sv.ids().end()) {
+            newIds.push_back(*idsIt);
+            idsIt++;
+          }
+        }
+        dim->setSpaceValues(newValues.data(), newValues.size(), "", src);
+        dim->setSpaceIds(newIds, src);
+        if (newIds.size() != 0 && newValues.size() != 0) {
+          dim->conformSpace(src);
+        }
+      } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT64) {
+        std::vector<uint64_t> newValues;
+        std::vector<std::string> newIds;
+        newValues.reserve(values.size());
+        for (auto &v : values) {
+          newValues.push_back(v.valueuint64());
           if (idsIt != sv.ids().end()) {
             newIds.push_back(*idsIt);
             idsIt++;
@@ -2473,8 +2601,26 @@ void TincProtocol::sendConfigureMessage(Processor *p, al::Socket *dst,
       val.set_valueint64(config.second.get<int64_t>());
       val.set_nctype(al::VariantType::VARIANT_INT64);
     } else if (config.second.type() == al::VariantType::VARIANT_INT32) {
-      val.set_valueint64(config.second.get<int32_t>());
+      val.set_valueint32(config.second.get<int32_t>());
       val.set_nctype(al::VariantType::VARIANT_INT32);
+    } else if (config.second.type() == al::VariantType::VARIANT_INT16) {
+      val.set_valueint32(config.second.get<int16_t>());
+      val.set_nctype(al::VariantType::VARIANT_INT16);
+    } else if (config.second.type() == al::VariantType::VARIANT_INT8) {
+      val.set_valueint32(config.second.get<int8_t>());
+      val.set_nctype(al::VariantType::VARIANT_INT8);
+    } else if (config.second.type() == al::VariantType::VARIANT_UINT64) {
+      val.set_valueuint64(config.second.get<uint64_t>());
+      val.set_nctype(al::VariantType::VARIANT_UINT64);
+    } else if (config.second.type() == al::VariantType::VARIANT_UINT32) {
+      val.set_valueuint32(config.second.get<uint32_t>());
+      val.set_nctype(al::VariantType::VARIANT_UINT32);
+    } else if (config.second.type() == al::VariantType::VARIANT_UINT16) {
+      val.set_valueuint32(config.second.get<uint16_t>());
+      val.set_nctype(al::VariantType::VARIANT_UINT16);
+    } else if (config.second.type() == al::VariantType::VARIANT_UINT8) {
+      val.set_valueuint32(config.second.get<uint8_t>());
+      val.set_nctype(al::VariantType::VARIANT_UINT8);
     } else if (config.second.type() == al::VariantType::VARIANT_STRING) {
       val.set_valuestring(config.second.get<std::string>());
       val.set_nctype(al::VariantType::VARIANT_STRING);

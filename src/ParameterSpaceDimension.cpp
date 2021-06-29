@@ -15,7 +15,7 @@ ParameterSpaceDimension::ParameterSpaceDimension(std::string name,
   mParamInternal = true;
 
   // FIXME define how we will handle all data types
-  // FIXME ML support all types. Done.
+  // FIXME ML support all types. String, bool left
   switch (dataType) {
   case al::VariantType::VARIANT_FLOAT:
     mParameterValue = new al::Parameter(name, group);
