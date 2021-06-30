@@ -387,11 +387,11 @@ protected:
     }
 
     ret = true;
-  done:
     if ((retval = nc_close(ncid))) {
       std::cerr << __FILE__ << ":" << __LINE__ << "ERROR closing NetCDF file "
                 << getPath() + fileName << std::endl;
     }
+  done:
 #endif
     return ret;
   }
@@ -550,10 +550,6 @@ protected:
     }
     return true;
   done:
-    if ((retval = nc_close(ncid))) {
-      std::cerr << "ERROR closing NetCDF file" << std::endl;
-      goto done;
-    }
 #endif
     return false;
   }
