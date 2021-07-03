@@ -1751,6 +1751,11 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
     std::vector<FileDependency> cacheFiles;
     if (!cacheRestored) {
       for (auto filename : processor.getOutputFileNames()) {
+        uint64_t size = std::filesystem::file_size(
+            processor.getOutputDirectory() + filename);
+        uint32_t crc = CacheManager::computeCrc32(
+            processor.getOutputDirectory() + filename);
+        std::string hash = std::to_string(crc);
         std::string parameterPrefix;
         for (auto *dep : processor.getDependencies()) {
           // TODO support other parameter data types
@@ -1759,10 +1764,13 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         for (auto dim : mDimensions) {
           parameterPrefix += "%%" + dim->getName() + "%%_";
         }
+        parameterPrefix += "_" + hash + "_";
         parameterPrefix =
             ProcessorScript::sanitizeName(resolveFilename(parameterPrefix));
+        // FIXME compress filename to ensure path is not too long. Perhaps use a
+        // hash for the path when too long?
         std::string cacheFilename =
-            mCacheManager->cacheDirectory() + parameterPrefix + filename;
+            mCacheManager->cacheDirectory() + "/" + parameterPrefix + filename;
         if (al::File::exists(cacheFilename)) {
           // FIXME handle case when file exists.
         }
@@ -1772,16 +1780,11 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
                     << " Cache entry not created. " << std::endl;
           return ret;
         }
-        std::string filePath =
-            mCacheManager->cacheDirectory() + "/" + parameterPrefix + filename;
-        auto modifiedTime = std::filesystem::last_write_time(filePath);
+        auto modifiedTime = std::filesystem::last_write_time(cacheFilename);
         std::time_t cftime = __tinc_to_time_t(modifiedTime);
         std::stringstream ss;
         ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
 
-        uint64_t size = std::filesystem::file_size(filePath);
-        uint32_t crc = CacheManager::computeCrc32(filePath);
-        std::string hash = std::to_string(crc);
         cacheFiles.push_back(
             FileDependency{DistributedPath{parameterPrefix + filename, ""},
                            ss.str(), size, hash});
@@ -1789,21 +1792,29 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
 
       for (auto filename : processor.getInputFileNames()) {
 
-        FileDependency dep;
-        dep.file = DistributedPath(filename); // TODO enrich meta data
-        std::string filePath = mCacheManager->cacheDirectory() + "/" + filename;
-        auto modifiedTime = std::filesystem::last_write_time(filePath);
-        std::time_t cftime = __tinc_to_time_t(modifiedTime);
+        std::string filePath = processor.getInputDirectory() + filename;
+        if (std::filesystem::exists(filePath)) {
+          FileDependency dep;
+          dep.file = DistributedPath(
+              filename, processor.getInputDirectory()); // TODO enrich meta data
+          auto modifiedTime = std::filesystem::last_write_time(filePath);
+          std::time_t cftime = __tinc_to_time_t(modifiedTime);
 
-        std::stringstream ss;
-        ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
-        dep.modified = ss.str();
+          std::stringstream ss;
+          ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
+          dep.modified = ss.str();
 
-        dep.size = std::filesystem::file_size(filePath);
+          dep.size = std::filesystem::file_size(filePath);
 
-        uint32_t crc = CacheManager::computeCrc32(filename);
-        dep.hash = std::to_string(crc);
-        entry.sourceInfo.fileDependencies.push_back(dep);
+          uint32_t crc = CacheManager::computeCrc32(filename);
+          dep.hash = std::to_string(crc);
+          entry.sourceInfo.fileDependencies.push_back(dep);
+        } else {
+          std::cerr << __FILE__ << ":" << __LINE__
+                    << " ERROR input file to processor nto found. Not adding "
+                       "dependency to cache."
+                    << std::endl;
+        }
       }
 
       entry.sourceInfo.workingPath = DistributedPath(); // FIXME
@@ -1814,7 +1825,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       // Leave end timestamp for last
       //    entry.cacheHits = 23;
       entry.files = cacheFiles;
-      entry.stale = false; // FIXME
+      entry.stale = false;
 
       entry.userInfo.userName = "User";    // FIXME
       entry.userInfo.userHash = "UserHas"; // FIXME
