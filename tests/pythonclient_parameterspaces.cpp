@@ -66,6 +66,46 @@ tclient.stop()
   EXPECT_FLOAT_EQ(params[1]["_value"], 2.88f);
 }
 
+TEST(PythonClient, ParameterSpacesRequestPath) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpace ps{"param_space"};
+  auto ps_dim = ps.newDimension("ps_dim");
+  ps_dim->setSpaceValues(std::vector<float>{0, 1.5, 3.0, 3.5});
+  ps_dim->setCurrentValue(3.0);
+  auto ps_dim_reply = ps.newDimension("ps_dim_reply");
+  ps_dim_reply->setSpaceValues(std::vector<float>{-0.5, -1.0, -1.5});
+  ps_dim_reply->setCurrentValue(-1.0);
+
+  ps.setCurrentPathTemplate("%%ps_dim%%_%%ps_dim_reply%%");
+
+  tserver << ps;
+  std::string pythonCode = R"(
+#tclient.debug = True
+tclient.request_parameter_spaces()
+while len(tclient.parameter_spaces) == 0:
+    time.sleep(0.01)
+
+test_output = [tclient.parameter_spaces[0].get_current_relative_path()]
+
+tclient.stop()
+)";
+
+  PythonTester ptest;
+  ptest.pythonExecutable = PYTHON_EXECUTABLE;
+  ptest.pythonModulePath = TINC_TESTS_SOURCE_DIR "/../tinc-python/tinc-python";
+  ptest.runPython(pythonCode);
+
+  tserver.stop();
+
+  auto output = ptest.readResults();
+
+  EXPECT_EQ(output.size(), 1);
+  EXPECT_EQ(output[0], ps.getCurrentRelativeRunPath());
+  std::cout << ps.getCurrentRelativeRunPath() << std::endl;
+}
+
 TEST(PythonClient, ParameterSpacesRTCallback) {
   TincServer tserver;
   // tserver.setVerbose(true);
