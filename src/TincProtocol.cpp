@@ -2236,7 +2236,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
   details.set_basefilename(db->getBaseFileName());
   // TODO separate node path from relative path. Perhaps through a global path
   // map?
-  std::string path = al::File::currentPath() + db->getPath();
+  std::string path = db->getPath();
   details.set_path(path);
 
   google::protobuf::Any *detailsAny = msg.details().New();
