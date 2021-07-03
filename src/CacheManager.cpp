@@ -178,6 +178,11 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
             if (validateFile) {
               std::string filePath =
                   mCachePath.path() + "/" + fentry.file.filePath();
+              if (!std::filesystem::exists(filePath)) {
+                std::cerr << "ERROR cached file missing: " << filePath
+                          << std::endl;
+                return {};
+              }
               auto modifiedTime = std::filesystem::last_write_time(filePath);
               std::time_t cftime = __tinc_to_time_t(modifiedTime);
               std::stringstream ss;
