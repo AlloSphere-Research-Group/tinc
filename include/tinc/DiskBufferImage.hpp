@@ -46,12 +46,13 @@ public:
       : DiskBuffer<al::Image>(id, fileName, path, size) {}
 
   bool writePixels(unsigned char *newData, int width, int height,
-                   std::string filename = "") {
+                   int numComponents = 3, std::string filename = "") {
 
     if (filename.size() == 0) {
       filename = getFilenameForWriting();
     }
-    if (!al::Image::saveImage(getPath() + filename, newData, width, height)) {
+    if (!al::Image::saveImage(getPath() + filename, newData, width, height,
+                              false, numComponents)) {
       std::cerr << __FILE__ << ":" << __LINE__
                 << " ERROR writing image file: " << getPath() + filename
                 << std::endl;
