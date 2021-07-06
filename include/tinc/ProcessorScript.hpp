@@ -38,6 +38,7 @@
 #include "al/ui/al_ParameterServer.hpp"
 
 #include "tinc/Processor.hpp"
+#include "tinc/ParameterSpace.hpp"
 
 #include "nlohmann/json.hpp"
 
