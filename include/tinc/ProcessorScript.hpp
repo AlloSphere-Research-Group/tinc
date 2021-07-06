@@ -148,11 +148,49 @@ public:
    * is called
    */
   void setCommandLineFlagTemplate(std::string commandLineTemplate) {
+    tinc::ParameterSpace ps{"PS"};
+    std::string mCommandLine;
+    std::string line_input, line_output, line_output_dir, line_input_dir;
+    std::string chunk;
+    std::size_t pos_input, pos_output, pos_output_dir, pos_input_dir;
+    std::vector <std::string> input, output, input_dir, output_dir;
+
+    mCommandLine = ps.resolveFilename(commandLineTemplate);
+    pos_input = mCommandLine.find("INPUT:");
+    pos_output = mCommandLine.find("OUTPUT:");
+    pos_output_dir = mCommandLine.find("OUTPUT_DIR:");
+    pos_input_dir = mCommandLine.find("INPUT_DIR:");
+
+    if(pos_input!=std::string::npos){
+      line_input = mCommandLine.substr(0,pos_input);
+      std::stringstream check(line_input);
+      while(std::getline(check, chunk, ' ')){
+        input.push_back(chunk);
+      }
+    }else if(pos_output!=std::string::npos){
+      line_output = mCommandLine.substr(0,pos_output);
+      std::stringstream check(line_output);
+      while(std::getline(check, chunk, ' ')){
+        output.push_back(chunk);
+      }
+    }else if(pos_output_dir!=std::string::npos){
+      line_output_dir = mCommandLine.substr(0,pos_output_dir);
+      std::stringstream check(line_output_dir);
+      while(std::getline(check, chunk, ' ')){
+        output_dir.push_back(chunk);
+      }
+    }else if(pos_input_dir!=std::string::npos){
+      line_input_dir = mCommandLine.substr(0,pos_input_dir);
+      std::stringstream check(line_input_dir);
+      while(std::getline(check, chunk, ' ')){
+        input_dir.push_back(chunk);
+      }
+    }
     // TODO ML use ParameterSpace::resolveFilename() to resolve template
     // parameters Then use addtional markers like &&INPUT:0&& to get input file
     // 0 &&INPUT: && to get all input names separated by space or &&INPUT:,&& to
     // separate by commas. Apart from INPUT, support OUTPUT, INPUT_DIR,
-    // OUTPUT_DIR
+    // OUTPUT_DIR. Done. need test.
   }
 
 protected:
