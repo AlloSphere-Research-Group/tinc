@@ -12,9 +12,11 @@ enum MessageType {
   COMMAND = 4; // Commands are synchronous and one to one, so both ends block (or timeout) until COMMAND_REPLY is sent
   COMMAND_REPLY = 5;
   STATUS = 6;
+  TINC_WORKING_PATH = 7;
 
   PING = 98;
   PONG = 99;
+
 
   BARRIER_REQUEST = 100;
   BARRIER_ACK_LOCK = 101;
@@ -286,4 +288,8 @@ message DataPoolCommandCurrentFilesReply {
 message StatusMessage {
     ObjectId id = 1;
     StatusTypes status = 2;
+}
+
+message TincPath {
+    string path = 1;
 }

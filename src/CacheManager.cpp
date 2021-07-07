@@ -128,6 +128,7 @@ bool valueMatch(const al::VariantValue &v1, const al::VariantValue &v2) {
 std::vector<std::string>
 CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
   std::unique_lock<std::mutex> lk(mCacheLock);
+  size_t counter = 0;
   for (const auto &existingEntry : mEntries) {
     if (existingEntry.sourceInfo.commandLineArguments ==
             querySourceInfo.commandLineArguments &&
@@ -181,7 +182,7 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
               if (!std::filesystem::exists(filePath)) {
                 std::cerr << "ERROR cached file missing: " << filePath
                           << std::endl;
-                return {};
+                continue;
               }
               auto modifiedTime = std::filesystem::last_write_time(filePath);
               std::time_t cftime = __tinc_to_time_t(modifiedTime);
@@ -193,16 +194,19 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
               uint32_t crc = computeCrc32(filePath);
               auto cachedCRC = std::stoul(fentry.hash);
               if (fentry.modified != ss.str()) {
-                std::cerr << "ERROR modified mismatch" << std::endl;
-                return {};
+                // FIXME if there is a mismatch, this will preclude this entry
+                // from being cached.
+                std::cerr << "ERROR modified mismatch " << ss.str()
+                          << std::endl;
+                continue;
               }
               if (fentry.size != size) {
                 std::cerr << "ERROR size mismatch" << std::endl;
-                return {};
+                continue;
               }
               if (cachedCRC != crc) {
                 std::cerr << "ERROR CRC mismatch" << std::endl;
-                return {};
+                continue;
               }
               files.push_back(fentry.file.filePath());
             } else {
@@ -217,6 +221,7 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
                   << std::endl;
       }
     }
+    counter++;
   }
   return {};
 }

@@ -37,6 +37,8 @@
 
 #include "al/graphics/al_Image.hpp"
 
+#include <filesystem>
+
 namespace tinc {
 
 class DiskBufferImage : public DiskBuffer<al::Image> {
@@ -65,11 +67,17 @@ protected:
   bool parseFile(std::string fileName,
                  std::shared_ptr<al::Image> newData) override {
     bool ret = false;
-    if (newData->load(getPath() + fileName)) {
+    std::string filePath;
+    if (std::filesystem::path(fileName).is_absolute()) {
+      filePath = fileName;
+    } else {
+      filePath = getPath() + fileName;
+    }
+    if (newData->load(filePath)) {
       BufferManager<al::Image>::doneWriting(newData);
       ret = true;
     } else {
-      std::cerr << "Error reading Image: " << m_path + m_fileName << std::endl;
+      std::cerr << "Error reading Image: " << filePath << std::endl;
     }
     return true;
   }

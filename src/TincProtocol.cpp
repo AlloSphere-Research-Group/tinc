@@ -3299,10 +3299,10 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
       if (dp->getId() == datapoolId) {
         auto filenames = dp->getCurrentFiles();
 
-        // FIXME uncomment?
-        // if (mVerbose) {
-        //   std::cout << commandNumber << "::::: " << sliceName << std::endl;
-        // }
+        if (mVerbose) {
+          std::cout << "DataPool command scurrent files: " << commandNumber
+                    << " replying" << std::endl;
+        }
 
         TincMessage msg;
         msg.set_messagetype(MessageType::COMMAND_REPLY);

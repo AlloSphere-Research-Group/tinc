@@ -24,7 +24,7 @@ macro(BuildExample example_src dir name_prefix linklibs)
     set_target_properties(${EXAMPLE_TARGET}
         PROPERTIES
         DEBUG_POSTFIX d
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
 
 #        RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_DIRECTORY}/bin

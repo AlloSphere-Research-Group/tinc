@@ -91,7 +91,7 @@ DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
       al::Dir::make(m_path);
     }
   } else {
-    m_path = "";
+    m_path = al::File::currentPath();
   }
 }
 

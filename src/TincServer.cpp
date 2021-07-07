@@ -119,6 +119,12 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         disconnectClient(src);
         break;
+      case MessageType::TINC_WORKING_PATH:
+        if (verbose()) {
+          std::cout << "Ignored TINC_WORKING_PATH from " << src->address()
+                    << ":" << src->port() << std::endl;
+        }
+        break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
       }
@@ -270,23 +276,36 @@ void TincServer::markAvailable() {
 
 void TincServer::onConnection(al::Socket *newConnection) {
 
-  TincMessage msg;
-  msg.set_messagetype(MessageType::STATUS);
-  msg.set_objecttype(ObjectType::GLOBAL);
-  StatusMessage statusMsg;
   {
-    std::unique_lock<std::mutex> lk(mBusyCountLock);
-    if (mBusyCount == 0) {
-      statusMsg.set_status(StatusTypes::AVAILABLE);
-    } else {
-      statusMsg.set_status(StatusTypes::BUSY);
+    TincMessage msg;
+    msg.set_messagetype(MessageType::STATUS);
+    msg.set_objecttype(ObjectType::GLOBAL);
+    StatusMessage statusMsg;
+    {
+      std::unique_lock<std::mutex> lk(mBusyCountLock);
+      if (mBusyCount == 0) {
+        statusMsg.set_status(StatusTypes::AVAILABLE);
+      } else {
+        statusMsg.set_status(StatusTypes::BUSY);
+      }
     }
-  }
 
-  auto *statusDetails = msg.details().New();
-  statusDetails->PackFrom(statusMsg);
-  msg.set_allocated_details(statusDetails);
-  sendTincMessage(&msg, newConnection);
+    auto *statusDetails = msg.details().New();
+    statusDetails->PackFrom(statusMsg);
+    msg.set_allocated_details(statusDetails);
+    sendTincMessage(&msg, newConnection);
+  }
+  {
+    TincMessage msg;
+    msg.set_messagetype(MessageType::TINC_WORKING_PATH);
+    msg.set_objecttype(ObjectType::GLOBAL);
+    TincPath path;
+    path.set_path(al::File::currentPath());
+    auto *statusDetails = msg.details().New();
+    statusDetails->PackFrom(path);
+    msg.set_allocated_details(statusDetails);
+    sendTincMessage(&msg, newConnection);
+  }
 }
 
 std::pair<std::string, uint16_t> TincServer::serverAddress() {
