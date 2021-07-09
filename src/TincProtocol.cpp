@@ -3261,7 +3261,8 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         auto sliceName = dp->createDataSlice(field, dims);
 
         if (mVerbose) {
-          std::cout << commandNumber << "::::: " << sliceName << std::endl;
+          std::cout << "DataPool slice command reply: " << commandNumber << "  "
+                    << sliceName << std::endl;
         }
 
         TincMessage msg;
@@ -3360,9 +3361,9 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   }
   auto bytes = dst->send(buffer, size + sizeof(size_t));
   if (bytes != size + sizeof(size_t)) {
-    buffer[size + 1] = '\0';
-    std::cerr << __FUNCTION__ << ": Error sending: " << buffer << " ("
-              << strerror(errno) << ")" << std::endl;
+    std::cerr << __FUNCTION__ << ": Error sending " << bytes << " expected "
+              << size + sizeof(size_t) << " (" << strerror(errno) << ")"
+              << std::endl;
     free(buffer);
 
 #ifdef AL_WINDOWS
