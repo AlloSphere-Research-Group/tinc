@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
-
+#include <iomanip>
 #include "al/io/al_File.hpp"
 
 #define STB_DEFINE
