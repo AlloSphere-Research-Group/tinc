@@ -208,7 +208,8 @@ public:
    */
   void sweepAsync(Processor &processor,
                   std::vector<std::string> dimensionNames = {},
-                  bool recompute = false);
+                  std::map<std::string, al::VariantValue> dependencies = {},
+                  bool recompute = false, int numThreads = 1);
   /**
    * @brief Interrupts an asynchronous parameter sweep after current computation
    * is done
@@ -469,7 +470,7 @@ protected:
   /// Stores template to generate current path using resolveFilename()
   std::string mCurrentPathTemplate;
 
-  std::unique_ptr<std::thread> mAsyncProcessingThread;
+  std::vector<std::shared_ptr<std::thread>> mAsyncProcessingThreads;
   std::shared_ptr<ParameterSpace> mAsyncPSCopy;
 
   bool mSweepRunning{false};

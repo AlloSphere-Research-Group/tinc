@@ -18,7 +18,11 @@
 
 #include <chrono>
 #include <ctime>
+#ifdef TINC_CPP_17
 #include <filesystem>
+#else
+#include "al/io/al_File.hpp"
+#endif
 #include <iomanip>
 #include <iostream>
 
@@ -633,10 +637,11 @@ void ParameterSpace::sweep(Processor &processor,
   mSweepRunning = false;
 }
 
-void ParameterSpace::sweepAsync(Processor &processor,
-                                std::vector<std::string> dimensions,
-                                bool recompute) {
-  if (mAsyncProcessingThread || mAsyncPSCopy) {
+void ParameterSpace::sweepAsync(
+    Processor &processor, std::vector<std::string> dimensions,
+    std::map<std::string, al::VariantValue> dependencies, bool recompute,
+    int numThreads) {
+  if (mAsyncProcessingThreads.size() > 0 || mAsyncPSCopy) {
     stopSweep();
   }
   mAsyncPSCopy = std::make_shared<ParameterSpace>();
@@ -651,9 +656,13 @@ void ParameterSpace::sweepAsync(Processor &processor,
     mAsyncPSCopy->generateRelativeRunPath = generateRelativeRunPath;
     mAsyncPSCopy->mCurrentPathTemplate = mCurrentPathTemplate;
   }
-  mAsyncProcessingThread = std::make_unique<std::thread>([=, &processor]() {
-    mAsyncPSCopy->sweep(processor, dimensions, {}, recompute);
-  });
+  for (int i = 0; i < numThreads; i++) {
+    // TODO slice the parameter space to split among threads
+    mAsyncProcessingThreads.emplace_back(
+        std::make_shared<std::thread>([=, &processor]() {
+          mAsyncPSCopy->sweep(processor, dimensions, dependencies, recompute);
+        }));
+  }
 }
 
 bool ParameterSpace::createDataDirectories() {
@@ -689,10 +698,10 @@ void ParameterSpace::stopSweep() {
   if (mAsyncPSCopy) {
     mAsyncPSCopy->stopSweep();
   }
-  if (mAsyncProcessingThread) {
-    mAsyncProcessingThread->join();
-    mAsyncProcessingThread = nullptr;
+  for (auto &thread : mAsyncProcessingThreads) {
+    thread->join();
   }
+  mAsyncProcessingThreads.clear();
   mAsyncPSCopy = nullptr;
 }
 
@@ -1751,8 +1760,14 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
     std::vector<FileDependency> cacheFiles;
     if (!cacheRestored) {
       for (auto filename : processor.getOutputFileNames()) {
+
+#ifdef TINC_CPP_17
         uint64_t size = std::filesystem::file_size(
             processor.getOutputDirectory() + filename);
+#else
+        uint64_t size =
+            al::File::sizeFile(processor.getOutputDirectory() + filename);
+#endif
         uint32_t crc = CacheManager::computeCrc32(
             processor.getOutputDirectory() + filename);
         std::string hash = std::to_string(crc);
@@ -1780,10 +1795,22 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
                     << " Cache entry not created. " << std::endl;
           return ret;
         }
+
+#ifdef TINC_CPP_17
         auto modifiedTime = std::filesystem::last_write_time(cacheFilename);
         std::time_t cftime = __tinc_to_time_t(modifiedTime);
         std::stringstream ss;
         ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
+#else
+        al::File f(cacheFilename);
+        struct stat s;
+        std::stringstream ss;
+        if (::stat(cacheFilename.c_str(), &s) == 0) {
+          char time[64];
+          std::strftime(time, 64, "%FT%T%z", std::localtime(&s.st_mtime));
+          ss << time;
+        }
+#endif
 
         cacheFiles.push_back(
             FileDependency{DistributedPath{parameterPrefix + filename, ""},
@@ -1793,8 +1820,10 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
       for (auto filename : processor.getInputFileNames()) {
 
         std::string filePath = processor.getInputDirectory() + filename;
+
+        FileDependency dep;
+#ifdef TINC_CPP_17
         if (std::filesystem::exists(filePath)) {
-          FileDependency dep;
           dep.file = DistributedPath(
               filename, processor.getInputDirectory()); // TODO enrich meta data
           auto modifiedTime = std::filesystem::last_write_time(filePath);
@@ -1802,10 +1831,23 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
 
           std::stringstream ss;
           ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
-          dep.modified = ss.str();
-
           dep.size = std::filesystem::file_size(filePath);
+#else
+        if (al::File::exists(filePath)) {
+          dep.file = DistributedPath(
+              filename, processor.getInputDirectory()); // TODO enrich meta data
+          al::File f(filePath);
+          struct stat s;
+          std::stringstream ss;
+          if (::stat(filePath.c_str(), &s) == 0) {
+            char time[64];
+            std::strftime(time, 64, "%FT%T%z", std::localtime(&s.st_mtime));
+            ss << time;
+          }
+          dep.size = al::File::sizeFile(filePath);
+#endif
 
+          dep.modified = ss.str();
           uint32_t crc = CacheManager::computeCrc32(filename);
           dep.hash = std::to_string(crc);
           entry.sourceInfo.fileDependencies.push_back(dep);

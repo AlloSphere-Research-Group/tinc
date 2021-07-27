@@ -5,6 +5,7 @@ project(TINC)
 option(TINC_BUILD_EXAMPLES "Build TINC Examples" OFF)
 option(TINC_BUILD_TESTS "Build TINC Unit Tests" OFF)
 option(TINC_CODE_COVERAGE "Enable Code coverage for tests" OFF)
+option(TINC_CPP_17 "Use C++17 features" ON)
 
 set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/CacheManager.cpp
@@ -74,9 +75,25 @@ set(TINC_HEADERS
 add_library(tinc ${TINC_SRC} ${TINC_HEADERS})
 
 # binaries are put into the ./bin directory by default
+if(TINC_CPP_17)
+    set(C_STANDARD 17)
+    set_target_properties(tinc PROPERTIES
+      CXX_STANDARD 17
+      CXX_STANDARD_REQUIRED ON
+      )
+  target_compile_definitions(tinc PUBLIC TINC_CPP_17)
+else()
+    set_target_properties(tinc PROPERTIES
+      CXX_STANDARD 14
+      CXX_STANDARD_REQUIRED ON
+      )
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+        # Needed for PathIsRelative
+        target_link_libraries(tinc PUBLIC cfgmgr32.lib Shlwapi.lib)
+    endif()
+endif(TINC_CPP_17)
+
 set_target_properties(tinc PROPERTIES
-  CXX_STANDARD 17
-  CXX_STANDARD_REQUIRED ON
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_LIST_DIR}/bin

@@ -1,10 +1,17 @@
 #include "tinc/CacheManager.hpp"
 
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+
+#ifdef TINC_CPP_17
 #include "al/io/al_File.hpp"
+#include <filesystem>
+#else
+#include "al/io/al_File.hpp"
+#endif
 
 #define STB_DEFINE
 #include "stb.h"
@@ -29,11 +36,18 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
     std::cerr << "Validation of schema failed, here is why: " << e.what()
               << "\n";
   }
+#ifdef TINC_CPP_17
+  if (!std::filesystem::exists(mCachePath.rootPath + mCachePath.relativePath)) {
+#else
   if (!al::File::exists(mCachePath.rootPath + mCachePath.relativePath)) {
+#endif
     al::Dir::make(mCachePath.rootPath + mCachePath.relativePath);
   }
-
+#ifdef TINC_CPP_17
+  if (!std::filesystem::exists(mCachePath.filePath())) {
+#else
   if (!al::File::exists(mCachePath.filePath())) {
+#endif
     writeToDisk();
   } else {
     try {
@@ -41,7 +55,12 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
     } catch (std::exception & /*e*/) {
       std::string backupFilename = mCachePath.filePath() + ".old";
       size_t count = 0;
+#ifdef TINC_CPP_17
+      while (std::filesystem::exists(mCachePath.filePath() +
+                                     std::to_string(count))) {
+#else
       while (al::File::exists(mCachePath.filePath() + std::to_string(count))) {
+#endif
         count++;
       }
       if (!al::File::copy(mCachePath.filePath(),
@@ -179,17 +198,34 @@ CacheManager::findCache(const SourceInfo &querySourceInfo, bool validateFile) {
             if (validateFile) {
               std::string filePath =
                   mCachePath.path() + "/" + fentry.file.filePath();
+#ifdef TINC_CPP_17
               if (!std::filesystem::exists(filePath)) {
+#else
+              if (!al::File::exists(filePath)) {
+#endif
                 std::cerr << "ERROR cached file missing: " << filePath
                           << std::endl;
                 continue;
               }
+#ifdef TINC_CPP_17
               auto modifiedTime = std::filesystem::last_write_time(filePath);
               std::time_t cftime = __tinc_to_time_t(modifiedTime);
               std::stringstream ss;
               ss << std::put_time(std::localtime(&cftime), "%FT%T%z");
 
               uint64_t size = std::filesystem::file_size(filePath);
+#else
+              al::File f(filePath);
+              struct stat s;
+              std::stringstream ss;
+              if (::stat(filePath.c_str(), &s) == 0) {
+                char time[64];
+                std::strftime(time, 64, "%FT%T%z", std::localtime(&s.st_mtime));
+                ss << time;
+              }
+              uint64_t size = al::File::sizeFile(filePath);
+
+#endif
 
               uint32_t crc = computeCrc32(filePath);
               auto cachedCRC = std::stoul(fentry.hash);

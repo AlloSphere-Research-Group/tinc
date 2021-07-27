@@ -37,7 +37,13 @@
 
 #include "al/graphics/al_Image.hpp"
 
+#ifdef TINC_CPP_17
 #include <filesystem>
+#else
+#ifdef AL_WINDOWS
+#include "Shlwapi.h"
+#endif
+#endif
 
 namespace tinc {
 
@@ -68,7 +74,17 @@ protected:
                  std::shared_ptr<al::Image> newData) override {
     bool ret = false;
     std::string filePath;
+
+#ifdef TINC_CPP_17
     if (std::filesystem::path(fileName).is_absolute()) {
+#else
+
+#ifdef AL_WINDOWS
+    if (!PathIsRelative(fileName.c_str())) {
+#else
+    if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
       filePath = fileName;
     } else {
       filePath = getPath() + fileName;
