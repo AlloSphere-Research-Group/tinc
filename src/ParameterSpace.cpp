@@ -11,6 +11,7 @@
 #endif
 
 #if defined(AL_OSX) || defined(AL_LINUX) || defined(AL_EMSCRIPTEN)
+#include <sys/stat.h> // For non C++17 file time functions
 #include <unistd.h>
 #else
 
