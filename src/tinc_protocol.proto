@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/any.proto";
 
-package tinc;
+package tinc_protobuf;
 
 enum MessageType {
   REQUEST = 0;
@@ -157,6 +157,14 @@ enum ParameterConfigureType {
 //    INDEX = 2;
 //}
 
+message DistributedPath {
+  string filename = 1;
+  string relativePath = 2;
+  string rootPath = 3;
+
+  string protocolId = 4;
+}
+
 message ConfigureParameter {
   string id = 1;
   ParameterConfigureType configurationKey = 2;
@@ -168,6 +176,7 @@ enum ParameterSpaceConfigureType {
     REMOVE_PARAMETER = 1;
     CURRENT_TEMPLATE = 2;
     ROOT_PATH = 3;
+    CACHE_PATH = 4;
 }
 
 message ConfigureParameterSpace {

@@ -41,6 +41,7 @@ set(TEST_SOURCES main.cpp
 
 if(BUILD_PYTHON_TESTS)
   list(PREPEND TEST_SOURCES
+    pythonclient_cache.cpp
     pythonclient_barrier.cpp
     pythonclient_diskbuffer.cpp
     pythonclient_datapool.cpp

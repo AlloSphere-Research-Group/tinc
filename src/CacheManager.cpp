@@ -2,9 +2,9 @@
 
 #include <ctime>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
 #ifdef TINC_CPP_17
 #include "al/io/al_File.hpp"
@@ -39,9 +39,9 @@ CacheManager::CacheManager(DistributedPath cachePath) : mCachePath(cachePath) {
 #ifdef TINC_CPP_17
   if (!std::filesystem::exists(mCachePath.rootPath + mCachePath.relativePath)) {
 #else
-  if (!al::File::exists(mCachePath.rootPath + mCachePath.relativePath)) {
+  if (!al::File::exists(mCachePath.path())) {
 #endif
-    al::Dir::make(mCachePath.rootPath + mCachePath.relativePath);
+    al::Dir::make(mCachePath.path());
   }
 #ifdef TINC_CPP_17
   if (!std::filesystem::exists(mCachePath.filePath())) {
@@ -286,6 +286,8 @@ std::string CacheManager::cacheDirectory() {
   }
   return mCachePath.path();
 }
+
+DistributedPath CacheManager::getDistributedPath() { return mCachePath; }
 
 void CacheManager::updateFromDisk() {
   std::unique_lock<std::mutex> lk(mCacheLock);

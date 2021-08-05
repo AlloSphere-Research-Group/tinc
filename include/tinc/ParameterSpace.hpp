@@ -380,6 +380,16 @@ public:
    */
   void disableCache();
 
+  /**
+   * @brief get CacheManager object
+   * @return nullptr if cache not enabled
+   *
+   * Use with care, as some functionality within CacheManager will not
+   * propagate correctly if set from object. As a rule of thumb use this
+   * object to query rather than configure the cache manager.
+   */
+  std::shared_ptr<CacheManager> getCacheManager() { return mCacheManager; }
+
   void print(std::ostream &stream = std::cout);
 
   /**

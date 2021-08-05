@@ -148,6 +148,11 @@ public:
   std::string cacheDirectory();
 
   /**
+   * @brief Get current DistributedPath
+   */
+  DistributedPath getDistributedPath();
+
+  /**
    * @brief Read and validate cache file from disk
    *
    * This replaces the current in memory cache, so make sure you call

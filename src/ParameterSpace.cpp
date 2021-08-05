@@ -1001,6 +1001,7 @@ std::string ParameterSpace::getRootPath() { return mRootPath; }
 void ParameterSpace::setRootPath(std::string rootPath) {
   if (mCacheManager && rootPath != mRootPath &&
       al::File::conformDirectory(rootPath) != mRootPath) {
+    // TODO should we do it instead of warning?
     std::cout << __FILE__
               << "WARNING: Root path changed for parameter space. But cache "
                  "enabled. You must call enableCache() to adjust root path "

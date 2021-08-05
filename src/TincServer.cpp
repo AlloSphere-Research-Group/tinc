@@ -14,6 +14,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 using namespace tinc;
+using namespace tinc_protobuf;
 
 TincServer::TincServer() {
   mVersion = TINC_PROTOCOL_VERSION;

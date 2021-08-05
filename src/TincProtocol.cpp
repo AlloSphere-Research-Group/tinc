@@ -18,6 +18,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
 using namespace tinc;
+using namespace tinc_protobuf;
 
 // TODO namespace these functions to avoid potential clashes
 TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
@@ -669,21 +670,50 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
   msg2.set_messagetype(MessageType::CONFIGURE);
   msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
 
-  ConfigureParameterSpace confMessage2;
-  confMessage2.set_id(ps->getId());
-  confMessage2.set_configurationkey(ParameterSpaceConfigureType::ROOT_PATH);
+  {
+    ConfigureParameterSpace confMessage2;
+    confMessage2.set_id(ps->getId());
+    confMessage2.set_configurationkey(ParameterSpaceConfigureType::ROOT_PATH);
 
-  ParameterValue valuesMessage2;
-  valuesMessage2.set_valuestring(ps->getRootPath());
-  valuesMessage2.set_nctype(al::VariantType::VARIANT_STRING);
+    ParameterValue valuesMessage2;
+    valuesMessage2.set_valuestring(ps->getRootPath());
+    valuesMessage2.set_nctype(al::VariantType::VARIANT_STRING);
 
-  auto confValue2 = confMessage2.configurationvalue().New();
-  confValue2->PackFrom(valuesMessage2);
-  confMessage2.set_allocated_configurationvalue(confValue2);
+    auto confValue2 = confMessage2.configurationvalue().New();
+    confValue2->PackFrom(valuesMessage2);
+    confMessage2.set_allocated_configurationvalue(confValue2);
 
-  google::protobuf::Any *detailsAny2 = msg2.details().New();
-  detailsAny2->PackFrom(confMessage2);
-  msg2.set_allocated_details(detailsAny2);
+    google::protobuf::Any *detailsAny2 = msg2.details().New();
+    detailsAny2->PackFrom(confMessage2);
+    msg2.set_allocated_details(detailsAny2);
+  }
+
+  {
+    auto cm = ps->getCacheManager();
+    if (cm) {
+      ConfigureParameterSpace confMessage2;
+      confMessage2.set_id(ps->getId());
+      confMessage2.set_configurationkey(
+          ParameterSpaceConfigureType::CACHE_PATH);
+
+      tinc_protobuf::DistributedPath valuesMessage2;
+
+      auto path = cm->getDistributedPath();
+      valuesMessage2.set_filename(path.filename);
+      valuesMessage2.set_relativepath(path.relativePath);
+      valuesMessage2.set_rootpath(path.rootPath);
+      valuesMessage2.set_protocolid(path.protocolId);
+
+      auto confValue2 = confMessage2.configurationvalue().New();
+      confValue2->PackFrom(valuesMessage2);
+      confMessage2.set_allocated_configurationvalue(confValue2);
+
+      google::protobuf::Any *detailsAny2 = msg2.details().New();
+      detailsAny2->PackFrom(confMessage2);
+      msg2.set_allocated_details(detailsAny2);
+    }
+  }
+
   confMessages.push_back(msg2);
 
   return confMessages;
@@ -2260,7 +2290,7 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
   details.set_id(dp->getId());
   details.set_parameterspaceid(dp->getParameterSpace().getId());
   details.set_cachedirectory(dp->getCacheDirectory());
-  details.set_type((::tinc::DataPoolTypes)dp->getType());
+  details.set_type((tinc_protobuf::DataPoolTypes)dp->getType());
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
@@ -2422,6 +2452,14 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
           auto curTempl = val.valuestring();
 
           ps->setRootPath(curTempl);
+          return true;
+        }
+      } else if (command == ParameterSpaceConfigureType::CACHE_PATH) {
+        if (conf.configurationvalue().Is<tinc_protobuf::DistributedPath>()) {
+          tinc_protobuf::DistributedPath path;
+          conf.configurationvalue().UnpackTo(&path);
+
+          ps->enableCache(path.relativepath());
           return true;
         }
       }
