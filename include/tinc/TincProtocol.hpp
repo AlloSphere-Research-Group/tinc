@@ -247,7 +247,8 @@ public:
    */
   void setRootMapEntry(std::string serverPath, std::string clientPath,
                        std::string host = "") {
-    mRootPathMap[host].push_back({serverPath, clientPath});
+    mRootPathMap[host].push_back({al::File::conformDirectory(serverPath),
+                                  al::File::conformDirectory(clientPath)});
   };
 
   void print(std::ostream &stream = std::cout);

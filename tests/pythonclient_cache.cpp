@@ -31,8 +31,9 @@ tclient.request_parameter_spaces()
 while tclient.get_parameter_space("ps") == None:
     time.sleep(0.1)
 
+# Wait for things to settle
 ps = tclient.get_parameter_space("ps")
-
+time.sleep(0.5)
 test_output = [ps._cache_manager._cache_root, ps._cache_manager._cache_dir,  ps._cache_manager._metadata_file ]
 
 #time.sleep(0.1)

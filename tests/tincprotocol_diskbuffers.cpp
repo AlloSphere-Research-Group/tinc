@@ -13,7 +13,7 @@
 
 using namespace tinc;
 
-TEST(DiskBuffer, DiskBufferImage) {
+TEST(DiskBufferProtocol, DiskBufferImage) {
   TincServer tserver;
   //  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
@@ -79,7 +79,7 @@ TEST(DiskBuffer, DiskBufferImage) {
   tserver.stop();
 }
 
-TEST(DiskBuffer, DiskBufferJson) {
+TEST(DiskBufferProtocol, DiskBufferJson) {
   TincServer tserver;
   // tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
@@ -132,7 +132,7 @@ TEST(DiskBuffer, DiskBufferJson) {
   tserver.stop();
 }
 
-TEST(DiskBuffer, DiskBufferNetCDFData) {
+TEST(DiskBufferProtocol, DiskBufferNetCDFData) {
   TincServer tserver;
   // tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
@@ -184,6 +184,49 @@ TEST(DiskBuffer, DiskBufferNetCDFData) {
 
     auto &clientVector = ncDbData->getVector<float>();
     EXPECT_EQ(v, clientVector);
+  }
+
+  tclient.stop();
+  tserver.stop();
+}
+
+TEST(DiskBufferProtocol, DiskBufferRootPathMap) {
+  TincServer tserver;
+  //  tserver.setVerbose(true);
+  EXPECT_TRUE(tserver.start());
+
+  DiskBufferImage db{"db", "test.png", "db_path", "root_path"};
+
+  tserver.setRootMapEntry("root_path", "client_root_path");
+  tserver << db;
+
+  TincClient tclient;
+  EXPECT_TRUE(tclient.start());
+
+  bool timeout = false;
+  int counter = 0;
+
+  while (!tclient.isConnected() && !timeout) {
+    al::al_sleep(0.001); // Give time to connect
+    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
+      std::cerr << "Timeout" << std::endl;
+      break;
+    }
+  }
+
+  EXPECT_TRUE(tclient.isConnected());
+  tclient.requestDiskBuffers();
+
+  al::al_sleep(0.5); // Give time to connect
+
+  auto *dbClient = tclient.getDiskBuffer("db");
+  EXPECT_NE(dbClient, nullptr);
+  if (dbClient) {
+    EXPECT_EQ(dbClient->getBaseFileName(), "test.png");
+    EXPECT_FALSE(
+        al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
+    EXPECT_TRUE(al::File::isSamePath(dbClient->getFullPath(),
+                                     "client_root_path/db_path"));
   }
 
   tclient.stop();

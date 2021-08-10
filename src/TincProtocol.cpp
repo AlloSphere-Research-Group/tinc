@@ -2269,7 +2269,20 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
   tinc_protobuf::DistributedPath *path = new tinc_protobuf::DistributedPath;
   path->set_filename(db->getBaseFileName());
   path->set_relativepath(db->getRelativePath());
-  path->set_rootpath(db->getRootPath());
+  std::string rootPath = db->getRootPath();
+  for (auto &mapEntry : mRootPathMap) {
+    // FIXME use hostname to check
+    if (mapEntry.first == "" || mapEntry.first == "hostname") {
+      for (auto pathMap : mapEntry.second) {
+        if (al::File::isSamePath(pathMap.first, rootPath)) {
+          rootPath = pathMap.second;
+          goto done_checking;
+        }
+      }
+    }
+  }
+done_checking:
+  path->set_rootpath(rootPath);
 
   details.set_allocated_path(path);
 
