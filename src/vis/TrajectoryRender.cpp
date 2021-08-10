@@ -7,8 +7,9 @@
 using namespace tinc;
 
 TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
-                                   std::string path, uint16_t size)
-    : SceneObject(id, filename, path, size),
+                                   std::string relPath, std::string rootPath,
+                                   uint16_t size)
+    : SceneObject(id, filename, relPath, rootPath, size),
       trajectoryWidth("width", id, 0.1, 0.0001, 0.5),
       alpha("alpha", id, 0.8, 0.0, 1.0) {
 

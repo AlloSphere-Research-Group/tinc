@@ -237,6 +237,19 @@ public:
 
   Status getStatus();
 
+  /**
+   * @brief setRootMapEntry
+   * @param serverPath
+   * @param clientPath
+   * @param host
+   *
+   * This function is only generally useful if set for the server.
+   */
+  void setRootMapEntry(std::string serverPath, std::string clientPath,
+                       std::string host = "") {
+    mRootPathMap[host].push_back({serverPath, clientPath});
+  };
+
   void print(std::ostream &stream = std::cout);
 
 protected:
@@ -374,6 +387,10 @@ protected:
 
   std::mutex mBusyCountLock;
   uint32_t mBusyCount = 0;
+
+  // Root path mapping
+  std::map<std::string, std::vector<std::pair<std::string, std::string>>>
+      mRootPathMap;
 
   bool mVerbose{false};
 };

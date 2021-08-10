@@ -51,7 +51,8 @@ template <class DataType>
 class DiskBuffer : public BufferManager<DataType>, public DiskBufferAbstract {
 public:
   DiskBuffer(std::string id = "", std::string fileName = "",
-             std::string path = "", uint16_t size = 2);
+             std::string relPath = "", std::string rootPath = "",
+             uint16_t size = 2);
   /**
    * @brief updateData
    * @param filename
@@ -79,20 +80,14 @@ protected:
 // ----------------------------------
 template <class DataType>
 DiskBuffer<DataType>::DiskBuffer(std::string id, std::string fileName,
-                                 std::string path, uint16_t size)
+                                 std::string relPath, std::string rootPath,
+                                 uint16_t size)
     : BufferManager<DataType>(size) {
   mId = id;
   // TODO there should be a check through TincProtocol to make sure names are
-  // unique
-  m_baseFileName = fileName;
-  if (path.size() > 0) {
-    m_path = al::File::conformDirectory(path);
-    if (!al::File::exists(m_path)) {
-      al::Dir::make(m_path);
-    }
-  } else {
-    m_path = al::File::currentPath();
-  }
+  // unique and disk buffers don't clash with each other
+  m_distPath.filename = fileName;
+  m_distPath.setPaths(relPath, rootPath);
 }
 
 template <class DataType>

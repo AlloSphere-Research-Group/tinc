@@ -33,10 +33,11 @@
  * authors: Andres Cabrera
  */
 
-#include "al/ui/al_Parameter.hpp"
+#include "tinc/DistributedPath.hpp"
 #include "tinc/IdObject.hpp"
 
 #include "al/io/al_File.hpp"
+#include "al/ui/al_Parameter.hpp"
 
 #include <string>
 
@@ -64,11 +65,16 @@ public:
    */
   virtual bool loadData(std::string filename, bool notify = true) = 0;
 
-  std::string getBaseFileName() { return m_baseFileName; }
-  void setBaseFileName(std::string name) { m_baseFileName = name; }
+  std::string getBaseFileName() { return m_distPath.filename; }
+  void setBaseFileName(std::string name) { m_distPath.filename = name; }
 
-  void setPath(std::string path) { m_path = path; }
-  std::string getPath() { return m_path; }
+  void setRelativePath(std::string path) { m_distPath.relativePath = path; }
+  std::string getRelativePath() { return m_distPath.relativePath; }
+
+  void setRootPath(std::string path) { m_distPath.rootPath = path; }
+  std::string getRootPath() { return m_distPath.rootPath; }
+
+  std::string getFullPath() { return m_distPath.path(); }
 
   // TODO implement these
   void cleanupRoundRobinFiles() {}
@@ -80,6 +86,7 @@ public:
   void useFileLock(bool use = true, bool clearLocks = true) {
     // TODO file locks
   }
+
   std::string getFilenameForWriting() {
     // TODO check file lock
     std::string outName = makeNextFileName();
@@ -104,8 +111,9 @@ public:
 
 protected:
   std::string m_fileName;
-  std::string m_baseFileName;
-  std::string m_path;
+
+  DistributedPath m_distPath;
+
   std::shared_ptr<al::ParameterString> m_trigger;
 
   std::mutex m_writeLock;
@@ -117,7 +125,7 @@ protected:
   std::vector<std::function<void(bool)>> mNotifyCallbacks;
 
   std::string makeNextFileName() {
-    std::string outName = m_baseFileName;
+    std::string outName = m_distPath.filename;
     if (m_roundRobinSize > 0) {
       if (m_roundRobinCounter >= m_roundRobinSize) {
         m_roundRobinCounter = 0;
@@ -129,12 +137,13 @@ protected:
   }
 
   std::string makeFileName(uint64_t index) {
-    auto ext = al::File::extension(m_baseFileName);
+    auto ext = al::File::extension(m_distPath.filename);
     std::string newName;
     if (ext.size() > 0) {
-      newName = m_baseFileName.substr(0, m_baseFileName.size() - ext.size());
+      newName = m_distPath.filename.substr(0, m_distPath.filename.size() -
+                                                  ext.size());
     } else {
-      newName = m_baseFileName;
+      newName = m_distPath.filename;
     }
     newName += "_" + std::to_string(index) + ext;
     return newName;

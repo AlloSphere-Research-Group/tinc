@@ -43,26 +43,31 @@ while tclient.get_disk_buffer("image") == None:
     time.sleep(0.1)
 
 db = tclient.get_disk_buffer("image")
+
+while db.get_current_filename() == '':
+    time.sleep(0.1)
+
 initial_file = db.get_current_filename()
 
 im = db.data
-w = 6
-h = 5
+w = im.width
+h = im.height
+print(w,h)
 
 match = True
 for i,b in enumerate(im.tobytes()):
     if b != int(255 * (i/(w * h * 4))):
-        print(f'{b} != {int(255 * (i/w * h * 4))}')
+        print(f'index: {i} failed: {b} != {int(255 * (i/w * h * 4))}')
         match = False
         break
 
-w = 8
-h = 9
-pixels = [[[255* j/w, 255* j/w,255*  i/h, 255* i/h] for j in range(w)] for i in range(h)]
+new_w = 8
+new_h = 9
+pixels = [[[255* j/new_w, 255* j/new_w,255*  i/new_h, 255* i/new_h] for j in range(new_w)] for i in range(new_h)]
 
 db.write_pixels(pixels)
 
-test_output = [db.get_path(), db.get_base_filename(),initial_file, im.width, im.height, match]
+test_output = [db.get_relative_path(), db.get_base_filename(),initial_file, w, h, match]
 #print(pixels)
 
 time.sleep(0.1)
@@ -78,7 +83,7 @@ tclient.stop()
 
   EXPECT_EQ(output.size(), 6);
 
-  EXPECT_EQ(output[0], imageBuffer.getPath());
+  EXPECT_EQ(output[0], imageBuffer.getRelativePath());
   EXPECT_EQ(output[1], imageBuffer.getBaseFileName());
   EXPECT_EQ(output[2], imageBuffer.getCurrentFileName());
   EXPECT_EQ(output[3], w);
@@ -142,7 +147,7 @@ db.data = [5,6,7,8]
 db.data = [0,1,2,3,4,5]
 db.data = [5,6,7,8, 9]
 #print(db.data)
-test_output = [db.get_path(), db.get_base_filename(), db.get_current_filename(), olddata]
+test_output = [db.get_relative_path(), db.get_base_filename(), db.get_current_filename(), olddata]
 
 #print(type(db.data))
 #print(type(db.data[0]))
@@ -161,7 +166,7 @@ tclient.stop()
 
   EXPECT_EQ(output.size(), 4);
 
-  EXPECT_EQ(output[0], ncBuffer.getPath());
+  EXPECT_EQ(output[0], ncBuffer.getRelativePath());
   EXPECT_EQ(output[1], ncBuffer.getBaseFileName());
   EXPECT_EQ(output[2], ncBuffer.getCurrentFileName());
 

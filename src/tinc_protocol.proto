@@ -79,6 +79,14 @@ message ObjectId {
   string id = 1;
 }
 
+message DistributedPath {
+  string filename = 1;
+  string relativePath = 2;
+  string rootPath = 3;
+
+  string protocolId = 4;
+}
+
 // Parameter data message
 message ParameterValue {
 // This should be oneof, but 'repeated'is not allowed in oneof
@@ -121,8 +129,7 @@ message RegisterDataPool {
 message RegisterDiskBuffer {
   string id = 1;
   DiskBufferType type = 2;
-  string baseFilename = 3;
-  string path = 4;
+  DistributedPath path = 3;
 }
 
 message RegisterParameterSpace {
@@ -156,14 +163,6 @@ enum ParameterConfigureType {
 //    ID = 1;
 //    INDEX = 2;
 //}
-
-message DistributedPath {
-  string filename = 1;
-  string relativePath = 2;
-  string rootPath = 3;
-
-  string protocolId = 4;
-}
 
 message ConfigureParameter {
   string id = 1;

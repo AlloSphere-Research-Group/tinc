@@ -1701,6 +1701,7 @@ CacheEntry ParameterSpace::cacheEntryForProcessor(Processor &processor) {
     }
     entry.sourceInfo.dependencies.push_back(std::move(arg));
   }
+
   return entry;
 }
 
@@ -1715,7 +1716,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
   if (mCacheManager) {
     // Create sourceInfo section for cache entr
     entry = cacheEntryForProcessor(processor);
-    auto cacheFiles = mCacheManager->findCache(entry.sourceInfo);
+    auto cacheFiles = mCacheManager->findCache(entry.sourceInfo, false);
 
     // TODO caching is currently done by copying. There should also be an option
     // for in-place caching.

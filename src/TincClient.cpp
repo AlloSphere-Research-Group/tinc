@@ -140,6 +140,9 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
       case MessageType::STATUS:
         processStatusMessage(&tincMessage);
         break;
+      case MessageType::TINC_WORKING_PATH:
+        processWorkingPathMessage(&tincMessage);
+        break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
         break;
@@ -194,6 +197,19 @@ void TincClient::processStatusMessage(void *message) {
       std::cerr << "ERROR: non global status messages not supported"
                 << std::endl;
     }
+  }
+}
+void TincClient::processWorkingPathMessage(void *message) {
+
+  auto msg = static_cast<TincMessage *>(message);
+  auto details = msg->details();
+  //    if (msg->objecttype() == ObjectType::GLOBAL)
+  if (details.Is<TincPath>()) {
+    TincPath path;
+    details.UnpackTo(&path);
+    mWorkingPath = path.path();
+  } else {
+    std::cerr << "Unexpected payload in TINC_WORKING_PATH message" << std::endl;
   }
 }
 

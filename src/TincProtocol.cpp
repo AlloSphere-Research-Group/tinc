@@ -2080,17 +2080,19 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
     }
   }
   auto path = command.path();
-  auto baseFilename = command.basefilename();
+  auto baseFilename = path.filename();
+  auto relPath = path.relativepath();
+  auto rootPath = path.rootpath();
 
   if (command.type() == DiskBufferType::JSON) {
     mLocalDBs.emplace_back(
-        std::make_shared<DiskBufferJson>(id, baseFilename, path));
+        std::make_shared<DiskBufferJson>(id, baseFilename, relPath, rootPath));
   } else if (command.type() == DiskBufferType::NETCDF) {
-    mLocalDBs.emplace_back(
-        std::make_shared<DiskBufferNetCDFData>(id, baseFilename, path));
+    mLocalDBs.emplace_back(std::make_shared<DiskBufferNetCDFData>(
+        id, baseFilename, relPath, rootPath));
   } else if (command.type() == DiskBufferType::IMAGE) {
     mLocalDBs.emplace_back(
-        std::make_shared<DiskBufferImage>(id, baseFilename, path));
+        std::make_shared<DiskBufferImage>(id, baseFilename, relPath, rootPath));
   } else {
 
     std::cout << __FUNCTION__ << ": DiskBuffer type not supported."
@@ -2263,11 +2265,13 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
     type = DiskBufferType::BINARY;
   }
   details.set_type(type);
-  details.set_basefilename(db->getBaseFileName());
-  // TODO separate node path from relative path. Perhaps through a global path
-  // map?
-  std::string path = db->getPath();
-  details.set_path(path);
+
+  tinc_protobuf::DistributedPath *path = new tinc_protobuf::DistributedPath;
+  path->set_filename(db->getBaseFileName());
+  path->set_relativepath(db->getRelativePath());
+  path->set_rootpath(db->getRootPath());
+
+  details.set_allocated_path(path);
 
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);

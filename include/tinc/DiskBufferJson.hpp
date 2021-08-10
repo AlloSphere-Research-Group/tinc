@@ -42,38 +42,42 @@ namespace tinc {
 class DiskBufferJson : public DiskBuffer<nlohmann::json> {
 public:
   DiskBufferJson(std::string id = "", std::string fileName = "",
-                 std::string path = "", uint16_t size = 2)
-      : DiskBuffer<nlohmann::json>(id, fileName, path, size) {}
+                 std::string relPath = "", std::string rootPath = "",
+                 uint16_t size = 2)
+      : DiskBuffer<nlohmann::json>(id, fileName, relPath, rootPath, size) {}
 
 protected:
   bool parseFile(std::string fileName,
                  std::shared_ptr<nlohmann::json> newData) override {
     bool ret = false;
     try {
-      std::ifstream file(getPath() + fileName);
+      std::ifstream file(getFullPath() + fileName);
       if (file.good()) {
         //          std::cout << "file" << std::endl;
         *newData = nlohmann::json::parse(file);
         ret = true;
       }
     } catch (std::exception & /*e*/) {
-      std::cerr << "ERROR: parsing json file" << std::endl;
+      std::cerr << "ERROR: parsing json file " << getFullPath() + fileName
+                << std::endl;
       ret = false;
     }
     return ret;
   }
 
   bool encodeData(std::string fileName, nlohmann::json &newData) override {
-    std::ofstream of(getPath() + fileName, std::ofstream::out);
+    std::ofstream of(getFullPath() + fileName, std::ofstream::out);
     if (of.good()) {
       of << newData.dump(2);
       of.close();
       if (!of.good()) {
-        std::cout << "Error writing json file." << std::endl;
+        std::cout << "Error writing json file." << getFullPath() + fileName
+                  << std::endl;
         return false;
       }
     } else {
-      std::cout << "Error creating json file" << std::endl;
+      std::cout << "Error creating json file" << getFullPath() + fileName
+                << std::endl;
       return false;
     }
 

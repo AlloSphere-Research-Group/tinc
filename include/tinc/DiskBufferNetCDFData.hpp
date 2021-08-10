@@ -108,10 +108,11 @@ private:
 class DiskBufferNetCDFData : public DiskBuffer<NetCDFData> {
 public:
   DiskBufferNetCDFData(std::string id, std::string fileName = "",
-                       std::string path = "", uint16_t size = 2)
-      : DiskBuffer<NetCDFData>(id, fileName, path, size) {
+                       std::string relPath = "", std::string rootPath = "",
+                       uint16_t size = 2)
+      : DiskBuffer<NetCDFData>(id, fileName, relPath, rootPath, size) {
 #ifndef TINC_HAS_NETCDF
-    std::cerr << "ERROR: DiskBufferNetCDFDouble built wihtout NetCDF support"
+    std::cerr << "ERROR: DiskBufferNetCDFDouble built without NetCDF support"
               << std::endl;
     assert(0 == 1);
 #endif

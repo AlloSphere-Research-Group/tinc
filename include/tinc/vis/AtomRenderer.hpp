@@ -92,8 +92,9 @@ typedef struct {
 class AtomRenderer : public SceneObject {
 public:
   AtomRenderer(std::string id, std::string filename = "positions.nc",
-               std::string path = "", uint16_t size = 2)
-      : SceneObject(id, filename, path, size),
+               std::string relPath = "", std::string rootPath = "",
+               uint16_t size = 2)
+      : SceneObject(id, filename, relPath, rootPath, size),
         mDataScale("dataScale", id, {1.0, 1.0, 1.0}),
         mAtomMarkerSize("atomMarkerSize", id, 0.4, 0.0, 5.0f),
         mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0f, 0.0f, 1.0f) {
@@ -280,7 +281,8 @@ public:
   al::Parameter mClippedMultiplier;
 
   SlicingAtomRenderer(std::string id, std::string filename = "positions.nc",
-                      std::string path = "", uint16_t size = 2);
+                      std::string relPath = "", std::string rootPath = "",
+                      uint16_t size = 2);
 
   // Positioned voice callbacks
   virtual void init() override;

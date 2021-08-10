@@ -107,9 +107,10 @@ bool DiskBufferNetCDFData::parseFile(std::string fileName,
   int ncid, retval;
 
 #ifdef TINC_HAS_NETCDF
-  if ((retval = nc_open((getPath() + fileName).c_str(), NC_NOWRITE, &ncid))) {
+  if ((retval =
+           nc_open((getFullPath() + fileName).c_str(), NC_NOWRITE, &ncid))) {
     std::cout << __FILE__ << ":" << __LINE__
-              << " ERROR opening netcdf file:" << getPath() + fileName
+              << " ERROR opening netcdf file:" << getFullPath() + fileName
               << std::endl;
     goto done;
   }
@@ -363,7 +364,7 @@ bool DiskBufferNetCDFData::parseFile(std::string fileName,
   ret = true;
   if ((retval = nc_close(ncid))) {
     std::cerr << __FILE__ << ":" << __LINE__ << "ERROR closing NetCDF file "
-              << getPath() + fileName << std::endl;
+              << getFullPath() + fileName << std::endl;
   }
 done:
 #endif
@@ -444,7 +445,7 @@ bool DiskBufferNetCDFData::encodeData(std::string fileName,
   nc_type atttype;
   int dimids[1];
 
-  if ((retval = nc_create((getPath() + fileName).c_str(),
+  if ((retval = nc_create((getFullPath() + fileName).c_str(),
                           NC_CLOBBER | NC_NETCDF4, &ncid))) {
     goto done;
   }

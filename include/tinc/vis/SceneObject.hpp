@@ -19,7 +19,8 @@ namespace tinc {
 class SceneObject : public al::PositionedVoice /*, public IdObject*/ {
 public:
   SceneObject(std::string id = "", std::string filename = "",
-              std::string path = "", uint16_t size = 2);
+              std::string relPath = "", std::string rootPath = "",
+              uint16_t size = 2);
 
   void registerWithTinc(TincProtocol &server);
 

@@ -60,7 +60,8 @@ tclient.stop()
   EXPECT_EQ(results.size(), 1);
   EXPECT_EQ(results[0]["id"], "dp");
   EXPECT_EQ(results[0]["parameter_space_id"], "ps");
-  EXPECT_TRUE(al::File::isSamePath(results[0]["slice_cache_dir"], "cacheDir/"));
+  EXPECT_TRUE(
+      al::File::isSamePath(results[0]["slice_cache_dir"], "sliceCache/"));
 
   tserver.stop();
 }

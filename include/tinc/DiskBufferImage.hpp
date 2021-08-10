@@ -50,8 +50,9 @@ namespace tinc {
 class DiskBufferImage : public DiskBuffer<al::Image> {
 public:
   DiskBufferImage(std::string id, std::string fileName = "",
-                  std::string path = "", uint16_t size = 2)
-      : DiskBuffer<al::Image>(id, fileName, path, size) {}
+                  std::string relPath = "", std::string rootPath = "",
+                  uint16_t size = 2)
+      : DiskBuffer<al::Image>(id, fileName, relPath, rootPath, size) {}
 
   bool writePixels(unsigned char *newData, int width, int height,
                    int numComponents = 3, std::string filename = "") {
@@ -59,10 +60,10 @@ public:
     if (filename.size() == 0) {
       filename = getFilenameForWriting();
     }
-    if (!al::Image::saveImage(getPath() + filename, newData, width, height,
+    if (!al::Image::saveImage(getFullPath() + filename, newData, width, height,
                               false, numComponents)) {
       std::cerr << __FILE__ << ":" << __LINE__
-                << " ERROR writing image file: " << getPath() + filename
+                << " ERROR writing image file: " << getFullPath() + filename
                 << std::endl;
     }
 
@@ -87,7 +88,7 @@ protected:
 #endif
       filePath = fileName;
     } else {
-      filePath = getPath() + fileName;
+      filePath = getFullPath() + fileName;
     }
     if (newData->load(filePath)) {
       BufferManager<al::Image>::doneWriting(newData);
@@ -100,11 +101,25 @@ protected:
 
   bool encodeData(std::string fileName, al::Image &newData) override {
     bool ret = false;
+    std::string filePath;
+#ifdef TINC_CPP_17
+    if (std::filesystem::path(fileName).is_absolute()) {
+#else
 
-    if (newData.save(getPath() + fileName)) {
+#ifdef AL_WINDOWS
+    if (!PathIsRelative(fileName.c_str())) {
+#else
+    if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
+      filePath = fileName;
+    } else {
+      filePath = getFullPath() + fileName;
+    }
+    if (newData.save(filePath)) {
       ret = true;
     } else {
-      std::cerr << "Error writing Image: " << m_path + m_fileName << std::endl;
+      std::cerr << "Error writing Image: " << filePath << std::endl;
     }
     return ret;
   }

@@ -415,7 +415,7 @@ TEST(Cache, CRC) {
 
   auto entry = ps.cacheEntryForProcessor(processor);
 
-  auto cacheFiles = cmanage.findCache(entry.sourceInfo);
+  auto cacheFiles = cmanage.findCache(entry.sourceInfo, false);
 
   EXPECT_EQ(cacheFiles.size(), 1);
 

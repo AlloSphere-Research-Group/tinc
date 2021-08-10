@@ -18,7 +18,7 @@ TEST(DiskBuffer, DiskBufferImage) {
   //  tserver.setVerbose(true);
   EXPECT_TRUE(tserver.start());
 
-  DiskBufferImage db{"db", "test.png", "db_path"};
+  DiskBufferImage db{"db", "test.png", "db_path", "root_path"};
 
   // generating example image
   std::vector<unsigned char> pix;
@@ -60,8 +60,8 @@ TEST(DiskBuffer, DiskBufferImage) {
   EXPECT_NE(dbClient, nullptr);
   if (dbClient) {
     EXPECT_EQ(dbClient->getBaseFileName(), "test.png");
-    EXPECT_TRUE(al::File::isSamePath(dbClient->getPath(),
-                                     al::File::currentPath() + "db_path"));
+    EXPECT_TRUE(
+        al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
     EXPECT_EQ(dbClient->getCurrentFileName(), "test.png");
     auto imageDbData = static_cast<DiskBufferImage *>(dbClient)->get();
     auto array = imageDbData->array();
@@ -85,7 +85,7 @@ TEST(DiskBuffer, DiskBufferJson) {
   EXPECT_TRUE(tserver.start());
 
   // TODO create disk buffers of different types
-  DiskBufferJson db{"db", "test.json", "db_path"};
+  DiskBufferJson db{"db", "test.json", "db_path", "root_path"};
 
   nlohmann::json j;
   j = {2, 4, 6, 7};
@@ -117,8 +117,8 @@ TEST(DiskBuffer, DiskBufferJson) {
 
   if (dbClient) {
     EXPECT_EQ(dbClient->getBaseFileName(), "test.json");
-    EXPECT_TRUE(al::File::isSamePath(dbClient->getPath(),
-                                     al::File::currentPath() + "db_path"));
+    EXPECT_TRUE(
+        al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
     EXPECT_EQ(dbClient->getCurrentFileName(), "test.json");
     auto jsonDbData = static_cast<DiskBufferJson *>(dbClient)->get();
     EXPECT_EQ(jsonDbData->size(), j.size());
@@ -138,7 +138,7 @@ TEST(DiskBuffer, DiskBufferNetCDFData) {
   EXPECT_TRUE(tserver.start());
 
   // TODO create disk buffers of different types
-  DiskBufferNetCDFData db{"db", "test.nc", "db_path"};
+  DiskBufferNetCDFData db{"db", "test.nc", "db_path", "root_path"};
 
   NetCDFData data;
   data.setType(NetCDFTypes::FLOAT);
@@ -176,8 +176,8 @@ TEST(DiskBuffer, DiskBufferNetCDFData) {
 
   if (dbClient) {
     EXPECT_EQ(dbClient->getBaseFileName(), "test.nc");
-    EXPECT_TRUE(al::File::isSamePath(dbClient->getPath(),
-                                     al::File::currentPath() + "db_path"));
+    EXPECT_TRUE(
+        al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
     EXPECT_EQ(dbClient->getCurrentFileName(), "test.nc");
     auto ncDbData = static_cast<DiskBufferNetCDFData *>(dbClient)->get();
     EXPECT_EQ(ncDbData->getType(), NetCDFTypes::FLOAT);

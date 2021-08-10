@@ -2,10 +2,11 @@
 
 using namespace tinc;
 
-SceneObject::SceneObject(std::string id, std::string filename, std::string path,
+SceneObject::SceneObject(std::string id, std::string filename,
+                         std::string relPath, std::string rootPath,
                          uint16_t size)
     : scale("scale", id, al::Vec3f(1.0f)),
-      mBuffer(id + "_buffer", filename, path, size) {
+      mBuffer(id + "_buffer", filename, relPath, rootPath, size) {
   //  setId(id);
   mBuffer.enableRoundRobin(size);
   *this << scale;

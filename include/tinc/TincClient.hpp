@@ -96,6 +96,8 @@ public:
    */
   bool waitForServer(float timeoutsec = 0.0);
 
+  std::string getWorkingPath();
+
   void setVerbose(bool verbose = true);
   bool verbose() { return TincProtocol::mVerbose; }
 
@@ -104,6 +106,7 @@ protected:
   void processBarrierUnlock(al::Socket *src, uint64_t barrierConsecutive);
 
   void processStatusMessage(void *message);
+  void processWorkingPathMessage(void *message);
 
   virtual void onConnection(al::Socket *newConnection) { synchronize(); };
 
@@ -114,6 +117,8 @@ private:
   std::mutex mBarrierQueuesLock;
 
   bool mWaitForServer{false};
+
+  std::string mWorkingPath;
 
   Status mServerStatus;
 };

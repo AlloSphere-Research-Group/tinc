@@ -12,7 +12,8 @@ namespace tinc {
 class TrajectoryRender : public SceneObject {
 public:
   TrajectoryRender(std::string id, std::string filename = "trajectory.nc",
-                   std::string path = "", uint16_t size = 2);
+                   std::string path = "", std::string rootPath = "",
+                   uint16_t size = 2);
 
   typedef enum {
     DATA_POS_REL = 0,

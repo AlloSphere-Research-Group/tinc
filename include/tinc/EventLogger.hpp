@@ -1,8 +1,8 @@
-#ifndef DISTRIBUTEDPATH_HPP
-#define DISTRIBUTEDPATH_HPP
+#ifndef EVENTLOGGER_HPP
+#define EVENTLOGGER_HPP
 
 /*
- * Copyright 2021 AlloSphere Research Group
+ * Copyright 2020 AlloSphere Research Group
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -33,38 +33,22 @@
  * authors: Andres Cabrera
  */
 
-#include <string>
+#include <vector>
 
 namespace tinc {
 
-class DistributedPath {
-public:
-  DistributedPath(std::string filename = std::string(),
-                  std::string relativePath = std::string(),
-                  std::string rootPath = std::string(),
-                  std::string protocolId = std::string());
-
-  std::string filename;
-  std::string relativePath;
-  std::string rootPath;
-
-  std::string protocolId; // Currently unused, should eventually allow for
-                          // https:// and other URL protocol prefixes
-
-  /**
-   * @brief full path including filename
-   * @return
-   */
-  std::string filePath();
-
-  /**
-   * @brief full path without including filename
-   * @return
-   */
-  std::string path();
-
-  void setPaths(std::string relativePath, std::string rootPath);
+struct Event {
+  char eventType[4];
 };
+
+class EventLogger {
+public:
+  EventLogger();
+
+private:
+  std::vector<Event> m_events;
+};
+
 } // namespace tinc
 
-#endif // DISTRIBUTEDPATH_HPP
+#endif // EVENTLOGGER_HPP

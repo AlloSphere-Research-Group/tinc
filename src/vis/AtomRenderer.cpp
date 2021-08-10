@@ -224,8 +224,9 @@ void AtomRenderer::updateShader(Graphics &g) {
 }
 
 SlicingAtomRenderer::SlicingAtomRenderer(std::string id, std::string filename,
-                                         std::string path, uint16_t size)
-    : AtomRenderer(id, filename, path, size),
+                                         std::string relPath,
+                                         std::string rootPath, uint16_t size)
+    : AtomRenderer(id, filename, relPath, rootPath, size),
       mSlicingPlaneCorner("SlicingPlaneCorner", id, al::Vec3f(0.0f, 0.0, 0.0)),
       mSlicingPlaneSize("SlicingPlaneSize", id, 1.0f, 0.0f, 30.f),
       mSlicingPlaneNormal("SliceNormal", id, al::Vec3f(0.0f, 0.0f, 1.0f)),
