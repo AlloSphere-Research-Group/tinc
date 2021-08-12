@@ -13,10 +13,10 @@ enum MessageType {
   COMMAND_REPLY = 5;
   STATUS = 6;
   TINC_WORKING_PATH = 7;
+  TINC_CLIENT_METADATA = 8;
 
   PING = 98;
   PONG = 99;
-
 
   BARRIER_REQUEST = 100;
   BARRIER_ACK_LOCK = 101;
@@ -68,15 +68,20 @@ enum StatusTypes {
     BUSY = 2;
 }
 
+
 /// ################ TincMessage #####################
 message TincMessage {
-    MessageType messageType = 2;
-    ObjectType objectType = 3;
-    google.protobuf.Any details = 4;
+    MessageType messageType = 1;
+    ObjectType objectType = 2;
+    google.protobuf.Any details = 3;
 }
 
 message ObjectId {
   string id = 1;
+}
+
+message ClientMetaData {
+  string clientHost = 1;
 }
 
 message DistributedPath {

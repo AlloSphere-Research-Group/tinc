@@ -31,10 +31,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera, Kon Hyong Kim
-*/
+ */
 
-#include <map>
 #include <deque>
+#include <map>
 
 #include "al/io/al_Socket.hpp"
 #include "al/protocol/al_CommandConnection.hpp"
@@ -89,6 +89,7 @@ protected:
   void onConnection(al::Socket *newConnection) override;
 
   void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive);
+  void processClientMetadataMessage(void *details, al::Socket *src);
   void disconnectClient(al::Socket *src);
 
 private:

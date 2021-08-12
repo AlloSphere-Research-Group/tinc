@@ -268,12 +268,21 @@ protected:
   void processRequestDataPools(al::Socket *dst);
 
   // Incoming register message
-  bool readRegisterMessage(int objectType, void *any, al::Socket *src);
-  bool processRegisterParameter(void *any, al::Socket *src);
-  bool processRegisterParameterSpace(void *any, al::Socket *src);
-  bool processRegisterProcessor(void *any, al::Socket *src);
-  bool processRegisterDiskBuffer(void *any, al::Socket *src);
-  bool processRegisterDataPool(void *any, al::Socket *src);
+  bool readRegisterMessage(int objectType, void *any, al::Socket *src,
+                           bool forward = false);
+  bool processRegisterParameter(void *any, al::Socket *src,
+                                bool forward = false);
+  bool processRegisterParameterSpace(void *any, al::Socket *src,
+                                     bool forward = false);
+  bool processRegisterProcessor(void *any, al::Socket *src,
+                                bool forward = false);
+  bool processRegisterDiskBuffer(void *any, al::Socket *src,
+                                 bool forward = false);
+  bool processRegisterDataPool(void *any, al::Socket *src,
+                               bool forward = false);
+  bool processConfigureParameterMessage(void *conf,
+                                        ParameterSpaceDimension *dim,
+                                        al::Socket *src, bool forward = false);
 
   // Outgoing register message
   void sendRegisterMessage(ParameterSpaceDimension *dim, al::Socket *dst,
@@ -288,12 +297,18 @@ protected:
                            al::Socket *src = nullptr);
 
   // Incoming configure message
-  bool readConfigureMessage(int objectType, void *any, al::Socket *src);
-  bool processConfigureParameter(void *any, al::Socket *src);
-  bool processConfigureParameterSpace(void *any, al::Socket *src);
-  bool processConfigureProcessor(void *any, al::Socket *src);
-  bool processConfigureDiskBuffer(void *any, al::Socket *src);
-  bool processConfigureDataPool(void *any, al::Socket *src);
+  bool readConfigureMessage(int objectType, void *any, al::Socket *src,
+                            bool forward = false);
+  bool processConfigureParameter(void *any, al::Socket *src,
+                                 bool forward = false);
+  bool processConfigureParameterSpace(void *any, al::Socket *src,
+                                      bool forward = false);
+  bool processConfigureProcessor(void *any, al::Socket *src,
+                                 bool forward = false);
+  bool processConfigureDiskBuffer(void *any, al::Socket *src,
+                                  bool forward = false);
+  bool processConfigureDataPool(void *any, al::Socket *src,
+                                bool forward = false);
 
   // Outgoing configure message (value + details)
   void sendConfigureMessage(ParameterSpaceDimension *dim, al::Socket *dst,
@@ -356,6 +371,9 @@ protected:
   // send proto message (No checks. sends to dst socket)
   bool sendProtobufMessage(void *message, al::Socket *dst);
 
+  std::string mapFromRemotePath(std::string path, al::Socket *src);
+  std::string mapToRemotePath(std::string path, al::Socket *src);
+
   // Send tinc message. Overriden on TincServer or TincClient
   /**
    * @brief sendTincMessage
@@ -392,6 +410,7 @@ protected:
   // Root path mapping
   std::map<std::string, std::vector<std::pair<std::string, std::string>>>
       mRootPathMap;
+  std::map<al::Socket *, std::string> mClientHostnames;
 
   bool mVerbose{false};
 };

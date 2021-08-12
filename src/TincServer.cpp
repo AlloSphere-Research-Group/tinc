@@ -67,13 +67,14 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         if (verbose()) {
           std::cout << "Server received Register message" << std::endl;
         }
-        if (!readRegisterMessage(objectType, (void *)&details, src)) {
+        if (!readRegisterMessage(objectType, (void *)&details, src, true)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
                     << std::endl;
+        } else {
         }
         break;
       case MessageType::CONFIGURE:
-        if (!readConfigureMessage(objectType, (void *)&details, src)) {
+        if (!readConfigureMessage(objectType, (void *)&details, src, true)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure message"
                     << std::endl;
         }
@@ -125,6 +126,19 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
           std::cout << "Ignored TINC_WORKING_PATH from " << src->address()
                     << ":" << src->port() << std::endl;
         }
+        break;
+
+      case MessageType::TINC_CLIENT_METADATA:
+        if (details.Is<ClientMetaData>()) {
+          ClientMetaData metadata;
+          details.UnpackTo(&metadata);
+          processClientMetadataMessage((void *)&metadata, src);
+        }
+        //        if (verbose()) {
+        //          std::cout << "Ignored TINC_WORKING_PATH from " <<
+        //          src->address()
+        //                    << ":" << src->port() << std::endl;
+        //        }
         break;
       default:
         std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
@@ -334,6 +348,11 @@ void TincServer::processBarrierAckLock(al::Socket *src,
   }
 }
 
+void TincServer::processClientMetadataMessage(void *metadata, al::Socket *src) {
+  auto *data = static_cast<ClientMetaData *>(metadata);
+  mClientHostnames[src] = data->clienthost();
+}
+
 void TincServer::disconnectClient(al::Socket *src) {
   std::unique_lock<std::mutex> lk(mConnectionsLock);
   for (auto connIt = mServerConnections.begin();
@@ -359,7 +378,7 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
 
     std::unique_lock<std::mutex> lk(mConnectionsLock);
     for (auto connection : mServerConnections) {
-      if (!src || (connection->address() != src->ipAddr &&
+      if (!src || (connection->address() != src->ipAddr ||
                    connection->port() != src->port)) {
         if (verbose()) {
           std::cout << "Server sending message to " << connection->address()

@@ -225,6 +225,9 @@ endif(NETCDF_LIBRARY AND HDF5_FOUND)
 ##### In tree build dependencies
 include(buildDependencies.cmake)
 
+##### tinc_server app
+add_subdirectory(tinc_server)
+
 ##### Examples
 if(TINC_BUILD_EXAMPLES)
   message("Building TINC Examples")

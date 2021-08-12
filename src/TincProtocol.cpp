@@ -975,10 +975,9 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
   return true;
 }
 
-bool processConfigureParameterMessage(ConfigureParameter &conf,
-                                      ParameterSpaceDimension *dim,
-                                      al::Socket *src) {
-
+bool TincProtocol::processConfigureParameterMessage(
+    void *conf_, ParameterSpaceDimension *dim, al::Socket *src, bool forward) {
+  auto &conf = *static_cast<ConfigureParameter *>(conf_);
   ParameterConfigureType command = conf.configurationkey();
 
   if (command == ParameterConfigureType::SPACE) {
@@ -1142,7 +1141,9 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
       } else {
         return false;
       }
-      // TODO ensure correct forwarding to connections
+      if (forward) {
+        sendConfigureMessage(dim, nullptr, src);
+      }
       return true;
     }
   } else if (command == ParameterConfigureType::SPACE_TYPE) {
@@ -1152,7 +1153,10 @@ bool processConfigureParameterMessage(ConfigureParameter &conf,
       conf.configurationvalue().UnpackTo(&v);
       dim->setSpaceRepresentationType(
           (ParameterSpaceDimension::RepresentationType)v.valueint32(), src);
-      // TODO ensure correct forwarding to connections
+
+      if (forward) {
+        sendConfigureMessage(dim, nullptr, src);
+      }
       return true;
 
     } else {
@@ -1880,18 +1884,18 @@ void TincProtocol::processRequestDataPools(al::Socket *dst) {
 }
 
 bool TincProtocol::readRegisterMessage(int objectType, void *any,
-                                       al::Socket *src) {
+                                       al::Socket *src, bool forward) {
   switch (objectType) {
   case ObjectType::PARAMETER:
-    return processRegisterParameter(any, src);
+    return processRegisterParameter(any, src, forward);
   case ObjectType::PROCESSOR:
-    return processRegisterProcessor(any, src);
+    return processRegisterProcessor(any, src, forward);
   case ObjectType::DISK_BUFFER:
-    return processRegisterDiskBuffer(any, src);
+    return processRegisterDiskBuffer(any, src, forward);
   case ObjectType::DATA_POOL:
-    return processRegisterDataPool(any, src);
+    return processRegisterDataPool(any, src, forward);
   case ObjectType::PARAMETER_SPACE:
-    return processRegisterParameterSpace(any, src);
+    return processRegisterParameterSpace(any, src, forward);
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
     break;
@@ -1899,7 +1903,8 @@ bool TincProtocol::readRegisterMessage(int objectType, void *any,
   return false;
 }
 
-bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
+                                            bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterParameter>()) {
     std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
@@ -2006,7 +2011,12 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   if (param) {
     mLocalPSDs.emplace_back(
         std::make_shared<ParameterSpaceDimension>(param, true));
-    registerParameterSpaceDimension(*mLocalPSDs.back(), src);
+
+    if (registerParameterSpaceDimension(*mLocalPSDs.back(), src)) {
+      if (forward) {
+        sendRegisterMessage(mLocalPSDs.back().get(), nullptr, src);
+      }
+    }
     delete param;
     return true;
   }
@@ -2014,7 +2024,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
+                                                 bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterParameterSpace>()) {
     std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
@@ -2042,17 +2053,23 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src) {
 
   mLocalPSs.emplace_back(std::make_shared<ParameterSpace>(id));
 
-  registerParameterSpace(*mLocalPSs.back(), src);
+  if (registerParameterSpace(*mLocalPSs.back(), src)) {
+    if (forward) {
+      sendRegisterMessage(mLocalPSs.back().get(), nullptr, src);
+    }
+  }
 
   return true;
 }
 
-bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
+                                            bool forward) {
   // FIXME implement
   return true;
 }
 
-bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
+                                             bool forward) {
 
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterDiskBuffer>()) {
@@ -2082,7 +2099,24 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
   auto path = command.path();
   auto baseFilename = path.filename();
   auto relPath = path.relativepath();
-  auto rootPath = path.rootpath();
+
+  std::string rootPath = path.rootpath();
+  for (auto &entry : mRootPathMap) {
+    // TODO verify check for hostname is working
+    std::cout << src->hostName() << " " << al::Socket::hostName() << std::endl;
+    bool isSameHost = false;
+    if (mClientHostnames.find(src) != mClientHostnames.end()) {
+      isSameHost = src->hostName() == mClientHostnames[src];
+    }
+    if (entry.first == "" && !isSameHost) {
+      for (auto &mapEntry : entry.second) {
+        if (al::File::isSamePath(mapEntry.second, rootPath) ||
+            mapEntry.second.find(rootPath) == 0) {
+          rootPath = mapEntry.first + rootPath.substr(mapEntry.second.size());
+        }
+      }
+    }
+  }
 
   if (command.type() == DiskBufferType::JSON) {
     mLocalDBs.emplace_back(
@@ -2100,12 +2134,17 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src) {
     return false;
   }
 
-  registerDiskBuffer(*mLocalDBs.back(), src);
+  if (registerDiskBuffer(*mLocalDBs.back(), src)) {
+    if (forward) {
+      sendRegisterMessage(mLocalDBs.back().get(), nullptr, src);
+    }
+  }
 
   return true;
 }
 
-bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
+bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
+                                           bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterDataPool>()) {
     std::cerr << __FUNCTION__
@@ -2156,7 +2195,12 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src) {
       return false;
     }
 
-    return registerDataPool(*mLocalDPs.back(), src);
+    if (registerDataPool(*mLocalDPs.back(), src)) {
+      if (forward) {
+        sendRegisterMessage(mLocalDPs.back().get(), nullptr, src);
+      }
+    }
+    return true;
   } else {
 
     std::cout
@@ -2243,6 +2287,48 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
   }
 }
 
+std::string TincProtocol::mapFromRemotePath(std::string path, al::Socket *src) {
+  for (auto &entry : mRootPathMap) {
+    // TODO verify check for hostname is working
+    //        std::cout << src->hostName() << " " << al::Socket::hostName() <<
+    //        std::endl;
+    bool isSameHost = false;
+    if (mClientHostnames.find(src) != mClientHostnames.end()) {
+      isSameHost = src->hostName() == mClientHostnames[src];
+    }
+    if (entry.first == "" && !isSameHost) {
+      for (auto &mapEntry : entry.second) {
+        if (al::File::isSamePath(mapEntry.second, path) ||
+            mapEntry.second.find(path) == 0) {
+          path = mapEntry.first + path.substr(mapEntry.second.size());
+          goto path_mapped;
+        }
+      }
+    }
+  }
+path_mapped:
+  return path;
+}
+
+std::string TincProtocol::mapToRemotePath(std::string path, al::Socket *src) {
+  for (auto &mapEntry : mRootPathMap) {
+    bool isSameHost = false;
+    if (mClientHostnames.find(src) != mClientHostnames.end()) {
+      isSameHost = src->hostName() == mClientHostnames[src];
+    }
+    if (mapEntry.first == "" && !isSameHost) {
+      for (auto pathMap : mapEntry.second) {
+        if (al::File::isSamePath(pathMap.second, path)) {
+          path = pathMap.first;
+          goto path_mapped;
+        }
+      }
+    }
+  }
+path_mapped:
+  return path;
+}
+
 void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
                                        al::Socket *src) {
   TincMessage msg;
@@ -2269,19 +2355,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
   tinc_protobuf::DistributedPath *path = new tinc_protobuf::DistributedPath;
   path->set_filename(db->getBaseFileName());
   path->set_relativepath(db->getRelativePath());
-  std::string rootPath = db->getRootPath();
-  for (auto &mapEntry : mRootPathMap) {
-    // FIXME use hostname to check
-    if (mapEntry.first == "" || mapEntry.first == "hostname") {
-      for (auto pathMap : mapEntry.second) {
-        if (al::File::isSamePath(pathMap.first, rootPath)) {
-          rootPath = pathMap.second;
-          goto done_checking;
-        }
-      }
-    }
-  }
-done_checking:
+  std::string rootPath = mapToRemotePath(db->getRootPath(), src);
   path->set_rootpath(rootPath);
 
   details.set_allocated_path(path);
@@ -2320,21 +2394,21 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
 }
 
 bool TincProtocol::readConfigureMessage(int objectType, void *any,
-                                        al::Socket *src) {
+                                        al::Socket *src, bool forward) {
   switch (objectType) {
   case ObjectType::PARAMETER:
-    return processConfigureParameter(any, src);
+    return processConfigureParameter(any, src, forward);
   case ObjectType::PROCESSOR:
     // FIXME implement configure processor
     //    return sendProcessors(src);
     break;
   case ObjectType::DISK_BUFFER:
-    return processConfigureDiskBuffer(any, src);
+    return processConfigureDiskBuffer(any, src, forward);
   case ObjectType::DATA_POOL:
-    return processConfigureDataPool(any, src);
+    return processConfigureDataPool(any, src, forward);
     break;
   case ObjectType::PARAMETER_SPACE:
-    return processConfigureParameterSpace(any, src);
+    return processConfigureParameterSpace(any, src, forward);
   default:
     std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
     break;
@@ -2342,7 +2416,8 @@ bool TincProtocol::readConfigureMessage(int objectType, void *any,
   return false;
 }
 
-bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
+bool TincProtocol::processConfigureParameter(void *any, al::Socket *src,
+                                             bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureParameter>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
@@ -2360,14 +2435,14 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
 
   for (auto *dim : mParameterSpaceDimensions) {
     if (addr == dim->getFullAddress()) {
-      return processConfigureParameterMessage(conf, dim, src);
+      return processConfigureParameterMessage(&conf, dim, src, forward);
     }
   }
 
   for (auto *ps : mParameterSpaces) {
     for (auto *dim : ps->getDimensions()) {
       if (addr == dim->getFullAddress()) {
-        return processConfigureParameterMessage(conf, dim, src);
+        return processConfigureParameterMessage(&conf, dim, src, forward);
       }
     }
   }
@@ -2379,7 +2454,8 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
+bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
+                                                  bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureParameterSpace>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
@@ -2424,6 +2500,7 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
                 std::cout << "Registered Parameter " << addr
                           << " to ParameterSpace " << id << std::endl;
               }
+              // FIXME propagate to clients
               return true;
             }
           }
@@ -2445,6 +2522,7 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
                 std::cout << __FUNCTION__ << ": Removing Parameter " << addr
                           << " from ParameterSpace " << id << std::endl;
               }
+              // FIXME propagate to clients
               return true;
             }
           }
@@ -2460,6 +2538,9 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
           auto curTempl = val.valuestring();
 
           ps->setCurrentPathTemplate(curTempl);
+          if (forward) {
+            sendConfigureMessage(ps, nullptr, src);
+          }
           return true;
         }
       } else if (command == ParameterSpaceConfigureType::ROOT_PATH) {
@@ -2469,6 +2550,9 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
           auto curTempl = val.valuestring();
 
           ps->setRootPath(curTempl);
+          if (forward) {
+            sendConfigureMessage(ps, nullptr, src);
+          }
           return true;
         }
       } else if (command == ParameterSpaceConfigureType::CACHE_PATH) {
@@ -2477,6 +2561,9 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
           conf.configurationvalue().UnpackTo(&path);
 
           ps->enableCache(path.relativepath());
+          if (forward) {
+            sendConfigureMessage(ps, nullptr, src);
+          }
           return true;
         }
       }
@@ -2493,7 +2580,8 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
+bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src,
+                                             bool forward) {
   // FIXME implement
   if (mVerbose) {
     std::cout
@@ -2503,7 +2591,8 @@ bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src) {
   return true;
 }
 
-bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
+bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src,
+                                              bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureDiskBuffer>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
@@ -2533,6 +2622,9 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
           }
           std::cout << "DiskBuffer " << id << " successfully loaded "
                     << file.valuestring() << std::endl;
+          if (forward) {
+            sendConfigureMessage(db, nullptr, src);
+          }
           return true;
         }
       }
@@ -2548,7 +2640,8 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src) {
   return false;
 }
 
-bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
+bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src,
+                                            bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureDataPool>()) {
     std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
@@ -2572,6 +2665,10 @@ bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
           ParameterValue file;
           conf.configurationvalue().UnpackTo(&file);
           dp->setCacheDirectory(file.valuestring(), src);
+
+          if (forward) {
+            sendConfigureMessage(dp, nullptr, src);
+          }
           return true;
         }
       } else if (command == DataPoolConfigureType::DATA_FILES) {
@@ -2589,6 +2686,9 @@ bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src) {
             dp->registerDataFile(files.filename(i), files.dimension(i));
           }
 
+          if (forward) {
+            sendConfigureMessage(dp, nullptr, src);
+          }
           return true;
         }
       }
