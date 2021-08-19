@@ -14,23 +14,25 @@ struct MyApp : public App {
 
   ProcessorCpp process{"Process"};
 
-  Parameter value{"value", "", 0.0, "", 0.0, 1.0};
+  ParameterSpaceDimension value{"value", ""};
   ControlGUI gui;
 
   void onInit() override {
 
+    value.getParameter<Parameter>().min(0.0);
+    value.getParameter<Parameter>().max(1.0);
     // Register the parameter with the processor
-    process << value;
+    process.registerDimension(value);
     // Define processing function. The new value is avaialble through
     // the configuration member and the old value is available from the
     // parameter as the new value has not been applied at this point
     process.processingFunction = [&]() {
       std::cout << "new value: " << process.configuration["value"].get<float>()
-                << " previous value " << value.get() << std::endl;
+                << " previous value " << value.getCurrentValue() << std::endl;
       return true;
     };
 
-    gui << value;
+    gui << *value.getParameterMeta();
     gui.init();
   }
 

@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/ProcessorScript.hpp"
@@ -81,22 +81,26 @@ public:
    */
   std::map<std::string, bool> getResults();
 
-  /**
-   * Register a parameter to trigger computation. The parameter value is also
-   * automatically added to the configuration passed to children Processors.
-   * These values will override any values of the same name that have been set.
-   * (for example from a parameter sweep or manually by the user)
-   */
-  template <class ParameterType>
-  ProcessorGraph &registerParameter(al::ParameterWrapper<ParameterType> &param);
+  //  /**
+  //   * Register a parameter to trigger computation. The parameter value is
+  //   also
+  //   * automatically added to the configuration passed to children Processors.
+  //   * These values will override any values of the same name that have been
+  //   set.
+  //   * (for example from a parameter sweep or manually by the user)
+  //   */
+  //  template <class ParameterType>
+  //  ProcessorGraph &registerParameter(al::ParameterWrapper<ParameterType>
+  //  &param);
 
-  /**
-   * @brief Syntactic sugar for registerParameter()
-   */
-  template <class ParameterType>
-  ProcessorGraph &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
-    return registerParameter(newParam);
-  }
+  //  /**
+  //   * @brief Syntactic sugar for registerParameter()
+  //   */
+  //  template <class ParameterType>
+  //  ProcessorGraph &operator<<(al::ParameterWrapper<ParameterType> &newParam)
+  //  {
+  //    return registerParameter(newParam);
+  //  }
   /**
    * @brief Return list of currently registered processors.
    */
@@ -112,17 +116,18 @@ private:
 
 // Implementation
 
-template <class ParameterType>
-ProcessorGraph &
-ProcessorGraph::registerParameter(al::ParameterWrapper<ParameterType> &param) {
-  mParameters.push_back(&param);
-  configuration[param.getName()] = param.get();
-  param.registerChangeCallback([&](ParameterType value) {
-    configuration[param.getName()] = value;
-    process();
-  });
-  return *this;
-}
+// template <class ParameterType>
+// ProcessorGraph &
+// ProcessorGraph::registerParameter(al::ParameterWrapper<ParameterType> &param)
+// {
+//  mParameters.push_back(&param);
+//  configuration[param.getName()] = param.get();
+//  param.registerChangeCallback([&](ParameterType value) {
+//    configuration[param.getName()] = value;
+//    process();
+//  });
+//  return *this;
+//}
 
 } // namespace tinc
 

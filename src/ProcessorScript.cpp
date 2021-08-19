@@ -70,6 +70,49 @@ bool ProcessorScript::process(bool forceRecompute) {
   bool ok = true;
   if (needsRecompute() || forceRecompute) {
     std::string command = mScriptCommand + " \"" + mScriptName + "\" ";
+    std::string flags;
+    if (mArgTemplate.size() > 0) {
+      flags = ParameterSpace::resolveTemplate(mArgTemplate, mParameters);
+      std::string line_input, line_output, line_output_dir, line_input_dir;
+      std::string chunk;
+      std::size_t pos_input, pos_output, pos_output_dir, pos_input_dir;
+      std::vector<std::string> input, output, input_dir, output_dir;
+
+      //      pos_input = mCommandLine.find("INPUT:");
+      //      pos_output = mCommandLine.find("OUTPUT:");
+      //      pos_output_dir = mCommandLine.find("OUTPUT_DIR:");
+      //      pos_input_dir = mCommandLine.find("INPUT_DIR:");
+      //      if (pos_input != std::string::npos) {
+      //        line_input = mCommandLine.substr(pos_input);
+      //        std::stringstream check(line_input);
+      //        while (std::getline(check, chunk, ' ')) {
+      //          input.push_back(chunk);
+      //        }
+      //      } else if (pos_output != std::string::npos) {
+      //        line_output = mCommandLine.substr(pos_output);
+      //        std::stringstream check(line_output);
+      //        while (std::getline(check, chunk, ' ')) {
+      //          output.push_back(chunk);
+      //        }
+      //      } else if (pos_output_dir != std::string::npos) {
+      //        line_output_dir = mCommandLine.substr(pos_output_dir);
+      //        std::stringstream check(line_output_dir);
+      //        while (std::getline(check, chunk, ' ')) {
+      //          output_dir.push_back(chunk);
+      //        }
+      //      } else if (pos_input_dir != std::string::npos) {
+      //        line_input_dir = mCommandLine.substr(pos_input_dir);
+      //        std::stringstream check(line_input_dir);
+      //        while (std::getline(check, chunk, ' ')) {
+      //          input_dir.push_back(chunk);
+      //        }
+      //      }
+      // TODO ML use ParameterSpace::resolveFilename() to resolve template
+      // parameters Then use addtional markers like &&INPUT:0&& to get input
+      // file 0 &&INPUT: && to get all input names separated by space or
+      // &&INPUT:,&& to separate by commas. Apart from INPUT, support OUTPUT,
+      // INPUT_DIR, OUTPUT_DIR. Done. need test.
+    }
     if (mEnableJsonConfig) {
       command += "\"" + jsonFilename + "\"";
     }
@@ -206,18 +249,42 @@ bool ProcessorScript::readJsonConfig(std::string filename) {
 
 void ProcessorScript::parametersToConfig(nlohmann::json &j) {
 
-  for (al::ParameterMeta *param : mParameters) {
+  for (auto *dim : mParameters) {
     // TODO should we use full address or group + name?
-    std::string name = param->getName();
-    if (param->getGroup().size() > 0) {
-      name = param->getGroup() + "/" + name;
+    std::string name = dim->getName();
+    if (dim->getGroup().size() > 0) {
+      name = dim->getGroup() + "/" + name;
     }
-    if (auto p = dynamic_cast<al::Parameter *>(param)) {
-      j[name] = p->get();
-    } else if (auto p = dynamic_cast<al::ParameterString *>(param)) {
-      j[name] = p->get();
-    } else if (auto p = dynamic_cast<al::ParameterInt *>(param)) {
-      j[name] = p->get();
+    std::vector<al::VariantValue> fields;
+    dim->getParameterMeta()->getFields(fields);
+    if (fields.size() == 1) {
+      if (fields[0].type() == al::VariantType::VARIANT_FLOAT) {
+        j[name] = fields[0].get<float>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_DOUBLE) {
+        j[name] = fields[0].get<double>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_STRING) {
+        j[name] = fields[0].get<std::string>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_INT64) {
+        j[name] = fields[0].get<int64_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_INT32) {
+        j[name] = fields[0].get<int32_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_INT16) {
+        j[name] = fields[0].get<int16_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_INT8) {
+        j[name] = fields[0].get<int8_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_UINT64) {
+        j[name] = fields[0].get<uint64_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_UINT32) {
+        j[name] = fields[0].get<uint32_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_UINT16) {
+        j[name] = fields[0].get<uint16_t>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_UINT8) {
+        j[name] = fields[0].get<uint8_t>();
+      }
+    } else {
+      std::cerr << "Warning paramters with more than one value are not "
+                   "supported in ProcessorScript"
+                << std::endl;
     }
   }
 }

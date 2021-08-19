@@ -47,7 +47,7 @@ public:
       if (f.good()) {
         // Use resolveFilename to create a string from parameter values
         // just for demonstration purposes.
-        f << ps.resolveFilename("%%dim1%%_%%dim2%%_%%inner_param%%");
+        f << ps.resolveTemplate("%%dim1%%_%%dim2%%_%%inner_param%%");
         f.close();
       }
       al::al_sleep(5); // Sleep 5 seconds to simulate long processing

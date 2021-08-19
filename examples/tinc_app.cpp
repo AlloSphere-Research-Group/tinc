@@ -1,13 +1,13 @@
 #include "tinc/DataPoolJson.hpp"
+#include "tinc/DiskBufferImage.hpp"
+#include "tinc/DiskBufferJson.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/TincServer.hpp"
-#include "tinc/DiskBufferJson.hpp"
-#include "tinc/DiskBufferImage.hpp"
 #include "tinc/vis/GUI.hpp"
 
 #include "al/app/al_App.hpp"
-#include "al/ui/al_ControlGUI.hpp"
 #include "al/graphics/al_Texture.hpp"
+#include "al/ui/al_ControlGUI.hpp"
 
 #include <fstream>
 
@@ -25,7 +25,7 @@ struct MyApp : public al::App {
   tinc::ParameterSpace ps;
   tinc::DataPoolJson dp{ps};
 
-  al::Parameter procParameter{"procParam", "", 0.0, -10.0, 10.0};
+  tinc::ParameterSpaceDimension procParameter{"procParam", ""};
   tinc::ProcessorCpp processor;
   float computedValue{0};
 
@@ -37,6 +37,9 @@ struct MyApp : public al::App {
   al::Texture graphTex;
 
   void prepareParameterSpace() {
+
+    procParameter.getParameter<al::Parameter>().min(-10.0);
+    procParameter.getParameter<al::Parameter>().max(10.0);
     auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
     uint8_t values[] = {0, 2, 4, 6, 8};
     dirDim->appendSpaceValues(values, 5, "datapool_directory_");
@@ -55,21 +58,21 @@ struct MyApp : public al::App {
   void prepareProcessor() {
 
     processor.processingFunction = [&]() {
-      computedValue = 1.0 +
-                      ps.getDimension("internalValuesDim")->getCurrentValue() *
-                          procParameter.get();
+      computedValue =
+          1.0 + ps.getDimension("internalValuesDim")->getCurrentValue() *
+                    procParameter.getCurrentValue();
 
       return true;
     };
     // processor will be run whenever procParameter changes
-    processor << procParameter;
+    processor.registerDimension(procParameter);
   }
 
   void prepareGui() {
     al::imguiBeginFrame();
     al::ParameterGUI::beginPanel("Parameter Space");
     tinc::vis::drawControls(ps);
-    al::ParameterGUI::draw(&procParameter);
+    al::ParameterGUI::draw(procParameter.getParameterMeta());
     ImGui::Text("Computed value: %f", computedValue);
     al::ParameterGUI::endPanel();
     al::imguiEndFrame();

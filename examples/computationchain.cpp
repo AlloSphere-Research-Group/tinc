@@ -44,7 +44,7 @@ struct MyApp : public App {
   ProcessorCpp process3{"3"};
   ProcessorCpp process4{"4"};
 
-  Parameter value{"value", "", 0.0, "", 0.0, 1.0};
+  ParameterSpaceDimension value{"value", ""};
   ControlGUI gui;
 
   double data1;
@@ -52,6 +52,8 @@ struct MyApp : public App {
 
   void onInit() override {
 
+    value.getParameter<Parameter>().min(0.0);
+    value.getParameter<Parameter>().max(1.0);
     // Define processing functions
     process1.processingFunction = [&]() {
       data1 = mainChain.configuration["value"].get<double>() + 1.0;
@@ -94,7 +96,7 @@ struct MyApp : public App {
     // Processor::process function is called synchronously within the
     // Parameter change callbacks, so this blocks until the process is done
     // and the done callbacks have been called.
-    mainChain << value;
+    mainChain.registerDimension(value);
 
     // Whenever the chain processes, this function will print out the current
     // values.
@@ -104,7 +106,7 @@ struct MyApp : public App {
     });
 
     // Put the value Parameter in the GUI
-    gui << value;
+    gui << *value.getParameterMeta();
     gui.init();
   }
 

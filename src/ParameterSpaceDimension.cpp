@@ -396,6 +396,10 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
 bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
   sort(src);
   // TODO we should also validate stride in this function
+  //
+  // TODO use getFields to determine type of data:
+  //  auto values = p->getFields(fields);
+
   switch (mSpaceValues.getDataType()) {
   case al::VariantType::VARIANT_FLOAT: {
     auto &param = getParameter<al::Parameter>();

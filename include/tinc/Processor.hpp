@@ -214,6 +214,8 @@ public:
    * You should only register dimensions in this way if you are not using the
    * processor through ParameterSpace::process() or ParameterSpace::sweep(). The
    * tow modes are provided for flexibility but should not be used concurrently.
+   *
+   * Processor is executed on changes of this parameter
    */
   Processor &registerDimension(ParameterSpaceDimension &dim);
 
@@ -242,27 +244,28 @@ public:
    */
   void useCache(bool use = true) { mUseCache = use; }
 
-  /**
-   * @brief Register a Parameter so that the Processor is executed on changes
-   */
-  template <class ParameterType>
-  Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
-    mParameters.push_back(&param);
-    configuration[param.getName()] = param.get();
-    param.registerChangeCallback([&](ParameterType value) {
-      configuration[param.getName()] = value;
-      process();
-    });
-    return *this;
-  }
+  //  /**
+  //   * @brief Register a Parameter so that the Processor is executed on
+  //   changes
+  //   */
+  //  template <class ParameterType>
+  //  Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
+  //    mParameters.push_back(&param);
+  //    configuration[param.getName()] = param.get();
+  //    param.registerChangeCallback([&](ParameterType value) {
+  //      configuration[param.getName()] = value;
+  //      process();
+  //    });
+  //    return *this;
+  //  }
 
-  /**
-   * @brief Convenient syntax for registerParameter()
-   */
-  template <class ParameterType>
-  Processor &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
-    return registerParameter(newParam);
-  }
+  //  /**
+  //   * @brief Convenient syntax for registerParameter()
+  //   */
+  //  template <class ParameterType>
+  //  Processor &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
+  //    return registerParameter(newParam);
+  //  }
 
   /**
    * @brief Register a dependency
@@ -272,7 +275,7 @@ public:
    * A dependency is a parameter that affects the result of this processor but
    * does not trigger computation
    */
-  Processor &registerDependency(al::ParameterMeta &param) {
+  Processor &registerDependency(ParameterSpaceDimension &param) {
     mDependencies.push_back(&param);
     return *this;
   }
@@ -280,7 +283,9 @@ public:
    * @brief Return the dependencies registered with this Processor
    * @return
    */
-  std::vector<al::ParameterMeta *> getDependencies() { return mDependencies; }
+  std::vector<ParameterSpaceDimension *> getDependencies() {
+    return mDependencies;
+  }
 
   typedef std::map<std::string, al::VariantValue> Configuration;
 
@@ -302,8 +307,8 @@ protected:
 
   bool mUseCache{false};
 
-  std::vector<al::ParameterMeta *> mParameters;
-  std::vector<al::ParameterMeta *> mDependencies;
+  std::vector<ParameterSpaceDimension *> mParameters;
+  std::vector<ParameterSpaceDimension *> mDependencies;
 
   void callStartCallbacks();
   void callDoneCallbacks(bool result);

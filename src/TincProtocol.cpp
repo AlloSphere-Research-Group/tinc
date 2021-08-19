@@ -2101,18 +2101,21 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   auto relPath = path.relativepath();
 
   std::string rootPath = path.rootpath();
-  for (auto &entry : mRootPathMap) {
-    // TODO verify check for hostname is working
-    std::cout << src->hostName() << " " << al::Socket::hostName() << std::endl;
-    bool isSameHost = false;
-    if (mClientHostnames.find(src) != mClientHostnames.end()) {
-      isSameHost = src->hostName() == mClientHostnames[src];
-    }
-    if (entry.first == "" && !isSameHost) {
-      for (auto &mapEntry : entry.second) {
-        if (al::File::isSamePath(mapEntry.second, rootPath) ||
-            mapEntry.second.find(rootPath) == 0) {
-          rootPath = mapEntry.first + rootPath.substr(mapEntry.second.size());
+  if (rootPath.size() > 0) {
+    for (auto &entry : mRootPathMap) {
+      // TODO verify check for hostname is working
+      std::cout << src->hostName() << " " << al::Socket::hostName()
+                << std::endl;
+      bool isSameHost = false;
+      if (mClientHostnames.find(src) != mClientHostnames.end()) {
+        isSameHost = src->hostName() == mClientHostnames[src];
+      }
+      if (entry.first == "" && !isSameHost) {
+        for (auto &mapEntry : entry.second) {
+          if (al::File::isSamePath(mapEntry.second, rootPath) ||
+              mapEntry.second.find(rootPath) == 0) {
+            rootPath = mapEntry.first + rootPath.substr(mapEntry.second.size());
+          }
         }
       }
     }

@@ -23,7 +23,7 @@ struct MyApp : public App {
 
   TincServer tserver;
 
-  Parameter value{"value", "", 0.0, "", 0.0, 1.0};
+  ParameterSpaceDimension value{"value", ""};
   ParameterString displayResult{"displayResult"};
   ControlGUI gui;
 
@@ -32,6 +32,8 @@ struct MyApp : public App {
 
   void onInit() override {
 
+    value.getParameter<Parameter>().min(0.0);
+    value.getParameter<Parameter>().max(1.0);
     // Define processing functions
     process1.processingFunction = [&]() {
       data1 = mainChain.configuration["value"].get<double>() + 1.0;
@@ -54,7 +56,7 @@ struct MyApp : public App {
     mainChain << joinChain;
 
     // Register a parameter that triggers computation
-    mainChain << value;
+    mainChain.registerDimension(value);
 
     // Expose the computation chain on the TINC server
     tserver << mainChain;
@@ -76,7 +78,7 @@ struct MyApp : public App {
 
     // Put the value Parameter in the GUI and the parameter used to display
     // result.
-    gui << value << displayResult;
+    gui << *value.getParameterMeta() << displayResult;
     gui.init();
   }
 

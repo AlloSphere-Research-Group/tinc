@@ -148,6 +148,10 @@ public:
   std::string getCommonId(std::vector<std::string> dimNames = {},
                           std::map<std::string, size_t> indices = {});
 
+  static std::string
+  getCommonId(std::vector<ParameterSpaceDimension *> dimensions,
+              std::map<ParameterSpaceDimension *, size_t> indices);
+
   /**
    * @brief Returns the names of all dimensions
    */
@@ -330,7 +334,7 @@ public:
   std::function<std::string(std::map<std::string, size_t>, ParameterSpace *)>
       generateRelativeRunPath = [&](std::map<std::string, size_t> indices,
                                     ParameterSpace *ps) {
-        std::string path = ps->resolveFilename(mCurrentPathTemplate, indices);
+        std::string path = ps->resolveTemplate(mCurrentPathTemplate, indices);
         return al::File::conformDirectory(al::File::conformPathToOS(path));
       };
 
@@ -361,8 +365,13 @@ public:
    * INDEX) is ignored, as only ids are used. Using this method can be useful as
    * it can avoid having to define a custom generateRelativeRunPath() function
    */
-  std::string resolveFilename(std::string fileTemplate,
+  std::string resolveTemplate(std::string fileTemplate,
                               std::map<std::string, size_t> indeces = {});
+
+  static std::string resolveTemplate(
+      std::string fileTemplate,
+      std::vector<ParameterSpaceDimension *> dimensions,
+      std::map<ParameterSpaceDimension *, size_t> indecesOverride = {});
 
   /**
    * @brief Enable caching for the parameter space

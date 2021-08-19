@@ -376,30 +376,43 @@ std::string ParameterSpace::getCurrentRelativeRunPath() {
 
 std::string ParameterSpace::getCommonId(std::vector<std::string> dimNames,
                                         std::map<std::string, size_t> indices) {
-  std::vector<ParameterSpaceDimension *> dimensions;
   if (dimNames.size() == 0) {
     dimNames = getDimensionNames();
   }
-
+  std::vector<ParameterSpaceDimension *> dimensions;
   for (auto &dimName : dimNames) {
-    auto *dim = getDimension(dimName);
-    if (dim && dim->getCurrentIds().size() > 1) {
-      dimensions.push_back(dim);
+    dimensions.push_back(getDimension(dimName));
+  }
+  std::map<ParameterSpaceDimension *, size_t> indecesOverride;
+  for (auto *dim : getDimensions()) {
+    auto found = indices.find(dim->getName());
+    if (found != indices.end()) {
+      indecesOverride[dim] = found->second;
     }
   }
-  if (dimensions.size() > 1) {
-    auto dimIt = dimensions.begin();
+  return getCommonId(dimensions, indecesOverride);
+}
+
+std::string ParameterSpace::getCommonId(
+    std::vector<ParameterSpaceDimension *> dimensions,
+    std::map<ParameterSpaceDimension *, size_t> indices) {
+  std::vector<ParameterSpaceDimension *> relevantDimensions;
+  for (auto *dim : dimensions) {
+    if (dim && dim->getCurrentIds().size() > 1) {
+      relevantDimensions.push_back(dim);
+    }
+  }
+  if (relevantDimensions.size() > 1) {
+    auto dimIt = relevantDimensions.begin();
     auto ids = (*dimIt)->getCurrentIds();
-    if (indices.find((*dimIt)->getName()) != indices.end()) {
-      ids =
-          (*dimIt)->getIdsForValue((*dimIt)->at(indices[(*dimIt)->getName()]));
+    if (indices.find(*dimIt) != indices.end()) {
+      ids = (*dimIt)->getIdsForValue((*dimIt)->at(indices[(*dimIt)]));
     }
     dimIt++;
-    while (dimIt != dimensions.end() && ids.size() > 1) {
+    while (dimIt != relevantDimensions.end() && ids.size() > 1) {
       auto dimIds = (*dimIt)->getCurrentIds();
-      if (indices.find((*dimIt)->getName()) != indices.end()) {
-        dimIds = (*dimIt)->getIdsForValue(
-            (*dimIt)->at(indices[(*dimIt)->getName()]));
+      if (indices.find(*dimIt) != indices.end()) {
+        dimIds = (*dimIt)->getIdsForValue((*dimIt)->at(indices[(*dimIt)]));
       }
       std::vector<std::string> idsToRemove;
       for (auto &id : ids) {
@@ -562,8 +575,15 @@ void ParameterSpace::sweep(Processor &processor,
       // Don't override dependencies provided on command line
       continue;
     }
-    // TODO support other types apart from float
-    dependencies[dep->getName()] = al::VariantValue(dep->toFloat());
+    std::vector<al::VariantValue> fields;
+    dep->getParameterMeta()->getFields(fields);
+    if (fields.size() == 1) {
+      dependencies[dep->getName()] = fields[0];
+    } else {
+      std::cerr << __FILE__ << ":" << __LINE__
+                << " ERROR: parameters with multiple values not supported"
+                << std::endl;
+    }
   }
 
   std::map<std::string, size_t> previousIndices;
@@ -1015,8 +1035,21 @@ void ParameterSpace::setRootPath(std::string rootPath) {
 }
 
 std::string
-ParameterSpace::resolveFilename(std::string fileTemplate,
+ParameterSpace::resolveTemplate(std::string fileTemplate,
                                 std::map<std::string, size_t> indices) {
+  std::map<ParameterSpaceDimension *, size_t> indecesOverride;
+  for (auto *dim : getDimensions()) {
+    auto found = indices.find(dim->getName());
+    if (found != indices.end()) {
+      indecesOverride[dim] = found->second;
+    }
+  }
+  return resolveTemplate(fileTemplate, getDimensions(), indecesOverride);
+}
+
+std::string ParameterSpace::resolveTemplate(
+    std::string fileTemplate, std::vector<ParameterSpaceDimension *> dimensions,
+    std::map<ParameterSpaceDimension *, size_t> indecesOverride) {
   std::string resolvedName;
   size_t currentPos = 0;
   size_t beginPos = fileTemplate.find("%%", currentPos);
@@ -1051,46 +1084,58 @@ ParameterSpace::resolveFilename(std::string fileTemplate,
       }
 
       if (allTokens.size() > 1) {
-        auto commonId = getCommonId(allTokens, indices);
-
+        std::vector<ParameterSpaceDimension *> multiDimensions;
+        for (auto token : allTokens) {
+          for (auto *dim : dimensions) {
+            if (dim->getName() == token) {
+              multiDimensions.push_back(dim);
+              break;
+            }
+          }
+        }
+        std::string commonId = getCommonId(multiDimensions, indecesOverride);
         if (commonId.size() > 0) {
           resolvedName += commonId;
           replaced = true;
         }
       } else {
-        auto indexOverride = indices.find(token);
-        if (indexOverride != indices.end()) {
-          // Use provided index instead of current values
-          auto &index = indexOverride->second;
-          auto dim = getDimension(indexOverride->first);
-          if (representation.size() == 0) {
-            switch (dim->getSpaceRepresentationType()) {
-            case ParameterSpaceDimension::ID:
-              representation = "ID";
-              break;
-            case ParameterSpaceDimension::VALUE:
-              representation = "VALUE";
-              break;
-            case ParameterSpaceDimension::INDEX:
-              representation = "INDEX";
-              break;
+        bool overriden = false;
+        for (auto overrideEntry : indecesOverride) {
+          if (overrideEntry.first->getName() == token) {
+            // Use provided index instead of current values
+            auto &index = overrideEntry.second;
+            auto dim = overrideEntry.first;
+            if (representation.size() == 0) {
+              switch (dim->getSpaceRepresentationType()) {
+              case ParameterSpaceDimension::ID:
+                representation = "ID";
+                break;
+              case ParameterSpaceDimension::VALUE:
+                representation = "VALUE";
+                break;
+              case ParameterSpaceDimension::INDEX:
+                representation = "INDEX";
+                break;
+              }
             }
-          }
-          if (representation == "ID") {
-            resolvedName += dim->idAt(index);
-          } else if (representation == "VALUE") {
-            resolvedName += std::to_string(dim->at(index));
-          } else if (representation == "INDEX") {
-            resolvedName += std::to_string(index);
-          } else {
-            std::cerr << "Representation error: " << representation
-                      << std::endl;
-          }
+            if (representation == "ID") {
+              resolvedName += dim->idAt(index);
+            } else if (representation == "VALUE") {
+              resolvedName += std::to_string(dim->at(index));
+            } else if (representation == "INDEX") {
+              resolvedName += std::to_string(index);
+            } else {
+              std::cerr << "Representation error: " << representation
+                        << std::endl;
+            }
 
-          replaced = true;
-        } else {
+            replaced = true;
+            overriden = true;
+          }
+        }
+        if (!overriden) {
           // Use current value
-          for (auto dim : getDimensions()) {
+          for (auto dim : dimensions) {
             if (dim->getName() == token) {
               if (representation.size() == 0) {
                 switch (dim->getSpaceRepresentationType()) {
@@ -1639,65 +1684,56 @@ CacheEntry ParameterSpace::cacheEntryForProcessor(Processor &processor) {
   for (auto *param : processor.getDependencies()) {
     SourceArgument arg;
     arg.id = param->getName();
-    if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterBool *p =
-                   dynamic_cast<al::ParameterBool *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterString *p =
-                   dynamic_cast<al::ParameterString *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterInt8 *p =
-                   dynamic_cast<al::ParameterInt8 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterInt16 *p =
-                   dynamic_cast<al::ParameterInt16 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterInt64 *p =
-                   dynamic_cast<al::ParameterInt64 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterUInt8 *p =
-                   dynamic_cast<al::ParameterUInt8 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterUInt16 *p =
-                   dynamic_cast<al::ParameterUInt16 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterUInt32 *p =
-                   dynamic_cast<al::ParameterUInt32 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterUInt64 *p =
-                   dynamic_cast<al::ParameterUInt64 *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterDouble *p =
-                   dynamic_cast<al::ParameterDouble *>(param)) {
-      arg.setValue(p->get());
-    }
-    // TODO implement support for all types
-    /*else if (al::ParameterVec3 *p =
-                 dynamic_cast<al::ParameterVec3 *>(param)) {
-      mParameterValue = new al::ParameterVec3(*p);
-    } else if (al::ParameterVec4 *p =
-                 dynamic_cast<al::ParameterVec4 *>(param)) {
-      mParameterValue = new al::ParameterVec4(*p);
-    } else if (al::ParameterColor *p =
-                 dynamic_cast<al::ParameterColor *>(param)) {
-      mParameterValue = new al::ParameterColor(*p);
-    } else if (al::ParameterPose *p =
-                 dynamic_cast<al::ParameterPose *>(param)) {
-      mParameterValue = new al::ParameterPose(*p);
-    } */
-    else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::ParameterChoice *p =
-                   dynamic_cast<al::ParameterChoice *>(param)) {
-      arg.setValue(p->get());
-    } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-      arg.setValue(p->get());
+    std::vector<al::VariantValue> fields;
+    param->getParameterMeta()->getFields(fields);
+    if (fields.size() == 1) {
+      switch (fields[0].type()) {
+      case al::VariantType::VARIANT_FLOAT:
+        arg.setValue(fields[0].get<float>());
+        break;
+      case al::VariantType::VARIANT_DOUBLE:
+        arg.setValue(fields[0].get<double>());
+        break;
+      case al::VariantType::VARIANT_STRING:
+        arg.setValue(fields[0].get<std::string>());
+        break;
+      case al::VariantType::VARIANT_INT64:
+        arg.setValue(fields[0].get<int64_t>());
+        break;
+      case al::VariantType::VARIANT_INT32:
+        arg.setValue(fields[0].get<int32_t>());
+        break;
+      case al::VariantType::VARIANT_INT16:
+        arg.setValue(fields[0].get<int16_t>());
+        break;
+      case al::VariantType::VARIANT_INT8:
+        arg.setValue(fields[0].get<int8_t>());
+        break;
+      case al::VariantType::VARIANT_UINT64:
+        arg.setValue(fields[0].get<uint64_t>());
+        break;
+      case al::VariantType::VARIANT_UINT32:
+        arg.setValue(fields[0].get<uint32_t>());
+        break;
+      case al::VariantType::VARIANT_UINT16:
+        arg.setValue(fields[0].get<uint16_t>());
+        break;
+      case al::VariantType::VARIANT_UINT8:
+        arg.setValue(fields[0].get<uint8_t>());
+        break;
+      case al::VariantType::VARIANT_NONE:
+      case al::VariantType::VARIANT_BOOL:
+      case al::VariantType::VARIANT_CHAR:
+      case al::VariantType::VARIANT_VARIANT_VECTOR:
+      case al::VariantType::VARIANT_VECTOR_OFFSET:
+
+        std::cerr << __FILE__ << ":" << __LINE__
+                  << " Unsupported parameter: " << param->getName()
+                  << std::endl;
+        break;
+      }
     } else {
-      std::cerr << __FUNCTION__ << ": Unsupported Parameter Type" << std::endl;
-      arg.setValue(al::VariantValue());
+      std::cerr << "Parameters with multiple values not supported" << std::endl;
     }
     entry.sourceInfo.dependencies.push_back(std::move(arg));
   }
@@ -1776,15 +1812,23 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
         std::string hash = std::to_string(crc);
         std::string parameterPrefix;
         for (auto *dep : processor.getDependencies()) {
-          // TODO support other parameter data types
-          parameterPrefix += std::to_string(dep->toFloat()) + "_";
+
+          std::vector<al::VariantValue> fields;
+          dep->getParameterMeta()->getFields(fields);
+          if (fields.size() == 1) {
+            parameterPrefix += fields[0].toString() + "_";
+          } else {
+            std::cerr << __FILE__ << ":" << __LINE__
+                      << " ERROR: parameters with multiple values not supported"
+                      << std::endl;
+          }
         }
         for (auto dim : mDimensions) {
           parameterPrefix += "%%" + dim->getName() + "%%_";
         }
         parameterPrefix += "_" + hash + "_";
         parameterPrefix =
-            ProcessorScript::sanitizeName(resolveFilename(parameterPrefix));
+            ProcessorScript::sanitizeName(resolveTemplate(parameterPrefix));
         // FIXME compress filename to ensure path is not too long. Perhaps use a
         // hash for the path when too long?
         std::string cacheFilename =
