@@ -3,6 +3,7 @@
 #include "tinc/DiskBufferImage.hpp"
 #include "tinc/DiskBufferJson.hpp"
 #include "tinc/DiskBufferNetCDFData.hpp"
+#include "tinc/DiskBufferText.hpp"
 #include "tinc/ProcessorAsyncWrapper.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/ProcessorGraph.hpp"
@@ -2130,7 +2131,15 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   } else if (command.type() == DiskBufferType::IMAGE) {
     mLocalDBs.emplace_back(
         std::make_shared<DiskBufferImage>(id, baseFilename, relPath, rootPath));
-  } else {
+  } else if (command.type() == DiskBufferType::TEXT) {
+    mLocalDBs.emplace_back(
+        std::make_shared<DiskBufferText>(id, baseFilename, relPath, rootPath));
+  } /* else if (command.type() == DiskBufferType::BINARY) {
+      mLocalDBs.emplace_back(
+          std::make_shared<DiskBufferImage>(id, baseFilename, relPath,
+  rootPath));
+  } */
+  else {
 
     std::cout << __FUNCTION__ << ": DiskBuffer type not supported."
               << std::endl;
@@ -2349,6 +2358,8 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
     type = DiskBufferType::IMAGE;
   } else if (dynamic_cast<DiskBufferJson *>(db)) {
     type = DiskBufferType::JSON;
+  } else if (dynamic_cast<DiskBufferText *>(db)) {
+    type = DiskBufferType::TEXT;
   } else {
     // FIXME implement missing types
     type = DiskBufferType::BINARY;
