@@ -2101,26 +2101,27 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   auto baseFilename = path.filename();
   auto relPath = path.relativepath();
 
-  std::string rootPath = path.rootpath();
-  if (rootPath.size() > 0) {
-    for (auto &entry : mRootPathMap) {
-      // TODO verify check for hostname is working
-      std::cout << src->hostName() << " " << al::Socket::hostName()
-                << std::endl;
-      bool isSameHost = false;
-      if (mClientHostnames.find(src) != mClientHostnames.end()) {
-        isSameHost = src->hostName() == mClientHostnames[src];
-      }
-      if (entry.first == "" && !isSameHost) {
-        for (auto &mapEntry : entry.second) {
-          if (al::File::isSamePath(mapEntry.second, rootPath) ||
-              mapEntry.second.find(rootPath) == 0) {
-            rootPath = mapEntry.first + rootPath.substr(mapEntry.second.size());
-          }
-        }
-      }
-    }
-  }
+  std::string rootPath = mapFromRemotePath(path.rootpath(), src);
+  //  if (rootPath.size() > 0) {
+  //    for (auto &entry : mRootPathMap) {
+  //      // TODO verify check for hostname is working
+  //      std::cout << src->hostName() << " " << al::Socket::hostName()
+  //                << std::endl;
+  //      bool isSameHost = false;
+  //      if (mClientHostnames.find(src) != mClientHostnames.end()) {
+  //        isSameHost = src->hostName() == mClientHostnames[src];
+  //      }
+  //      if (entry.first == "" && !isSameHost) {
+  //        for (auto &mapEntry : entry.second) {
+  //          if (al::File::isSamePath(mapEntry.second, rootPath) ||
+  //              mapEntry.second.find(rootPath) == 0) {
+  //            rootPath = mapEntry.first +
+  //            rootPath.substr(mapEntry.second.size());
+  //          }
+  //        }
+  //      }
+  //    }
+  //  }
 
   if (command.type() == DiskBufferType::JSON) {
     mLocalDBs.emplace_back(
@@ -2330,8 +2331,8 @@ std::string TincProtocol::mapToRemotePath(std::string path, al::Socket *src) {
     }
     if (mapEntry.first == "" && !isSameHost) {
       for (auto pathMap : mapEntry.second) {
-        if (al::File::isSamePath(pathMap.second, path)) {
-          path = pathMap.first;
+        if (al::File::isSamePath(pathMap.first, path)) {
+          path = pathMap.second;
           goto path_mapped;
         }
       }
@@ -2369,7 +2370,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
   tinc_protobuf::DistributedPath *path = new tinc_protobuf::DistributedPath;
   path->set_filename(db->getBaseFileName());
   path->set_relativepath(db->getRelativePath());
-  std::string rootPath = mapToRemotePath(db->getRootPath(), src);
+  std::string rootPath = mapToRemotePath(db->getRootPath(), dst);
   path->set_rootpath(rootPath);
 
   details.set_allocated_path(path);
