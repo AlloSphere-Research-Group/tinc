@@ -139,6 +139,17 @@ void drawTincServerInfo(TincServer &tserv, bool debug) {
   for (auto conn : tserv.connections()) {
     ImGui::Text("%s:%i", conn.first.c_str(), conn.second);
   }
+  if (tserv.getRootPathMap().size() > 0) {
+    if (ImGui::CollapsingHeader("RootPath Mapping")) {
+      for (auto &mapEntry : tserv.getRootPathMap()) {
+        ImGui::Text("Host: '%s'", mapEntry.first.c_str());
+        for (auto mapping : mapEntry.second) {
+          ImGui::Text("   '%s' -> '%s'", mapping.first.c_str(),
+                      mapping.second.c_str());
+        }
+      }
+    }
+  }
 
   ImGui::PopID();
 }

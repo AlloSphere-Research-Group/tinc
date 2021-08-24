@@ -251,6 +251,11 @@ public:
                                   al::File::conformDirectory(clientPath)});
   };
 
+  const std::map<std::string, std::vector<std::pair<std::string, std::string>>>
+  getRootPathMap() {
+    return mRootPathMap;
+  }
+
   void print(std::ostream &stream = std::cout);
 
 protected:
@@ -371,6 +376,7 @@ protected:
   // send proto message (No checks. sends to dst socket)
   bool sendProtobufMessage(void *message, al::Socket *dst);
 
+  // Path mapping
   std::string mapFromRemotePath(std::string path, al::Socket *src);
   std::string mapToRemotePath(std::string path, al::Socket *src);
 

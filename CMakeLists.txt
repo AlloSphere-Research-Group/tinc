@@ -236,6 +236,7 @@ if(TINC_BUILD_EXAMPLES)
   add_subdirectory(cookbook)
 endif(TINC_BUILD_EXAMPLES)
 
+##### Unit tests
 if(TINC_BUILD_TESTS)
   message("Building TINC Tests")
   

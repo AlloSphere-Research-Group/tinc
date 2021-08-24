@@ -4,6 +4,8 @@
 #include "tinc/TincServer.hpp"
 #include "tinc/vis/GUI.hpp"
 
+#include "nlohmann/json.hpp"
+
 using namespace tinc;
 
 class TincServerApp : public al::App {
@@ -41,10 +43,50 @@ public:
 private:
 };
 
-int main() {
+/**
+JSON config file should look like:
+
+{
+  "rootPathMap" : {
+    "": [
+          {"serverPath" : "C:/Users/Andres/source/repos",
+           "clientPath" : "/shared"
+          }
+      ]
+    }
+}
+ */
+int main(int argc, char *argv[]) {
   TincServerApp app;
 
-  app.tserver.setRootMapEntry("C:/Users/Andres/source/repos", "/shared");
+  std::string configFile = "tinc_server_config.json";
+  if (argc == 2) {
+    configFile = argv[1];
+  }
+
+  std::ifstream ifs(configFile);
+  if (ifs.good()) {
+    nlohmann::json j = nlohmann::json::parse(ifs);
+    std::cout << "Using config file: " << configFile << std::endl;
+    if (j.find("rootPathMap") != j.end() && j["rootPathMap"].is_object()) {
+      for (auto &hostMap : j["rootPathMap"].items()) {
+        for (auto mapping : hostMap.value()) {
+          if (mapping.is_object() && mapping.contains("serverPath") &&
+              mapping.contains("clientPath") &&
+              mapping["serverPath"].is_string() &&
+              mapping["clientPath"].is_string()) {
+
+            app.tserver.setRootMapEntry(mapping["serverPath"],
+                                        mapping["clientPath"], hostMap.key());
+          } else {
+            std::cerr << "ERROR parsing rootMapPath" << std::endl;
+          }
+        }
+      }
+    }
+  } else {
+    std::cout << "JSON config file not found." << std::endl;
+  }
 
   app.start();
   return 0;
