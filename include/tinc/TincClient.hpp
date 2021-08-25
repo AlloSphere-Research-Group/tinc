@@ -70,6 +70,7 @@ public:
   }
 
   inline void synchronize() {
+    sendMetadata();
     requestParameters();
     requestParameterSpaces();
     requestProcessors();
@@ -78,6 +79,8 @@ public:
 
     waitForServer();
   }
+
+  void sendMetadata();
 
   /**
    * @brief Wait for lock, then wait for unlock.

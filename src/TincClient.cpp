@@ -243,6 +243,20 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
   return false;
 }
 
+void TincClient::sendMetadata() {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::TINC_CLIENT_METADATA);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  ClientMetaData metadata;
+  std::string hostName = mSocket.hostName();
+  metadata.set_clienthost(hostName);
+
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(metadata);
+  msg.set_allocated_details(detailsAny);
+  sendTincMessage(&msg);
+}
+
 bool TincClient::barrier(uint32_t group, float timeoutsec) {
   std::cerr << __FUNCTION__ << " Enter client barrier " << std::endl;
   // First flush all existing barrier requests and unlocks

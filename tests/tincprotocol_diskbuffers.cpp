@@ -215,7 +215,7 @@ TEST(DiskBufferProtocol, DiskBufferRootPathMap) {
   }
 
   EXPECT_TRUE(tclient.isConnected());
-  tclient.requestDiskBuffers();
+  //  tclient.requestDiskBuffers();
 
   al::al_sleep(0.5); // Give time to connect
 
