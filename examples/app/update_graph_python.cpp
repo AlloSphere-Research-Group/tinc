@@ -10,7 +10,7 @@ using namespace tinc;
 
 struct TincApp : DistributedApp {
 
-  Parameter param{"param", "", 0.5, "", 0.0, 1.0};
+  Parameter param{"param", "", 0.5, 0.0, 1.0};
   DiskBufferImage dataBuffer{"graph", "output.png"};
   TincServer tserv;
 

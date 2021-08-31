@@ -8,7 +8,7 @@ using namespace al;
 using namespace tinc;
 
 struct TincApp : DistributedApp {
-  Parameter value{"value", "", 0.0, "", 0.0, 1.0};
+  Parameter value{"value", "", 0.0, 0.0, 1.0};
   ParameterString stringParam{"string", "", "default value"};
   ParameterInt intValue{"int"};
   Trigger resetString{"ResetString"};

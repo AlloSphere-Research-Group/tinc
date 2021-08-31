@@ -96,7 +96,7 @@ protected:
     } else {
       std::cerr << "Error reading Image: " << filePath << std::endl;
     }
-    return true;
+    return ret;
   }
 
   bool encodeData(std::string fileName, al::Image &newData) override {

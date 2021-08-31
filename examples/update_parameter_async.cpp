@@ -24,7 +24,7 @@ using namespace al;
 // TODO this example could use tinc's DiskBufferImage class
 
 struct TincApp : DistributedApp {
-  Parameter param{"param", "", 0.5, "", 0.0, 1.0};
+  Parameter param{"param", "", 0.5, 0.0, 1.0};
 
   ControlGUI gui;
 
@@ -35,7 +35,6 @@ struct TincApp : DistributedApp {
   void onInit() override {
     // Generate a new image on disk on every change of param
     param.registerChangeCallback([&](float value) {
-
       uint8_t intvalue = (uint8_t)(param.get() * 255);
 
       std::vector<uint8_t> pix;

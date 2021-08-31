@@ -86,7 +86,7 @@ int main() {
 
   // Or you can request a slice to memory.
   // By default this will write a file or read the file if already produced
-  size_t readCount = 0;
+  //  size_t readCount = 0;
 
   float slice[5];
   internalValuesDim->setCurrentIndex(0);

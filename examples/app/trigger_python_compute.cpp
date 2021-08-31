@@ -1,8 +1,8 @@
 #include "al/app/al_DistributedApp.hpp"
 #include "al/ui/al_ControlGUI.hpp"
 
-#include "tinc/TincServer.hpp"
 #include "tinc/DiskBufferJson.hpp"
+#include "tinc/TincServer.hpp"
 
 using namespace al;
 using namespace tinc;
@@ -10,7 +10,7 @@ using namespace tinc;
 struct TincApp : DistributedApp {
   TincServer tserv;
 
-  Parameter range{"range", "", 0.5, "", 0.0, 1.0};
+  Parameter range{"range", "", 0.5, 0.0, 1.0};
   DiskBufferJson dataBuffer{"random_data", "rand_output.json"};
 
   ControlGUI gui;
