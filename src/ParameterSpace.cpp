@@ -54,10 +54,10 @@ ParameterSpaceDimension *ParameterSpace::getDimension(std::string name,
 ParameterSpaceDimension *
 ParameterSpace::newDimension(std::string name,
                              ParameterSpaceDimension::RepresentationType type,
-                             al::VariantType datatype, std::string group) {
+                             ParameterType parameterType, std::string group) {
   // FIXME check if dimension exists already and return existing one
   auto newDim =
-      std::make_shared<ParameterSpaceDimension>(name, group, datatype);
+      std::make_shared<ParameterSpaceDimension>(name, group, parameterType);
   newDim->mRepresentationType = type;
 
   registerDimension(newDim);
@@ -72,12 +72,12 @@ ParameterSpaceDimension *ParameterSpace::registerDimension(
   for (auto &dim : mDimensions) {
     if (dim->getName() == dimension->getName() &&
         dim->getGroup() == dimension->getGroup()) {
-      if (dim->mSpaceValues.getDataType() ==
-          dimension->mSpaceValues.getDataType()) {
-        dim->mSpaceValues.clear();
-        dim->mSpaceValues.append(dimension->mSpaceValues.getValuesPtr(),
-                                 dimension->mSpaceValues.size());
-        dim->mSpaceValues.setIds(dimension->mSpaceValues.getIds());
+      if (dim->mSpaceValues->getDataType() ==
+          dimension->mSpaceValues->getDataType()) {
+        dim->mSpaceValues->clear();
+        dim->mSpaceValues->append(dimension->mSpaceValues->getValuesPtr(),
+                                  dimension->mSpaceValues->size());
+        dim->mSpaceValues->setIds(dimension->mSpaceValues->getIds());
         dim->mRepresentationType = dimension->getSpaceRepresentationType();
 
         lk.unlock();
@@ -787,33 +787,33 @@ bool readNetCDFValues(int grpid, ParameterSpaceDimension *pdim) {
 }
 
 #ifdef TINC_HAS_HDF5
-al::VariantType nctypeToTincType(nc_type nctype) {
+ParameterType nctypeToTincType(nc_type nctype) {
   // TODO complete support for all netcdf types
   switch (nctype) {
   case NC_STRING:
-    return al::VariantType::VARIANT_STRING;
+    return ParameterType::PARAMETER_STRING;
   case NC_FLOAT:
-    return al::VariantType::VARIANT_FLOAT;
+    return ParameterType::PARAMETER_FLOAT;
   case NC_DOUBLE:
-    return al::VariantType::VARIANT_DOUBLE;
+    return ParameterType::PARAMETER_DOUBLE;
   case NC_BYTE:
-    return al::VariantType::VARIANT_INT8;
+    return ParameterType::PARAMETER_INT8;
   case NC_UBYTE:
-    return al::VariantType::VARIANT_UINT8;
+    return ParameterType::PARAMETER_UINT8;
   case NC_SHORT:
-    return al::VariantType::VARIANT_INT16;
+    return ParameterType::PARAMETER_INT16;
   case NC_USHORT:
-    return al::VariantType::VARIANT_UINT16;
+    return ParameterType::PARAMETER_UINT16;
   case NC_INT:
-    return al::VariantType::VARIANT_INT32;
+    return ParameterType::PARAMETER_INT32;
   case NC_UINT:
-    return al::VariantType::VARIANT_UINT32;
+    return ParameterType::PARAMETER_UINT32;
   case NC_INT64:
-    return al::VariantType::VARIANT_INT64;
+    return ParameterType::PARAMETER_INT64;
   case NC_UINT64:
-    return al::VariantType::VARIANT_UINT64;
+    return ParameterType::PARAMETER_UINT64;
   }
-  return al::VariantType::VARIANT_FLOAT;
+  return ParameterType::PARAMETER_FLOAT;
 }
 #endif
 
@@ -949,7 +949,8 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 
       ParameterSpaceDimension *pdim = getDimension(parameterName, "");
       if (!pdim) {
-        auto newDim = std::make_shared<ParameterSpaceDimension>(parameterName);
+        auto newDim = std::make_shared<ParameterSpaceDimension>(
+            parameterName, "", nctypeToTincType(nctypeid));
         newDimensions.push_back(newDim);
         pdim = newDim.get();
       }
@@ -988,7 +989,12 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
       ParameterSpaceDimension *pdim = getDimension(conditionName, "");
 
       if (!pdim) {
-        auto newDim = std::make_shared<ParameterSpaceDimension>(conditionName);
+        nc_type nctypeid;
+        int varid;
+        nc_inq_varid(conditions_ids[i], "values", &varid);
+        nc_inq_vartype(conditions_ids[i], varid, &nctypeid);
+        auto newDim = std::make_shared<ParameterSpaceDimension>(
+            conditionName, "", nctypeToTincType(nctypeid));
         newDimensions.push_back(newDim);
         pdim = newDim.get();
       }

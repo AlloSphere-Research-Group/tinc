@@ -62,6 +62,31 @@ namespace tinc {
  *a dimension. As it deals both with the shape and the values of the parameter
  *space.
  */
+
+// This enum must be kept in sync with the one in protobuf
+enum ParameterType {
+  PARAMETER_FLOAT = 0,
+  PARAMETER_BOOL = 1,
+  PARAMETER_STRING = 2,
+  PARAMETER_INT32 = 3,
+  PARAMETER_VEC3F = 4,
+  PARAMETER_VEC4F = 5,
+  PARAMETER_COLORF = 6,
+  PARAMETER_POSED = 7,
+  PARAMETER_MENU = 8,
+  PARAMETER_CHOICE = 9,
+  PARAMETER_TRIGGER = 10,
+
+  PARAMETER_INT64 = 11,
+  PARAMETER_INT16 = 12,
+  PARAMETER_INT8 = 13,
+  PARAMETER_UINT64 = 14,
+  PARAMETER_UINT32 = 15,
+  PARAMETER_UINT16 = 16,
+  PARAMETER_UINT8 = 17,
+  PARAMETER_DOUBLE = 18,
+};
+
 class ParameterSpaceDimension {
   friend class ParameterSpace;
   friend class TincProtocol;
@@ -73,13 +98,15 @@ public:
    * @brief ParameterSpaceDimension
    * @param name
    * @param group
-   * @param dataType
+   * @param paramType
    *
-   * Dimensions can have names and belong to groups.
+   * Dimensions must have names and can belong to groups.
+   * paramType determines both data type as well as interface and
+   * behavior.
    */
   ParameterSpaceDimension(
       std::string name, std::string group = "",
-      al::VariantType dataType = al::VariantType::VARIANT_FLOAT);
+      ParameterType paramType = ParameterType::PARAMETER_FLOAT);
   /**
    * @brief construct a ParameterSpaceDimension from a ParameterMeta *
    * @param param
@@ -191,7 +218,7 @@ public:
    * @brief get number of elements to jump to move to next value
    * @return
    */
-  size_t getSpaceStride() { return mSpaceValues.stride(); }
+  size_t getSpaceStride() { return mSpaceValues->stride(); }
 
   /**
    * The parameter instance holds the current value.
@@ -277,9 +304,9 @@ public:
   template <typename SpaceDataType>
   void setSpaceValues(std::vector<SpaceDataType> values,
                       std::string idprefix = "", al::Socket *src = nullptr) {
-    mSpaceValues.clear();
+    mSpaceValues->clear();
     // TODO add safety check for types and pointer sizes
-    mSpaceValues.append(values.data(), values.size(), idprefix);
+    mSpaceValues->append(values.data(), values.size(), idprefix);
     onDimensionMetadataChange(this, src);
   }
   /**
@@ -297,7 +324,7 @@ public:
    */
   template <typename SpaceDataType>
   std::vector<SpaceDataType> getSpaceValues() {
-    return mSpaceValues.getValues<SpaceDataType>();
+    return mSpaceValues->getValues<SpaceDataType>();
   }
 
   /**
@@ -318,7 +345,7 @@ public:
    * int8, int16 and in32 are all handled by ParameterInt that uses a 32 bit
    * representation.
    */
-  al::VariantType getSpaceDataType() { return mSpaceValues.getDataType(); }
+  al::VariantType getSpaceDataType() { return mSpaceValues->getDataType(); }
 
   /**
    * @brief Get index in space for value
@@ -360,13 +387,14 @@ public:
 
 private:
   // Used to store discretization values of parameters
-  al::DiscreteParameterValues mSpaceValues;
+  std::unique_ptr<al::DiscreteParameterValues> mSpaceValues;
 
   RepresentationType mRepresentationType{VALUE};
   bool mFilesystemDimension{false};
 
   // Current state
   al::ParameterMeta *mParameterValue{nullptr};
+  ParameterType mParamType;
   bool mParamInternal;
 };
 

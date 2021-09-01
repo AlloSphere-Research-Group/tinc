@@ -30,24 +30,24 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
   details.set_id(param->getName());
   details.set_group(param->getGroup());
   if (al::Parameter *p = dynamic_cast<al::Parameter *>(param)) {
-    details.set_datatype(PARAMETER_FLOAT);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_FLOAT);
     auto *def = details.mutable_defaultvalue();
     def->set_valuefloat(p->getDefault());
   } else if (al::ParameterBool *p = dynamic_cast<al::ParameterBool *>(param)) {
-    details.set_datatype(PARAMETER_BOOL);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_BOOL);
     auto *def = details.mutable_defaultvalue();
     def->set_valuefloat(p->getDefault());
   } else if (al::ParameterString *p =
                  dynamic_cast<al::ParameterString *>(param)) {
-    details.set_datatype(PARAMETER_STRING);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_STRING);
     auto *def = details.mutable_defaultvalue();
     def->set_valuestring(p->getDefault());
   } else if (al::ParameterInt *p = dynamic_cast<al::ParameterInt *>(param)) {
-    details.set_datatype(PARAMETER_INT32);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_INT32);
     auto *def = details.mutable_defaultvalue();
     def->set_valueint32(p->getDefault());
   } else if (al::ParameterVec3 *p = dynamic_cast<al::ParameterVec3 *>(param)) {
-    details.set_datatype(PARAMETER_VEC3F);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_VEC3F);
     al::Vec3f defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
     auto *val = def->add_valuelist();
@@ -57,7 +57,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val = def->add_valuelist();
     val->set_valuefloat(defaultValue[2]);
   } else if (al::ParameterVec4 *p = dynamic_cast<al::ParameterVec4 *>(param)) {
-    details.set_datatype(PARAMETER_VEC4F);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_VEC4F);
     al::Vec4f defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
     auto *val = def->add_valuelist();
@@ -70,7 +70,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val->set_valuefloat(defaultValue[3]);
   } else if (al::ParameterColor *p =
                  dynamic_cast<al::ParameterColor *>(param)) {
-    details.set_datatype(PARAMETER_COLORF);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_COLORF);
     al::Color defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
     auto *val = def->add_valuelist();
@@ -82,7 +82,7 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val = def->add_valuelist();
     val->set_valuefloat(defaultValue.a);
   } else if (al::ParameterPose *p = dynamic_cast<al::ParameterPose *>(param)) {
-    details.set_datatype(PARAMETER_POSED);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_POSED);
     al::Pose defaultValue = p->getDefault();
     auto *def = details.mutable_defaultvalue();
     auto *val = def->add_valuelist();
@@ -100,18 +100,57 @@ TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
     val = def->add_valuelist();
     val->set_valuedouble(defaultValue.quat()[3]);
   } else if (al::ParameterMenu *p = dynamic_cast<al::ParameterMenu *>(param)) {
-    details.set_datatype(PARAMETER_MENU);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_MENU);
     auto *def = details.mutable_defaultvalue();
     def->set_valueint32(p->getDefault());
   } else if (al::ParameterChoice *p =
                  dynamic_cast<al::ParameterChoice *>(param)) {
-    details.set_datatype(PARAMETER_CHOICE);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_CHOICE);
     auto *def = details.mutable_defaultvalue();
     def->set_valueuint64(p->getDefault());
   } else if (al::Trigger *p = dynamic_cast<al::Trigger *>(param)) {
-    details.set_datatype(PARAMETER_TRIGGER);
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_TRIGGER);
     auto *def = details.mutable_defaultvalue();
     def->set_valuebool(p->getDefault());
+  } else if (al::ParameterInt64 *p =
+                 dynamic_cast<al::ParameterInt64 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_INT64);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueint64(p->getDefault());
+  } else if (al::ParameterInt16 *p =
+                 dynamic_cast<al::ParameterInt16 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_INT16);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueint32(p->getDefault());
+  } else if (al::ParameterInt8 *p = dynamic_cast<al::ParameterInt8 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_INT8);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueint32(p->getDefault());
+  } else if (al::ParameterUInt64 *p =
+                 dynamic_cast<al::ParameterUInt64 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_UINT64);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueuint64(p->getDefault());
+  } else if (al::ParameterUInt32 *p =
+                 dynamic_cast<al::ParameterUInt32 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_UINT32);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueuint32(p->getDefault());
+  } else if (al::ParameterUInt16 *p =
+                 dynamic_cast<al::ParameterUInt16 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_UINT16);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueuint32(p->getDefault());
+  } else if (al::ParameterUInt8 *p =
+                 dynamic_cast<al::ParameterUInt8 *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_UINT8);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valueuint32(p->getDefault());
+  } else if (al::ParameterDouble *p =
+                 dynamic_cast<al::ParameterDouble *>(param)) {
+    details.set_datatype(tinc_protobuf::ParameterType::PARAMETER_DOUBLE);
+    auto *def = details.mutable_defaultvalue();
+    def->set_valuedouble(p->getDefault());
   } else {
     std::cerr << __FUNCTION__ << ": Unrecognized Parameter type" << std::endl;
   }
@@ -560,7 +599,7 @@ createConfigureParameterSpaceDimensionMessage(ParameterSpaceDimension *dim) {
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_DOUBLE) {
       for (auto &value : dim->getSpaceValues<double>()) {
         auto *newValue = valuesMessage.add_values();
-        newValue->set_valuefloat(value);
+        newValue->set_valuedouble(value);
         newValue->set_nctype(al::VariantType::VARIANT_DOUBLE);
       }
     } else if (dim->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
@@ -1952,41 +1991,41 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
   }
 
   al::ParameterMeta *param = nullptr;
-  switch (datatype) {
-  case ParameterDataType::PARAMETER_FLOAT:
+  switch ((tinc_protobuf::ParameterType)datatype) {
+  case tinc_protobuf::ParameterType::PARAMETER_FLOAT:
     param = new al::Parameter(id, group, def.valuefloat());
     break;
-  case ParameterDataType::PARAMETER_BOOL:
+  case tinc_protobuf::ParameterType::PARAMETER_BOOL:
     param = new al::ParameterBool(id, group, def.valuefloat());
     break;
-  case ParameterDataType::PARAMETER_STRING:
+  case tinc_protobuf::ParameterType::PARAMETER_STRING:
     param = new al::ParameterString(id, group, def.valuestring());
     break;
-  case ParameterDataType::PARAMETER_INT32:
+  case tinc_protobuf::ParameterType::PARAMETER_INT32:
     param = new al::ParameterInt(id, group, def.valueint32());
     break;
-  case ParameterDataType::PARAMETER_VEC3F: {
+  case tinc_protobuf::ParameterType::PARAMETER_VEC3F: {
     al::Vec3f value(def.valuelist(0).valuefloat(),
                     def.valuelist(1).valuefloat(),
                     def.valuelist(2).valuefloat());
     param = new al::ParameterVec3(id, group, value);
     break;
   }
-  case ParameterDataType::PARAMETER_VEC4F: {
+  case tinc_protobuf::ParameterType::PARAMETER_VEC4F: {
     al::Vec4f value(
         def.valuelist(0).valuefloat(), def.valuelist(1).valuefloat(),
         def.valuelist(2).valuefloat(), def.valuelist(3).valuefloat());
     param = new al::ParameterVec4(id, group, value);
     break;
   }
-  case ParameterDataType::PARAMETER_COLORF: {
+  case tinc_protobuf::ParameterType::PARAMETER_COLORF: {
     al::Color value(
         def.valuelist(0).valuefloat(), def.valuelist(1).valuefloat(),
         def.valuelist(2).valuefloat(), def.valuelist(3).valuefloat());
     param = new al::ParameterColor(id, group, value);
     break;
   }
-  case ParameterDataType::PARAMETER_POSED: {
+  case tinc_protobuf::ParameterType::PARAMETER_POSED: {
     al::Pose value(
         {def.valuelist(0).valuedouble(), def.valuelist(1).valuedouble(),
          def.valuelist(2).valuedouble()},
@@ -1995,17 +2034,41 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
     param = new al::ParameterPose(id, group, value);
     break;
   }
-  case ParameterDataType::PARAMETER_MENU:
+  case tinc_protobuf::ParameterType::PARAMETER_MENU:
     param = new al::ParameterMenu(id, group, def.valueint32());
     break;
-  case ParameterDataType::PARAMETER_CHOICE:
+  case tinc_protobuf::ParameterType::PARAMETER_CHOICE:
     param = new al::ParameterChoice(id, group, def.valueuint64());
     break;
-  case ParameterDataType::PARAMETER_TRIGGER:
+  case tinc_protobuf::ParameterType::PARAMETER_TRIGGER:
     param = new al::Trigger(id, group);
     break;
+  case tinc_protobuf::ParameterType::PARAMETER_INT64:
+    param = new al::ParameterInt64(id, group, def.valueint64());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_INT16:
+    param = new al::ParameterInt16(id, group, def.valueint32());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_INT8:
+    param = new al::ParameterInt8(id, group, def.valueint32());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_UINT64:
+    param = new al::ParameterUInt64(id, group, def.valueuint64());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_UINT32:
+    param = new al::ParameterUInt32(id, group, def.valueuint32());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_UINT16:
+    param = new al::ParameterUInt16(id, group, def.valueuint32());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_UINT8:
+    param = new al::ParameterUInt8(id, group, def.valueuint32());
+    break;
+  case tinc_protobuf::ParameterType::PARAMETER_DOUBLE:
+    param = new al::ParameterDouble(id, group, def.valuedouble());
+    break;
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ParameterDataType" << std::endl;
+    std::cerr << __FUNCTION__ << ": Invalid ParameterType" << std::endl;
     break;
   }
 

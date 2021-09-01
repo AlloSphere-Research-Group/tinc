@@ -40,7 +40,8 @@ enum ProcessorType {
   CPP = 2;
 }
 
-enum ParameterDataType {
+// This should be kept in sync with the C++ enum in ParamterSpaceDimension
+enum ParameterType {
     PARAMETER_FLOAT = 0;
     PARAMETER_BOOL = 1;
     PARAMETER_STRING = 2;
@@ -52,6 +53,15 @@ enum ParameterDataType {
     PARAMETER_MENU = 8;
     PARAMETER_CHOICE = 9;
     PARAMETER_TRIGGER = 10;
+
+    PARAMETER_INT64 = 11;
+    PARAMETER_INT16 = 12;
+    PARAMETER_INT8 = 13;
+    PARAMETER_UINT64 = 14;
+    PARAMETER_UINT32 = 15;
+    PARAMETER_UINT16 = 16;
+    PARAMETER_UINT8 = 17;
+    PARAMETER_DOUBLE = 18;
 }
 
 enum DiskBufferType {
@@ -144,7 +154,7 @@ message RegisterParameterSpace {
 message RegisterParameter {
   string id = 1;
   string group = 2;
-  ParameterDataType dataType = 3;
+  ParameterType dataType = 3;
   ParameterValue defaultValue = 4;
  }
 

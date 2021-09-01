@@ -80,14 +80,14 @@ public:
    * @brief create and register a new dimension for this parameter space
    * @param name dimension name
    * @param type representation type for the value
-   * @param datatype data type
+   * @param parameterType data type and behavior of parameter
    * @return the newly created dimension.
    */
   ParameterSpaceDimension *
   newDimension(std::string name,
                ParameterSpaceDimension::RepresentationType type =
                    ParameterSpaceDimension::VALUE,
-               al::VariantType datatype = al::VariantType::VARIANT_FLOAT,
+               ParameterType parameterType = ParameterType::PARAMETER_FLOAT,
                std::string group = "");
 
   /**

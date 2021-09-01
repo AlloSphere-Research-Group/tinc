@@ -46,7 +46,7 @@ TEST(ParameterSpace, DimensionValues) {
   }
 
   auto dim3 = ps.newDimension("dim3", ParameterSpaceDimension::VALUE,
-                              al::VariantType::VARIANT_INT32);
+                              ParameterType::PARAMETER_INT32);
   std::vector<int32_t> valuesInt32 = {-6, -3, -2, -1, 0, 5, 6, 7, 8, 10};
   dim3->setSpaceValues(valuesInt32);
 
@@ -58,7 +58,7 @@ TEST(ParameterSpace, DimensionValues) {
   }
 
   auto dim2 = ps.newDimension("dim2", ParameterSpaceDimension::VALUE,
-                              al::VariantType::VARIANT_INT64);
+                              ParameterType::PARAMETER_INT64);
   std::vector<int64_t> valuesInt = {-3, -2, -1, 0, 5, 6, 7, 8};
   dim2->setSpaceValues(valuesInt);
 
@@ -104,27 +104,27 @@ TEST(ParameterSpace, DimensionTypes) {
 
   //  auto stringDim = ps.newDimension("stringDim",
   //  ParameterSpaceDimension::VALUE,
-  //                                   al::VariantType::VARIANT_STRING);
+  //                                   ParameterType::PARAMETER_STRING);
   //  auto doubleDim = ps.newDimension("doubleDim",
   //  ParameterSpaceDimension::VALUE,
-  //                                   al::VariantType::VARIANT_DOUBLE);
+  //                                   ParameterType::PARAMETER_DOUBLE);
   auto float8Dim = ps.newDimension("floatDim", ParameterSpaceDimension::VALUE,
-                                   al::VariantType::VARIANT_FLOAT);
+                                   ParameterType::PARAMETER_FLOAT);
   //  auto int64Dim = ps.newDimension("int64Dim",
   //  ParameterSpaceDimension::VALUE,
-  //                                  al::VariantType::VARIANT_INT64);
+  //                                  ParameterType::PARAMETER_INT64);
   auto int32Dim = ps.newDimension("int32Dim", ParameterSpaceDimension::VALUE,
-                                  al::VariantType::VARIANT_INT32);
+                                  ParameterType::PARAMETER_INT32);
   auto int8Dim = ps.newDimension("int8Dim", ParameterSpaceDimension::VALUE,
-                                 al::VariantType::VARIANT_INT8);
+                                 ParameterType::PARAMETER_INT8);
   //  auto uint64Dim = ps.newDimension("uint64Dim",
   //  ParameterSpaceDimension::VALUE,
-  //                                   al::VariantType::VARIANT_UINT64);
+  //                                   ParameterType::PARAMETER_UINT64);
   //  auto uint32Dim = ps.newDimension("uint32Dim",
   //  ParameterSpaceDimension::VALUE,
-  //                                   al::VariantType::VARIANT_UINT32);
+  //                                   ParameterType::PARAMETER_UINT32);
   auto uint8Dim = ps.newDimension("uint8Dim", ParameterSpaceDimension::VALUE,
-                                  al::VariantType::VARIANT_UINT8);
+                                  ParameterType::PARAMETER_UINT8);
 
   EXPECT_EQ(ps.getDimensions().size(), 4);
 }
@@ -212,7 +212,7 @@ TEST(ParameterSpace, ReadWriteNetCDF) {
 
   // TODO fix support for int32
   //  auto dim4 = ps.newDimension("dim4", ParameterSpaceDimension::ID,
-  //                              al::VariantType::VARIANT_INT32);
+  //                              ParameterType::PARAMETER_INT32);
 
   float dim1Values[5] = {0.1, 0.2, 0.3, 0.4};
   dim1->setSpaceValues(dim1Values, 4);

@@ -53,7 +53,7 @@ TEST(Parameter, Float) {
 
 TEST(Parameter, Int32) {
 
-  ParameterSpaceDimension dim1("dim1", "", al::VariantType::VARIANT_INT32);
+  ParameterSpaceDimension dim1("dim1", "", ParameterType::PARAMETER_INT32);
   int32_t values[] = {10, 20, 30};
   dim1.setSpaceValues(values, 3);
   dim1.setSpaceIds({"first", "second", "third"});
