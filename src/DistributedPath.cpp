@@ -7,7 +7,17 @@ using namespace tinc;
 DistributedPath::DistributedPath(std::string filename, std::string relativePath,
                                  std::string rootPath, std::string protocolId)
     : filename(filename), protocolId(protocolId) {
-  setPaths(relativePath, rootPath);
+  if (al::File::isRelativePath(filename)) {
+    if (relativePath.size() > 0 || rootPath.size() > 0) {
+      setPaths(relativePath, rootPath);
+    }
+  } else {
+    if (relativePath.size() > 0 || rootPath.size() > 0) {
+      std::cerr << __FILE__ << ":" << __LINE__
+                << " ERROR: expecting empty paths, filename is absolute."
+                << std::endl;
+    }
+  }
 }
 
 std::string DistributedPath::filePath() { return path() + filename; }
