@@ -71,21 +71,19 @@ void Processor::registerDoneCallback(std::function<void(bool)> func) {
 }
 
 Processor &Processor::registerDimension(ParameterSpaceDimension &dim) {
-  //  auto *param = dim.getParameterMeta();
-  //  if (auto *p = dynamic_cast<al::Parameter *>(param)) {
-  //    return registerParameter(*p);
-  //  } /*else if (auto *p =dynamic_cast<al::ParameterBool *>(param)) {
-  //      return registerParameter(*p);
-  //    }  */
-  //  else if (auto *p = dynamic_cast<al::ParameterInt *>(param)) {
-  //    return registerParameter(*p);
-  //  } else if (auto *p = dynamic_cast<al::ParameterString *>(param)) {
-  //    return registerParameter(*p);
-  //  } else {
-  //    std::cerr << __FUNCTION__ << "ERROR: Unsupported dimension type."
-  //              << std::endl;
-  //  }
   mParameters.push_back(&dim);
+  return *this;
+}
+
+Processor &Processor::registerDependency(ParameterSpaceDimension &param) {
+  mDependencies.push_back(&param);
+  return *this;
+}
+
+Processor &Processor::registerDependency(al::ParameterMeta *param) {
+  mInternalDimensions.emplace_back(
+      std::make_unique<ParameterSpaceDimension>(param));
+  mDependencies.push_back(mInternalDimensions.back().get());
   return *this;
 }
 

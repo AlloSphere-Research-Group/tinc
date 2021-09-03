@@ -1774,7 +1774,7 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
           if (!al::File::copy(
                   mCacheManager->cacheDirectory() + cacheFiles.at(i),
                   processor.getOutputDirectory() + outputFiles.at(i))) {
-            std::cerr << "ERROR restoring cache from"
+            std::cerr << "ERROR restoring cache from "
                       << mCacheManager->cacheDirectory() + cacheFiles.at(i)
                       << " to "
                       << processor.getOutputDirectory() + outputFiles.at(i)

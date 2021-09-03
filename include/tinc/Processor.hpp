@@ -244,29 +244,6 @@ public:
    */
   void useCache(bool use = true) { mUseCache = use; }
 
-  //  /**
-  //   * @brief Register a Parameter so that the Processor is executed on
-  //   changes
-  //   */
-  //  template <class ParameterType>
-  //  Processor &registerParameter(al::ParameterWrapper<ParameterType> &param) {
-  //    mParameters.push_back(&param);
-  //    configuration[param.getName()] = param.get();
-  //    param.registerChangeCallback([&](ParameterType value) {
-  //      configuration[param.getName()] = value;
-  //      process();
-  //    });
-  //    return *this;
-  //  }
-
-  //  /**
-  //   * @brief Convenient syntax for registerParameter()
-  //   */
-  //  template <class ParameterType>
-  //  Processor &operator<<(al::ParameterWrapper<ParameterType> &newParam) {
-  //    return registerParameter(newParam);
-  //  }
-
   /**
    * @brief Register a dependency
    * @param param
@@ -275,10 +252,15 @@ public:
    * A dependency is a parameter that affects the result of this processor but
    * does not trigger computation
    */
-  Processor &registerDependency(ParameterSpaceDimension &param) {
-    mDependencies.push_back(&param);
-    return *this;
-  }
+  Processor &registerDependency(ParameterSpaceDimension &param);
+
+  /**
+   * @brief Convenient syntax for registerParameter()
+   * @param param
+   * @return
+   */
+  Processor &registerDependency(al::ParameterMeta *param);
+
   /**
    * @brief Return the dependencies registered with this Processor
    * @return
@@ -309,6 +291,7 @@ protected:
 
   std::vector<ParameterSpaceDimension *> mParameters;
   std::vector<ParameterSpaceDimension *> mDependencies;
+  std::vector<std::unique_ptr<ParameterSpaceDimension>> mInternalDimensions;
 
   void callStartCallbacks();
   void callDoneCallbacks(bool result);
