@@ -108,9 +108,19 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
                   << std::endl;
         break;
       case MessageType::PONG:
-        std::cerr << __FUNCTION__
-                  << ": Pong message received, but not implemented"
-                  << std::endl;
+        if (details.Is<ParameterValue>()) {
+          ParameterValue pongDetails;
+          details.UnpackTo(&pongDetails);
+          {
+            std::unique_lock<std::mutex> lk(mPongLock);
+            mPongsReceived[src].push_back(pongDetails.valueuint64());
+          }
+          //          std::cout << " PONG " << pongDetails.valueuint64() <<
+          //          std::endl;
+        } else {
+          std::cerr << __FUNCTION__ << ": Invalid payload for PONG"
+                    << std::endl;
+        }
         break;
       case MessageType::BARRIER_REQUEST:
         if (details.Is<Command>()) {
@@ -373,5 +383,43 @@ bool TincClient::waitForServer(float timeoutsec) {
       return false;
     }
   }
+  return true;
+}
+
+uint64_t TincClient::pingServer() {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::PING);
+  msg.set_objecttype(ObjectType::GLOBAL);
+
+  ParameterValue details;
+  auto value = mPingCounter++; // Should we do an atomic operation here?
+  details.set_valueuint64(value);
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+
+  sendTincMessage(&msg);
+  return value;
+}
+
+bool TincClient::waitForPing(uint64_t pingCode, float timeoutsec,
+                             al::Socket *src) {
+  if (!src) {
+    src = &mSocket;
+  }
+  std::unique_lock<std::mutex> lk(mPongLock);
+  float waitTime = 0.05;
+  float totalWaitTime = 0;
+  while (std::find(mPongsReceived[src].begin(), mPongsReceived[src].end(),
+                   pingCode) == mPongsReceived[src].end()) {
+    lk.unlock();
+    al::al_sleep(waitTime);
+    totalWaitTime += waitTime;
+    if (totalWaitTime >= timeoutsec) {
+      return false;
+    }
+    lk.lock();
+  }
+  mPongsReceived[src].clear();
   return true;
 }

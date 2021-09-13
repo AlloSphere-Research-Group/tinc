@@ -363,6 +363,9 @@ protected:
   void sendValueMessage(al::Pose value, std::string fullAddress,
                         al::ValueSource *src = nullptr);
 
+  // Incoming ping message
+  bool readPingMessage(int objectType, void *any, al::Socket *src);
+
   // Incoming command message
   bool readCommandMessage(int objectType, void *any, al::Socket *src);
   bool sendCommandErrorMessage(uint64_t commandId, std::string objectId,
@@ -417,6 +420,10 @@ protected:
   std::map<std::string, std::vector<std::pair<std::string, std::string>>>
       mRootPathMap;
   std::map<al::Socket *, std::string> mClientHostnames;
+
+  // ping-pong
+  std::map<al::Socket *, std::vector<uint64_t>> mPongsReceived;
+  std::mutex mPongLock;
 
   bool mVerbose{false};
 };

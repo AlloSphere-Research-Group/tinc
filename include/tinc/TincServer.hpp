@@ -72,9 +72,9 @@ public:
    * @return true if all connections locked and unlock message was sent before
    * the timeout
    *
-   * This requires clients to explicitly call barrier() . This is used to
-   * syncrhonize applications so they resume execution after all have finished
-   * executing a piece of code
+   * This requires both server and clients to explicitly call barrier(). This
+   * is used to syncrhonize applications so they resume execution after all have
+   * finished executing a piece of code.
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 

@@ -99,6 +99,26 @@ public:
    */
   bool waitForServer(float timeoutsec = 0.0);
 
+  /**
+   * @brief send a ping message to the tinc server
+   * @return a number that identifies the ping
+   *
+   * The server will return a pong message with the number recieved.
+   */
+  uint64_t pingServer();
+
+  /**
+   * @brief waitForPing
+   * @param pingCode
+   * @param timeoutsec
+   * @param src
+   * @return true if pong was received before timeout
+   *
+   * This function clears the pingList for src
+   */
+  bool waitForPing(uint64_t pingCode, float timeoutsec,
+                   al::Socket *src = nullptr);
+
   std::string getWorkingPath();
 
   void setVerbose(bool verbose = true);
@@ -124,6 +144,7 @@ private:
   std::string mWorkingPath;
 
   Status mServerStatus;
+  uint64_t mPingCounter{0};
 };
 
 } // namespace tinc

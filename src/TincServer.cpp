@@ -80,16 +80,23 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         }
         break;
       case MessageType::COMMAND:
-        std::cout << "Server received Command message" << std::endl;
+        if (verbose()) {
+          std::cout << "Server received Command message" << std::endl;
+        }
         if (!readCommandMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Command message"
                     << std::endl;
         }
         break;
       case MessageType::PING:
-        std::cerr << __FUNCTION__
-                  << ": Ping message received, but not implemented"
-                  << std::endl;
+
+        if (verbose()) {
+          std::cout << "Server received Command message" << std::endl;
+        }
+        if (!readPingMessage(objectType, (void *)&details, src)) {
+          std::cerr << __FUNCTION__ << ": Error processing Command message"
+                    << std::endl;
+        }
         break;
       case MessageType::PONG:
         std::cerr << __FUNCTION__
