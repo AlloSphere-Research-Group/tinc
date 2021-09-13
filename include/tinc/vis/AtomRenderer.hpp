@@ -136,9 +136,9 @@ public:
   al::ShaderProgram instancing_shader;
   InstancingMesh instancingMesh;
 
-protected:
   void renderInstances(al::Graphics &g, float *aligned4fData, size_t count);
 
+protected:
   std::string instancing_vert =
       R"(
 #version 330
