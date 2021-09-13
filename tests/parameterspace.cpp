@@ -460,66 +460,39 @@ TEST(ParameterSpace, MultiIDDimensions) {
 TEST(ParameterSpace, ReadWriteNetCDFSpace) {
 
   ParameterSpace ps;
-  auto dim_int = ps.newDimension("dim_int", ParameterSpaceDimension::VALUE);                                      
-
-  auto dim_int8 = ps.newDimension("dim_int8", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_INT8);
-/*  auto dim_int16 = ps.newDimension("dim_int16", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_INT16);
-  auto dim_int32 = ps.newDimension("dim_int32", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_INT32);
-  auto dim_int64 = ps.newDimension("dim_int64", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_INT64);
-  auto dim_uint8 = ps.newDimension("dim_uint8", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_UINT8);
-  auto dim_uint16 = ps.newDimension("dim_uint16", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_UINT16);
-  auto dim_uint32 = ps.newDimension("dim_uint32", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_UINT32);
-  auto dim_uint64 = ps.newDimension("dim_uint64", ParameterSpaceDimension::VALUE,
-                                                  ParameterType::PARAMETER_UINT64);
-*/
-
-  int dim_int_values[3] = {3,26,223};
-  dim_int->setSpaceValues(dim_int_values, 3);
-  dim_int->conformSpace();
-  ps.writeToNetCDF("parameterspace_name.nc");
+  // int
+  auto dim_int = ps.newDimension("dim_int");
+  int dim_int_values[4] = {14, 43, 55, 114};
+  dim_int->setSpaceValues(dim_int_values, 4);
+  ps.writeToNetCDF("parameter_space_testing.nc");
   ps.clear();
-  ps.readFromNetCDF("parameterspace_name.nc");
-  auto values = ps.getDimension("dim_int")->getSpaceValues<int>();
-  EXPECT_EQ(values, std::vector<int>({3,26,223}));
+  ps.readFromNetCDF("parameter_space_testing.nc");
+  auto values_int = ps.getDimension("dim_int")->getSpaceValues<int>();
+  EXPECT_EQ(values_int, std::vector<int>({14, 43, 55, 114}));
+  
+  // int8
+  auto dim_int8 = ps.newDimension("dim_int8",ParameterSpaceDimension::VALUE,
+                                   ParameterType::PARAMETER_INT8);
+  int8_t dim_int8_values[4] = {1, 4, 45, 104};
+  dim_int8->setSpaceValues(dim_int8_values, 4);
+  ps.writeToNetCDF("parameter_space_testing.nc");
   ps.clear();
-
+  ps.readFromNetCDF("parameter_space_testing.nc");
+  auto values_int8 = ps.getDimension("dim_int8")->getSpaceValues<int32_t>();
+  EXPECT_EQ(values_int8, std::vector<int32_t>({1, 4, 45, 104}));
 /*
-  int16_t dim_int16_values[3] = {3,26,223};
-  dim_int16->setSpaceValues(dim_int16_values, sizeof dim_int16_values);
-  ps.writeToNetCDF("parameterspace_name.nc");
+  // int32
+  auto dim_int32 = ps.newDimension("dim_int8",ParameterSpaceDimension::VALUE,
+                                   ParameterType::PARAMETER_INT32);
+  int8_t dim_int32_values[4] = {14, 143, 155, 214};
+  dim_int32->setSpaceValues(dim_int32_values, 4);
+  ps.writeToNetCDF("parameter_space_testing.nc");
   ps.clear();
-  ps.readFromNetCDF("parameterspace_name.nc");
-  auto values_int16 = ps.getDimension("dim_int16")->getSpaceValues<int16_t>();
-  EXPECT_EQ(values_int16, std::vector<int16_t>({3,26,223}));
-  ps.clear();
-
-
-
-  int8_t dim_int8_values[3] = {1,26,123};
-  dim_int8->setSpaceValues(dim_int8_values, sizeof dim_int8_values);
-  ps.writeToNetCDF("whatever_name.nc");
-  ps.clear();
-  ps.readFromNetCDF("whatever_name.nc");
-  auto values_int8 = ps.getDimension("dim_int8")->getSpaceValues<int8_t>();
-//  EXPECT_EQ(values_int8, std::vector<int8_t>({1,26,123}));
-
-
-  int32_t dim_int32_values[3] = {3,26,223};
-  dim_int32->setSpaceValues(dim_int32_values, sizeof dim_int32_values);
-  ps.writeToNetCDF("whatever_name.nc");
-  ps.clear();
-  ps.readFromNetCDF("whatever_name.nc");
+  ps.readFromNetCDF("parameter_space_testing.nc");
   auto values_int32 = ps.getDimension("dim_int32")->getSpaceValues<int32_t>();
-  EXPECT_EQ(values_int32, std::vector<int32_t>({3,26,223}));
-  ps.clear();
-*/
+  EXPECT_EQ(values_int32, std::vector<int>({14, 143, 155, 21}));
+*/ 
+
 
   // Create a parameter space
 
