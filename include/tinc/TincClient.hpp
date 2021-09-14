@@ -51,6 +51,8 @@ class TincClient : public al::CommandClient, public TincProtocol {
 public:
   TincClient();
 
+  bool start(uint16_t serverPort = 34450,
+             const char *serverAddr = "localhost") override;
   void stop() override;
 
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
@@ -78,6 +80,7 @@ public:
     requestDataPools();
 
     waitForServer();
+    waitForPing(pingServer());
   }
 
   void sendMetadata();
@@ -116,7 +119,7 @@ public:
    *
    * This function clears the pingList for src
    */
-  bool waitForPing(uint64_t pingCode, float timeoutsec,
+  bool waitForPing(uint64_t pingCode, float timeoutsec = 30,
                    al::Socket *src = nullptr);
 
   std::string getWorkingPath();
@@ -130,8 +133,6 @@ protected:
 
   void processStatusMessage(void *message);
   void processWorkingPathMessage(void *message);
-
-  virtual void onConnection(al::Socket *newConnection) { synchronize(); };
 
 private:
   // Network barriers

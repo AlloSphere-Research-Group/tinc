@@ -38,8 +38,6 @@ TEST(TincProtocol, Connection) {
   tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.1);
-
   EXPECT_EQ(tserver.connectionCount(), 1);
   EXPECT_TRUE(tclient.isConnected());
 
@@ -63,8 +61,6 @@ TEST(TincProtocol, MultiConnection) {
   TincClient tclient4;
   EXPECT_TRUE(tclient4.start());
 
-  al::al_sleep(1.0);
-
   EXPECT_EQ(tserver.connectionCount(), 4);
   EXPECT_TRUE(tclient.isConnected());
   EXPECT_TRUE(tclient2.isConnected());
@@ -72,7 +68,7 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient.stop();
-  al::al_sleep(0.3);
+  tclient2.waitForPing(tclient2.pingServer());
 
   EXPECT_EQ(tserver.connectionCount(), 3);
   EXPECT_TRUE(!tclient.isConnected());
@@ -81,7 +77,7 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient2.stop();
-  al::al_sleep(0.3);
+  tclient3.waitForPing(tclient3.pingServer());
 
   EXPECT_EQ(tserver.connectionCount(), 2);
   EXPECT_TRUE(!tclient.isConnected());
@@ -90,7 +86,7 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient3.stop();
-  al::al_sleep(0.3);
+  tclient4.waitForPing(tclient4.pingServer());
 
   EXPECT_EQ(tserver.connectionCount(), 1);
   EXPECT_TRUE(!tclient.isConnected());
@@ -99,7 +95,7 @@ TEST(TincProtocol, MultiConnection) {
   EXPECT_TRUE(tclient4.isConnected());
 
   tclient4.stop();
-  al::al_sleep(0.5);
+
   EXPECT_EQ(tserver.connectionCount(), 0);
   EXPECT_TRUE(!tclient.isConnected());
   EXPECT_TRUE(!tclient2.isConnected());

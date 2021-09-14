@@ -13,8 +13,6 @@ TEST(Barrier, SingleBarrier) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.5);
-
   std::thread th_server([&]() { EXPECT_TRUE(tserver.barrier()); });
   al::al_sleep(0.1);
   std::thread th_clients([&]() { EXPECT_TRUE(tclient.barrier()); });
@@ -33,7 +31,6 @@ TEST(Barrier, ClientFirst) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.5);
   std::thread th_clients([&]() { EXPECT_TRUE(tclient.barrier()); });
   al::al_sleep(0.1);
   std::thread th_server([&]() { EXPECT_TRUE(tserver.barrier()); });
@@ -50,8 +47,6 @@ TEST(Barrier, FastTrigger) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-
-  al::al_sleep(0.5);
 
   //   Multiple quick ones
   for (int i = 0; i < 30; i++) {

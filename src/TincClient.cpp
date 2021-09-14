@@ -21,6 +21,15 @@ TincClient::TincClient() {
   mRevision = TINC_PROTOCOL_REVISION;
 }
 
+bool TincClient::start(uint16_t serverPort, const char *serverAddr) {
+  bool ret = CommandClient::start();
+  if (!ret) {
+    return false;
+  }
+  synchronize();
+  return true;
+}
+
 void TincClient::stop() {
   TincMessage tincMessage;
 
@@ -398,6 +407,9 @@ uint64_t TincClient::pingServer() {
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
 
+  if (!mRunning) {
+    std::cout << ("Server not connected. Ping not sent") << std::endl;
+  }
   sendTincMessage(&msg);
   return value;
 }

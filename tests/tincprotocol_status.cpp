@@ -14,13 +14,10 @@ TEST(Status, WaitForServer) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int sharedValue = 0;
   ProcessorCpp proc{"proc"};
   ParameterSpaceDimension dim{"dim"};
 
   proc.processingFunction = [&]() { return true; };
-
-  al::al_sleep(0.1);
 
   tserver << proc << dim;
   EXPECT_TRUE(tclient.waitForServer());
@@ -28,6 +25,7 @@ TEST(Status, WaitForServer) {
   EXPECT_EQ(tclient.serverStatus(), TincProtocol::Status::STATUS_AVAILABLE);
 
   tserver.markBusy();
+  // FIXME we should use ping to syncrhonize from server
   al::al_sleep(0.1);
   EXPECT_EQ(tclient.serverStatus(), TincProtocol::Status::STATUS_BUSY);
 

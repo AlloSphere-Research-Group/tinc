@@ -16,42 +16,23 @@ TEST(ProtocolParameter, Float) {
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
   tserver << p;
 
-  // change value on serverside
-  p.set(0.5);
-
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
   auto *paramFloat = static_cast<al::Parameter *>(param);
 
-  while (paramFloat->get() != 0.5f) {
-    al::al_sleep(0.02); // Give time to connect
-  }
-
+  EXPECT_FLOAT_EQ(paramFloat->get(), 0.2);
   EXPECT_FLOAT_EQ(paramFloat->min(), -10);
   EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
   EXPECT_FLOAT_EQ(paramFloat->getDefault(), 0.2);
 
   // change value on clientside
   paramFloat->set(5.f);
-  while (p.get() != 5.f) {
-    al::al_sleep(0.02);
-  }
+
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 5.f);
 
@@ -73,35 +54,19 @@ TEST(ProtocolParameter, RemoteFloat) {
 
   // change value on clientside
   p.set(0.5);
-
-  int counter = 0;
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tserver.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
-
   auto *paramFloat = static_cast<al::Parameter *>(param);
 
-  while (paramFloat->get() != 0.5f) {
-    al::al_sleep(0.02);
-  }
-
+  EXPECT_FLOAT_EQ(paramFloat->get(), 0.5f);
   EXPECT_FLOAT_EQ(paramFloat->min(), -10);
   EXPECT_FLOAT_EQ(paramFloat->max(), 9.9);
   EXPECT_FLOAT_EQ(paramFloat->getDefault(), 0.2);
 
   // change value on serverside
   paramFloat->set(5.f);
-  while (p.get() != 5.f) {
-    al::al_sleep(0.02);
-  }
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 5.f);
 
@@ -121,19 +86,7 @@ TEST(ProtocolParameter, Bool) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -143,13 +96,13 @@ TEST(ProtocolParameter, Bool) {
 
   // change value on the serverside
   p.set(false);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramBool->get(), false);
 
   // change value on the clientside
   paramBool->set(true);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), true);
 
@@ -170,8 +123,7 @@ TEST(ProtocolParameter, RemoteBool) {
   tclient << p;
 
   p.set(1.0);
-
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -182,13 +134,13 @@ TEST(ProtocolParameter, RemoteBool) {
 
   // change value on the serverside
   p.set(false);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramBool->get(), false);
 
   // change value on the clientside
   paramBool->set(true);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), true);
 
@@ -206,20 +158,7 @@ TEST(ProtocolParameter, String) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
-
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramString = static_cast<al::ParameterString *>(param);
@@ -228,13 +167,13 @@ TEST(ProtocolParameter, String) {
 
   // change value on the serverside
   p.set("value");
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramString->get(), "value");
 
   // change value on the clientside
   paramString->set("newValue");
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), "newValue");
 
@@ -253,7 +192,7 @@ TEST(ProtocolParameter, RemoteString) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -264,13 +203,13 @@ TEST(ProtocolParameter, RemoteString) {
 
   // change value on the serverside
   p.set("value");
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramString->get(), "value");
 
   // change value on the clientside
   paramString->set("newValue");
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), "newValue");
 
@@ -288,20 +227,7 @@ TEST(ProtocolParameter, Int) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -313,13 +239,13 @@ TEST(ProtocolParameter, Int) {
 
   // change value on the serverside
   p.set(4);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramInt->get(), 4);
 
   // change value on the clientside
   paramInt->set(5);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 5);
 
@@ -338,7 +264,7 @@ TEST(ProtocolParameter, RemoteInt) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameter to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -351,13 +277,13 @@ TEST(ProtocolParameter, RemoteInt) {
 
   // change value on the clientside
   p.set(4);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramInt->get(), 4);
 
   // change value on the serverside
   paramInt->set(5);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 5);
 
@@ -375,19 +301,7 @@ TEST(ProtocolParameter, Vec3) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -397,13 +311,13 @@ TEST(ProtocolParameter, Vec3) {
 
   // change value on the serverside
   p.set(al::Vec3f(4, 5, 6));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramVec3->get(), al::Vec3f(4, 5, 6));
 
   // change value on the clientside
   paramVec3->set(al::Vec3f(7, 8, 9));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Vec3f(7, 8, 9));
 
@@ -422,7 +336,7 @@ TEST(ProtocolParameter, RemoteVec3) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -433,13 +347,13 @@ TEST(ProtocolParameter, RemoteVec3) {
 
   // change value on the clientside
   p.set(al::Vec3f(4, 5, 6));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramVec3->get(), al::Vec3f(4, 5, 6));
 
   // change value on the serverside
   paramVec3->set(al::Vec3f(7, 8, 9));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Vec3f(7, 8, 9));
 
@@ -456,19 +370,7 @@ TEST(ProtocolParameter, Vec4) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -478,13 +380,13 @@ TEST(ProtocolParameter, Vec4) {
 
   // change value on the serverside
   p.set(al::Vec4f(4, 5, 6, 7));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramVec4->get(), al::Vec4f(4, 5, 6, 7));
 
   // change value on the clientside
   paramVec4->set(al::Vec4f(7, 8, 9, 10));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Vec4f(7, 8, 9, 10));
 
@@ -503,7 +405,7 @@ TEST(ProtocolParameter, RemoteVec4) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -514,13 +416,13 @@ TEST(ProtocolParameter, RemoteVec4) {
 
   // change value on the clientside
   p.set(al::Vec4f(4, 5, 6, 7));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramVec4->get(), al::Vec4f(4, 5, 6, 7));
 
   // change value on the serverside
   paramVec4->set(al::Vec4f(7, 8, 9, 10));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Vec4f(7, 8, 9, 10));
 
@@ -538,19 +440,7 @@ TEST(ProtocolParameter, Color) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -560,13 +450,13 @@ TEST(ProtocolParameter, Color) {
 
   // change value on the serverside
   p.set(al::Color(0.4f, 0.5f, 0.6f, 0.7f));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramColor->get(), al::Color(0.4f, 0.5f, 0.6f, 0.7f));
 
   // change value on the clientside
   paramColor->set(al::Color(0.7f, 0.8f, 0.9f, 1.f));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Color(0.7f, 0.8f, 0.9f, 1.f));
 
@@ -585,7 +475,7 @@ TEST(ProtocolParameter, RemoteColor) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -596,13 +486,13 @@ TEST(ProtocolParameter, RemoteColor) {
 
   // change value on the clientside
   p.set(al::Color(0.4f, 0.5f, 0.6f, 0.7f));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramColor->get(), al::Color(0.4f, 0.5f, 0.6f, 0.7f));
 
   // change value on the serverside
   paramColor->set(al::Color(0.7f, 0.8f, 0.9f, 1.f));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Color(0.7f, 0.8f, 0.9f, 1.f));
 
@@ -624,20 +514,7 @@ TEST(ProtocolParameter, Pose) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
-
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
   auto *paramPose = static_cast<al::ParameterPose *>(param);
@@ -647,14 +524,14 @@ TEST(ProtocolParameter, Pose) {
 
   // change value on the serverside
   p.set(al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramPose->get(),
             al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
 
   // change value on the clientside
   paramPose->set(al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
 
@@ -675,7 +552,7 @@ TEST(ProtocolParameter, RemotePose) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -687,14 +564,14 @@ TEST(ProtocolParameter, RemotePose) {
 
   // change value on the clientside
   p.set(al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramPose->get(),
             al::Pose({-0.1, -0.2, -0.3}, {-0.4, -0.5, -0.6, -0.7}));
 
   // change value on the serverside
   paramPose->set(al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), al::Pose({1.1, 1.2, 1.3}, {1.4, 1.5, 1.6, 1.7}));
 
@@ -713,20 +590,7 @@ TEST(ProtocolParameter, Menu) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -736,13 +600,13 @@ TEST(ProtocolParameter, Menu) {
 
   // change value on the serverside
   p.set(2);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramMenu->get(), 2);
 
   // change value on the clientside
   paramMenu->set(3);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 3);
 
@@ -761,7 +625,7 @@ TEST(ProtocolParameter, RemoteMenu) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -772,13 +636,13 @@ TEST(ProtocolParameter, RemoteMenu) {
 
   // change value on the clientside
   p.set(2);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramMenu->get(), 2);
 
   // change value on the serverside
   paramMenu->set(3);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 3);
 
@@ -800,19 +664,7 @@ TEST(ProtocolParameter, Choice) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -822,13 +674,13 @@ TEST(ProtocolParameter, Choice) {
 
   // change value on the serverside
   p.set(0x23456789ABC12341);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramChoice->get(), 0x23456789ABC12341);
 
   // change value on the clientside
   paramChoice->set(0x3456789ABC123412);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 0x3456789ABC123412);
 
@@ -846,10 +698,6 @@ TEST(ProtocolParameter, RemoteChoice) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // if p was registered after client does handshake, this isn't needed
-  tclient.requestParameters();
-  al::al_sleep(0.1); // wait for parameters to get sent
-
   auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
 
@@ -859,13 +707,13 @@ TEST(ProtocolParameter, RemoteChoice) {
 
   // change value on the serverside
   p.set(0x23456789ABC12341);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramChoice->get(), 0x23456789ABC12341);
 
   // change value on the clientside
   paramChoice->set(0x3456789ABC123412);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), 0x3456789ABC123412);
 
@@ -884,19 +732,7 @@ TEST(ProtocolParameter, Trigger) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  int counter = 0;
-
-  al::ParameterMeta *param{nullptr};
-  tclient.requestParameters();
-  while (!param) {
-    al::al_sleep(0.5); // Give time to connect
-    param = tclient.getParameter("param", "group");
-    if ((counter * 500) >= TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-    counter++;
-  }
+  al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
 
@@ -906,13 +742,13 @@ TEST(ProtocolParameter, Trigger) {
 
   // change value on the serverside
   p.trigger();
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(paramTrigger->get(), true);
 
   // change value on the clientside
   paramTrigger->set(false);
-  al::al_sleep(0.1); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
 
   EXPECT_EQ(p.get(), false);
 
@@ -931,7 +767,7 @@ TEST(ProtocolParameter, RemoteTrigger) {
 
   // register automatically gets propagated to server
   tclient << p;
-  al::al_sleep(0.1); // wait for parameters to get sent
+  tclient.waitForPing(tclient.pingServer());
 
   auto *param = tserver.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -943,17 +779,17 @@ TEST(ProtocolParameter, RemoteTrigger) {
   bool triggeredInServer = false;
   bool triggeredInClient = false;
 
-  static_cast<al::Trigger *>(param)
-      ->registerChangeCallback([&](bool val) { triggeredInServer = true; });
+  static_cast<al::Trigger *>(param)->registerChangeCallback(
+      [&](bool val) { triggeredInServer = true; });
 
   // change value on the client side
   p.trigger();
-  al::al_sleep(0.2); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
   EXPECT_EQ(triggeredInServer, true);
 
   p.registerChangeCallback([&](bool val) { triggeredInClient = true; });
   static_cast<al::Trigger *>(param)->trigger();
-  al::al_sleep(0.2); // wait for new value
+  tclient.waitForPing(tclient.pingServer());
   EXPECT_EQ(triggeredInClient, true);
 
   tclient.stop();

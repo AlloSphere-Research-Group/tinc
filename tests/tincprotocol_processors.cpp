@@ -14,18 +14,13 @@ TEST(Processor, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  // TODO create processors of different types (perhaps in separate unit tests
+  // TODO ML create processors of different types (perhaps in separate unit
+  // tests
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.5); // Give time to connect
-
-  tclient.requestDiskBuffers();
-
-  al::al_sleep(0.5); // Give time to connect
-
-  // TODO check that the processor details are correct
+  // TODO ML check that the processor details are correct
 
   tclient.stop();
   tserver.stop();
