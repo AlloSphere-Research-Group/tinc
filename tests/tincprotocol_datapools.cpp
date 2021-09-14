@@ -19,13 +19,7 @@ TEST(DataPoolProtocol, Connection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.5); // Give time to connect
-
-  tclient.requestDataPools();
-
-  al::al_sleep(0.5); // Give time to connect
-
-  // TODO check that the parameter space details are correct
+  // TODO ML check that the parameter space details in the data pool are correct
 
   tclient.stop();
   tserver.stop();
@@ -62,12 +56,6 @@ TEST(DataPoolProtocol, Metadata) {
   TincClient tclient;
   //  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
-
-  // Now set values from client and slice data pool
-
-  while (!tclient.getDataPool("dp")) {
-    al::al_sleep(0.1);
-  };
 
   auto externalDataPool =
       static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
@@ -119,10 +107,6 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_TRUE(tclient.start());
 
   // Now set values from client and slice data pool
-
-  while (!tclient.getDataPool("dp")) {
-    al::al_sleep(0.1);
-  };
   auto internalDimClient = tclient.getDimension("internal");
   auto externalDimClient = tclient.getDimension("external");
 
@@ -239,8 +223,6 @@ TEST(DataPoolProtocol, Slice) {
   EXPECT_EQ(data[5], 0);
   EXPECT_EQ(data[6], 2);
   EXPECT_EQ(data[7], 4);
-
-  al::al_sleep(0.5); // Give time to connect
 
   tclient.stop();
   tserver.stop();

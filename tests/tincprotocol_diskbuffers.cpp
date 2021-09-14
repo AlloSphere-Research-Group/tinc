@@ -40,21 +40,7 @@ TEST(DiskBufferProtocol, DiskBufferImage) {
   EXPECT_TRUE(tclient.start());
   // tclient.setVerbose(true);
 
-  bool timeout = false;
-  int counter = 0;
-
-  while (!tclient.isConnected() && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
-
   EXPECT_TRUE(tclient.isConnected());
-  tclient.requestDiskBuffers();
-
-  al::al_sleep(0.5); // Give time to connect
 
   auto *dbClient = tclient.getDiskBuffer("db");
   EXPECT_NE(dbClient, nullptr);
@@ -97,21 +83,8 @@ TEST(DiskBufferProtocol, DiskBufferJson) {
   EXPECT_TRUE(tclient.start());
   // tclient.setVerbose(true);
 
-  bool timeout = false;
-  int counter = 0;
-
-  while (!tclient.isConnected() && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
-
   EXPECT_TRUE(tclient.isConnected());
-  tclient.requestDiskBuffers();
 
-  al::al_sleep(0.5); // Give time to connect
   auto *dbClient = tclient.getDiskBuffer("db");
   EXPECT_NE(dbClient, nullptr);
 
@@ -156,21 +129,8 @@ TEST(DiskBufferProtocol, DiskBufferNetCDFData) {
   EXPECT_TRUE(tclient.start());
   // tclient.setVerbose(true);
 
-  bool timeout = false;
-  int counter = 0;
-
-  while (!tclient.isConnected() && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
-
   EXPECT_TRUE(tclient.isConnected());
-  tclient.requestDiskBuffers();
 
-  al::al_sleep(0.5); // Give time to connect
   auto *dbClient = tclient.getDiskBuffer("db");
   EXPECT_NE(dbClient, nullptr);
 
@@ -203,21 +163,8 @@ TEST(DiskBufferProtocol, DiskBufferRootPathMap) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  bool timeout = false;
-  int counter = 0;
-
-  while (!tclient.isConnected() && !timeout) {
-    al::al_sleep(0.001); // Give time to connect
-    if (counter++ == TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
-
   EXPECT_TRUE(tclient.isConnected());
   //  tclient.requestDiskBuffers();
-
-  al::al_sleep(0.5); // Give time to connect
 
   auto *dbClient = tclient.getDiskBuffer("db");
   EXPECT_NE(dbClient, nullptr);

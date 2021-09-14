@@ -21,6 +21,7 @@
 using namespace tinc;
 using namespace tinc_protobuf;
 
+namespace tinc_msg {
 // TODO namespace these functions to avoid potential clashes
 TincMessage createRegisterParameterMessage(al::ParameterMeta *param) {
   TincMessage msg;
@@ -173,8 +174,32 @@ TincMessage createRegisterParameterSpaceMessage(ParameterSpace *ps) {
   return msg;
 }
 
-// FIXME consider folding into individual createConfigXXXMessage functions to
-// avoid multiple strcmp calls
+TincMessage createPingMessage(uint64_t number) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::PING);
+  msg.set_objecttype(ObjectType::GLOBAL);
+
+  ParameterValue details;
+  details.set_valueuint64(number);
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+  return msg;
+}
+
+TincMessage createPongMessage(uint64_t number) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::PONG);
+  msg.set_objecttype(ObjectType::GLOBAL);
+
+  ParameterValue details;
+  details.set_valueuint64(number);
+  google::protobuf::Any *detailsAny = msg.details().New();
+  detailsAny->PackFrom(details);
+  msg.set_allocated_details(detailsAny);
+  return msg;
+}
+
 void createParameterValueMessage(al::ParameterMeta *param,
                                  ConfigureParameter &confMessage) {
   confMessage.set_id(param->getFullAddress());
@@ -1014,6 +1039,9 @@ bool processConfigureParameterValueMessage(ConfigureParameter &conf,
 
   return true;
 }
+} // namespace tinc_msg
+
+using namespace tinc_msg;
 
 bool TincProtocol::processConfigureParameterMessage(
     void *conf_, ParameterSpaceDimension *dim, al::Socket *src, bool forward) {
@@ -3225,6 +3253,26 @@ void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
   msg.set_allocated_details(details);
 
   sendTincMessage(&msg, nullptr, src);
+}
+
+bool TincProtocol::readPingMessage(int objectType, void *any, al::Socket *src) {
+  if (objectType != ObjectType::GLOBAL) {
+    std::cerr << __FUNCTION__ << " ERROR: PING expects GLOBAL." << std::endl;
+    return false;
+  }
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (details->Is<ParameterValue>()) {
+    ParameterValue pingCode;
+    details->UnpackTo(&pingCode);
+    //    std::cout << " Got PING " << pingCode.valueuint64() << std::endl;
+    auto msg = createPongMessage(pingCode.valueuint64());
+    sendTincMessage(&msg, src);
+    return true;
+  } else {
+    std::cerr << __FUNCTION__ << ": Ping message contains invalid payload"
+              << std::endl;
+    return false;
+  }
 }
 
 bool TincProtocol::readCommandMessage(int objectType, void *any,

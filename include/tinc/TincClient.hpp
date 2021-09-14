@@ -51,6 +51,8 @@ class TincClient : public al::CommandClient, public TincProtocol {
 public:
   TincClient();
 
+  bool start(uint16_t serverPort = 34450,
+             const char *serverAddr = "localhost") override;
   void stop() override;
 
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;
@@ -78,6 +80,7 @@ public:
     requestDataPools();
 
     waitForServer();
+    waitForPing(pingServer());
   }
 
   void sendMetadata();
@@ -99,6 +102,26 @@ public:
    */
   bool waitForServer(float timeoutsec = 0.0);
 
+  /**
+   * @brief send a ping message to the tinc server
+   * @return a number that identifies the ping
+   *
+   * The server will return a pong message with the number recieved.
+   */
+  uint64_t pingServer();
+
+  /**
+   * @brief waitForPing
+   * @param pingCode
+   * @param timeoutsec
+   * @param src
+   * @return true if pong was received before timeout
+   *
+   * This function clears the pingList for src
+   */
+  bool waitForPing(uint64_t pingCode, float timeoutsec = 30,
+                   al::Socket *src = nullptr);
+
   std::string getWorkingPath();
 
   void setVerbose(bool verbose = true);
@@ -111,8 +134,6 @@ protected:
   void processStatusMessage(void *message);
   void processWorkingPathMessage(void *message);
 
-  virtual void onConnection(al::Socket *newConnection) { synchronize(); };
-
 private:
   // Network barriers
   std::map<uint64_t, al::Socket *> mBarrierRequests;
@@ -124,6 +145,7 @@ private:
   std::string mWorkingPath;
 
   Status mServerStatus;
+  uint64_t mPingCounter{0};
 };
 
 } // namespace tinc

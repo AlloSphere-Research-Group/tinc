@@ -22,18 +22,7 @@ TEST(ProtocolParameterSpace, Connection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  al::al_sleep(0.2); // Give time to connect
   auto client_ps = tclient.getParameterSpace("paramspace");
-
-  int counter = 0;
-  while (client_ps == nullptr) {
-    al::al_sleep(0.05); // Give time to connect
-    client_ps = tclient.getParameterSpace("paramspace");
-    if (counter++ > TINC_TESTS_TIMEOUT_MS) {
-      std::cerr << "Timeout" << std::endl;
-      break;
-    }
-  }
 
   // auto client_ps_dim = client_ps->getDimension("psdim");
   // auto client_dim = tclient.getParameter("psdim");
@@ -63,32 +52,26 @@ TEST(ProtocolParameterSpace, Connection) {
   tserver.stop();
 }
 
-
 TEST(ProtocolParameterSpace, RootPath) {
-    TincServer tserver;
-    EXPECT_TRUE(tserver.start());
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
 
-    ParameterSpace ps{"paramspace"};
-    ps.setRootPath("rootpath");
+  ParameterSpace ps{"paramspace"};
+  ps.setRootPath("rootpath");
 
-    tserver << ps;
+  tserver << ps;
 
-    TincClient tclient;
-    EXPECT_TRUE(tclient.start());
+  TincClient tclient;
+  EXPECT_TRUE(tclient.start());
 
-    while (!tclient.getParameterSpace("paramspace")) {
-        al::al_sleep(0.1);
-    }
+  auto client_ps = tclient.getParameterSpace("paramspace");
 
-    auto client_ps = tclient.getParameterSpace("paramspace");
+  EXPECT_EQ(ps.getRootPath(), client_ps->getRootPath());
+  // FIXME isSamePath broken for this case...
+  EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(), client_ps->getRootPath()));
 
-    EXPECT_EQ(ps.getRootPath(), client_ps->getRootPath());
-    // FIXME isSamePath broken for this case...
-    EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(),
-                                     client_ps->getRootPath()));
-
-    tclient.stop();
-    tserver.stop();
+  tclient.stop();
+  tserver.stop();
 }
 
 TEST(ProtocolParameterSpace, PathTemplate) {
@@ -102,10 +85,6 @@ TEST(ProtocolParameterSpace, PathTemplate) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
-
-  while (!tclient.getParameterSpace("paramspace")) {
-    al::al_sleep(0.1);
-  }
 
   auto client_ps = tclient.getParameterSpace("paramspace");
 
