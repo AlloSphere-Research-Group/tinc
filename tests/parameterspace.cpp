@@ -469,18 +469,18 @@ TEST(ParameterSpace, ReadWriteNetCDFSpace) {
   ps.readFromNetCDF("parameter_space_testing.nc");
   auto values_int = ps.getDimension("dim_int")->getSpaceValues<int>();
   EXPECT_EQ(values_int, std::vector<int>({14, 43, 55, 114}));
-  /*
+
   // int8
   auto dim_int8 = ps.newDimension("dim_int8",ParameterSpaceDimension::VALUE,
                                    ParameterType::PARAMETER_INT8);
   int8_t dim_int8_values[4] = {1, 4, 45, 104};
-  dim_int8->setSpaceValues(dim_int8_values, 4);
   ps.writeToNetCDF("parameter_space_testing.nc");
+  EXPECT_EQ(sizeof(dim_int8_values),4);
   ps.clear();
   ps.readFromNetCDF("parameter_space_testing.nc");
   auto values_int8 = ps.getDimension("dim_int8")->getSpaceValues<int8_t>();
   EXPECT_EQ(values_int8, std::vector<int8_t>({1, 4, 45, 104}));
-
+  /*
   // int32
   auto dim_int32 = ps.newDimension("dim_int8",ParameterSpaceDimension::VALUE,
                                    ParameterType::PARAMETER_INT32);
