@@ -414,7 +414,7 @@ uint64_t TincClient::pingServer() {
   return value;
 }
 
-bool TincClient::waitForPing(uint64_t pingCode, float timeoutsec,
+bool TincClient::waitForPong(uint64_t pingCode, float timeoutsec,
                              al::Socket *src) {
   if (!src) {
     src = &mSocket;

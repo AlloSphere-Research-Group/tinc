@@ -384,7 +384,7 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
     // Send to all connections, except src
 
     std::unique_lock<std::mutex> lk(mConnectionsLock);
-    for (auto connection : mServerConnections) {
+    for (const auto &connection : mServerConnections) {
       if (!src || (connection->address() != src->ipAddr ||
                    connection->port() != src->port)) {
         if (verbose()) {

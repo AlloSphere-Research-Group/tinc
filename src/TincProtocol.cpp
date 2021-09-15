@@ -3625,10 +3625,15 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
               << " bytes " << size << std::endl;
   }
   auto bytes = dst->send(buffer, size + sizeof(size_t));
+
   if (bytes != size + sizeof(size_t)) {
-    std::cerr << __FUNCTION__ << ": Error sending " << bytes << " expected "
-              << size + sizeof(size_t) << " (" << strerror(errno) << ")"
-              << std::endl;
+    if (bytes == SIZE_MAX) {
+      std::cerr << __FUNCTION__ << " Connetion error." << std::endl;
+    } else {
+      std::cerr << __FUNCTION__ << ": Error sending " << bytes << " expected "
+                << size + sizeof(size_t) << " (" << strerror(errno) << ")"
+                << std::endl;
+    }
     free(buffer);
 
 #ifdef AL_WINDOWS

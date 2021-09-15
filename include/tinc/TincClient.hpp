@@ -80,7 +80,7 @@ public:
     requestDataPools();
 
     waitForServer();
-    waitForPing(pingServer());
+    waitForPong(pingServer());
   }
 
   void sendMetadata();
@@ -111,15 +111,16 @@ public:
   uint64_t pingServer();
 
   /**
-   * @brief waitForPing
+   * @brief waitForPong
    * @param pingCode
    * @param timeoutsec
-   * @param src
+   * @param src Source of pong message (use nullptr for server)
    * @return true if pong was received before timeout
    *
-   * This function clears the pingList for src
+   * This function clears mPongsReceived for src if pong was received before
+   * time out.
    */
-  bool waitForPing(uint64_t pingCode, float timeoutsec = 30,
+  bool waitForPong(uint64_t pingCode, float timeoutsec = 30,
                    al::Socket *src = nullptr);
 
   std::string getWorkingPath();
