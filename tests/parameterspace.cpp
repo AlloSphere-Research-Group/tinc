@@ -110,13 +110,16 @@ TEST(ParameterSpace, DimensionTypes) {
   //                                   ParameterType::PARAMETER_DOUBLE);
   auto float8Dim = ps.newDimension("floatDim", ParameterSpaceDimension::VALUE,
                                    ParameterType::PARAMETER_FLOAT);
+  EXPECT_TRUE(float8Dim != nullptr);
   //  auto int64Dim = ps.newDimension("int64Dim",
   //  ParameterSpaceDimension::VALUE,
   //                                  ParameterType::PARAMETER_INT64);
   auto int32Dim = ps.newDimension("int32Dim", ParameterSpaceDimension::VALUE,
                                   ParameterType::PARAMETER_INT32);
-  auto int8Dim = ps.newDimension("int8Dim", ParameterSpaceDimension::VALUE,
-                                 ParameterType::PARAMETER_INT8);
+  EXPECT_TRUE(float8Dim != nullptr);
+  auto float8Dim = ps.newDimension("int8Dim", ParameterSpaceDimension::VALUE,
+                                   ParameterType::PARAMETER_INT8);
+  EXPECT_TRUE(int8Dim != nullptr);
   //  auto uint64Dim = ps.newDimension("uint64Dim",
   //  ParameterSpaceDimension::VALUE,
   //                                   ParameterType::PARAMETER_UINT64);
@@ -125,6 +128,7 @@ TEST(ParameterSpace, DimensionTypes) {
   //                                   ParameterType::PARAMETER_UINT32);
   auto uint8Dim = ps.newDimension("uint8Dim", ParameterSpaceDimension::VALUE,
                                   ParameterType::PARAMETER_UINT8);
+  EXPECT_TRUE(uint8Dim != nullptr);
 
   EXPECT_EQ(ps.getDimensions().size(), 4);
 }

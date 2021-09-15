@@ -24,6 +24,8 @@ TEST(ProtocolParameterSpace, Connection) {
 
   auto client_ps = tclient.getParameterSpace("paramspace");
 
+  EXPECT_NE(client_ps, nullptr);
+
   // auto client_ps_dim = client_ps->getDimension("psdim");
   // auto client_dim = tclient.getParameter("psdim");
 

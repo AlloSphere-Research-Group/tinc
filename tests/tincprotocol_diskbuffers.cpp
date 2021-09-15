@@ -24,7 +24,7 @@ TEST(DiskBufferProtocol, DiskBufferImage) {
   std::vector<unsigned char> pix;
   int w = 3;
   int h = 3;
-  for (size_t i = 0; i < w * h; i++) {
+  for (int i = 0; i < w * h; i++) {
     al::Colori c = al::HSV(al::rnd::uniform(), 1.0, 1.0);
     pix.push_back(c.r);
     pix.push_back(c.g);
@@ -53,7 +53,7 @@ TEST(DiskBufferProtocol, DiskBufferImage) {
     auto array = imageDbData->array();
     EXPECT_EQ(array.size(), w * h * 4);
 
-    for (size_t i = 0; i < w * h; i++) {
+    for (int i = 0; i < w * h; i++) {
 
       EXPECT_EQ(array[i * 4], pix[i * 3]);
       EXPECT_EQ(array[i * 4 + 1], pix[i * 3 + 1]);

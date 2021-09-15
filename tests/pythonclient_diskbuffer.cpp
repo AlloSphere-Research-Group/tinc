@@ -27,7 +27,7 @@ TEST(PythonClient, DiskbufferImage) {
   int w = 6, h = 5;
   mPixels.resize(w * h * 4);
   //  unsigned char *pixs = mPixels.data();
-  for (auto i = 0; i < mPixels.size(); i++) {
+  for (size_t i = 0; i < mPixels.size(); i++) {
     mPixels[i] = 255 * i / (float)mPixels.size();
   }
 

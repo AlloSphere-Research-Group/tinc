@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include "tinc/ProcessorScript.hpp"
 #include "tinc/ProcessorCpp.hpp"
 #include "tinc/ProcessorGraph.hpp"
+#include "tinc/ProcessorScript.hpp"
 
 #include "al/math/al_Random.hpp"
 
@@ -23,7 +23,7 @@ TEST(Processor, BasicCpp) {
 }
 
 TEST(Processor, BasicScript) {
-  float value = 0.0;
+  //  float value = 0.0;
   ProcessorScript proc1("proc1");
   proc1.setCommand("echo");
 
