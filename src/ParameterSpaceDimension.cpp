@@ -202,23 +202,45 @@ void ParameterSpaceDimension::sort(al::Socket *src) {
   std::vector<size_t> sortedIndeces(mSpaceValues->size());
   std::iota(sortedIndeces.begin(), sortedIndeces.end(), 0);
 
-  auto values = mSpaceValues->getValues<float>();
-  std::stable_sort(
-      sortedIndeces.begin(), sortedIndeces.end(),
-      [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+  if (mParamType == ParameterType::PARAMETER_FLOAT) {
+    auto values = mSpaceValues->getValues<float>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
 
-  std::vector<float> sortedValues(mSpaceValues->size());
-  auto ids = mSpaceValues->getIds();
-  std::vector<std::string> sortedIds(ids.size());
-  assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
-  for (size_t i = 0; i < mSpaceValues->size(); i++) {
-    sortedValues[i] = values[sortedIndeces[i]];
-    if (sortedIds.size() > 0) {
-      sortedIds[i] = ids[sortedIndeces[i]];
+    std::vector<float> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
     }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_INT8) {
+
+    auto values = mSpaceValues->getValues<int8_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<int8_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else {
   }
-  setSpaceValues(sortedValues, "", src);
-  setSpaceIds(sortedIds, src);
 }
 
 void ParameterSpaceDimension::clear(al::Socket *src) {
@@ -420,6 +442,37 @@ std::vector<std::string> ParameterSpaceDimension::getSpaceIds() {
   return mSpaceValues->getIds();
 }
 
+namespace tinc {
+
+template <class DataType, class ParamType>
+void _setLimits(ParameterSpaceDimension *dim, ParamType *param,
+                al::Socket *src) {
+  DataType max = std::numeric_limits<DataType>::lowest();
+  DataType min = std::numeric_limits<DataType>::max();
+  for (auto value : dim->getSpaceValues<DataType>()) {
+    if (value > max) {
+      max = value;
+    }
+    if (value < min) {
+      min = value;
+    }
+  }
+  if (dim->getSpaceValues<DataType>().size() == 0) {
+    max = std::numeric_limits<DataType>::max();
+    min = std::numeric_limits<DataType>::lowest();
+  }
+  param->max(max, src->valueSource());
+  param->min(min, src->valueSource());
+  if (param->get() < min && min != std::numeric_limits<float>::max()) {
+    param->set(min, src->valueSource());
+  } else if (param->get() > max &&
+             max != std::numeric_limits<float>::lowest()) {
+    param->set(max, src->valueSource());
+  }
+}
+
+} // namespace tinc
+
 bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
   sort(src);
   // TODO we should also validate stride in this function
@@ -430,279 +483,47 @@ bool ParameterSpaceDimension::conformSpace(al::Socket *src) {
   switch (mSpaceValues->getDataType()) {
   case al::VariantType::VARIANT_FLOAT: {
     auto &param = getParameter<al::Parameter>();
-    float max = std::numeric_limits<float>::lowest();
-    float min = std::numeric_limits<float>::max();
-    for (auto value : getSpaceValues<float>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<float>::max();
-      min = std::numeric_limits<float>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<float>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<float>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<float>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_DOUBLE: {
-    auto &param = getParameter<al::Parameter>();
-    double max = std::numeric_limits<double>::lowest();
-    double min = std::numeric_limits<double>::max();
-    for (auto value : getSpaceValues<double>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<double>::max();
-      min = std::numeric_limits<double>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<double>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<double>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    auto &param = getParameter<al::ParameterDouble>();
+    _setLimits<double>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_INT8: {
     auto &param = getParameter<al::ParameterInt8>();
-    int8_t max = std::numeric_limits<int8_t>::lowest();
-    int8_t min = std::numeric_limits<int8_t>::max();
-    for (auto value : getSpaceValues<int8_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<int8_t>::max();
-      min = std::numeric_limits<int8_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int8_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<int8_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<int8_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_UINT8: {
     auto &param = getParameter<al::ParameterUInt8>();
-    uint8_t max = std::numeric_limits<uint8_t>::lowest();
-    uint8_t min = std::numeric_limits<uint8_t>::max();
-    for (auto value : getSpaceValues<uint8_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<uint8_t>::max();
-      min = std::numeric_limits<uint8_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<uint8_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<uint8_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<uint8_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_INT16: {
     auto &param = getParameter<al::ParameterInt16>();
-    int16_t max = std::numeric_limits<int16_t>::lowest();
-    int16_t min = std::numeric_limits<int16_t>::max();
-    for (auto value : getSpaceValues<int16_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<int16_t>::max();
-      min = std::numeric_limits<int16_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int16_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<int16_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<int16_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_UINT16: {
     auto &param = getParameter<al::ParameterUInt16>();
-    uint16_t max = std::numeric_limits<uint16_t>::lowest();
-    uint16_t min = std::numeric_limits<uint16_t>::max();
-    for (auto value : getSpaceValues<uint16_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<uint16_t>::max();
-      min = std::numeric_limits<uint16_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<uint16_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<uint16_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<uint16_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_INT32: {
     auto &param = getParameter<al::ParameterInt>();
-    int32_t max = std::numeric_limits<int32_t>::lowest();
-    int32_t min = std::numeric_limits<int32_t>::max();
-    for (auto value : getSpaceValues<int32_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<int32_t>::max();
-      min = std::numeric_limits<int32_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int32_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<int32_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<int32_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_UINT32: {
     auto &param = getParameter<al::ParameterUInt32>();
-    uint32_t max = std::numeric_limits<uint32_t>::lowest();
-    uint32_t min = std::numeric_limits<uint32_t>::max();
-    for (auto value : getSpaceValues<uint32_t>()) {
-
-      if (value > param.max()) {
-        param.max(value, src->valueSource());
-      }
-      if (value < param.min()) {
-        param.min(value, src->valueSource());
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<uint32_t>::max();
-      min = std::numeric_limits<uint32_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<uint32_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<uint32_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<uint32_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_INT64: {
     auto &param = getParameter<al::ParameterInt64>();
-    int64_t max = std::numeric_limits<int64_t>::lowest();
-    int64_t min = std::numeric_limits<int64_t>::max();
-    for (auto value : getSpaceValues<int64_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<int64_t>::max();
-      min = std::numeric_limits<int64_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<int64_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<int64_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<int64_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_UINT64: {
     auto &param = getParameter<al::ParameterUInt64>();
-    uint64_t max = std::numeric_limits<uint64_t>::lowest();
-    uint64_t min = std::numeric_limits<uint64_t>::max();
-    for (auto value : getSpaceValues<uint64_t>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = std::numeric_limits<uint64_t>::max();
-      min = std::numeric_limits<uint64_t>::lowest();
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<uint64_t>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<uint64_t>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<uint64_t>(this, &param, src);
   } break;
   case al::VariantType::VARIANT_BOOL: {
     auto &param = getParameter<al::ParameterBool>();
-    float max = std::numeric_limits<float>::lowest();
-    float min = std::numeric_limits<float>::max();
-    for (auto value : getSpaceValues<float>()) {
-      if (value > max) {
-        max = value;
-      }
-      if (value < min) {
-        min = value;
-      }
-    }
-    if (getSpaceValues<float>().size() == 0) {
-      max = 1.0;
-      min = 0.0;
-    }
-    param.max(max, src->valueSource());
-    param.min(min, src->valueSource());
-    if (param.get() < min && min != std::numeric_limits<float>::max()) {
-      param.set(min, src->valueSource());
-    } else if (param.get() > max &&
-               max != std::numeric_limits<float>::lowest()) {
-      param.set(max, src->valueSource());
-    }
+    _setLimits<float>(this, &param, src);
   } break;
 
     // FIXME ML complete support for all types. Done.

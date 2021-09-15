@@ -754,6 +754,22 @@ bool readNetCDFValues(int grpid, ParameterSpaceDimension *pdim) {
       return false;
     }
     pdim->setSpaceValues(data.data(), data.size());
+  } else if (xtypep == NC_BYTE) {
+
+    std::vector<int8_t> data;
+    data.resize(lenp);
+    if ((retval = nc_get_var(grpid, varid, data.data()))) {
+      return false;
+    }
+    pdim->setSpaceValues(data.data(), data.size());
+  } else if (xtypep == NC_SHORT) {
+
+    std::vector<int16_t> data;
+    data.resize(lenp);
+    if ((retval = nc_get_var(grpid, varid, data.data()))) {
+      return false;
+    }
+    pdim->setSpaceValues(data.data(), data.size());
   } else if (xtypep == NC_INT) {
 
     std::vector<int32_t> data;
@@ -770,9 +786,25 @@ bool readNetCDFValues(int grpid, ParameterSpaceDimension *pdim) {
       return false;
     }
     pdim->setSpaceValues(data.data(), data.size());
+  } else if (xtypep == NC_USHORT) {
+
+    std::vector<uint16_t> data;
+    data.resize(lenp);
+    if ((retval = nc_get_var(grpid, varid, data.data()))) {
+      return false;
+    }
+    pdim->setSpaceValues(data.data(), data.size());
   } else if (xtypep == NC_UINT) {
 
     std::vector<uint32_t> data;
+    data.resize(lenp);
+    if ((retval = nc_get_var(grpid, varid, data.data()))) {
+      return false;
+    }
+    pdim->setSpaceValues(data.data(), data.size());
+  } else if (xtypep == NC_UINT64) {
+
+    std::vector<uint64_t> data;
     data.resize(lenp);
     if ((retval = nc_get_var(grpid, varid, data.data()))) {
       return false;
@@ -879,7 +911,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
         return false;
       }
       pdim->conformSpace();
-      pdim->sort();
+      //      pdim->sort();
       pdim->mRepresentationType = ParameterSpaceDimension::VALUE;
       //    std::cout << "internal state " << i << ":" << groupName
       //              << " length: " << lenp << std::endl;
@@ -1319,6 +1351,71 @@ bool writeNetCDFValues(int datagrpid,
 
     std::vector<float> values = ps->getSpaceValues<float>();
     nc_put_var(datagrpid, varid, values.data());
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT8) {
+
+    int dimidsp[1] = {dimid};
+    if ((retval =
+             nc_def_var(datagrpid, "values", NC_BYTE, 1, dimidsp, &varid))) {
+
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+    if ((retval = nc_def_var_deflate(datagrpid, varid, shuffle, 1, deflate))) {
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+
+    std::vector<int8_t> valuesInt = ps->getSpaceValues<int8_t>();
+    nc_put_var(datagrpid, varid, valuesInt.data());
+
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT16) {
+
+    int dimidsp[1] = {dimid};
+    if ((retval =
+             nc_def_var(datagrpid, "values", NC_SHORT, 1, dimidsp, &varid))) {
+
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+    if ((retval = nc_def_var_deflate(datagrpid, varid, shuffle, 1, deflate))) {
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+
+    std::vector<int16_t> valuesInt = ps->getSpaceValues<int16_t>();
+    nc_put_var(datagrpid, varid, valuesInt.data());
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
+
+    int dimidsp[1] = {dimid};
+    if ((retval =
+             nc_def_var(datagrpid, "values", NC_INT, 1, dimidsp, &varid))) {
+
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+    if ((retval = nc_def_var_deflate(datagrpid, varid, shuffle, 1, deflate))) {
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+
+    std::vector<int32_t> valuesInt = ps->getSpaceValues<int32_t>();
+    nc_put_var(datagrpid, varid, valuesInt.data());
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT64) {
+
+    int dimidsp[1] = {dimid};
+    if ((retval =
+             nc_def_var(datagrpid, "values", NC_INT64, 1, dimidsp, &varid))) {
+
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+    if ((retval = nc_def_var_deflate(datagrpid, varid, shuffle, 1, deflate))) {
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+
+    std::vector<int64_t> valuesInt = ps->getSpaceValues<int64_t>();
+    nc_put_var(datagrpid, varid, valuesInt.data());
   } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT8) {
 
     int dimidsp[1] = {dimid};
@@ -1336,11 +1433,11 @@ bool writeNetCDFValues(int datagrpid,
     std::vector<uint8_t> valuesInt = ps->getSpaceValues<uint8_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
 
-  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_INT32) {
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT16) {
 
     int dimidsp[1] = {dimid};
     if ((retval =
-             nc_def_var(datagrpid, "values", NC_INT, 1, dimidsp, &varid))) {
+             nc_def_var(datagrpid, "values", NC_USHORT, 1, dimidsp, &varid))) {
 
       std::cerr << nc_strerror(retval) << std::endl;
       return false;
@@ -1350,7 +1447,7 @@ bool writeNetCDFValues(int datagrpid,
       return false;
     }
 
-    std::vector<int32_t> valuesInt = ps->getSpaceValues<int32_t>();
+    std::vector<uint16_t> valuesInt = ps->getSpaceValues<uint16_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
   } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT32) {
 
@@ -1367,6 +1464,22 @@ bool writeNetCDFValues(int datagrpid,
     }
 
     std::vector<uint32_t> valuesInt = ps->getSpaceValues<uint32_t>();
+    nc_put_var(datagrpid, varid, valuesInt.data());
+  } else if (ps->getSpaceDataType() == al::VariantType::VARIANT_UINT64) {
+
+    int dimidsp[1] = {dimid};
+    if ((retval =
+             nc_def_var(datagrpid, "values", NC_UINT64, 1, dimidsp, &varid))) {
+
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+    if ((retval = nc_def_var_deflate(datagrpid, varid, shuffle, 1, deflate))) {
+      std::cerr << nc_strerror(retval) << std::endl;
+      return false;
+    }
+
+    std::vector<uint64_t> valuesInt = ps->getSpaceValues<uint64_t>();
     nc_put_var(datagrpid, varid, valuesInt.data());
   }
   // FIXME add support for the rest of the data types.
