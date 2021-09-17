@@ -239,6 +239,139 @@ void ParameterSpaceDimension::sort(al::Socket *src) {
     }
     setSpaceValues(sortedValues, "", src);
     setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_INT16) {
+
+    auto values = mSpaceValues->getValues<int16_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<int16_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_INT32) {
+
+    auto values = mSpaceValues->getValues<int32_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<int32_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_INT64) {
+
+    auto values = mSpaceValues->getValues<int64_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<int64_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_UINT8) {
+
+    auto values = mSpaceValues->getValues<uint8_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<uint8_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_UINT16) {
+
+    auto values = mSpaceValues->getValues<uint16_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<uint16_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_UINT32) {
+
+    auto values = mSpaceValues->getValues<uint32_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<uint32_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
+  } else if (mParamType == ParameterType::PARAMETER_UINT64) {
+
+    auto values = mSpaceValues->getValues<uint64_t>();
+    std::stable_sort(
+        sortedIndeces.begin(), sortedIndeces.end(),
+        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+
+    std::vector<uint64_t> sortedValues(mSpaceValues->size());
+    auto ids = mSpaceValues->getIds();
+    std::vector<std::string> sortedIds(ids.size());
+    assert(sortedIds.size() == 0 || sortedIds.size() == sortedValues.size());
+    for (size_t i = 0; i < mSpaceValues->size(); i++) {
+      sortedValues[i] = values[sortedIndeces[i]];
+      if (sortedIds.size() > 0) {
+        sortedIds[i] = ids[sortedIndeces[i]];
+      }
+    }
+    setSpaceValues(sortedValues, "", src);
+    setSpaceIds(sortedIds, src);
   } else {
   }
 }
