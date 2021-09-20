@@ -47,41 +47,44 @@
 
 namespace tinc {
 
+/**
+ * @brief The TincClient class
+ *
+ * A TincClient connects to a TincServer to share TINC objects.
+ */
 class TincClient : public al::CommandClient, public TincProtocol {
 public:
   TincClient();
 
+  /**
+   * @brief start the TINC client
+   * @param serverPort
+   * @param serverAddr
+   * @return true if connection was succesful
+   */
   bool start(uint16_t serverPort = 34450,
              const char *serverAddr = "localhost") override;
+  /**
+   * @brief stop the connection
+   *
+   * Closes listening thread and cleans up connections.
+   *
+   * Any state received from the server remains on the client, but any actions
+   * will not affect the server and will be overriden if reconnected.
+   */
   void stop() override;
-
-  bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
   // See documentation on TincProtocol
   bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
                        al::ValueSource *src = nullptr) override;
 
-  inline void requestParameters() { TincProtocol::requestParameters(&mSocket); }
-  inline void requestProcessors() { TincProtocol::requestProcessors(&mSocket); }
-  inline void requestDiskBuffers() {
-    TincProtocol::requestDiskBuffers(&mSocket);
-  }
-  inline void requestDataPools() { TincProtocol::requestDataPools(&mSocket); }
-  inline void requestParameterSpaces() {
-    TincProtocol::requestParameterSpaces(&mSocket);
-  }
+  inline void requestParameters();
+  inline void requestProcessors();
+  inline void requestDiskBuffers();
+  inline void requestDataPools();
+  inline void requestParameterSpaces();
 
-  inline void synchronize() {
-    sendMetadata();
-    requestParameters();
-    requestParameterSpaces();
-    requestProcessors();
-    requestDiskBuffers();
-    requestDataPools();
-
-    waitForServer();
-    waitForPong(pingServer());
-  }
+  inline void synchronize();
 
   void sendMetadata();
 
@@ -93,6 +96,9 @@ public:
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 
+  /**
+   * @brief Return latest status reported by server
+   */
   Status serverStatus();
 
   /**
@@ -129,6 +135,7 @@ public:
   bool verbose() { return TincProtocol::mVerbose; }
 
 protected:
+  bool processIncomingMessage(al::Message &message, al::Socket *src) override;
   void processBarrierRequest(al::Socket *src, uint64_t barrierConsecutive);
   void processBarrierUnlock(al::Socket *src, uint64_t barrierConsecutive);
 

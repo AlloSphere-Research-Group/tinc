@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include <memory>
 #include <mutex>
@@ -40,7 +40,10 @@
 namespace tinc {
 
 /**
- * The BufferManager class
+ * The BufferManager class provides a thread safe memory buffer that can do
+ * fast reads as it requires only a pointer swap. It provides double buffering
+ * by default, but it allows for a larger number of write buffers in cases
+ * where concurrent writes would otherwise block the other writes.
  */
 template <class DataType> class BufferManager {
 public:
@@ -52,7 +55,11 @@ public:
       mData.emplace_back(std::make_shared<DataType>());
     }
   }
-
+  /**
+   * @brief Get current buffer for reading
+   * @param markAsUsed if false, the returned buffer keeps its "new" status
+   * @return a pointer to the data
+   */
   std::shared_ptr<DataType> get(bool markAsUsed = true) {
     std::unique_lock<std::mutex> lk(mDataLock);
     if (markAsUsed) {
@@ -61,6 +68,27 @@ public:
     return mData[mReadBuffer];
   }
 
+  /**
+   * @brief Get current buffer for reading checking if data is new
+   * @param isNew this is set to true if data returned is "new", false otherwise
+   * @return
+   */
+  std::shared_ptr<DataType> get(bool *isNew) {
+    std::unique_lock<std::mutex> lk(mDataLock);
+    if (mNewData) {
+      *isNew = true;
+      mNewData = false;
+    } else {
+      *isNew = false;
+    }
+    return mData[mReadBuffer];
+  }
+
+  /**
+   * @brief Get a pointer to a writable buffer
+   *
+   * When done writing this buffer, call doneWriting()
+   */
   std::shared_ptr<DataType> getWritable() {
     std::unique_lock<std::mutex> lk(mDataLock);
     // TODO add timeout?
@@ -76,22 +104,23 @@ public:
     return mData[mWriteBuffer];
   }
 
+  /**
+   * @brief Mark a buffer as ready to read
+   * @param buffer The buffer previously received from getWritable()
+   *
+   * The buffer provided must come from getWritable() otherwise behavior is
+   * undefined.
+   */
   void doneWriting(std::shared_ptr<DataType> buffer) {
     std::unique_lock<std::mutex> lk(mDataLock);
     mReadBuffer = std::distance(mData.begin(),
                                 std::find(mData.begin(), mData.end(), buffer));
+    assert(mReadBuffer < mData.size());
     mNewData = true;
   }
-
-  std::shared_ptr<DataType> get(bool *isNew) {
-    std::unique_lock<std::mutex> lk(mDataLock);
-    if (mNewData) {
-      *isNew = true;
-      mNewData = false;
-    }
-    return mData[mReadBuffer];
-  }
-
+  /**
+   * @brief Check if there are buffers that have been written but not read
+   */
   bool newDataAvailable() {
     std::unique_lock<std::mutex> lk(mDataLock);
     return mNewData;

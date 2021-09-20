@@ -79,13 +79,17 @@ typedef enum {
   STRING = 12
 } NetCDFTypes;
 
+/**
+ * @brief A representation of a single vector of NetCDF data
+ */
 class NetCDFData {
 public:
-  std::map<std::string, al::VariantValue> attributes;
-  void *dataVector{nullptr};
-
   ~NetCDFData();
 
+  /**
+   * @brief get NC data type for this data
+   * @return a value from NetCDFTypes enum, which matches NC types
+   */
   int getType();
   void setType(int type);
 
@@ -96,15 +100,29 @@ public:
     return *static_cast<std::vector<DataType> *>(dataVector);
   }
 
+  /**
+   * @brief attributes written/read to/from NetCDF file
+   */
+  std::map<std::string, al::VariantValue> attributes;
+  /**
+   * @brief attributes written/read to/from NetCDF file
+   */
+  void *dataVector{nullptr};
+
 private:
   al::VariantType ncDataType{al::VariantType::VARIANT_NONE};
 
   void deleteData();
 };
 
+/**
+ * @brief A DiskBuffer that reads and decodes NetCDF4 files.
+ *
+ * This class will do nothing if TINC was not built with NetCDF support
+ *
+ */
 // TODO we should have the option to check if there is already a file on disk
 // and start with that data.
-
 class DiskBufferNetCDFData : public DiskBuffer<NetCDFData> {
 public:
   DiskBufferNetCDFData(std::string id, std::string fileName = "",

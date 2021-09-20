@@ -106,7 +106,9 @@ struct CacheEntry {
 };
 
 /**
- * @brief The CacheManager class
+ * @brief The CacheManager class is in charge of data caching and cache metadata
+ *
+ * This c
  */
 class CacheManager {
 public:
@@ -128,6 +130,11 @@ public:
    */
   std::vector<CacheEntry> entries(size_t count = 0);
 
+  /**
+   * @brief Find files for SourceInfo
+   * @param sourceInfo details for files to find
+   * @param validateFile validate file details against details in sourceInfo
+   */
   std::vector<std::string> findCache(const SourceInfo &sourceInfo,
                                      bool validateFile = true);
   /**

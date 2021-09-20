@@ -82,12 +82,12 @@ struct InstancingMesh {
   void draw();
 };
 
-typedef struct {
+struct AtomData {
   int counts;
   std::string species;
   float radius = 1.0;
   al::Color color;
-} AtomData;
+};
 
 class AtomRenderer : public SceneObject {
 public:

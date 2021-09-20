@@ -294,3 +294,12 @@ std::vector<std::string> DataPool::getCurrentFiles() {
   }
   return files;
 }
+
+std::map<std::string, std::string> DataPool::getRegisteredDataFiles() {
+  return mDataFilenames;
+}
+
+void DataPool::clearRegisteredFiles() {
+  mDataFilenames.clear();
+  // TODO send to clients
+}

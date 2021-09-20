@@ -47,7 +47,9 @@
 #include <string>
 
 namespace tinc {
-
+/**
+ * @brief A DiskBuffer that reads and decodes text files.
+ */
 class DiskBufferText : public DiskBuffer<std::string> {
 public:
   DiskBufferText(std::string id, std::string fileName = "",
@@ -57,72 +59,78 @@ public:
 
 protected:
   bool parseFile(std::string fileName,
-                 std::shared_ptr<std::string> newData) override {
-    //    bool ret = false;
-    std::string filePath;
+                 std::shared_ptr<std::string> newData) override;
 
-#ifdef TINC_CPP_17
-    if (std::filesystem::path(fileName).is_absolute()) {
-#else
-
-#ifdef AL_WINDOWS
-    if (!PathIsRelative(fileName.c_str())) {
-#else
-    if (fileName.size() > 0 && fileName[0] == '/') {
-#endif
-#endif
-      filePath = fileName;
-    } else {
-      filePath = getFullPath() + fileName;
-    }
-    std::ifstream t(filePath);
-
-    t.seekg(0, std::ios::end);
-    newData->reserve(t.tellg());
-    t.seekg(0, std::ios::beg);
-    // TODO check if file was opened correctlt
-
-    newData->assign((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
-
-    BufferManager<std::string>::doneWriting(newData);
-    //      ret = true;
-    //    } else {
-    //      std::cerr << "Error reading Image: " << filePath << std::endl;
-    //    }
-    return true;
-  }
-
-  bool encodeData(std::string fileName, std::string &newData) override {
-    //    bool ret = false;
-    std::string filePath;
-#ifdef TINC_CPP_17
-    if (std::filesystem::path(fileName).is_absolute()) {
-#else
-
-#ifdef AL_WINDOWS
-    if (!PathIsRelative(fileName.c_str())) {
-#else
-    if (fileName.size() > 0 && fileName[0] == '/') {
-#endif
-#endif
-      filePath = fileName;
-    } else {
-      filePath = getFullPath() + fileName;
-    }
-    std::ofstream t(filePath);
-    // TODO test if writing went OK
-    t << newData;
-    t.close();
-    return true;
-    //    if (newData.save(filePath)) {
-    //      ret = true;
-    //    } else {
-    //      std::cerr << "Error writing Image: " << filePath << std::endl;
-    //    }
-    //    return ret;
-  }
+  bool encodeData(std::string fileName, std::string &newData) override;
 };
+
+inline bool DiskBufferText::parseFile(std::string fileName,
+                                      std::shared_ptr<std::string> newData) {
+  //    bool ret = false;
+  std::string filePath;
+
+#ifdef TINC_CPP_17
+  if (std::filesystem::path(fileName).is_absolute()) {
+#else
+
+#ifdef AL_WINDOWS
+  if (!PathIsRelative(fileName.c_str())) {
+#else
+  if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
+    filePath = fileName;
+  } else {
+    filePath = getFullPath() + fileName;
+  }
+  std::ifstream t(filePath);
+
+  t.seekg(0, std::ios::end);
+  newData->reserve(t.tellg());
+  t.seekg(0, std::ios::beg);
+  // TODO check if file was opened correctlt
+
+  newData->assign((std::istreambuf_iterator<char>(t)),
+                  std::istreambuf_iterator<char>());
+
+  BufferManager<std::string>::doneWriting(newData);
+  //      ret = true;
+  //    } else {
+  //      std::cerr << "Error reading Image: " << filePath << std::endl;
+  //    }
+  return true;
+}
+
+inline bool DiskBufferText::encodeData(std::string fileName,
+                                       std::string &newData) {
+  //    bool ret = false;
+  std::string filePath;
+#ifdef TINC_CPP_17
+  if (std::filesystem::path(fileName).is_absolute()) {
+#else
+
+#ifdef AL_WINDOWS
+  if (!PathIsRelative(fileName.c_str())) {
+#else
+  if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
+    filePath = fileName;
+  } else {
+    filePath = getFullPath() + fileName;
+  }
+  std::ofstream t(filePath);
+  // TODO test if writing went OK
+  t << newData;
+  t.close();
+  return true;
+  //    if (newData.save(filePath)) {
+  //      ret = true;
+  //    } else {
+  //      std::cerr << "Error writing Image: " << filePath << std::endl;
+  //    }
+  //    return ret;
+}
 
 } // namespace tinc
 

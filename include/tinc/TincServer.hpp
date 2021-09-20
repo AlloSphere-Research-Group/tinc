@@ -48,14 +48,15 @@
 
 namespace tinc {
 
+/**
+ * @brief The TincServer class
+ *
+ * Listens for connections from TINC Clients (C++ or python) and synchronizes
+ * the state between them.
+ */
 class TincServer : public al::CommandServer, public TincProtocol {
 public:
-  // Data pool commands
-  enum { CREATE_DATA_SLICE = 0x01 };
-
   TincServer();
-
-  bool processIncomingMessage(al::Message &message, al::Socket *src) override;
 
   // See documentation on TincProtocol
   bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
@@ -86,6 +87,7 @@ public:
   void markAvailable() override;
 
 protected:
+  bool processIncomingMessage(al::Message &message, al::Socket *src) override;
   void onConnection(al::Socket *newConnection) override;
 
   void processBarrierAckLock(al::Socket *src, uint64_t barrierConsecutive);

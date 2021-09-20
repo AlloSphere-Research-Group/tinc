@@ -77,17 +77,12 @@ public:
    * The dimension name in the output names the dimension whose changes have
    * produced the values in the fields in the file
    */
-  std::map<std::string, std::string> getRegisteredDataFiles() {
-    return mDataFilenames;
-  }
+  std::map<std::string, std::string> getRegisteredDataFiles();
 
   /**
    * @brief Clear list of registered data files
    */
-  void clearRegisteredFiles() {
-    mDataFilenames.clear();
-    // TODO send to clients
-  }
+  void clearRegisteredFiles();
 
   /**
    * @brief Get parameter space that controls this data pool
@@ -141,17 +136,27 @@ public:
                        void *data, size_t maxLen);
 
   /**
-   * @brief getCacheDirectory
+   * @brief Get directory for data slices
    * @return cache directory
    */
   std::string getCacheDirectory() { return mSliceCacheDirectory; }
 
+  /**
+   * @brief set directory to be used to store slices
+   * @param cacheDirectory
+   * @param src socket that originated this request (nullptr if local)
+   */
   void setCacheDirectory(std::string cacheDirectory, al::Socket *src = nullptr);
 
+  /**
+   * @brief list fields in datapool
+   * @param verifyConsistency verify that all files in datapool are consistent
+   * @return lis of field names
+   */
   std::vector<std::string> listFields(bool verifyConsistency = false);
 
   /**
-   *  Replace this function when the parameter space runningPaths() function is
+   * Replace this function when the parameter space runningPaths() function is
    * not adequate.
    */
   std::function<std::vector<std::string>(std::vector<std::string>)>
@@ -182,4 +187,4 @@ private:
 };
 } // namespace tinc
 
-#endif // DATAPOT_HPP
+#endif // DATAPOOL_HPP

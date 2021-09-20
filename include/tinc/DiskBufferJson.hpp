@@ -38,7 +38,9 @@
 #include "nlohmann/json.hpp"
 
 namespace tinc {
-
+/**
+ * @brief A DiskBuffer that reads and decodes json files.
+ */
 class DiskBufferJson : public DiskBuffer<nlohmann::json> {
 public:
   DiskBufferJson(std::string id = "", std::string fileName = "",
@@ -48,42 +50,48 @@ public:
 
 protected:
   bool parseFile(std::string fileName,
-                 std::shared_ptr<nlohmann::json> newData) override {
-    bool ret = false;
-    try {
-      std::ifstream file(getFullPath() + fileName);
-      if (file.good()) {
-        //          std::cout << "file" << std::endl;
-        *newData = nlohmann::json::parse(file);
-        ret = true;
-      }
-    } catch (std::exception & /*e*/) {
-      std::cerr << "ERROR: parsing json file " << getFullPath() + fileName
-                << std::endl;
-      ret = false;
-    }
-    return ret;
-  }
+                 std::shared_ptr<nlohmann::json> newData) override;
 
-  bool encodeData(std::string fileName, nlohmann::json &newData) override {
-    std::ofstream of(getFullPath() + fileName, std::ofstream::out);
-    if (of.good()) {
-      of << newData.dump(2);
-      of.close();
-      if (!of.good()) {
-        std::cout << "Error writing json file." << getFullPath() + fileName
-                  << std::endl;
-        return false;
-      }
-    } else {
-      std::cout << "Error creating json file" << getFullPath() + fileName
+  bool encodeData(std::string fileName, nlohmann::json &newData) override;
+};
+
+inline bool DiskBufferJson::parseFile(std::string fileName,
+                                      std::shared_ptr<nlohmann::json> newData) {
+  bool ret = false;
+  try {
+    std::ifstream file(getFullPath() + fileName);
+    if (file.good()) {
+      //          std::cout << "file" << std::endl;
+      *newData = nlohmann::json::parse(file);
+      ret = true;
+    }
+  } catch (std::exception & /*e*/) {
+    std::cerr << "ERROR: parsing json file " << getFullPath() + fileName
+              << std::endl;
+    ret = false;
+  }
+  return ret;
+}
+
+inline bool DiskBufferJson::encodeData(std::string fileName,
+                                       nlohmann::json &newData) {
+  std::ofstream of(getFullPath() + fileName, std::ofstream::out);
+  if (of.good()) {
+    of << newData.dump(2);
+    of.close();
+    if (!of.good()) {
+      std::cout << "Error writing json file." << getFullPath() + fileName
                 << std::endl;
       return false;
     }
-
-    return true;
+  } else {
+    std::cout << "Error creating json file" << getFullPath() + fileName
+              << std::endl;
+    return false;
   }
-};
+
+  return true;
+}
 
 } // namespace tinc
 

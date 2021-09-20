@@ -36,8 +36,9 @@
 #include "tinc/DataPool.hpp"
 
 namespace tinc {
+
 /**
- * @brief
+ * @brief A DataPool class to read Json files
  */
 class DataPoolJson : public DataPool {
 public:

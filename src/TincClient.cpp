@@ -262,6 +262,38 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
   return false;
 }
 
+void TincClient::requestParameters() {
+  TincProtocol::requestParameters(&mSocket);
+}
+
+void TincClient::requestProcessors() {
+  TincProtocol::requestProcessors(&mSocket);
+}
+
+void TincClient::requestDiskBuffers() {
+  TincProtocol::requestDiskBuffers(&mSocket);
+}
+
+void TincClient::requestDataPools() {
+  TincProtocol::requestDataPools(&mSocket);
+}
+
+void TincClient::requestParameterSpaces() {
+  TincProtocol::requestParameterSpaces(&mSocket);
+}
+
+void TincClient::synchronize() {
+  sendMetadata();
+  requestParameters();
+  requestParameterSpaces();
+  requestProcessors();
+  requestDiskBuffers();
+  requestDataPools();
+
+  waitForServer();
+  waitForPong(pingServer());
+}
+
 void TincClient::sendMetadata() {
   TincMessage msg;
   msg.set_messagetype(MessageType::TINC_CLIENT_METADATA);

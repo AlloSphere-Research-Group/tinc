@@ -49,20 +49,6 @@
 
 namespace tinc {
 
-/**
- * @brief The ParameterSpaceDimension class provides a discrete dimension with
- *possible values
- *
- * It allows mapping a discrete set of parameter values to string ids, for
- * example for mapping values to filesystem names.
- * A ParameterSpaceDimension groups the possible values or states parameters can
- * take. It also holds a "current" value in this parameter space.
- *
- *In NetCDF parlance, a ParameterSpaceDimension encapsulates both a variable and
- *a dimension. As it deals both with the shape and the values of the parameter
- *space.
- */
-
 // This enum must be kept in sync with the one in protobuf
 enum ParameterType {
   PARAMETER_FLOAT = 0,
@@ -87,6 +73,21 @@ enum ParameterType {
   PARAMETER_DOUBLE = 18,
 };
 
+/**
+ * @brief Class to represent a dimension for a ParameterSpace
+ *
+ * This class provides data storage, interactivity and (optionally)
+ * discretization for the dimension.
+ *
+ * It allows mapping a discrete set of parameter values to string ids, for
+ * example for mapping values to filesystem names.
+ * A ParameterSpaceDimension groups the possible values or states parameters can
+ * take. It also holds a "current" value in this parameter space.
+ *
+ *In NetCDF parlance, a ParameterSpaceDimension encapsulates both a variable and
+ *a dimension. As it deals both with the shape and the values of the parameter
+ *space.
+ */
 class ParameterSpaceDimension {
   friend class ParameterSpace;
   friend class TincProtocol;
@@ -256,11 +257,15 @@ public:
    */
   size_t size();
 
+  /**
+   * @brief sort
+   * @param src socket that generated this request
+   */
   void sort(al::Socket *src = nullptr);
 
   /**
    * @brief Clear the parameter space
-   * @param src
+   * @param src socket that generated this request
    */
   void clear(al::Socket *src = nullptr);
 

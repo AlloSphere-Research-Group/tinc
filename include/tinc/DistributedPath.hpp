@@ -37,6 +37,13 @@
 
 namespace tinc {
 
+/**
+ * @brief The DistributedPath class represents a path on a distributed system
+ *
+ * Distributed paths have a "root" that can be different on different nodes in
+ * the system. The full path is constructed from this root path, the relative
+ * path and the filename.
+ */
 class DistributedPath {
 public:
   DistributedPath(std::string filename = std::string(),
@@ -63,6 +70,9 @@ public:
    */
   std::string path();
 
+  /**
+   * @brief set relative and root paths
+   */
   void setPaths(std::string relativePath, std::string rootPath);
 };
 } // namespace tinc

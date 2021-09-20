@@ -44,12 +44,19 @@
 namespace tinc {
 
 /**
- * @brief Base pure virtual class that defines the DiskBuffer interface
+ * @brief Base pure virtual class that defines the DiskBuffer interface.
+ *
+ * This class defines the interface to the filesystem for disk buffers
  */
 class DiskBufferAbstract : public IdObject {
 public:
-  // Careful, this is not thread safe. Needs to be called synchronously to any
-  // process functions
+  /**
+   * @brief getCurrentFileName
+   * @return
+   *
+   * This function is not thread safe. Needs to be called synchronously to any
+   * process functions
+   */
   std::string getCurrentFileName() {
     std::unique_lock<std::mutex> lk(m_writeLock);
     return m_fileName;
@@ -82,7 +89,6 @@ public:
     m_roundRobinSize = cacheSize;
     // TODO clear file locks
   }
-
   void useFileLock(bool use = true, bool clearLocks = true) {
     // TODO file locks
   }
@@ -93,6 +99,14 @@ public:
     return outName;
   }
 
+  /**
+   * @brief register a function to be called when this object generates new
+   * buffer data
+   * @param cb
+   *
+   * If this object is registered with a TINC server or client, this function
+   * will only be called if the data creation is local to the node.
+   */
   void registerUpdateCallback(std::function<void(bool)> cb) {
     mUpdateCallbacks.push_back(cb);
   }
@@ -104,6 +118,9 @@ public:
    *
    * If this object is registered with a TINC server or client, this function
    * will only be called if the data creation is local to the node.
+   *
+   * When defining loadData(), these callbacks should only be called accodring
+   * to the notify argument.
    */
   void registerNotifyCallback(std::function<void(bool)> cb) {
     mNotifyCallbacks.push_back(cb);

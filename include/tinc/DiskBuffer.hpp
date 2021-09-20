@@ -47,6 +47,9 @@
 
 namespace tinc {
 
+/**
+ *
+ */
 template <class DataType>
 class DiskBuffer : public BufferManager<DataType>, public DiskBufferAbstract {
 public:

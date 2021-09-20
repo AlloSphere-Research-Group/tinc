@@ -37,7 +37,7 @@
 
 namespace tinc {
 /**
- * @brief
+ * @brief A DataPool class to read NetCDF files
  */
 class DataPoolNetCDF : public DataPool {
 public:

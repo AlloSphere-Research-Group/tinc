@@ -38,17 +38,26 @@
 #include <string>
 
 #include "al/io/al_Socket.hpp"
-//#include "tinc/TincServer.hpp"
 
 namespace tinc {
 
+/**
+ * @brief Interface to define objects for a TINC network.
+ *
+ * All objects that can be shared over the network using TINC, must have an id,
+ * documentation and provide a function to mark them as modified.
+ */
 class IdObject {
 public:
+  /**
+   * @brief get this object's id
+   */
   std::string getId();
 
+  /**
+   * @brief set this object's id
+   */
   void setId(std::string id);
-
-  //  virtual void registerWithTincServer(TincServer & /*server*/) {}
 
   std::string getDocumentation() const;
   void setDocumentation(const std::string &documentation);

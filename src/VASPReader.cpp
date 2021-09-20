@@ -305,7 +305,7 @@ void VASPReader::print() {
   std::cout << "Path: " << mBasePath << std::endl;
   std::cout << "File: " << mFileName << std::endl;
   std::cout << "Elements: ";
-  for (auto position : mPositions) {
+  for (const auto &position : mPositions) {
     std::cout << position.first << ":" << position.second.size() / 4 << " ";
   }
   std::cout << "Matrix: ";

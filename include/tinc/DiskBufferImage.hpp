@@ -47,6 +47,9 @@
 
 namespace tinc {
 
+/**
+ * @brief A DiskBuffer that reads and decodes image files.
+ */
 class DiskBufferImage : public DiskBuffer<al::Image> {
 public:
   DiskBufferImage(std::string id, std::string fileName = "",
@@ -54,76 +57,90 @@ public:
                   uint16_t size = 2)
       : DiskBuffer<al::Image>(id, fileName, relPath, rootPath, size) {}
 
+  /**
+   * @brief Write a disk buffer from raw pixel data.
+   */
   bool writePixels(unsigned char *newData, int width, int height,
-                   int numComponents = 3, std::string filename = "") {
-
-    if (filename.size() == 0) {
-      filename = getFilenameForWriting();
-    }
-    if (!al::Image::saveImage(getFullPath() + filename, newData, width, height,
-                              false, numComponents)) {
-      std::cerr << __FILE__ << ":" << __LINE__
-                << " ERROR writing image file: " << getFullPath() + filename
-                << std::endl;
-    }
-
-    return loadData(filename);
-  };
+                   int numComponents = 3, std::string filename = "");
+  ;
 
 protected:
   bool parseFile(std::string fileName,
-                 std::shared_ptr<al::Image> newData) override {
-    bool ret = false;
-    std::string filePath;
+                 std::shared_ptr<al::Image> newData) override;
 
-#ifdef TINC_CPP_17
-    if (std::filesystem::path(fileName).is_absolute()) {
-#else
-
-#ifdef AL_WINDOWS
-    if (!PathIsRelative(fileName.c_str())) {
-#else
-    if (fileName.size() > 0 && fileName[0] == '/') {
-#endif
-#endif
-      filePath = fileName;
-    } else {
-      filePath = getFullPath() + fileName;
-    }
-    if (newData->load(filePath)) {
-      BufferManager<al::Image>::doneWriting(newData);
-      ret = true;
-    } else {
-      std::cerr << "Error reading Image: " << filePath << std::endl;
-    }
-    return ret;
-  }
-
-  bool encodeData(std::string fileName, al::Image &newData) override {
-    bool ret = false;
-    std::string filePath;
-#ifdef TINC_CPP_17
-    if (std::filesystem::path(fileName).is_absolute()) {
-#else
-
-#ifdef AL_WINDOWS
-    if (!PathIsRelative(fileName.c_str())) {
-#else
-    if (fileName.size() > 0 && fileName[0] == '/') {
-#endif
-#endif
-      filePath = fileName;
-    } else {
-      filePath = getFullPath() + fileName;
-    }
-    if (newData.save(filePath)) {
-      ret = true;
-    } else {
-      std::cerr << "Error writing Image: " << filePath << std::endl;
-    }
-    return ret;
-  }
+  bool encodeData(std::string fileName, al::Image &newData) override;
 };
+
+inline bool DiskBufferImage::writePixels(unsigned char *newData, int width,
+                                         int height, int numComponents,
+                                         std::string filename) {
+
+  if (filename.size() == 0) {
+    filename = getFilenameForWriting();
+  }
+  if (!al::Image::saveImage(getFullPath() + filename, newData, width, height,
+                            false, numComponents)) {
+    std::cerr << __FILE__ << ":" << __LINE__
+              << " ERROR writing image file: " << getFullPath() + filename
+              << std::endl;
+  }
+
+  return loadData(filename);
+}
+
+inline bool DiskBufferImage::parseFile(std::string fileName,
+                                       std::shared_ptr<al::Image> newData) {
+  bool ret = false;
+  std::string filePath;
+
+#ifdef TINC_CPP_17
+  if (std::filesystem::path(fileName).is_absolute()) {
+#else
+
+#ifdef AL_WINDOWS
+  if (!PathIsRelative(fileName.c_str())) {
+#else
+  if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
+    filePath = fileName;
+  } else {
+    filePath = getFullPath() + fileName;
+  }
+  if (newData->load(filePath)) {
+    BufferManager<al::Image>::doneWriting(newData);
+    ret = true;
+  } else {
+    std::cerr << "Error reading Image: " << filePath << std::endl;
+  }
+  return ret;
+}
+
+inline bool DiskBufferImage::encodeData(std::string fileName,
+                                        al::Image &newData) {
+  bool ret = false;
+  std::string filePath;
+#ifdef TINC_CPP_17
+  if (std::filesystem::path(fileName).is_absolute()) {
+#else
+
+#ifdef AL_WINDOWS
+  if (!PathIsRelative(fileName.c_str())) {
+#else
+  if (fileName.size() > 0 && fileName[0] == '/') {
+#endif
+#endif
+    filePath = fileName;
+  } else {
+    filePath = getFullPath() + fileName;
+  }
+  if (newData.save(filePath)) {
+    ret = true;
+  } else {
+    std::cerr << "Error writing Image: " << filePath << std::endl;
+  }
+  return ret;
+}
 
 } // namespace tinc
 

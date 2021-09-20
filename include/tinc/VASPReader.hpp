@@ -31,7 +31,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * authors: Andres Cabrera
-*/
+ */
 
 #include <map>
 #include <mutex>
@@ -43,6 +43,9 @@
 
 namespace tinc {
 
+/**
+ * @brief Simple class to read VASP files.
+ */
 class VASPReader {
 public:
   typedef enum {
