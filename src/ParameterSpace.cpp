@@ -778,7 +778,7 @@ bool readNetCDFValues(int grpid, ParameterSpaceDimension *pdim) {
       return false;
     }
     pdim->setSpaceValues(data.data(), data.size());
-  } else if (xtypep == NC_INT) {
+  } else if (xtypep == NC_INT64) {
 
     std::vector<int64_t> data;
     data.resize(lenp);
