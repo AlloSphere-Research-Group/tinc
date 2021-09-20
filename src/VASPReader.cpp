@@ -296,7 +296,7 @@ void VASPReader::setOption(VASPReader::VASPOption option, bool enable) {
     }
   } else { // remove option from option list
     if (find(mOptions.begin(), mOptions.end(), option) == mOptions.end()) {
-      std::remove(mOptions.begin(), mOptions.end(), option);
+      mOptions.erase(std::find(mOptions.begin(), mOptions.end(), option));
     }
   }
 }

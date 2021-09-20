@@ -75,7 +75,7 @@ bool ProcessorScript::process(bool forceRecompute) {
       flags = ParameterSpace::resolveTemplate(mArgTemplate, mParameters);
       std::string line_input, line_output, line_output_dir, line_input_dir;
       std::string chunk;
-      std::size_t pos_input, pos_output, pos_output_dir, pos_input_dir;
+      //      std::size_t pos_input, pos_output, pos_output_dir, pos_input_dir;
       std::vector<std::string> input, output, input_dir, output_dir;
 
       //      pos_input = mCommandLine.find("INPUT:");
@@ -184,8 +184,9 @@ std::string ProcessorScript::writeJsonConfig() {
     }
   }
 
-  std::string jsonFilename =
-      "_" + mId + std::to_string(long(this)) + "_config.json";
+  std::string jsonFilename = "_" + mId +
+                             std::to_string(reinterpret_cast<uintptr_t>(this)) +
+                             "_config.json";
   if (mVerbose) {
     std::cout << "Writing json config: " << jsonFilename << std::endl;
   }

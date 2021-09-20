@@ -108,7 +108,10 @@ struct CacheEntry {
 /**
  * @brief The CacheManager class is in charge of data caching and cache metadata
  *
- * This c
+ * This class copies and renames files into the cache directory, keeping a
+ * metadata json file tracking the source of the data including information
+ * on how it was produced. The metadata follows the json schema defined in
+ * tinc/doc/tinc_cache_schema.json
  */
 class CacheManager {
 public:
