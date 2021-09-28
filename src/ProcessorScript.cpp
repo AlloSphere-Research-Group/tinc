@@ -37,6 +37,14 @@ std::string ProcessorScript::getScriptFile(bool fullPath) {
   return mScriptName;
 }
 
+void ProcessorScript::setCommandLine(std::string cmdLine) {
+  size_t spaceIndex = cmdLine.find(' ');
+  setCommand(cmdLine.substr(0, spaceIndex));
+  if (spaceIndex != std::string::npos) {
+    setArgumentTemplate(cmdLine.substr(cmdLine.find(' ')));
+  }
+}
+
 bool ProcessorScript::process(bool forceRecompute) {
   if (!enabled) {
     return true;
@@ -167,7 +175,7 @@ std::string ProcessorScript::writeJsonConfig() {
 
   parametersToConfig(j);
 
-  for (auto c : configuration) {
+  for (const auto &c : configuration) {
     if (c.second.type() == al::VariantType::VARIANT_STRING) {
       j[c.first] = c.second.get<std::string>();
 

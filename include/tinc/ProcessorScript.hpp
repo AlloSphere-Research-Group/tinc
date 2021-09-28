@@ -117,6 +117,15 @@ public:
   std::string getScriptFile(bool fullPath = false);
 
   /**
+   * @brief set command and arguments from a single string
+   * @param cmdLine
+   *
+   * The first space is treated as the separation between the command and the
+   * arguments
+   */
+  void setCommandLine(std::string cmdLine);
+
+  /**
    * @brief process
    */
   bool process(bool forceRecompute = false) override;
