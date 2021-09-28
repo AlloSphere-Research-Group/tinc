@@ -6,12 +6,7 @@ using json = nlohmann::json;
 
 #include <fstream>
 
-int main() {
-
-  // Create parameter space with two dimensions, one that affects the directory
-  // and another that affects data within a file.
-  tinc::ParameterSpace ps;
-
+void createData(tinc::ParameterSpace &ps) {
   auto dirDim = ps.newDimension("dirDim", tinc::ParameterSpaceDimension::ID);
   uint8_t values[] = {0, 2, 4, 6, 8};
   dirDim->appendSpaceValues(values, 5, "datapool_directory_");
@@ -53,9 +48,18 @@ int main() {
 
   // Generate data
   ps.sweep(dataCreator);
+}
+
+int main() {
+
+  // Create parameter space with two dimensions, one that affects the directory
+  // and another that affects data within a file.
+  tinc::ParameterSpace ps;
+  // Create data associated with the parameter space
+  createData(ps);
 
   // Print data just for reference to understand slicing
-  for (auto directory : ps.runningPaths()) {
+  for (const auto &directory : ps.runningPaths()) {
     std::ifstream in(directory + "/datapool_data.json");
     std::cout << " ***** FILE: " << directory + "/datapool_data.json"
               << std::endl;
@@ -67,6 +71,7 @@ int main() {
       in.close();
     }
   }
+  auto internalValuesDim = ps.getDimension("internalValuesDim");
 
   // Now we will access the data
   tinc::DataPoolJson dp(ps);
