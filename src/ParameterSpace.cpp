@@ -1853,7 +1853,6 @@ CacheEntry ParameterSpace::cacheEntryForProcessor(Processor &processor) {
       case al::VariantType::VARIANT_CHAR:
       case al::VariantType::VARIANT_VARIANT_VECTOR:
       case al::VariantType::VARIANT_VECTOR_OFFSET:
-
         std::cerr << __FILE__ << ":" << __LINE__
                   << " Unsupported parameter: " << param->getName()
                   << std::endl;

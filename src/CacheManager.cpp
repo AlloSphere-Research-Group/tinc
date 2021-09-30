@@ -592,6 +592,8 @@ void CacheManager::writeToDisk() {
           newArg["value"] = arg.getValue().get<bool>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
           newArg["value"] = arg.getValue().get<std::string>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
+          newArg["value"] = arg.getValue().get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();
         }
@@ -625,6 +627,8 @@ void CacheManager::writeToDisk() {
         } else if (arg.getValue().type() == al::VariantType::VARIANT_BOOL) {
           newArg["value"] = arg.getValue().get<bool>();
         } else if (arg.getValue().type() == al::VariantType::VARIANT_STRING) {
+          newArg["value"] = arg.getValue().get<std::string>();
+        } else if (arg.getValue().type() == al::VariantType::VARIANT_MAX_ATOMIC_TYPE) {
           newArg["value"] = arg.getValue().get<std::string>();
         } else {
           newArg["value"] = nlohmann::json();

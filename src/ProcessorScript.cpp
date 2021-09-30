@@ -289,7 +289,11 @@ void ProcessorScript::parametersToConfig(nlohmann::json &j) {
         j[name] = fields[0].get<uint16_t>();
       } else if (fields[0].type() == al::VariantType::VARIANT_UINT8) {
         j[name] = fields[0].get<uint8_t>();
-      }
+      } else if (fields[0].type() == al::VariantType::VARIANT_BOOL) {
+        j[name] = fields[0].get<float>();
+      } else if (fields[0].type() == al::VariantType::VARIANT_CHAR) {
+        j[name] = fields[0].get<char>();
+      } 
     } else {
       std::cerr << "Warning paramters with more than one value are not "
                    "supported in ProcessorScript"
