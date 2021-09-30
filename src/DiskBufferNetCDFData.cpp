@@ -25,10 +25,8 @@ void NetCDFData::setType(int type) {
     dataVector = new std::vector<double>;
     break;
   case al::VariantType::VARIANT_UINT8:
-    dataVector = new std::vector<uint8_t>;
-    break;
   case al::VariantType::VARIANT_CHAR:
-    dataVector = new std::vector<char>;
+    dataVector = new std::vector<uint8_t>;
     break;
   case al::VariantType::VARIANT_UINT16:
     dataVector = new std::vector<uint16_t>;
