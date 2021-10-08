@@ -595,7 +595,19 @@ TEST(ParameterSpace, ReadWriteNetCDFSpace) {
     auto values_float = ps.getDimension("dim_float")->getSpaceValues<float>();
     EXPECT_EQ(values_float, dim_float_values);
   }
-
+  { // String
+    // ParameterSpace ps;
+    // auto dim_string =
+    //     ps.newDimension("dim_string", ParameterSpaceDimension::VALUE,
+    //                     ParameterType::PARAMETER_STRING);
+    // std::string dim_string_values = "Test String 123";
+    // dim_string->setSpaceValues(dim_string_values.data(), dim_string_values.size());
+    // ps.writeToNetCDF("parameter_space_testing.nc");
+    // ps.clear();
+    // ps.readFromNetCDF("parameter_space_testing.nc");
+    // auto values_string = ps.getDimension("dim_string")->getSpaceValues<std::string>();
+    // EXPECT_EQ(values_string, dim_string_values);
+  }
   /*
   // int32
   auto dim_int32 = ps.newDimension("dim_int8",ParameterSpaceDimension::VALUE,
