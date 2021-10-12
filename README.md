@@ -7,7 +7,7 @@ managing parameter spaces, interactive computation and caching of data.
 
 TINC allows exposing C++ application controls to the network. This simplifies
 the development of distributed applications as well as creating applications
-that can be controlled trhrough python without having the application itself
+that can be controlled through python without having the application itself
 depend on python. A great use case is by interacting with the C++ application
 through a jupyter notebook.
 
