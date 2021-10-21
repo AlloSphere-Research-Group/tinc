@@ -123,7 +123,7 @@ ExternalProject_Add(
 #  BUILD_COMMAND "@CMAKE_COMMAND@" .
   BUILD_ALWAYS ON
 #  STEP_TARGETS build
-#  INSTALL_COMMAND ""
+  INSTALL_COMMAND ""
 )
 
 ExternalProject_Get_Property(protobufProject source_dir)
