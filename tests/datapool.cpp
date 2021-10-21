@@ -49,6 +49,7 @@ TEST(Datapool, Slices) {
   DataPoolJson dp{"dp", ps, "sliceCache"};
   dp.registerDataFile("results.json", "internal");
 
+  // Slice across files (external dimension)
   internalDim->setCurrentValue(0.0);
   externalDim->setCurrentValue(10.0);
   double data[10];

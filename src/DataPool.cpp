@@ -73,11 +73,10 @@ DataPool::createDataSlice(std::string field,
   }
   // FIXME implement slicing along more than one dimension.
   std::vector<double> values;
-  std::string filename = "slice_" + field + "_";
 
   size_t fieldSize = 1; // FIXME get actual field size
   size_t dimCount = fieldSize;
-  for (auto sliceDimension : sliceDimensions) {
+  for (const auto &sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
     if (dim && dim->getSpaceStride() > 0) {
       dimCount *= dim->size() / dim->getSpaceStride();
@@ -88,10 +87,11 @@ DataPool::createDataSlice(std::string field,
   }
   //  values.reserve(dimCount);
 
+  std::string filename = "slice_" + field + "_";
   // TODO check if file exists and is the correct slice to use cache instead.
   // TODO for this we need to add metadata to the file indicating where the
   // slice came from. This is part of the bigger TINC metadata idea
-  for (auto sliceDimension : sliceDimensions) {
+  for (const auto &sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
     assert(dim);
     if (std::find(filesystemDims.begin(), filesystemDims.end(),
@@ -106,8 +106,8 @@ DataPool::createDataSlice(std::string field,
       values.reserve(thisDimCount);
 
       auto dataPaths = getAllPaths(fixedDims);
-      for (auto directory : dataPaths) {
-        for (auto file : mDataFilenames) {
+      for (const auto &directory : dataPaths) {
+        for (const auto &file : mDataFilenames) {
           auto fullPath = al::File::conformDirectory(directory) + file.first;
           if (al::File::isRelativePath(fullPath)) {
             fullPath = mParameterSpace->getRootPath() +
@@ -142,10 +142,11 @@ DataPool::createDataSlice(std::string field,
           al::File::conformDirectory(mParameterSpace->getRootPath()) +
           mParameterSpace->generateRelativeRunPath(currentIndeces,
                                                    mParameterSpace);
-      for (auto file : mDataFilenames) {
+      for (const auto &file : mDataFilenames) {
         if (getFieldFromFile(field,
                              al::File::conformDirectory(directory) + file.first,
                              values.data(), values.size())) {
+          // TODO support more than one file
           break;
         }
       }
@@ -259,25 +260,27 @@ void DataPool::setCacheDirectory(std::string cacheDirectory, al::Socket *src) {
 std::vector<std::string> DataPool::listFields(bool verifyConsistency) {
   std::vector<std::string> fields;
 
-  auto paths = getAllPaths({});
-  for (auto path : paths) {
+  if (verifyConsistency) {
+    auto paths = getAllPaths({});
+    for (const auto &path : paths) {
 
-    for (auto file : mDataFilenames) {
-      auto fullPath = path + file.first;
-      if (verifyConsistency) {
+      for (const auto &file : mDataFilenames) {
+        auto fullPath = path + file.first;
         // TODO verify consistency
-
-      } else {
-        return listFieldInFile(fullPath);
       }
     }
+  } else {
+    auto currentFiles = getCurrentFiles();
+    if (currentFiles.size() > 0) {
+      std::string file = currentFiles[0];
+      return listFieldInFile(file);
+    } else {
+      std::cerr << __FILE__ << ":" << __LINE__ << " ERROR field not present"
+                << std::endl;
+    }
   }
-  return fields;
-}
 
-std::string DataPool::getFileType(std::string file) { /*if (file.substr())*/
-  std::string type;
-  return type;
+  return fields;
 }
 
 std::vector<std::string> DataPool::getCurrentFiles() {

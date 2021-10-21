@@ -177,7 +177,6 @@ protected:
   virtual bool getFieldFromFile(std::string field, std::string file, void *data,
                                 size_t length) = 0;
 
-  std::string getFileType(std::string file);
   DataPoolType mType{DataPoolType::DATAPOOL_USER};
 
 private:

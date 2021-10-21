@@ -42,8 +42,6 @@ bool DataPoolJson::getFieldFromFile(std::string field, std::string file,
 
 bool DataPoolJson::getFieldFromFile(std::string field, std::string file,
                                     void *data, size_t length) {
-
-  auto fileType = getFileType(file);
   std::ifstream f(file);
   if (!f.good()) {
     std::cerr << "ERROR reading file: " << file << std::endl;
