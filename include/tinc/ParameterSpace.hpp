@@ -116,7 +116,7 @@ public:
                        bool invoked = false, al::Socket *src = nullptr);
 
   /**
-   * @brief get list of currently registered dimensions
+   * @brief get list of registered dimensions
    */
   std::vector<ParameterSpaceDimension *> getDimensions();
 

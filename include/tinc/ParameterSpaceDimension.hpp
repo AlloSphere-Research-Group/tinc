@@ -286,7 +286,6 @@ public:
    */
   std::vector<std::string> getIdsForValue(float value);
 
-  // Discrete parameter space values
   /**
    * @brief Set possible values in the parameter space dimension
    * @param values pointer to array of values

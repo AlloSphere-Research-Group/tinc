@@ -66,8 +66,10 @@ def disk_buffer_to_dict(db):
 
 def datapool_to_dict(dp):
     d = dp.__dict__.copy()
+    d['parameter_space_id'] = dp.get_parameter_space().id
 
     try:
+        del d['_parameter_space']
         del d["tinc_client"]
     except:
         pass

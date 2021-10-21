@@ -331,13 +331,13 @@ TEST(ParameterSpace, DataDirectories) {
   ps.setCurrentPathTemplate("file_%%dim1%%_%%dim2%%");
 
   EXPECT_TRUE(ps.cleanDataDirectories());
-  for (auto path : ps.runningPaths()) {
+  for (const auto &path : ps.runningPaths()) {
     al::Dir::removeRecursively(path); // delete in case it's not a fresh run
     EXPECT_FALSE(al::File::isDirectory(path));
   }
 
   EXPECT_TRUE(ps.createDataDirectories());
-  for (auto path : ps.runningPaths()) {
+  for (const auto &path : ps.runningPaths()) {
     EXPECT_TRUE(al::File::isDirectory(path));
   }
   // Generate a file within each directory through a sweep
@@ -352,19 +352,19 @@ TEST(ParameterSpace, DataDirectories) {
 
   ps.sweep(proc);
 
-  for (auto path : ps.runningPaths()) {
+  for (const auto &path : ps.runningPaths()) {
     EXPECT_EQ(al::itemListInDir(path).count(), 1);
   }
 
   EXPECT_TRUE(ps.cleanDataDirectories());
-  for (auto path : ps.runningPaths()) {
+  for (const auto &path : ps.runningPaths()) {
     EXPECT_TRUE(al::File::isDirectory(path));
     EXPECT_EQ(al::itemListInDir(path).count(), 0);
   }
 
   EXPECT_TRUE(ps.removeDataDirectories());
 
-  for (auto path : ps.runningPaths()) {
+  for (const auto &path : ps.runningPaths()) {
     EXPECT_TRUE(!al::File::isDirectory(path));
   }
 }
