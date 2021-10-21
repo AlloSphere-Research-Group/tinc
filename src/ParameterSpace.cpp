@@ -348,7 +348,6 @@ ParameterSpace::runningPaths(std::vector<std::string> fixedDimensions) {
   }
   bool done = false;
   while (!done) {
-    done = true;
     auto path = al::File::conformDirectory(
         al::File::conformPathToOS(mRootPath) +
         generateRelativeRunPath(currentIndices, this));
