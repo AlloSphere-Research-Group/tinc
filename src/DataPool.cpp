@@ -288,7 +288,7 @@ std::vector<std::string> DataPool::getCurrentFiles() {
   std::string path =
       al::File::conformDirectory(mParameterSpace->getRootPath() +
                                  mParameterSpace->getCurrentRelativeRunPath());
-  for (auto f : mDataFilenames) {
+  for (const auto &f : mDataFilenames) {
     auto fullPath = path + f.first;
     if (!al::File::isRelativePath(fullPath)) {
       fullPath = al::File::absolutePath(fullPath);

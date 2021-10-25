@@ -366,7 +366,13 @@ std::string ParameterSpace::getCurrentRelativeRunPath() {
     std::unique_lock<std::mutex> lk(mDimensionsLock);
     for (auto &psd : mDimensions) {
       // if (psd->isFilesystemDimension()) {
-      indices[psd->getName()] = psd->getCurrentIndex();
+      if (psd->size() > 0) {
+        auto currentIndex = psd->getCurrentIndex();
+        if (currentIndex == SIZE_MAX) {
+          currentIndex = 0;
+        }
+        indices[psd->getName()] = psd->getCurrentIndex();
+      }
       // }
     }
   }
@@ -1130,7 +1136,7 @@ std::string ParameterSpace::resolveTemplate(
 
       if (allTokens.size() > 1) {
         std::vector<ParameterSpaceDimension *> multiDimensions;
-        for (auto token : allTokens) {
+        for (const auto &token : allTokens) {
           for (auto *dim : dimensions) {
             if (dim->getName() == token) {
               multiDimensions.push_back(dim);

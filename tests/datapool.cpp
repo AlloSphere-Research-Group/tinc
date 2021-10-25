@@ -17,8 +17,9 @@ TEST(Datapool, Basic) {
   auto externalDim = ps.newDimension("external", ParameterSpaceDimension::ID);
   externalDim->setSpaceValues(std::vector<float>{10.0, 10.1, 10.2});
   externalDim->setSpaceIds({"folder1", "folder2", "folder3"});
+  externalDim->conformSpace();
 
-  ps.setCurrentPathTemplate("%%external%%/");
+  ps.setCurrentPathTemplate("%%external:ID%%/");
 
   DataPoolJson dp{"dp", ps, "sliceCache"};
   dp.registerDataFile("results.json", "internal");
