@@ -1929,11 +1929,15 @@ bool ParameterSpace::executeProcess(Processor &processor, bool recompute) {
   if (mCacheManager) {
     std::vector<FileDependency> cacheFiles;
     if (!cacheRestored) {
-      for (auto filename : processor.getOutputFileNames()) {
+      for (const auto &filename : processor.getOutputFileNames()) {
 
 #ifdef TINC_CPP_17
-        uint64_t size = std::filesystem::file_size(
-            processor.getOutputDirectory() + filename);
+        uint64_t size = 0;
+        if (std::filesystem::exists(processor.getOutputDirectory() +
+                                    filename)) {
+          size = std::filesystem::file_size(processor.getOutputDirectory() +
+                                            filename);
+        }
 #else
         uint64_t size =
             al::File::sizeFile(processor.getOutputDirectory() + filename);
