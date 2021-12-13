@@ -118,7 +118,7 @@ struct MyApp : public App {
     // values. Because the dimensions have been set to
     // ParameterSpaceDimension::ID, the current ids will be inserted
     ps.setCurrentPathTemplate(
-        "AMX2_spinel_diffusion_0.0_0.0_%%ec1%%_%%eci2%%_%%eci3%%_%%eci4%%");
+        "AMX2_spinel_diffusion_0.0_0.0_%%eci1%%_%%eci2%%_%%eci3%%_%%eci4%%");
 
     // Create necessary filesystem directories to be populated by data
     ps.createDataDirectories();
