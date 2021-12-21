@@ -46,7 +46,7 @@ jobs:
           command: ./bin/tinc_tests
       - run:
           name: Run Python tests
-          command: coverage run tinc-python/tinc/tests/unit_tests.py ; coverage report -m
+          command: cd tinc-python/tinc/tests; coverage run tinc-python/tinc/tests/unit_tests.py ; coverage report -m
       - run:
           name: Code coverage report
           command: |
