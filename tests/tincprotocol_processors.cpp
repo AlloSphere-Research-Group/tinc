@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include "tinc/ProcessorCpp.hpp"
 #include "tinc/ProcessorScript.hpp"
 #include "tinc/TincClient.hpp"
 #include "tinc/TincServer.hpp"
@@ -14,13 +15,27 @@ TEST(Processor, Connection) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
 
-  // TODO ML create processors of different types (perhaps in separate unit
-  // tests
+  ProcessorCpp proc1("proc1");
+  proc1.setDocumentation("Hello");
+  EXPECT_EQ(proc1.getDocumentation(), "Hello");
+
+  ProcessorScript proc2("proc2");
+  proc2.setDocumentation("World");
+
+  tserver.registerProcessor(proc1);
+  tserver.registerProcessor(proc2);
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
-  // TODO ML check that the processor details are correct
+  auto *proc1Client = tclient.getProcessor("proc1");
+  auto *proc2Client = tclient.getProcessor("proc2");
+
+  EXPECT_NE(proc1Client, nullptr);
+  EXPECT_NE(proc2Client, nullptr);
+
+  EXPECT_EQ(proc1Client->getDocumentation(), "Hello");
+  EXPECT_EQ(proc2Client->getDocumentation(), "World");
 
   tclient.stop();
   tserver.stop();

@@ -32,6 +32,12 @@ TEST(ParameterSpace, Basic) {
   EXPECT_EQ(ps.getDimension("no_dim"), nullptr);
 }
 
+TEST(ParameterSpace, Documentation) {
+  ParameterSpace ps;
+  ps.setDocumentation("Hello");
+  EXPECT_EQ(ps.getDocumentation(), "Hello");
+}
+
 TEST(ParameterSpace, DimensionValues) {
   ParameterSpace ps;
   auto dim1 = ps.newDimension("dim1");
@@ -601,11 +607,13 @@ TEST(ParameterSpace, ReadWriteNetCDFSpace) {
     //     ps.newDimension("dim_string", ParameterSpaceDimension::VALUE,
     //                     ParameterType::PARAMETER_STRING);
     // std::string dim_string_values = "Test String 123";
-    // dim_string->setSpaceValues(dim_string_values.data(), dim_string_values.size());
+    // dim_string->setSpaceValues(dim_string_values.data(),
+    // dim_string_values.size());
     // ps.writeToNetCDF("parameter_space_testing.nc");
     // ps.clear();
     // ps.readFromNetCDF("parameter_space_testing.nc");
-    // auto values_string = ps.getDimension("dim_string")->getSpaceValues<std::string>();
+    // auto values_string =
+    // ps.getDimension("dim_string")->getSpaceValues<std::string>();
     // EXPECT_EQ(values_string, dim_string_values);
   }
   /*

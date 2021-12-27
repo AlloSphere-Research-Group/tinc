@@ -10,6 +10,16 @@
 
 using namespace tinc;
 
+TEST(Processor, Documentation) {
+  ProcessorCpp proc1("proc1");
+  proc1.setDocumentation("Hello");
+  EXPECT_EQ(proc1.getDocumentation(), "Hello");
+
+  ProcessorScript proc2("proc2");
+  proc2.setDocumentation("Hello");
+  EXPECT_EQ(proc2.getDocumentation(), "Hello");
+}
+
 TEST(Processor, BasicCpp) {
   float value = 0.0;
   ProcessorCpp proc1("proc1");

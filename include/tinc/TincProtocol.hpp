@@ -219,6 +219,8 @@ public:
 
   DataPool *getDataPool(std::string name);
 
+  Processor *getProcessor(std::string name);
+
   /**
    * @brief activate a network barrier
    * @param group group to make the barrier for. 0 is all.
@@ -404,10 +406,12 @@ protected:
   std::vector<DiskBufferAbstract *> mDiskBuffers;
   std::vector<DataPool *> mDataPools;
 
-  // Dimensions that were allocated by this class
+  // Elements that were allocated by this object, to be destroyed when
+  // this object goes out of scope
   std::vector<std::shared_ptr<ParameterSpaceDimension>> mLocalPSDs;
   std::vector<std::shared_ptr<ParameterSpace>> mLocalPSs;
   std::vector<std::shared_ptr<DiskBufferAbstract>> mLocalDBs;
+  std::vector<std::shared_ptr<Processor>> mLocalProcs;
   std::vector<std::shared_ptr<DataPool>> mLocalDPs;
 
   // Barriers

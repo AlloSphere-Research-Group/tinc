@@ -168,6 +168,7 @@ TincMessage createRegisterParameterSpaceMessage(ParameterSpace *ps) {
   msg.set_objecttype(ObjectType::PARAMETER_SPACE);
   RegisterParameterSpace details;
   details.set_id(ps->getId());
+  details.set_documentation(ps->getDocumentation());
   google::protobuf::Any *detailsAny = msg.details().New();
   detailsAny->PackFrom(details);
   msg.set_allocated_details(detailsAny);
@@ -1676,6 +1677,15 @@ DataPool *TincProtocol::getDataPool(std::string name) {
   return nullptr;
 }
 
+Processor *TincProtocol::getProcessor(std::string name) {
+  for (auto *dp : mProcessors) {
+    if (dp->getId() == name) {
+      return dp;
+    }
+  }
+  return nullptr;
+}
+
 void TincProtocol::markBusy() {
   std::unique_lock<std::mutex> lk(mBusyCountLock);
   assert(mBusyCount < UINT32_MAX);
@@ -2144,6 +2154,7 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
   }
 
   mLocalPSs.emplace_back(std::make_shared<ParameterSpace>(id));
+  mLocalPSs.back()->setDocumentation(command.documentation());
 
   if (registerParameterSpace(*mLocalPSs.back(), src)) {
     if (forward) {
@@ -2156,7 +2167,69 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
 
 bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
                                             bool forward) {
-  // FIXME implement
+  google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
+  if (!details->Is<RegisterProcessor>()) {
+    std::cerr << __FUNCTION__
+              << ": Register Processor message contains invalid payload"
+              << std::endl;
+    return false;
+  }
+
+  RegisterProcessor command;
+  details->UnpackTo(&command);
+  auto id = command.id();
+
+  if (mVerbose) {
+    std::cout << " Registering Processor " << id << std::endl;
+  }
+
+  for (auto &proc : mProcessors) {
+    if (proc->getId() == id) {
+      if (mVerbose) {
+        std::cout << __FUNCTION__ << ": Processor " << id
+                  << " already registered." << std::endl;
+      }
+      // TODO verify consistency
+      return true;
+    }
+  }
+
+  auto type = command.type();
+  if (type == DATASCRIPT) {
+    mLocalProcs.emplace_back(std::make_shared<ProcessorScript>(id));
+  } else if (type == CHAIN) {
+    mLocalProcs.emplace_back(std::make_shared<ProcessorGraph>(id));
+  } else if (type == CPP) {
+    mLocalProcs.emplace_back(std::make_shared<ProcessorCpp>(id));
+  } else {
+    std::cerr << __FILE__ << ":" << __LINE__ << " Unsuported Processor type"
+              << std::endl;
+    return false;
+  }
+  const auto &newProc = mLocalProcs.back();
+
+  auto inputDir = command.inputdirectory();
+  std::vector<std::string> inputFiles(command.inputfiles().begin(),
+                                      command.inputfiles().end());
+  auto outputDir = command.outputdirectory();
+  std::vector<std::string> outputFiles(command.outputfiles().begin(),
+                                       command.outputfiles().end());
+  auto runDir = command.runningdirectory();
+
+  auto doc = command.documentation();
+
+  newProc->setInputDirectory(inputDir);
+  newProc->setInputFileNames(inputFiles);
+  newProc->setOutputDirectory(outputDir);
+  newProc->setOutputFileNames(outputFiles);
+  newProc->setRunningDirectory(runDir);
+  newProc->setDocumentation(doc);
+
+  if (registerProcessor(*newProc, src)) {
+    if (forward) {
+      sendRegisterMessage(newProc.get(), nullptr, src);
+    }
+  }
   return true;
 }
 
@@ -2185,6 +2258,7 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
         std::cout << __FUNCTION__ << ": DiskBuffer " << id
                   << " already registered." << std::endl;
       }
+      // TODO verify consistency
       return true;
     }
   }
@@ -2222,6 +2296,7 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
     return false;
   }
 
+  mLocalDBs.back()->setDocumentation(command.documentation());
   if (registerDiskBuffer(*mLocalDBs.back(), src)) {
     if (forward) {
       sendRegisterMessage(mLocalDBs.back().get(), nullptr, src);
@@ -2282,7 +2357,7 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
                 << std::endl;
       return false;
     }
-
+    mLocalDPs.back()->setDocumentation(command.documentation());
     if (registerDataPool(*mLocalDPs.back(), src)) {
       if (forward) {
         sendRegisterMessage(mLocalDPs.back().get(), nullptr, src);
@@ -2340,6 +2415,7 @@ void TincProtocol::sendRegisterMessage(Processor *p, al::Socket *dst,
 
   RegisterProcessor registerProcMessage;
   registerProcMessage.set_id(p->getId());
+  registerProcMessage.set_documentation(p->getDocumentation());
   if (strcmp(typeid(*p).name(), typeid(ProcessorScript).name()) == 0) {
     registerProcMessage.set_type(ProcessorType::DATASCRIPT);
   } else if (strcmp(typeid(*p).name(), typeid(ProcessorGraph).name()) == 0) {
@@ -2425,6 +2501,7 @@ void TincProtocol::sendRegisterMessage(DiskBufferAbstract *db, al::Socket *dst,
 
   RegisterDiskBuffer details;
   details.set_id(db->getId());
+  details.set_documentation(db->getDocumentation());
 
   DiskBufferType type = DiskBufferType::BINARY;
 
@@ -2469,6 +2546,7 @@ void TincProtocol::sendRegisterMessage(DataPool *dp, al::Socket *dst,
 
   RegisterDataPool details;
   details.set_id(dp->getId());
+  details.set_documentation(dp->getDocumentation());
   details.set_parameterspaceid(dp->getParameterSpace().getId());
   details.set_cachedirectory(dp->getCacheDirectory());
   details.set_type((tinc_protobuf::DataPoolTypes)dp->getType());

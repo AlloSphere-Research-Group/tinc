@@ -31,6 +31,15 @@ TEST(Datapool, Basic) {
   EXPECT_EQ(fields[2], "field3");
 }
 
+TEST(Datapool, Documentation) {
+  ParameterSpace ps{"ps"};
+
+  ps.setRootPath(TINC_TESTS_SOURCE_DIR "/data");
+  DataPoolJson dp{"dp", ps, "sliceCache"};
+  dp.setDocumentation("Hello");
+  EXPECT_EQ(dp.getDocumentation(), "Hello");
+}
+
 TEST(Datapool, Slices) {
   ParameterSpace ps{"ps"};
 
@@ -292,4 +301,35 @@ TEST(Datapool, SlicesMultiId) {
   EXPECT_EQ(data[5], 1);
   EXPECT_EQ(data[6], 6);
   EXPECT_EQ(data[7], 4);
+}
+
+TEST(Datapool, SliceTwoDimensions) {
+  ParameterSpace ps{"ps"};
+
+  ps.setRootPath(TINC_TESTS_SOURCE_DIR "/data");
+
+  // This internal dimension determines the index into the elements found in
+  // results.json
+  auto internalDim = ps.newDimension("internal");
+  internalDim->setSpaceValues(
+      std::vector<float>{0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7});
+  auto externalDim = ps.newDimension("external", ParameterSpaceDimension::ID);
+  externalDim->setSpaceValues(std::vector<float>{10.0, 10.1, 10.2});
+  externalDim->setSpaceIds({"folder1", "folder2", "folder3"});
+
+  ps.setCurrentPathTemplate("%%external%%/");
+
+  DataPoolJson dp{"dp", ps, "sliceCache"};
+  dp.registerDataFile("results.json", "internal");
+
+  // Slice across files (external dimension)
+  internalDim->setCurrentValue(0.0);
+  externalDim->setCurrentValue(10.0);
+  double data[10];
+  auto sliceSize = dp.readDataSlice(
+      "field1", std::vector<std::string>{"external", "internal"}, data, 10);
+  EXPECT_EQ(sliceSize, 3);
+  EXPECT_EQ(data[0], 0);
+  EXPECT_EQ(data[1], 1);
+  EXPECT_EQ(data[2], 5);
 }

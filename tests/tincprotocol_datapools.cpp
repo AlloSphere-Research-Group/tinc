@@ -50,6 +50,7 @@ TEST(DataPoolProtocol, Metadata) {
   dp.registerDataFile("results.json", "internal");
 
   tserver << dp; // Should register everything
+  dp.setDocumentation("datapool doc");
 
   // Connect client
 
@@ -59,6 +60,8 @@ TEST(DataPoolProtocol, Metadata) {
 
   auto externalDataPool =
       static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
+
+  EXPECT_EQ(externalDataPool->getDocumentation(), "datapool doc");
 
   auto regFiles = dp.getRegisteredDataFiles();
   auto clientRegFiles = externalDataPool->getRegisteredDataFiles();

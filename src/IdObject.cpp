@@ -9,7 +9,7 @@ using namespace tinc;
 std::string IdObject::getId() {
   if (mId.size() == 0) {
     mId = al::demangle(typeid(*this).name()) + "@" +
-          std::to_string((uint64_t) this);
+          std::to_string((uint64_t)this);
     std::cout << "Warning. Processor given temporary id: " << mId << std::endl;
   }
   return mId;
@@ -21,4 +21,10 @@ void IdObject::setId(std::string id) {
   } else {
     std::cerr << "ERROR, id for DataPool already exists. Not set." << std::endl;
   }
+}
+
+std::string IdObject::getDocumentation() const { return mDocumentation; }
+
+void IdObject::setDocumentation(const std::string &documentation) {
+  mDocumentation = documentation;
 }

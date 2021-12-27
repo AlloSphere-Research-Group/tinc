@@ -22,6 +22,12 @@ TEST(DiskBuffer, BasicJson) {
   EXPECT_EQ(filename, "name_0.ext");
 };
 
+TEST(DiskBuffer, Documentation) {
+  DiskBufferJson db{"id", "name.ext", "path"};
+  db.setDocumentation("Hello");
+  EXPECT_EQ(db.getDocumentation(), "Hello");
+}
+
 TEST(DiskBuffer, RoundRobin) {
   DiskBufferJson db{"id", "name.ext", "path"};
 

@@ -64,6 +64,12 @@ enum ParameterType {
     PARAMETER_DOUBLE = 18;
 }
 
+enum DataPoolTypes {
+    DATAPOOLTYPE_JSON = 0;
+    DATAPOOLTYPE_NETCDF = 1;
+    DATAPOOLTYPE_USER = 2;
+}
+
 enum DiskBufferType {
     BINARY = 0;
     TEXT = 1;
@@ -126,12 +132,7 @@ message RegisterProcessor {
   string outputDirectory = 5;
   repeated string outputFiles = 6;
   string runningDirectory = 7;
-}
-
-enum DataPoolTypes {
-    DATAPOOLTYPE_JSON = 0;
-    DATAPOOLTYPE_NETCDF = 1;
-    DATAPOOLTYPE_USER = 2;
+  string documentation = 50;
 }
 
 message RegisterDataPool {
@@ -139,16 +140,19 @@ message RegisterDataPool {
   string parameterSpaceId = 2;
   string cacheDirectory = 3;
   DataPoolTypes type = 4;
+  string documentation = 50;
 }
 
 message RegisterDiskBuffer {
   string id = 1;
   DiskBufferType type = 2;
   DistributedPath path = 3;
+  string documentation = 50;
 }
 
 message RegisterParameterSpace {
   string id = 1;
+  string documentation = 50;
 }
 
 message RegisterParameter {
@@ -156,6 +160,7 @@ message RegisterParameter {
   string group = 2;
   ParameterType dataType = 3;
   ParameterValue defaultValue = 4;
+  string documentation = 50;
  }
 
 // Configuration Messages

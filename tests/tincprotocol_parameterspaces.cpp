@@ -16,6 +16,7 @@ TEST(ProtocolParameterSpace, Connection) {
   ParameterSpace ps{"paramspace"};
   auto ps_dim = ps.newDimension("psdim");
   EXPECT_NE(ps_dim, nullptr);
+  ps.setDocumentation("param space");
 
   tserver << ps;
 
@@ -25,6 +26,8 @@ TEST(ProtocolParameterSpace, Connection) {
   auto client_ps = tclient.getParameterSpace("paramspace");
 
   EXPECT_NE(client_ps, nullptr);
+
+  EXPECT_EQ(client_ps->getDocumentation(), "param space");
 
   // auto client_ps_dim = client_ps->getDimension("psdim");
   // auto client_dim = tclient.getParameter("psdim");
