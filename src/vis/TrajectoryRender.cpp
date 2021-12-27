@@ -201,6 +201,11 @@ void TrajectoryRender::update(double dt) {
         if (arrangement == DATA_POS_REL_RGB) {
           pointCount = dataVector.size() / 6;
         }
+        //        if (pointCount * 6 != dataVector.size()) {
+        //          std::cerr << "Unexpected data size:" << dataVector.size()
+        //                    << " loading nc file failed." << std::endl;
+        //          return;
+        //        }
         size_t counter = pointCount - 1;
         // TODO validate dataVector size
         while (dataIt != dataVector.end()) {

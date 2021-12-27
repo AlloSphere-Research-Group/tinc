@@ -145,7 +145,7 @@ public:
 
 protected:
   virtual bool parseFile(std::string fileName,
-                         std::shared_ptr<NetCDFData> newData);
+                         std::shared_ptr<NetCDFData> newData) override;
 
   bool encodeData(std::string fileName, NetCDFData &newData) override;
 
