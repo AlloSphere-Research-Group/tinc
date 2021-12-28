@@ -732,11 +732,11 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
   msg.set_allocated_details(detailsAny);
   confMessages.push_back(msg);
 
-  TincMessage msg2;
-  msg2.set_messagetype(MessageType::CONFIGURE);
-  msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
-
   {
+
+    TincMessage msg2;
+    msg2.set_messagetype(MessageType::CONFIGURE);
+    msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
     ConfigureParameterSpace confMessage2;
     confMessage2.set_id(ps->getId());
     confMessage2.set_configurationkey(ParameterSpaceConfigureType::ROOT_PATH);
@@ -752,9 +752,13 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
     google::protobuf::Any *detailsAny2 = msg2.details().New();
     detailsAny2->PackFrom(confMessage2);
     msg2.set_allocated_details(detailsAny2);
+    confMessages.push_back(msg2);
   }
 
   {
+    TincMessage msg2;
+    msg2.set_messagetype(MessageType::CONFIGURE);
+    msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
     auto cm = ps->getCacheManager();
     if (cm) {
       ConfigureParameterSpace confMessage2;
@@ -777,10 +781,28 @@ createConfigureParameterSpaceMessage(ParameterSpace *ps) {
       google::protobuf::Any *detailsAny2 = msg2.details().New();
       detailsAny2->PackFrom(confMessage2);
       msg2.set_allocated_details(detailsAny2);
+      confMessages.push_back(msg2);
     }
   }
 
-  confMessages.push_back(msg2);
+  {
+    TincMessage msg2;
+    msg2.set_messagetype(MessageType::CONFIGURE);
+    msg2.set_objecttype(ObjectType::PARAMETER_SPACE);
+    ConfigureParameterSpace confMessage2;
+    confMessage2.set_id(ps->getId());
+    confMessage2.set_configurationkey(
+        ParameterSpaceConfigureType::PS_DOCUMENTATION);
+
+    auto confValue2 = confMessage2.configurationvalue().New();
+    confValue2->set_value(ps->getDocumentation());
+    confMessage2.set_allocated_configurationvalue(confValue2);
+
+    google::protobuf::Any *detailsAny2 = msg2.details().New();
+    detailsAny2->PackFrom(confMessage2);
+    msg2.set_allocated_details(detailsAny2);
+    confMessages.push_back(msg2);
+  }
 
   return confMessages;
 }
@@ -1355,6 +1377,16 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
     if (!invoked) {
       removeParameter(changedDimension->getName(), changedDimension->getGroup(),
                       true, src);
+    }
+  };
+  ps.modified = [&](al::Socket *src = nullptr) {
+    auto msgs = createConfigureParameterSpaceMessage(&ps);
+    for (auto &msg : msgs) {
+      if (src) {
+        sendTincMessage(&msg, nullptr, src->valueSource());
+      } else {
+        sendTincMessage(&msg, nullptr, nullptr);
+      }
     }
   };
 
@@ -2734,6 +2766,12 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
           }
           return true;
         }
+      } else if (command == ParameterSpaceConfigureType::PS_DOCUMENTATION) {
+        ps->setDocumentation(conf.configurationvalue().value(), src);
+        if (forward) {
+          sendConfigureMessage(ps, nullptr, src);
+        }
+        return true;
       }
 
       std::cerr << __FUNCTION__

@@ -276,7 +276,7 @@ public:
    * @brief Set the parameter space's root path
    * @param rootPath
    */
-  void setRootPath(std::string rootPath);
+  void setRootPath(std::string rootPath, al::Socket *src = nullptr);
 
   /**
    * @brief Get root path for the parameter space

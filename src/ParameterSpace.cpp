@@ -1069,7 +1069,7 @@ bool ParameterSpace::readDimensionsInNetCDFFile(
 }
 std::string ParameterSpace::getRootPath() { return mRootPath; }
 
-void ParameterSpace::setRootPath(std::string rootPath) {
+void ParameterSpace::setRootPath(std::string rootPath, al::Socket *src) {
   if (mCacheManager && rootPath != mRootPath &&
       al::File::conformDirectory(rootPath) != mRootPath) {
     // TODO should we do it instead of warning?
@@ -1083,6 +1083,7 @@ void ParameterSpace::setRootPath(std::string rootPath) {
     al::Dir::make(rootPath);
   }
   mRootPath = al::File::conformDirectory(rootPath);
+  modified(src);
 }
 
 std::string

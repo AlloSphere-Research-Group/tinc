@@ -25,6 +25,8 @@ void IdObject::setId(std::string id) {
 
 std::string IdObject::getDocumentation() const { return mDocumentation; }
 
-void IdObject::setDocumentation(const std::string &documentation) {
+void IdObject::setDocumentation(const std::string &documentation,
+                                al::Socket *src) {
   mDocumentation = documentation;
+  modified(src);
 }

@@ -196,6 +196,7 @@ enum ParameterSpaceConfigureType {
     CURRENT_TEMPLATE = 2;
     ROOT_PATH = 3;
     CACHE_PATH = 4;
+    PS_DOCUMENTATION = 50;
 }
 
 message ConfigureParameterSpace {
@@ -212,6 +213,7 @@ message ConfigureProcessor {
 
 enum DiskBufferConfigureType {
     CURRENT_FILE = 0;
+    DB_DOCUMENTATION = 50;
 }
 
 message ConfigureDiskBuffer {
@@ -223,6 +225,7 @@ message ConfigureDiskBuffer {
 enum DataPoolConfigureType {
     SLICE_CACHE_DIR = 0;
     DATA_FILES = 1;
+    DP_DOCUMENTATION = 50;
 }
 message DataPoolDataFiles {
   repeated string filename = 1;

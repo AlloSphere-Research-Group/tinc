@@ -60,7 +60,8 @@ public:
   void setId(std::string id);
 
   std::string getDocumentation() const;
-  void setDocumentation(const std::string &documentation);
+  void setDocumentation(const std::string &documentation,
+                        al::Socket *src = nullptr);
 
   std::function<void(al::Socket *src)> modified = [](al::Socket * /*src*/) {};
 

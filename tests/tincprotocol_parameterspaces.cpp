@@ -57,6 +57,33 @@ TEST(ProtocolParameterSpace, Connection) {
   tserver.stop();
 }
 
+TEST(ProtocolParameterSpace, Configure) {
+  TincServer tserver;
+  EXPECT_TRUE(tserver.start());
+
+  ParameterSpace ps{"paramspace"};
+  //  tserver.setVerbose(true);
+
+  tserver << ps;
+
+  TincClient tclient;
+  EXPECT_TRUE(tclient.start());
+  //  tclient.setVerbose(true);
+  auto client_ps = tclient.getParameterSpace("paramspace");
+
+  EXPECT_NE(client_ps, nullptr);
+
+  EXPECT_EQ(client_ps->getDocumentation(), "");
+
+  ps.setDocumentation("param space");
+  // FIXME we need a robust system for synchronization
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  EXPECT_EQ(client_ps->getDocumentation(), "param space");
+
+  tclient.stop();
+  tserver.stop();
+}
+
 TEST(ProtocolParameterSpace, RootPath) {
   TincServer tserver;
   EXPECT_TRUE(tserver.start());
@@ -73,6 +100,13 @@ TEST(ProtocolParameterSpace, RootPath) {
 
   EXPECT_EQ(ps.getRootPath(), client_ps->getRootPath());
   // FIXME isSamePath broken for this case...
+  EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(), client_ps->getRootPath()));
+
+  ps.setRootPath("rootpath_new");
+  // FIXME we need a robust system for synchronization
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  tclient.waitForPong(tclient.pingServer());
+
   EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(), client_ps->getRootPath()));
 
   tclient.stop();
