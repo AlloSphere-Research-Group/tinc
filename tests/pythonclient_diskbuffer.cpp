@@ -20,6 +20,7 @@ TEST(PythonClient, DiskbufferImage) {
 
   DiskBufferImage imageBuffer{"image", "image.png", "python_db"};
 
+  imageBuffer.setDocumentation("im buffer");
   tserver << imageBuffer;
 
   std::vector<unsigned char> mPixels;
@@ -67,7 +68,7 @@ pixels = [[[255* j/new_w, 255* j/new_w,255*  i/new_h, 255* i/new_h] for j in ran
 
 db.write_pixels(pixels)
 
-test_output = [db.get_relative_path(), db.get_base_filename(),initial_file, w, h, match]
+test_output = [db.get_relative_path(), db.get_base_filename(),initial_file, w, h, match, db.documentation]
 #print(pixels)
 
 time.sleep(0.1)
@@ -81,7 +82,7 @@ tclient.stop()
 
   auto output = ptest.readResults();
 
-  EXPECT_EQ(output.size(), 6);
+  EXPECT_EQ(output.size(), 7);
 
   EXPECT_EQ(output[0], imageBuffer.getRelativePath());
   EXPECT_EQ(output[1], imageBuffer.getBaseFileName());
@@ -89,6 +90,7 @@ tclient.stop()
   EXPECT_EQ(output[3], w);
   EXPECT_EQ(output[4], h);
   EXPECT_TRUE(output[5]);
+  EXPECT_EQ(output[6], imageBuffer.getDocumentation());
 
   al::al_sleep(0.5); // wait for image from python
   auto written = imageBuffer.get();
@@ -116,6 +118,7 @@ TEST(PythonClient, DiskbufferNetcdf) {
 
   DiskBufferNetCDFData ncBuffer{"nc", "test.nc", "python_db"};
 
+  ncBuffer.setDocumentation("nc buffer");
   tserver << ncBuffer;
 
   NetCDFData data;
@@ -147,7 +150,7 @@ db.data = [5,6,7,8]
 db.data = [0,1,2,3,4,5]
 db.data = [5,6,7,8, 9]
 #print(db.data)
-test_output = [db.get_relative_path(), db.get_base_filename(), db.get_current_filename(), olddata]
+test_output = [db.get_relative_path(), db.get_base_filename(), db.get_current_filename(), olddata, db.documentation]
 
 #print(type(db.data))
 #print(type(db.data[0]))
@@ -164,7 +167,7 @@ tclient.stop()
 
   auto output = ptest.readResults();
 
-  EXPECT_EQ(output.size(), 4);
+  EXPECT_EQ(output.size(), 5);
 
   EXPECT_EQ(output[0], ncBuffer.getRelativePath());
   EXPECT_EQ(output[1], ncBuffer.getBaseFileName());
@@ -174,6 +177,7 @@ tclient.stop()
   for (int i = 0; i < elementCount; i++) {
     EXPECT_EQ(output[3][i], v[i]);
   }
+  EXPECT_EQ(output[4], ncBuffer.getDocumentation());
 
   auto &newData = ncBuffer.get()->getVector<float>();
   EXPECT_EQ(newData, std::vector<float>({5, 6, 7, 8, 9}));

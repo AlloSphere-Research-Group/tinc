@@ -66,18 +66,19 @@ TEST(ProtocolParameterSpace, Configure) {
 
   tserver << ps;
 
+  ps.setDocumentation("param space before");
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
   //  tclient.setVerbose(true);
   auto client_ps = tclient.getParameterSpace("paramspace");
 
   EXPECT_NE(client_ps, nullptr);
-
-  EXPECT_EQ(client_ps->getDocumentation(), "");
+  EXPECT_EQ(client_ps->getDocumentation(), "param space before");
 
   ps.setDocumentation("param space");
   // FIXME we need a robust system for synchronization
-  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  tclient.synchronize();
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_EQ(client_ps->getDocumentation(), "param space");
 
   tclient.stop();
@@ -104,8 +105,8 @@ TEST(ProtocolParameterSpace, RootPath) {
 
   ps.setRootPath("rootpath_new");
   // FIXME we need a robust system for synchronization
-  std::this_thread::sleep_for(std::chrono::milliseconds(50));
   tclient.waitForPong(tclient.pingServer());
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   EXPECT_TRUE(al::File::isSamePath(ps.getRootPath(), client_ps->getRootPath()));
 
