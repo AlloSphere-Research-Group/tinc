@@ -95,13 +95,16 @@ public:
                std::string relPath = "", std::string rootPath = "",
                uint16_t size = 2)
       : SceneObject(id, filename, relPath, rootPath, size),
-        mDataScale("dataScale", id, {1.0, 1.0, 1.0}),
-        mAtomMarkerSize("atomMarkerSize", id, 0.4, 0.0, 5.0f),
+        mDataScale("dataScale", id, {1.0f, 1.0f, 1.0f}),
+        mAtomMarkerSize("atomMarkerSize", id, 0.4f, 0.0, 5.0f),
         mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0f, 0.0f, 1.0f) {
     registerParameter(mAtomMarkerSize);
     registerParameter(mDataScale);
     registerParameter(mShowAtoms);
     registerParameter(mAlpha);
+    mBuffer.setDocumentation(R"(Atom Render buffer:
+Expects: x0,y0,z0, x1,y1,z1 ... xn, yn, zn
+ )");
   }
 
   // PositionedVOice callbacks

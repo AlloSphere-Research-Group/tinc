@@ -13,6 +13,21 @@ TrajectoryRender::TrajectoryRender(std::string id, std::string filename,
       trajectoryWidth("width", id, 0.1, 0.0001, 0.5),
       alpha("alpha", id, 0.8, 0.0, 1.0) {
 
+  mBuffer.setDocumentation(R"(Trajectory Render buffer:
+Set attribute \"dataArrangement\" to determine interpretation of list of floats.
+dataArrangement == 0: DATA_POS_REL Size: n*3
+Expects: x0,y0,z0, dx1,dy1,dz1 ... dxn, dyn, dzn
+
+dataArrangement == 1: DATA_POS_ABS Size: n*3
+Expects: x0,y0,z0, x1,y1,z1 ... xn, yn, zn
+
+dataArrangement == 1: DATA_POS_REL_RGB Size: (n - 1)*6 + 3
+Expects: x0,y0,z0, dx1,dy1,dz1, r1,g1,b1,  ... dxn,dyn, dzn, rn, gn, bn
+
+dataArrangement == 1: DATA_POS_ABS_RGB Size: (n - 1)*6 + 3
+Expects: x0,y0,z0, x1,y1,z1, r1,g1,b1,  ... xn,yn, zn, rn, gn, bn
+
+ )");
   trajectoryWidth.registerChangeCallback([&](float value) {
     // Force a reload. New value will be used in update()
     mBuffer.doneWriting(mBuffer.get());
