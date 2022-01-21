@@ -414,11 +414,14 @@ protected:
   std::vector<std::shared_ptr<Processor>> mLocalProcs;
   std::vector<std::shared_ptr<DataPool>> mLocalDPs;
 
+  std::string mMessagePrefix;
   // Barriers
   int barrierWaitGranularTimeMs = 20;
 
   std::mutex mBusyCountLock;
   uint32_t mBusyCount = 0;
+
+  std::mutex mSendLock;
 
   // Root path mapping
   std::map<std::string, std::vector<std::pair<std::string, std::string>>>

@@ -1078,7 +1078,8 @@ bool TincProtocol::processConfigureParameterMessage(
       auto values = sv.values();
       auto idsIt = sv.ids().begin();
       if (sv.ids().size() != 0 && sv.ids().size() != values.size()) {
-        std::cerr << "ids size mismatch. ignoring" << std::endl;
+        std::cerr << mMessagePrefix + " ids size mismatch. ignoring"
+                  << std::endl;
         idsIt = sv.ids().end();
       }
       dim->clear(src);
@@ -1265,15 +1266,16 @@ bool TincProtocol::registerParameter(al::ParameterMeta &pmeta,
     if (dim->getName() == pmeta.getName() &&
         dim->getGroup() == pmeta.getGroup()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": Parameter " << pmeta.getName()
-                  << " (Group: " << pmeta.getGroup() << ") already registered."
+        std::cout << mMessagePrefix + __FUNCTION__ + ": Parameter " +
+                         pmeta.getName() + " (Group: " + pmeta.getGroup() +
+                         ") already registered."
                   << std::endl;
       }
       if (&pmeta != dim->getParameterMeta()) {
-        std::cerr
-            << __FUNCTION__
-            << ": Parameter is already registered but pointer doesn't match."
-            << std::endl;
+        std::cerr << mMessagePrefix + __FUNCTION__ +
+                         ": Parameter is already registered but pointer "
+                         "doesn't match."
+                  << std::endl;
       }
       return false;
     }
@@ -1289,15 +1291,17 @@ bool TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
   for (auto *dim : mParameterSpaceDimensions) {
     if (dim->getFullAddress() == psd.getFullAddress()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-                  << psd.getFullAddress() << " already registered."
+        std::cout << mMessagePrefix + __FUNCTION__ +
+                         ": ParameterSpaceDimension " + psd.getFullAddress() +
+                         " already registered."
                   << std::endl;
       }
       if (dim != &psd) {
-        std::cerr << __FILE__
-                  << " ERROR: Attempted to register a  dimension that already "
-                     "exists. Dimension not registered."
-                  << std::endl;
+        std::cerr
+            << mMessagePrefix + __FILE__ +
+                   " ERROR: Attempted to register a  dimension that already "
+                   "exists. Dimension not registered."
+            << std::endl;
         assert(dim == &psd);
       }
       return false;
@@ -1308,11 +1312,12 @@ bool TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     for (auto *dim : ps->getDimensions()) {
       if (dim == &psd || dim->getFullAddress() == psd.getFullAddress()) {
         if (&psd != dim) {
-          std::cerr << __FILE__
-                    << " ERROR: Attempted to register a dimension that already "
-                       "exists in a ParameterSpace with a different object. "
-                       "Duplicate dimension will cause inconsistent state."
-                    << std::endl;
+          std::cerr
+              << mMessagePrefix + __FILE__ +
+                     " ERROR: Attempted to register a dimension that already "
+                     "exists in a ParameterSpace with a different object. "
+                     "Duplicate dimension will cause inconsistent state."
+              << std::endl;
           assert(&psd == dim); // Forced failed assert
           return false;
         }
@@ -1320,7 +1325,8 @@ bool TincProtocol::registerParameterSpaceDimension(ParameterSpaceDimension &psd,
     }
   }
   if (mVerbose) {
-    std::cout << __FUNCTION__ << ": Register new dimension  " << psd.getName()
+    std::cout << mMessagePrefix + __FUNCTION__ + ": Register new dimension  " +
+                     psd.getName()
               << std::endl;
   }
   mParameterSpaceDimensions.push_back(&psd);
@@ -1337,20 +1343,22 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   for (auto *p : mParameterSpaces) {
     if (p->getId() == ps.getId()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": ParameterSpace " << ps.getId()
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": ParameterSpace " +
+                         ps.getId() + " already registered."
+                  << std::endl;
       }
       if (p != &ps) {
-        std::cout << __FUNCTION__ << ": ERROR ParameterSpace " << ps.getId()
-                  << " already registered as another object." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": ERROR ParameterSpace " +
+                         ps.getId() + " already registered as another object."
+                  << std::endl;
       }
       assert(p == &ps);
       return false;
     }
   }
   if (mVerbose) {
-    std::cout << __FUNCTION__
-              << ": Registering new ParameterSpace: " << ps.getId()
+    std::cout << mMessagePrefix + __FUNCTION__ +
+                     ": Registering new ParameterSpace: " + ps.getId()
               << std::endl;
   }
 
@@ -1359,8 +1367,9 @@ bool TincProtocol::registerParameterSpace(ParameterSpace &ps, al::Socket *src) {
   ps.onDimensionRegister = [this](ParameterSpaceDimension *changedDimension,
                                   ParameterSpace *ps, al::Socket *src) {
     if (mVerbose) {
-      std::cout << __FUNCTION__ << ": Callback onDimensionRegister() "
-                << ps->getId() << std::endl;
+      std::cout << mMessagePrefix + __FUNCTION__ +
+                       ": Callback onDimensionRegister() " + ps->getId()
+                << std::endl;
     }
 
     // function that invokes this cb should do relevant checks
@@ -1406,12 +1415,15 @@ bool TincProtocol::registerProcessor(Processor &processor, al::Socket *src) {
   for (auto *p : mProcessors) {
     if (p->getId() == processor.getId()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": Processor " << processor.getId()
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": Processor " +
+                         processor.getId() + " already registered."
+                  << std::endl;
       }
       if (p != &processor) {
-        std::cerr << __FUNCTION__ << ": ERROR Processor " << processor.getId()
-                  << " already registered as a different object." << std::endl;
+        std::cerr << mMessagePrefix + __FUNCTION__ + ": ERROR Processor " +
+                         processor.getId() +
+                         " already registered as a different object."
+                  << std::endl;
       }
       assert(p == &processor);
       return false;
@@ -1434,12 +1446,15 @@ bool TincProtocol::registerDiskBuffer(DiskBufferAbstract &db, al::Socket *src) {
   for (auto *p : mDiskBuffers) {
     if (p->getId() == db.getId()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": DiskBuffer " << db.getId()
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": DiskBuffer " +
+                         db.getId() + " already registered."
+                  << std::endl;
       }
       if (p != &db) {
-        std::cerr << __FUNCTION__ << ": ERROR Diskbuffer " << db.getId()
-                  << " already registered as a different object." << std::endl;
+        std::cerr << mMessagePrefix + __FUNCTION__ + ": ERROR Diskbuffer " +
+                         db.getId() +
+                         " already registered as a different object."
+                  << std::endl;
       }
       assert(p == &db);
       return false;
@@ -1464,12 +1479,15 @@ bool TincProtocol::registerDataPool(DataPool &dp, al::Socket *src) {
   for (auto *p : mDataPools) {
     if (p->getId() == dp.getId()) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": DataPool " << dp.getId()
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": DataPool " +
+                         dp.getId() + " already registered."
+                  << std::endl;
       }
       if (p != &dp) {
-        std::cerr << __FUNCTION__ << ": ERROR DataPool " << dp.getId()
-                  << " already registered as a different object." << std::endl;
+        std::cerr << mMessagePrefix + __FUNCTION__ + ": ERROR DataPool " +
+                         dp.getId() +
+                         " already registered as a different object."
+                  << std::endl;
       }
       assert(p == &dp);
       return false;
@@ -1622,8 +1640,9 @@ void TincProtocol::removeParameter(std::string name, std::string group,
             (group == "" && (*itLocal)->getFullAddress() == name)) {
 
           if (mVerbose) {
-            std::cout << __FUNCTION__ << ": ParameterSpaceDimension "
-                      << (*itLocal)->getFullAddress() << " removed."
+            std::cout << mMessagePrefix + __FUNCTION__ +
+                             ": ParameterSpaceDimension " +
+                             (*itLocal)->getFullAddress() + " removed."
                       << std::endl;
           }
 
@@ -1636,11 +1655,12 @@ void TincProtocol::removeParameter(std::string name, std::string group,
       }
 
       if (mVerbose) {
-        std::cout
-            << __FUNCTION__ << ": ParameterSpaceDimension " << name
-            << " (Group: " << group
-            << ") removed from TincProtocol but original is stored externally."
-            << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ +
+                         ": ParameterSpaceDimension " + name +
+                         " (Group: " + group +
+                         ") removed from TincProtocol but original is stored "
+                         "externally."
+                  << std::endl;
       }
       return; // removed stored ptr but psd is owned externally
     } else {
@@ -1648,8 +1668,10 @@ void TincProtocol::removeParameter(std::string name, std::string group,
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find ParameterSpaceDimension "
-            << name << " (Group: " << group << ")" << std::endl;
+  std::cerr << mMessagePrefix + __FUNCTION__ +
+                   ": Unable to find ParameterSpaceDimension " + name +
+                   " (Group: " + group + ")"
+            << std::endl;
 }
 
 ParameterSpaceDimension *TincProtocol::getDimension(std::string name,
@@ -1727,7 +1749,8 @@ void TincProtocol::markBusy() {
 void TincProtocol::markAvailable() {
   std::unique_lock<std::mutex> lk(mBusyCountLock);
   if (mBusyCount == 0) {
-    std::cerr << __FUNCTION__ << "ERROR: Can't mark as available. Not busy."
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     "ERROR: Can't mark as available. Not busy."
               << std::endl;
     return;
   }
@@ -1911,8 +1934,8 @@ void TincProtocol::connectDimensionCallbacks(ParameterSpaceDimension &psd) {
 void TincProtocol::readRequestMessage(int objectType, std::string objectId,
                                       al::Socket *src) {
   if (objectId.size() > 0) {
-    std::cout << __FUNCTION__
-              << ": Ignoring object id. Sending all requested objects."
+    std::cout << mMessagePrefix + __FUNCTION__ +
+                     ": Ignoring object id. Sending all requested objects."
               << std::endl;
   }
   switch (objectType) {
@@ -1932,7 +1955,8 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
     processRequestParameterSpaces(src);
     break;
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ObjectType"
+              << std::endl;
     break;
   }
 }
@@ -1940,17 +1964,22 @@ void TincProtocol::readRequestMessage(int objectType, std::string objectId,
 void TincProtocol::processRequestParameters(al::Socket *dst) {
 
   if (mVerbose) {
-    std::cout << "Protocol received Request Parameters" << std::endl;
+    std::cout << mMessagePrefix + "Protocol received Request Parameters"
+              << std::endl;
   }
   for (auto *dim : mParameterSpaceDimensions) {
     sendRegisterMessage(dim, dst);
     sendConfigureMessage(dim, dst);
   }
+  if (mVerbose) {
+    std::cout << mMessagePrefix + "done sending Parameters" << std::endl;
+  }
 }
 
 void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
   if (mVerbose) {
-    std::cout << "Protocol received Request ParameterSpaces" << std::endl;
+    std::cout << mMessagePrefix + "Protocol received Request ParameterSpaces"
+              << std::endl;
   }
   for (auto &ps : mParameterSpaces) {
     sendRegisterMessage(ps, dst);
@@ -1961,35 +1990,50 @@ void TincProtocol::processRequestParameterSpaces(al::Socket *dst) {
       sendConfigureParameterSpaceAddDimension(ps, dim, dst);
     }
   }
+  if (mVerbose) {
+    std::cout << mMessagePrefix + "done sending ParameterSpaces" << std::endl;
+  }
 }
 
 void TincProtocol::processRequestProcessors(al::Socket *dst) {
   if (mVerbose) {
-    std::cout << "Protocol received Request Processors" << std::endl;
+    std::cout << mMessagePrefix + "Protocol received Request Processors"
+              << std::endl;
   }
   for (auto *p : mProcessors) {
     sendRegisterMessage(p, dst);
     sendConfigureMessage(p, dst);
   }
+  if (mVerbose) {
+    std::cout << mMessagePrefix + "done sending Processors" << std::endl;
+  }
 }
 
 void TincProtocol::processRequestDiskBuffers(al::Socket *dst) {
   if (mVerbose) {
-    std::cout << "Protocol received Request DiskBuffers" << std::endl;
+    std::cout << mMessagePrefix + "Protocol received Request DiskBuffers"
+              << std::endl;
   }
   for (auto *db : mDiskBuffers) {
     sendRegisterMessage(db, dst);
     sendConfigureMessage(db, dst);
   }
+  if (mVerbose) {
+    std::cout << mMessagePrefix + "done sending DiskBuffers" << std::endl;
+  }
 }
 
 void TincProtocol::processRequestDataPools(al::Socket *dst) {
   if (mVerbose) {
-    std::cout << "Protocol received Request DataPools" << std::endl;
+    std::cout << mMessagePrefix + "Protocol received Request DataPools"
+              << std::endl;
   }
   for (auto *dp : mDataPools) {
     sendRegisterMessage(dp, dst);
     sendConfigureMessage(dp, dst);
+  }
+  if (mVerbose) {
+    std::cout << mMessagePrefix + "done sending DataPools" << std::endl;
   }
 }
 
@@ -2007,7 +2051,8 @@ bool TincProtocol::readRegisterMessage(int objectType, void *any,
   case ObjectType::PARAMETER_SPACE:
     return processRegisterParameterSpace(any, src, forward);
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ObjectType"
+              << std::endl;
     break;
   }
   return false;
@@ -2017,7 +2062,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
                                             bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterParameter>()) {
-    std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Register message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -2030,7 +2076,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
   auto datatype = command.datatype();
 
   if (mVerbose) {
-    std::cout << " Registering Parameter " << id << " (Group: " << group << ")"
+    std::cout << mMessagePrefix + "Registering Parameter " + id +
+                     " (Group: " + group + ")"
               << std::endl;
   }
 
@@ -2038,8 +2085,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
     if (dim->getName() == id && dim->getGroup() == group) {
       if (mVerbose) {
         // FIXME apply configuration (min, max, default) if found
-        std::cout << __FUNCTION__ << ":" << __LINE__ << ": Parameter " << id
-                  << " (Group: " << group << ") already registered."
+        std::cout << mMessagePrefix + __FUNCTION__ + ": Parameter " + id +
+                         " (Group: " + group + ") already registered."
                   << std::endl;
       }
       return true;
@@ -2050,9 +2097,9 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
       if (dim->getName() == id && dim->getGroup() == group) {
         if (mVerbose) {
           // FIXME apply configuration (min, max, default) if found
-          std::cout << __FUNCTION__ << ":" << __LINE__ << ": Parameter " << id
-                    << " (Group: " << group
-                    << ") already registered in a parameter space."
+          std::cout << mMessagePrefix + __FUNCTION__ + ": Parameter " + id +
+                           " (Group: " + group +
+                           ") already registered in a parameter space."
                     << std::endl;
         }
         return true;
@@ -2138,7 +2185,8 @@ bool TincProtocol::processRegisterParameter(void *any, al::Socket *src,
     param = new al::ParameterDouble(id, group, def.valuedouble());
     break;
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ParameterType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ParameterType"
+              << std::endl;
     break;
   }
 
@@ -2162,7 +2210,8 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
                                                  bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterParameterSpace>()) {
-    std::cerr << __FUNCTION__ << ": Register message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Register message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -2172,14 +2221,16 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
   auto id = command.id();
 
   if (mVerbose) {
-    std::cout << " Registering ParameterSpace " << id << std::endl;
+    std::cout << mMessagePrefix + "Registering ParameterSpace " + id
+              << std::endl;
   }
 
   for (auto &ps : mParameterSpaces) {
     if (ps->getId() == id) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": ParameterSpace " << id
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": ParameterSpace " + id +
+                         " already registered."
+                  << std::endl;
       }
       return true;
     }
@@ -2201,8 +2252,8 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
                                             bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterProcessor>()) {
-    std::cerr << __FUNCTION__
-              << ": Register Processor message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Register Processor message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -2212,14 +2263,15 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
   auto id = command.id();
 
   if (mVerbose) {
-    std::cout << " Registering Processor " << id << std::endl;
+    std::cout << mMessagePrefix + "Registering Processor " + id << std::endl;
   }
 
   for (auto &proc : mProcessors) {
     if (proc->getId() == id) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": Processor " << id
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": Processor " + id +
+                         " already registered."
+                  << std::endl;
       }
       // TODO verify consistency
       return true;
@@ -2234,7 +2286,7 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
   } else if (type == CPP) {
     mLocalProcs.emplace_back(std::make_shared<ProcessorCpp>(id));
   } else {
-    std::cerr << __FILE__ << ":" << __LINE__ << " Unsuported Processor type"
+    std::cerr << mMessagePrefix + __FUNCTION__ + " Unsuported Processor type"
               << std::endl;
     return false;
   }
@@ -2270,8 +2322,8 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
 
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterDiskBuffer>()) {
-    std::cerr << __FUNCTION__
-              << ": Register Disk Buffer message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Register Disk Buffer message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -2281,14 +2333,15 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   auto id = command.id();
 
   if (mVerbose) {
-    std::cout << " Registering DiskBuffer " << id << std::endl;
+    std::cout << mMessagePrefix + "Registering DiskBuffer " + id << std::endl;
   }
 
   for (auto &ps : mDiskBuffers) {
     if (ps->getId() == id) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": DiskBuffer " << id
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": DiskBuffer " + id +
+                         " already registered."
+                  << std::endl;
       }
       // TODO verify consistency
       return true;
@@ -2323,7 +2376,8 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   } */
   else {
 
-    std::cout << __FUNCTION__ << ": DiskBuffer type not supported."
+    std::cout << mMessagePrefix + __FUNCTION__ +
+                     ": DiskBuffer type not supported."
               << std::endl;
     return false;
   }
@@ -2342,8 +2396,8 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
                                            bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RegisterDataPool>()) {
-    std::cerr << __FUNCTION__
-              << ": Register Data Pool message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Register Data Pool message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -2353,14 +2407,15 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
   auto id = command.id();
 
   if (mVerbose) {
-    std::cout << " Registering DataPool " << id << std::endl;
+    std::cout << mMessagePrefix + " Registering DataPool " + id << std::endl;
   }
 
   for (auto &dp : mDataPools) {
     if (dp->getId() == id) {
       if (mVerbose) {
-        std::cout << __FUNCTION__ << ": DataPool " << id
-                  << " already registered." << std::endl;
+        std::cout << mMessagePrefix + __FUNCTION__ + ": DataPool " + id +
+                         " already registered."
+                  << std::endl;
       }
       return true;
     }
@@ -2380,12 +2435,14 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
           std::make_shared<DataPoolNetCDF>(id, *ps, cacheDir));
     } else if (command.type() == DataPoolTypes::DATAPOOLTYPE_USER) {
 
-      std::cout << __FUNCTION__ << ": DataPool **USER** types not supported."
+      std::cout << mMessagePrefix + __FUNCTION__ +
+                       ": DataPool **USER** types not supported."
                 << std::endl;
       return false;
     } else {
 
-      std::cout << __FUNCTION__ << ": DataPool type not supported."
+      std::cout << mMessagePrefix + __FUNCTION__ +
+                       ": DataPool type not supported."
                 << std::endl;
       return false;
     }
@@ -2398,10 +2455,10 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
     return true;
   } else {
 
-    std::cout
-        << __FUNCTION__
-        << ": ParameterSpace in DataPool not found. Datapool not registered."
-        << std::endl;
+    std::cout << mMessagePrefix + __FUNCTION__ +
+                     ": ParameterSpace in DataPool not found. Datapool not "
+                     "registered."
+              << std::endl;
     return false;
   }
 
@@ -2610,7 +2667,8 @@ bool TincProtocol::readConfigureMessage(int objectType, void *any,
   case ObjectType::PARAMETER_SPACE:
     return processConfigureParameterSpace(any, src, forward);
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ObjectType"
+              << std::endl;
     break;
   }
   return false;
@@ -2620,13 +2678,16 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src,
                                              bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureParameter>()) {
-    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Configure message contains invalid payload"
               << std::endl;
     return false;
   }
 
   if (mVerbose) {
-    std::cout << "Protocol received Configure Parameter message" << std::endl;
+    std::cout << mMessagePrefix +
+                     "Protocol received Configure Parameter message"
+              << std::endl;
   }
 
   ConfigureParameter conf;
@@ -2648,7 +2709,8 @@ bool TincProtocol::processConfigureParameter(void *any, al::Socket *src,
   }
 
   if (mVerbose) {
-    std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Unable to find Parameter " +
+                     addr
               << std::endl;
   }
   return false;
@@ -2658,13 +2720,15 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
                                                   bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureParameterSpace>()) {
-    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Configure message contains invalid payload"
               << std::endl;
     return false;
   }
 
   if (mVerbose) {
-    std::cout << "Protocol received Configure ParameterSpace message"
+    std::cout << mMessagePrefix +
+                     "Protocol received Configure ParameterSpace message"
               << std::endl;
   }
 
@@ -2685,8 +2749,9 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
           for (auto *dim : ps->getDimensions()) {
             if (addr == dim->getFullAddress()) {
               if (mVerbose) {
-                std::cout << __FUNCTION__ << ": Parameter " << addr
-                          << " already registered in ParameterSpace " << id
+                std::cout << mMessagePrefix + __FUNCTION__ + ": Parameter " +
+                                 addr +
+                                 " already registered in ParameterSpace " + id
                           << std::endl;
               }
               return true;
@@ -2697,15 +2762,17 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
             if (addr == dim->getFullAddress()) {
               ps->registerDimension(dim, src);
               if (mVerbose) {
-                std::cout << "Registered Parameter " << addr
-                          << " to ParameterSpace " << id << std::endl;
+                std::cout << mMessagePrefix + "Registered Parameter " + addr +
+                                 " to ParameterSpace " + id
+                          << std::endl;
               }
               // FIXME propagate to clients
               return true;
             }
           }
 
-          std::cerr << __FUNCTION__ << ": Unable to find Parameter " << addr
+          std::cerr << mMessagePrefix + __FUNCTION__ +
+                           ": Unable to find Parameter " + addr
                     << std::endl;
           return false;
         }
@@ -2719,15 +2786,18 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
             if (addr == dim->getFullAddress()) {
               ps->removeDimension(dim->getName(), dim->getGroup(), true, src);
               if (mVerbose) {
-                std::cout << __FUNCTION__ << ": Removing Parameter " << addr
-                          << " from ParameterSpace " << id << std::endl;
+                std::cout << mMessagePrefix + __FUNCTION__ +
+                                 ": Removing Parameter " + addr +
+                                 " from ParameterSpace " + id
+                          << std::endl;
               }
               // FIXME propagate to clients
               return true;
             }
           }
 
-          std::cerr << __FUNCTION__ << "Unable to find Parameter " << addr
+          std::cerr << mMessagePrefix + __FUNCTION__ +
+                           "Unable to find Parameter " + addr
                     << std::endl;
           return false;
         }
@@ -2774,15 +2844,17 @@ bool TincProtocol::processConfigureParameterSpace(void *any, al::Socket *src,
         return true;
       }
 
-      std::cerr << __FUNCTION__
-                << ": Unrecognized configure message for ParameterSpace " << id
+      std::cerr << mMessagePrefix + __FUNCTION__ +
+                       ": Unrecognized configure message for ParameterSpace " +
+                       id
                 << std::endl;
       return false;
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find ParameterSpace " << id
-            << std::endl;
+  std::cerr << mMessagePrefix + __FUNCTION__ +
+                   ": Unable to find ParameterSpace "
+            << id << std::endl;
   return false;
 }
 
@@ -2791,7 +2863,8 @@ bool TincProtocol::processConfigureProcessor(void *any, al::Socket *src,
   // FIXME implement
   if (mVerbose) {
     std::cout
-        << "Protocol received Configure Processor message [not implemented]"
+        << mMessagePrefix +
+               "Protocol received Configure Processor message [not implemented]"
         << std::endl;
   }
   return true;
@@ -2801,13 +2874,16 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src,
                                               bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureDiskBuffer>()) {
-    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Configure message contains invalid payload"
               << std::endl;
     return false;
   }
 
   if (mVerbose) {
-    std::cout << "Protocol received Configure DiskBuffer message " << std::endl;
+    std::cout << mMessagePrefix +
+                     "Protocol received Configure DiskBuffer message "
+              << std::endl;
   }
 
   ConfigureDiskBuffer conf;
@@ -2822,12 +2898,15 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src,
           ParameterValue file;
           conf.configurationvalue().UnpackTo(&file);
           if (!db->loadData(file.valuestring(), false)) {
-            std::cerr << __FUNCTION__ << ": Error updating DiskBuffer " << id
-                      << " from file " << file.valuestring() << std::endl;
+            std::cerr << mMessagePrefix + __FUNCTION__ +
+                             ": Error updating DiskBuffer " + id +
+                             " from file " + file.valuestring()
+                      << std::endl;
             return false;
           }
-          std::cout << "DiskBuffer " << id << " successfully loaded "
-                    << file.valuestring() << std::endl;
+          std::cout << mMessagePrefix + "DiskBuffer " + id +
+                           " successfully loaded " + file.valuestring()
+                    << std::endl;
           if (forward) {
             sendConfigureMessage(db, nullptr, src);
           }
@@ -2835,13 +2914,15 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src,
         }
       }
 
-      std::cerr << __FUNCTION__ << ": Error configuring DiskBuffer " << id
+      std::cerr << mMessagePrefix + __FUNCTION__ +
+                       ": Error configuring DiskBuffer " + id
                 << std::endl;
       return false;
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find DiskBuffer " << id
+  std::cerr << mMessagePrefix + __FUNCTION__ + ": Unable to find DiskBuffer " +
+                   id
             << std::endl;
   return false;
 }
@@ -2850,13 +2931,16 @@ bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src,
                                             bool forward) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<ConfigureDataPool>()) {
-    std::cerr << __FUNCTION__ << ": Configure message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Configure message contains invalid payload"
               << std::endl;
     return false;
   }
 
   if (mVerbose) {
-    std::cout << "Protocol received Configure DataPool message " << std::endl;
+    std::cout << mMessagePrefix +
+                     "Protocol received Configure DataPool message "
+              << std::endl;
   }
 
   ConfigureDataPool conf;
@@ -2882,10 +2966,11 @@ bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src,
           DataPoolDataFiles files;
           conf.configurationvalue().UnpackTo(&files);
           if (files.filename_size() != files.dimension_size()) {
-            std::cerr
-                << __FUNCTION__
-                << ": Error configuring DataPool DATA_FILES size mismatch "
-                << id << std::endl;
+            std::cerr << mMessagePrefix + __FUNCTION__ +
+                             ": Error configuring DataPool DATA_FILES size "
+                             "mismatch " +
+                             id
+                      << std::endl;
           }
           for (int i = 0; i < files.filename_size(); i++) {
             dp->clearRegisteredFiles();
@@ -2898,13 +2983,15 @@ bool TincProtocol::processConfigureDataPool(void *any, al::Socket *src,
           return true;
         }
       }
-      std::cerr << __FUNCTION__ << ": Error configuring DiskBuffer " << id
+      std::cerr << mMessagePrefix + __FUNCTION__ +
+                       ": Error configuring DataPool " + id
                 << std::endl;
       return false;
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find DataPool " << id << std::endl;
+  std::cerr << mMessagePrefix + __FUNCTION__ + ": Unable to find DataPool " + id
+            << std::endl;
   return false;
 }
 
@@ -3071,7 +3158,8 @@ bool TincProtocol::readRemoveMessage(int objectType, void *any,
   case ObjectType::PARAMETER_SPACE:
     // return processRemoveParameterSpace(any, src);
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ObjectType"
+              << std::endl;
     break;
   }
   return false;
@@ -3080,7 +3168,8 @@ bool TincProtocol::readRemoveMessage(int objectType, void *any,
 bool TincProtocol::processRemoveParameter(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<RemoveParameter>()) {
-    std::cerr << __FUNCTION__ << ": Remove message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Remove message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -3097,8 +3186,9 @@ bool TincProtocol::processRemoveParameter(void *any, al::Socket *src) {
     }
   }
 
-  std::cerr << __FUNCTION__ << ": Unable to find Parameter " << name
-            << " (Group: " << group << ") to remove." << std::endl;
+  std::cerr << mMessagePrefix + __FUNCTION__ + ": Unable to find Parameter " +
+                   name + " (Group: " + group + ") to remove."
+            << std::endl;
   return false;
 }
 
@@ -3373,7 +3463,8 @@ void TincProtocol::sendValueMessage(al::Pose value, std::string fullAddress,
 
 bool TincProtocol::readPingMessage(int objectType, void *any, al::Socket *src) {
   if (objectType != ObjectType::GLOBAL) {
-    std::cerr << __FUNCTION__ << " ERROR: PING expects GLOBAL." << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + " ERROR: PING expects GLOBAL."
+              << std::endl;
     return false;
   }
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
@@ -3385,7 +3476,8 @@ bool TincProtocol::readPingMessage(int objectType, void *any, al::Socket *src) {
     sendTincMessage(&msg, src);
     return true;
   } else {
-    std::cerr << __FUNCTION__ << ": Ping message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Ping message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -3407,7 +3499,8 @@ bool TincProtocol::readCommandMessage(int objectType, void *any,
   case ObjectType::PARAMETER_SPACE:
     return processCommandParameterSpace(any, src);
   default:
-    std::cerr << __FUNCTION__ << ": Invalid ObjectType" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Invalid ObjectType"
+              << std::endl;
     break;
   }
   return false;
@@ -3440,7 +3533,8 @@ bool TincProtocol::sendCommandErrorMessage(uint64_t commandNumber,
 bool TincProtocol::processCommandParameter(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<Command>()) {
-    std::cerr << __FUNCTION__ << ": Command message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Command message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -3524,7 +3618,9 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         auto curDir = ps->getCurrentRelativeRunPath();
 
         if (mVerbose) {
-          std::cout << commandNumber << ":****: " << curDir << std::endl;
+          std::cout << mMessagePrefix + std::to_string(commandNumber) +
+                           ":****: " + curDir
+                    << std::endl;
         }
 
         TincMessage msg;
@@ -3560,7 +3656,9 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
         auto rootPath = ps->getRootPath();
 
         if (mVerbose) {
-          std::cout << commandNumber << ":****: " << rootPath << std::endl;
+          std::cout << mMessagePrefix + std::to_string(commandNumber) +
+                           ":****: " + rootPath
+                    << std::endl;
         }
 
         TincMessage msg;
@@ -3600,7 +3698,8 @@ bool TincProtocol::processCommandParameterSpace(void *any, al::Socket *src) {
 bool TincProtocol::processCommandDiskBuffer(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<Command>()) {
-    std::cerr << __FUNCTION__ << ": Command message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Command message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -3617,7 +3716,8 @@ bool TincProtocol::processCommandDiskBuffer(void *any, al::Socket *src) {
 bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
   google::protobuf::Any *details = static_cast<google::protobuf::Any *>(any);
   if (!details->Is<Command>()) {
-    std::cerr << __FUNCTION__ << ": Command message contains invalid payload"
+    std::cerr << mMessagePrefix + __FUNCTION__ +
+                     ": Command message contains invalid payload"
               << std::endl;
     return false;
   }
@@ -3642,8 +3742,9 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         auto sliceName = dp->createDataSlice(field, dims);
 
         if (mVerbose) {
-          std::cout << "DataPool slice command reply: " << commandNumber << "  "
-                    << sliceName << std::endl;
+          std::cout << mMessagePrefix + "DataPool slice command reply: " +
+                           std::to_string(commandNumber) + "  " + sliceName
+                    << std::endl;
         }
 
         TincMessage msg;
@@ -3682,8 +3783,9 @@ bool TincProtocol::processCommandDataPool(void *any, al::Socket *src) {
         auto filenames = dp->getCurrentFiles();
 
         if (mVerbose) {
-          std::cout << "DataPool command scurrent files: " << commandNumber
-                    << " replying" << std::endl;
+          std::cout << mMessagePrefix + " DataPool command current files: " +
+                           std::to_string(commandNumber) + " replying"
+                    << std::endl;
         }
 
         TincMessage msg;
@@ -3730,33 +3832,42 @@ bool TincProtocol::sendProtobufMessage(void *message, al::Socket *dst) {
   memcpy(buffer, &size, sizeof(size_t));
   if (!msg.SerializeToArray(buffer + sizeof(size_t), size)) {
     free(buffer);
-    std::cerr << __FUNCTION__ << ": Error serializing message" << std::endl;
+    std::cerr << mMessagePrefix + __FUNCTION__ + ": Error serializing message"
+              << std::endl;
   }
 
   if (mVerbose) {
     //    std::cout << __FUNCTION__ << ": Sending bytes " << size << std::endl;
-    std::cout << __FUNCTION__ << ": Sending "
-              << MessageType_Name(((TincMessage *)&msg)->messagetype()) << " "
-              << ObjectType_Name(((TincMessage *)&msg)->objecttype())
-              << " bytes " << size << std::endl;
+    std::cout << mMessagePrefix + __FUNCTION__ + ": Sending " +
+                     MessageType_Name(((TincMessage *)&msg)->messagetype()) +
+                     " " +
+                     ObjectType_Name(((TincMessage *)&msg)->objecttype()) +
+                     " bytes " + std::to_string(size)
+              << std::endl;
   }
-  auto bytes = dst->send(buffer, size + sizeof(size_t));
-
-  if (bytes != size + sizeof(size_t)) {
-    if (bytes == SIZE_MAX) {
-      std::cerr << __FUNCTION__ << " Connetion error." << std::endl;
-    } else {
-      std::cerr << __FUNCTION__ << ": Error sending " << bytes << " expected "
-                << size + sizeof(size_t) << " (" << strerror(errno) << ")"
-                << std::endl;
-    }
-    free(buffer);
+  {
+    std::unique_lock<std::mutex> lk(mSendLock);
+    auto bytes = dst->send(buffer, size + sizeof(size_t));
+    if (bytes != size + sizeof(size_t)) {
+      if (bytes == SIZE_MAX) {
+        std::cerr << mMessagePrefix + __FUNCTION__ + " Connection error."
+                  << std::endl;
+      } else {
+        std::cerr << mMessagePrefix + __FUNCTION__ + ": Error sending " +
+                         std::to_string(bytes) + " expected " +
+                         std::to_string(size + sizeof(size_t)) + " (" +
+                         strerror(errno) + ")"
+                  << std::endl;
+      }
+      free(buffer);
 
 #ifdef AL_WINDOWS
-    int error = WSAGetLastError();
-    std::cerr << "Winsock error: " << error << std::endl;
+      int error = WSAGetLastError();
+      std::cerr << mMessagePrefix + "Winsock error: " + std::to_string(error)
+                << std::endl;
 #endif
-    return false;
+      return false;
+    }
   }
 
   free(buffer);

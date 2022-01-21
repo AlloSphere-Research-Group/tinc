@@ -19,12 +19,22 @@ using namespace tinc_protobuf;
 TincClient::TincClient() {
   mVersion = TINC_PROTOCOL_VERSION;
   mRevision = TINC_PROTOCOL_REVISION;
+  mMessagePrefix = "[Client] ";
 }
 
 bool TincClient::start(uint16_t serverPort, const char *serverAddr) {
+  if (TincProtocol::mVerbose) {
+    std::cout << "[Client] starting" << std::endl;
+  }
   bool ret = CommandClient::start();
   if (!ret) {
+    if (TincProtocol::mVerbose) {
+      std::cout << "[Client] failed to start" << std::endl;
+    }
     return false;
+  }
+  if (TincProtocol::mVerbose) {
+    std::cout << "[Client] started" << std::endl;
   }
   synchronize();
   return true;
@@ -75,7 +85,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REMOVE:
         if (verbose()) {
-          std::cout << "Client received Remove message" << std::endl;
+          std::cout << "[Client] received Remove message" << std::endl;
         }
         if (!readRemoveMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Remove "
@@ -86,7 +96,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         if (verbose()) {
-          std::cout << "Client received Register message" << std::endl;
+          std::cout << "[Client] received Register message" << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Register "
@@ -97,7 +107,7 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::CONFIGURE:
         if (verbose()) {
-          std::cout << "Client received Configure message" << std::endl;
+          std::cout << "[Client] received Configure message" << std::endl;
         }
         if (!readConfigureMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Configure "
@@ -124,8 +134,11 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
             std::unique_lock<std::mutex> lk(mPongLock);
             mPongsReceived[src].push_back(pongDetails.valueuint64());
           }
-          //          std::cout << " PONG " << pongDetails.valueuint64() <<
-          //          std::endl;
+          if (verbose()) {
+            std::cout << mMessagePrefix + "PONG " +
+                             std::to_string(pongDetails.valueuint64())
+                      << std::endl;
+          }
         } else {
           std::cerr << __FUNCTION__ << ": Invalid payload for PONG"
                     << std::endl;
@@ -213,7 +226,7 @@ void TincClient::processStatusMessage(void *message) {
         mServerStatus = TincProtocol::Status::STATUS_UNKNOWN;
       }
     } else {
-      std::cerr << "ERROR: non global status messages not supported"
+      std::cerr << "[Client] ERROR: non global status messages not supported"
                 << std::endl;
     }
   }
@@ -228,7 +241,8 @@ void TincClient::processWorkingPathMessage(void *message) {
     details.UnpackTo(&path);
     mWorkingPath = path.path();
   } else {
-    std::cerr << "Unexpected payload in TINC_WORKING_PATH message" << std::endl;
+    std::cerr << "[Client] Unexpected payload in TINC_WORKING_PATH message"
+              << std::endl;
   }
 }
 
@@ -238,8 +252,10 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
     if (!src || mSocket.address() != src->ipAddr ||
         mSocket.port() != src->port) {
       if (verbose()) {
-        std::cout << "Client sending message to " << mSocket.address() << ":"
-                  << mSocket.port() << std::endl;
+        std::cout << "[Client] broadcast: sending message to " +
+                         mSocket.address() + ":" +
+                         std::to_string(mSocket.port())
+                  << std::endl;
       }
       if (mSocket.opened()) {
         return sendProtobufMessage(msg, &mSocket);
@@ -248,10 +264,10 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
   } else {
     if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {
       if (verbose()) {
-        std::cout << "Client sending message to " << dst->address() << ":"
+        std::cout << "[Client] sending message to " << dst->address() << ":"
                   << dst->port() << std::endl;
         if (dst != &mSocket) {
-          std::cout << "Unexpected socket provided to client: "
+          std::cout << "[Client] Unexpected socket provided to client: "
                     << dst->address() << ":" << dst->port() << std::endl;
         }
       }
@@ -309,7 +325,10 @@ void TincClient::sendMetadata() {
 }
 
 bool TincClient::barrier(uint32_t group, float timeoutsec) {
-  std::cerr << __FUNCTION__ << " Enter client barrier " << std::endl;
+  if (verbose()) {
+    std::cout << "[Client] barrier" << std::endl;
+  }
+  //  std::cerr << __FUNCTION__ << " Enter client barrier " << std::endl;
   // First flush all existing barrier requests and unlocks
   {
     std::unique_lock<std::mutex> lk(mBarrierQueuesLock);
@@ -357,7 +376,7 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
         bool ret =
             sendProtobufMessage(&msgAck, mBarrierRequests[currentConsecutive]);
         if (!ret) {
-          std::cerr << "ERROR sending unlock command to "
+          std::cerr << "[Client] ERROR sending unlock command to "
                     << mBarrierRequests[currentConsecutive]->address() << ":"
                     << mBarrierRequests[currentConsecutive]->port()
                     << std::endl;
@@ -366,8 +385,10 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
         mBarrierRequests.erase(mBarrierRequests.begin());
         mBarrierQueuesLock.unlock();
 
-        std::cerr << __FUNCTION__ << " Client sent ACK_LOCK has lock "
-                  << currentConsecutive << std::endl;
+        if (verbose()) {
+          std::cerr << __FUNCTION__ << " Client sent ACK_LOCK has lock "
+                    << currentConsecutive << std::endl;
+        }
         break;
       }
       mBarrierQueuesLock.unlock();
@@ -399,7 +420,9 @@ bool TincClient::barrier(uint32_t group, float timeoutsec) {
     timems += barrierWaitGranularTimeMs;
   }
 
-  std::cerr << __FUNCTION__ << " Exit client barrier --------" << std::endl;
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " Exit client barrier --------" << std::endl;
+  }
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
 }
 
@@ -440,7 +463,7 @@ uint64_t TincClient::pingServer() {
   msg.set_allocated_details(detailsAny);
 
   if (!mRunning) {
-    std::cout << ("Server not connected. Ping not sent") << std::endl;
+    std::cout << "[Client] Server not connected. Ping not sent" << std::endl;
   }
   sendTincMessage(&msg);
   return value;

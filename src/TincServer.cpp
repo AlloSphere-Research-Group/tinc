@@ -19,6 +19,7 @@ using namespace tinc_protobuf;
 TincServer::TincServer() {
   mVersion = TINC_PROTOCOL_VERSION;
   mRevision = TINC_PROTOCOL_REVISION;
+  mMessagePrefix = "[+Server] ";
 }
 
 bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
@@ -56,7 +57,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REMOVE:
         if (verbose()) {
-          std::cout << "Server received Remove message" << std::endl;
+          std::cout << "[+Server] received Remove message" << std::endl;
         }
         if (!readRemoveMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing remove message"
@@ -65,7 +66,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         if (verbose()) {
-          std::cout << "Server received Register message" << std::endl;
+          std::cout << "[+Server] received Register message" << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src, true)) {
           std::cerr << __FUNCTION__ << ": Error processing Register message"
@@ -81,7 +82,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::COMMAND:
         if (verbose()) {
-          std::cout << "Server received Command message" << std::endl;
+          std::cout << "[+Server] received Command message" << std::endl;
         }
         if (!readCommandMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Command message"
@@ -91,7 +92,7 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
       case MessageType::PING:
 
         if (verbose()) {
-          std::cout << "Server received Command message" << std::endl;
+          std::cout << "[+Server] received Command message" << std::endl;
         }
         if (!readPingMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing Command message"
@@ -130,8 +131,8 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::TINC_WORKING_PATH:
         if (verbose()) {
-          std::cout << "Ignored TINC_WORKING_PATH from " << src->address()
-                    << ":" << src->port() << std::endl;
+          std::cout << "[+Server] Ignored TINC_WORKING_PATH from "
+                    << src->address() << ":" << src->port() << std::endl;
         }
         break;
 
@@ -172,7 +173,9 @@ void TincServer::setVerbose(bool verbose) {
 }
 
 bool TincServer::barrier(uint32_t group, float timeoutsec) {
-  std::cerr << __FUNCTION__ << " Enter server barrier " << std::endl;
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " Enter server barrier " << std::endl;
+  }
   std::unique_lock<std::mutex> lk(mBarrierLock);
   TincMessage msg;
   msg.set_messagetype(MessageType::BARRIER_REQUEST);
@@ -195,7 +198,7 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
 
   {
     std::unique_lock<std::mutex> lk(mConnectionsLock);
-    for (auto connection : mServerConnections) {
+    for (const auto &connection : mServerConnections) {
       bool ret = sendProtobufMessage(&msg, connection.get());
       if (ret) {
         barrierSentRequests.push_back(connection.get());
@@ -203,8 +206,10 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
     }
   }
 
-  std::cerr << __FUNCTION__ << " Server sent BARRIER_REQUEST "
-            << currentConsecutive << std::endl;
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " Server sent BARRIER_REQUEST "
+              << currentConsecutive << std::endl;
+  }
   std::vector<al::Socket *> barrierRequestsPending = barrierSentRequests;
   int timems = 0;
 
@@ -217,8 +222,11 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
         if ((posToPop = std::find(barrierRequestsPending.begin(),
                                   barrierRequestsPending.end(), barrierAck)) !=
             barrierRequestsPending.end()) {
-          std::cout << "Barrier ACK lock:" << barrierAck->address() << ":"
-                    << barrierAck->port() << std::endl;
+
+          if (verbose()) {
+            std::cout << "Barrier ACK lock:" << barrierAck->address() << ":"
+                      << barrierAck->port() << std::endl;
+          }
           barrierRequestsPending.erase(posToPop);
           mBarrierAcks[currentConsecutive].erase(
               std::find(mBarrierAcks[currentConsecutive].begin(),
@@ -238,8 +246,10 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
     timems += barrierWaitGranularTimeMs;
   }
 
-  std::cerr << __FUNCTION__ << " Server received all BARRIER_ACK_LOCK "
-            << std::endl;
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " Server received all BARRIER_ACK_LOCK "
+              << std::endl;
+  }
   // All node have acknowledged lock. So now send order to peroceed.
   TincMessage msgUnlock;
   msgUnlock.set_messagetype(MessageType::BARRIER_UNLOCK);
@@ -263,7 +273,10 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
     std::unique_lock<std::mutex> lk(mBarrierAckLock);
     mBarrierAcks.erase(currentConsecutive);
   }
-  std::cerr << __FUNCTION__ << " Exit server barrier --------" << std::endl;
+
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " Exit server barrier --------" << std::endl;
+  }
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
 }
 
@@ -344,8 +357,11 @@ void TincServer::disconnectAllClients() {
 
 void TincServer::processBarrierAckLock(al::Socket *src,
                                        uint64_t barrierConsecutive) {
-  std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
-            << src->port() << std::endl;
+
+  if (verbose()) {
+    std::cerr << __FUNCTION__ << " ACK_LOCK from " << src->address() << ":"
+              << src->port() << std::endl;
+  }
   std::unique_lock<std::mutex> lk(mBarrierAckLock);
   if (mBarrierAcks.find(barrierConsecutive) != mBarrierAcks.end()) {
     mBarrierAcks[barrierConsecutive].push_back(src);
@@ -388,8 +404,10 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
       if (!src || (connection->address() != src->ipAddr ||
                    connection->port() != src->port)) {
         if (verbose()) {
-          std::cout << "Server sending message to " << connection->address()
-                    << ":" << connection->port() << std::endl;
+          std::cout << "[+Server] broadcast: sending message to " +
+                           connection->address() + ":" +
+                           std::to_string(connection->port())
+                    << std::endl;
         }
         if (connection->opened()) {
           ret &= sendProtobufMessage(msg, connection.get());
@@ -400,8 +418,9 @@ bool TincServer::sendTincMessage(void *msg, al::Socket *dst,
     // Send to dst if it is not src
     if (!src || dst->address() != src->ipAddr || dst->port() != src->port) {
       if (verbose()) {
-        std::cout << "Server sending message to " << dst->address() << ":"
-                  << dst->port() << std::endl;
+        std::cout << "[+Server] sending message to " + dst->address() + ":" +
+                         std::to_string(dst->port())
+                  << std::endl;
       }
       if (dst->opened()) {
         ret &= sendProtobufMessage(msg, dst);
