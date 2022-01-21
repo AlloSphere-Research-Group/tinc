@@ -594,13 +594,19 @@ void _setLimits(ParameterSpaceDimension *dim, ParamType *param,
     max = std::numeric_limits<DataType>::max();
     min = std::numeric_limits<DataType>::lowest();
   }
-  param->max(max, src->valueSource());
-  param->min(min, src->valueSource());
+
+  al::ValueSource *valueSource = nullptr;
+
+  if (src) {
+    valueSource = src->valueSource();
+  }
+  param->max(max, valueSource);
+  param->min(min, valueSource);
   if (param->get() < min && min != std::numeric_limits<float>::max()) {
-    param->set(min, src->valueSource());
+    param->set(min, valueSource);
   } else if (param->get() > max &&
              max != std::numeric_limits<float>::lowest()) {
-    param->set(max, src->valueSource());
+    param->set(max, valueSource);
   }
 }
 
