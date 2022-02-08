@@ -64,7 +64,7 @@ void TrajectoryRender::setTrajectory(std::vector<al::Vec3f> positions,
     }
   }
 
-  newData.setType(NetCDFTypes::FLOAT);
+  newData.setType(al::VariantType::VARIANT_FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(positions.size() * 3 + colors.size() * 3);
   auto dataIt = dataVector.begin();
@@ -112,7 +112,7 @@ void TrajectoryRender::setTrajectory(
     }
   }
 
-  newData.setType(NetCDFTypes::FLOAT);
+  newData.setType(al::VariantType::VARIANT_FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(positions.size() * 6 + colors.size() * 3);
   auto dataIt = dataVector.begin();

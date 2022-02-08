@@ -66,7 +66,7 @@ void AtomRenderer::init() {
   instancing_shader.compile(instancing_vert, instancing_frag);
 
   auto buffer = mBuffer.getWritable();
-  buffer->setType(FLOAT);
+  buffer->setType(al::VariantType::VARIANT_FLOAT);
   mBuffer.doneWriting(buffer);
   //  mMarkerScale = 0.01f;
 }
@@ -111,7 +111,7 @@ void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
                                 std::map<std::string, AtomData> &atomData) {
   NetCDFData newData;
 
-  newData.setType(FLOAT);
+  newData.setType(al::VariantType::VARIANT_FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(positions.size() * 4);
   auto dataIt = dataVector.begin();
@@ -154,7 +154,7 @@ void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
 
 void AtomRenderer::setPositions(float *positions, size_t length) {
   NetCDFData newData;
-  newData.setType(FLOAT);
+  newData.setType(al::VariantType::VARIANT_FLOAT);
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(length);
   memcpy(dataVector.data(), positions, length * sizeof(float));

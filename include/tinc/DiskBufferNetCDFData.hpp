@@ -62,6 +62,7 @@ namespace tinc {
 #define NC_STRING       12
 */
 
+// deprecated: use al::VariantType instead
 typedef enum {
   NAT = 0,
   BYTE = 1,
@@ -90,8 +91,8 @@ public:
    * @brief get NC data type for this data
    * @return a value from NetCDFTypes enum, which matches NC types
    */
-  int getType();
-  void setType(int type);
+  al::VariantType getType();
+  void setType(al::VariantType type);
 
   template <class DataType> std::vector<DataType> &getVector() {
     if (!dataVector) {
