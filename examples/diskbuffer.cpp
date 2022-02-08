@@ -78,7 +78,7 @@ public:
 
     NetCDFData data;
     // Type must be set before getting the vector.
-    data.setType(NetCDFTypes::DOUBLE);
+    data.setType(al::VariantType::VARIANT_DOUBLE);
 
     auto &exampleData = data.getVector<double>();
     exampleData.push_back(al::rnd::normal());

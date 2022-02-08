@@ -117,7 +117,7 @@ TEST(DiskBufferProtocol, DiskBufferNetCDFData) {
   DiskBufferNetCDFData db{"db", "test.nc", "db_path", "root_path"};
 
   NetCDFData data;
-  data.setType(NetCDFTypes::FLOAT);
+  data.setType(al::VariantType::VARIANT_FLOAT);
   auto &v = data.getVector<float>();
   size_t size = 256;
   for (size_t i = 0; i < size; i++) {
@@ -144,7 +144,7 @@ TEST(DiskBufferProtocol, DiskBufferNetCDFData) {
   EXPECT_TRUE(al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
   EXPECT_EQ(dbClient->getCurrentFileName(), "test.nc");
   auto ncDbData = static_cast<DiskBufferNetCDFData *>(dbClient)->get();
-  EXPECT_EQ(ncDbData->getType(), NetCDFTypes::FLOAT);
+  EXPECT_EQ(ncDbData->getType(), al::VariantType::VARIANT_FLOAT);
 
   auto &clientVector = ncDbData->getVector<float>();
   EXPECT_EQ(v, clientVector);

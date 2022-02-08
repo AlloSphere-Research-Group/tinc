@@ -89,7 +89,7 @@ public:
 
   /**
    * @brief get NC data type for this data
-   * @return a value from NetCDFTypes enum, which matches NC types
+   * @return a value from al::VariantType enum, which matches NC types
    */
   al::VariantType getType();
   void setType(al::VariantType type);

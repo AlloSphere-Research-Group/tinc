@@ -122,7 +122,7 @@ TEST(PythonClient, DiskbufferNetcdf) {
   tserver << ncBuffer;
 
   NetCDFData data;
-  data.setType(NetCDFTypes::FLOAT);
+  data.setType(al::VariantType::VARIANT_FLOAT);
 
   auto &v = data.getVector<float>();
 
