@@ -64,8 +64,12 @@ public:
    * @param filename
    * @param dimensionInFile
    *
-   * This filename must be relative to mParameterSpace->generateRelativeRunPath.
-   * It should be present in all data paths for the parameter space.
+   * Register with the DataPool the filename and the dimensions from the
+   * parameter space that are contained within the file.
+   *
+   * These files should be located relative to the current directory for the
+   * parameter space (ParameterSpace::generateRelativeRunPath() ). It should be
+   * present in all data paths for the parameter space.
    */
   void registerDataFile(std::string filename, std::string dimensionInFile);
 
