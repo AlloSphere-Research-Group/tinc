@@ -78,13 +78,13 @@ public:
   bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
                        al::ValueSource *src = nullptr) override;
 
-  inline void requestParameters();
-  inline void requestProcessors();
-  inline void requestDiskBuffers();
-  inline void requestDataPools();
-  inline void requestParameterSpaces();
+  void requestParameters();
+  void requestProcessors();
+  void requestDiskBuffers();
+  void requestDataPools();
+  void requestParameterSpaces();
 
-  inline void synchronize();
+  void synchronize();
 
   void sendMetadata();
 
