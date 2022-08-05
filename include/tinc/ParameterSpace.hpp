@@ -308,9 +308,10 @@ public:
    *
    * See resolveFilename() for information on how the template is resolved.
    */
-  // FIXME implement sending path template across network
-  void setCurrentPathTemplate(std::string pathTemplate) {
+  void setCurrentPathTemplate(std::string pathTemplate,
+                              al::Socket *src = nullptr) {
     mCurrentPathTemplate = pathTemplate;
+    modified(src);
   }
 
   /**

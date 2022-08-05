@@ -142,11 +142,18 @@ protected:
   void processStatusMessage(void *message);
   void processWorkingPathMessage(void *message);
 
+  // FIXME more robust locking unlocking when things go wrong. e.g. missed
+  // messages, timeout, etc.
+  bool lockLocalSend();
+  bool unlockLocalSend();
+
 private:
   // Network barriers
   std::map<uint64_t, al::Socket *> mBarrierRequests;
   std::map<uint64_t, al::Socket *> mBarrierUnlocks;
   std::mutex mBarrierQueuesLock;
+
+  std::mutex mLocalSendLock;
 
   bool mWaitForServer{false};
 

@@ -36,7 +36,6 @@ bool TincClient::start(uint16_t serverPort, const char *serverAddr) {
   if (TincProtocol::mVerbose) {
     std::cout << "[Client] started" << std::endl;
   }
-  synchronize();
   return true;
 }
 
@@ -47,6 +46,11 @@ void TincClient::stop() {
   tincMessage.set_objecttype(ObjectType::GLOBAL);
 
   sendTincMessage(&tincMessage);
+
+  if (!mLocalSendLock.try_lock()) {
+    std::cout << mMessagePrefix << "Unlocking Client on stop()" << std::endl;
+  }
+  mLocalSendLock.unlock();
 
   CommandConnection::stop();
 }
@@ -169,6 +173,23 @@ bool TincClient::processIncomingMessage(al::Message &message, al::Socket *src) {
                     << std::endl;
         }
         break;
+      case MessageType::CLIENT_LOCK:
+        lockLocalSend();
+        break;
+      case MessageType::CLIENT_ACK_LOCK:
+        std::cerr << __FUNCTION__
+                  << ": Unexpected CLIENT_ACK_LOCK message in client"
+                  << std::endl;
+        break;
+      case MessageType::CLIENT_UNLOCK:
+        unlockLocalSend();
+        break;
+
+      case MessageType::CLIENT_ACK_UNLOCK:
+        std::cerr << __FUNCTION__
+                  << ": Unexpected BARRIER_ACK_LOCK message in client"
+                  << std::endl;
+        break;
       case MessageType::STATUS:
         processStatusMessage(&tincMessage);
         break;
@@ -246,8 +267,37 @@ void TincClient::processWorkingPathMessage(void *message) {
   }
 }
 
+bool TincClient::lockLocalSend() {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CLIENT_ACK_UNLOCK);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  sendTincMessage(&msg);
+  mLocalSendLock.lock();
+  if (verbose()) {
+    std::cout << mMessagePrefix << "Locked" << std::endl;
+  }
+
+  return true;
+}
+
+bool TincClient::unlockLocalSend() {
+  mLocalSendLock.unlock();
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CLIENT_ACK_UNLOCK);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  sendTincMessage(&msg);
+  if (verbose()) {
+    std::cout << mMessagePrefix << "Unlocked" << std::endl;
+  }
+
+  return true;
+}
+
 bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                                  al::ValueSource *src) {
+  if (!src) {
+    mLocalSendLock.lock();
+  }
   if (!dst) {
     if (!src || mSocket.address() != src->ipAddr ||
         mSocket.port() != src->port) {
@@ -258,6 +308,9 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                   << std::endl;
       }
       if (mSocket.opened()) {
+        if (!src) {
+          mLocalSendLock.unlock();
+        }
         return sendProtobufMessage(msg, &mSocket);
       }
     }
@@ -271,10 +324,15 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                     << dst->address() << ":" << dst->port() << std::endl;
         }
       }
+      if (!src) {
+        mLocalSendLock.unlock();
+      }
       return sendProtobufMessage(msg, dst);
     }
   }
-
+  if (!src) {
+    mLocalSendLock.unlock();
+  }
   return false;
 }
 

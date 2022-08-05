@@ -58,12 +58,10 @@ class TincServer : public al::CommandServer, public TincProtocol {
 public:
   TincServer();
 
-  // See documentation on TincProtocol
-  bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
-                       al::ValueSource *src = nullptr) override;
-
   void setVerbose(bool verbose);
   bool verbose() { return TincProtocol::mVerbose; }
+
+  std::pair<std::string, uint16_t> serverAddress();
 
   /**
    * @brief Initiate a barrier by notifying all connections to lock, and then
@@ -79,12 +77,18 @@ public:
    */
   bool barrier(uint32_t group = 0, float timeoutsec = 0.0) override;
 
-  std::pair<std::string, uint16_t> serverAddress();
+  // Prevent client from sending new messages until it is unlocked
+  bool lockClient(al::Socket *dst);
+  bool unlockClient(al::Socket *dst);
 
   void disconnectAllClients();
 
   void markBusy() override;
   void markAvailable() override;
+
+  // See documentation on TincProtocol
+  bool sendTincMessage(void *msg, al::Socket *dst = nullptr,
+                       al::ValueSource *src = nullptr) override;
 
 protected:
   bool processIncomingMessage(al::Message &message, al::Socket *src) override;

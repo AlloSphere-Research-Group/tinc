@@ -51,13 +51,13 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
           details.UnpackTo(&objectId);
           readRequestMessage(objectType, objectId.id(), src);
         } else {
-          std::cerr << __FUNCTION__ << ": Request message has invalid payload"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Request message has invalid payload" << std::endl;
         }
         break;
       case MessageType::REMOVE:
         if (verbose()) {
-          std::cout << "[+Server] received Remove message" << std::endl;
+          std::cout << mMessagePrefix << "received Remove message" << std::endl;
         }
         if (!readRemoveMessage(objectType, (void *)&details, src)) {
           std::cerr << __FUNCTION__ << ": Error processing remove message"
@@ -66,27 +66,29 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         break;
       case MessageType::REGISTER:
         if (verbose()) {
-          std::cout << "[+Server] received Register message" << std::endl;
+          std::cout << mMessagePrefix << "received Register message"
+                    << std::endl;
         }
         if (!readRegisterMessage(objectType, (void *)&details, src, true)) {
-          std::cerr << __FUNCTION__ << ": Error processing Register message"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Error processing Register message" << std::endl;
         } else {
         }
         break;
       case MessageType::CONFIGURE:
         if (!readConfigureMessage(objectType, (void *)&details, src, true)) {
-          std::cerr << __FUNCTION__ << ": Error processing Configure message"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Error processing Configure message" << std::endl;
         }
         break;
       case MessageType::COMMAND:
         if (verbose()) {
-          std::cout << "[+Server] received Command message" << std::endl;
+          std::cout << mMessagePrefix << "received Command message"
+                    << std::endl;
         }
         if (!readCommandMessage(objectType, (void *)&details, src)) {
-          std::cerr << __FUNCTION__ << ": Error processing Command message"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Error processing Command message" << std::endl;
         }
         break;
       case MessageType::PING:
@@ -95,18 +97,18 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
           std::cout << "[+Server] received Command message" << std::endl;
         }
         if (!readPingMessage(objectType, (void *)&details, src)) {
-          std::cerr << __FUNCTION__ << ": Error processing Command message"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Error processing Command message" << std::endl;
         }
         break;
       case MessageType::PONG:
-        std::cerr << __FUNCTION__
+        std::cerr << mMessagePrefix << __FUNCTION__
                   << ": Pong message received, but not implemented"
                   << std::endl;
         break;
       case MessageType::BARRIER_REQUEST:
-        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_REQUEST in server"
-                  << std::endl;
+        std::cerr << mMessagePrefix << __FUNCTION__
+                  << ": Unsupported BARRIER_REQUEST in server" << std::endl;
         break;
       case MessageType::BARRIER_ACK_LOCK:
         if (details.Is<Command>()) {
@@ -114,24 +116,24 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
           details.UnpackTo(&objectId);
           processBarrierAckLock(src, objectId.message_id());
         } else {
-          std::cerr << __FUNCTION__ << ": Invalid payload for BARRIER_REQUEST"
-                    << std::endl;
+          std::cerr << mMessagePrefix << __FUNCTION__
+                    << ": Invalid payload for BARRIER_REQUEST" << std::endl;
         }
         break;
       case MessageType::BARRIER_UNLOCK:
-        std::cerr << __FUNCTION__ << ": Unsupported BARRIER_UNLOCK in server"
-                  << std::endl;
+        std::cerr << mMessagePrefix << __FUNCTION__
+                  << ": Unsupported BARRIER_UNLOCK in server" << std::endl;
         break;
       case MessageType::GOODBYE:
         if (verbose()) {
-          std::cout << "Goodbye from " << src->address() << ":" << src->port()
-                    << std::endl;
+          std::cout << mMessagePrefix << "Goodbye from " << src->address()
+                    << ":" << src->port() << std::endl;
         }
         disconnectClient(src);
         break;
       case MessageType::TINC_WORKING_PATH:
         if (verbose()) {
-          std::cout << "[+Server] Ignored TINC_WORKING_PATH from "
+          std::cout << mMessagePrefix << "Ignored TINC_WORKING_PATH from "
                     << src->address() << ":" << src->port() << std::endl;
         }
         break;
@@ -148,11 +150,18 @@ bool TincServer::processIncomingMessage(al::Message &message, al::Socket *src) {
         //                    << ":" << src->port() << std::endl;
         //        }
         break;
+      case MessageType::CLIENT_ACK_UNLOCK:
+        std::cout << mMessagePrefix << __FUNCTION__
+                  << ": CLIENT_ACK_UNLOCK processing not implemented"
+                  << std::endl;
+        break;
       default:
-        std::cerr << __FUNCTION__ << ": Invalid message type" << std::endl;
+        std::cerr << mMessagePrefix << __FUNCTION__ << ": Invalid message type"
+                  << std::endl;
       }
     } else {
-      std::cerr << __FUNCTION__ << ": Error parsing message" << std::endl;
+      std::cerr << mMessagePrefix << __FUNCTION__ << ": Error parsing message"
+                << std::endl;
     }
 
     message.pushReadIndex(msgSize);
@@ -280,6 +289,24 @@ bool TincServer::barrier(uint32_t group, float timeoutsec) {
   return (timems >= (timeoutsec * 1000) || timeoutsec == 0.0);
 }
 
+bool TincServer::lockClient(al::Socket *dst) {
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CLIENT_LOCK);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  sendTincMessage(&msg);
+
+  return true;
+}
+
+bool TincServer::unlockClient(al::Socket *dst) {
+
+  TincMessage msg;
+  msg.set_messagetype(MessageType::CLIENT_UNLOCK);
+  msg.set_objecttype(ObjectType::GLOBAL);
+  sendTincMessage(&msg);
+  return true;
+}
+
 void TincServer::markBusy() {
   TincMessage msg;
   msg.set_messagetype(MessageType::STATUS);
@@ -340,6 +367,36 @@ void TincServer::onConnection(al::Socket *newConnection) {
     statusDetails->PackFrom(path);
     msg.set_allocated_details(statusDetails);
     sendTincMessage(&msg, newConnection);
+  }
+  {
+    // Synchronize client
+    lockClient(newConnection);
+    for (auto *dim : mParameterSpaceDimensions) {
+      sendRegisterMessage(dim, newConnection);
+      sendConfigureMessage(dim, newConnection);
+    }
+    for (auto &ps : mParameterSpaces) {
+      sendRegisterMessage(ps, newConnection);
+      sendConfigureMessage(ps, newConnection);
+      for (auto &dim : ps->getDimensions()) {
+        sendRegisterMessage(dim, newConnection);
+        sendConfigureMessage(dim, newConnection);
+        sendConfigureParameterSpaceAddDimension(ps, dim, newConnection);
+      }
+    }
+    for (auto *p : mProcessors) {
+      sendRegisterMessage(p, newConnection);
+      sendConfigureMessage(p, newConnection);
+    }
+    for (auto *db : mDiskBuffers) {
+      sendRegisterMessage(db, newConnection);
+      sendConfigureMessage(db, newConnection);
+    }
+    for (auto *dp : mDataPools) {
+      sendRegisterMessage(dp, newConnection);
+      sendConfigureMessage(dp, newConnection);
+    }
+    unlockClient(newConnection);
   }
 }
 

@@ -74,7 +74,7 @@ DataPool::createDataSlice(std::string field,
   // FIXME implement slicing along more than one dimension.
   std::vector<double> values;
 
-  size_t fieldSize = 1; // FIXME get actual field size
+  size_t fieldSize = 1; // TODO support fields with more than one element
   size_t dimCount = fieldSize;
   for (const auto &sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
@@ -85,12 +85,13 @@ DataPool::createDataSlice(std::string field,
       return std::string();
     }
   }
-  //  values.reserve(dimCount);
+  values.reserve(dimCount);
 
   std::string filename = "slice_" + field + "_";
   // TODO check if file exists and is the correct slice to use cache instead.
   // TODO for this we need to add metadata to the file indicating where the
   // slice came from. This is part of the bigger TINC metadata idea
+  double *dataHead = values.data();
   for (const auto &sliceDimension : sliceDimensions) {
     auto dim = mParameterSpace->getDimension(sliceDimension);
     assert(dim);
@@ -103,8 +104,6 @@ DataPool::createDataSlice(std::string field,
       if (dim->getSpaceStride() > 1) {
         thisDimCount /= dim->getSpaceStride();
       }
-      values.reserve(thisDimCount);
-
       auto dataPaths = getAllPaths(fixedDims);
       for (const auto &directory : dataPaths) {
         for (const auto &file : mDataFilenames) {
@@ -115,9 +114,9 @@ DataPool::createDataSlice(std::string field,
           }
           if (file.second == sliceDimension) {
             // The file contains the slice.
-            values.resize(dim->size());
-            if (getFieldFromFile(field, fullPath, values.data(),
-                                 values.size())) {
+            dataHead += values.size();
+            values.resize(values.size() + thisDimCount);
+            if (getFieldFromFile(field, fullPath, dataHead, thisDimCount)) {
               goto storedata; // We need to exit the two loops
             }
           } else {
@@ -200,43 +199,43 @@ storedata:
   return filename;
 }
 
-size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
+size_t DataPool::readDataSlice(std::string field,
+                               std::vector<std::string> sliceDimensions,
                                void *data, size_t maxLen) {
   // TODO accommodate more types apart from double
-  auto filename = DataPool::createDataSlice(field, sliceDimension);
+  auto filename = DataPool::createDataSlice(field, sliceDimensions);
   if (filename.size() > 0) {
 #ifdef TINC_HAS_NETCDF
-    int retval, ncid, varid, nattsp;
+    int ncid, varid, nattsp;
     size_t lenp;
     nc_type xtypep;
     int ndimsp;
     int dimidsp[32];
-    if ((retval = nc_open((mSliceCacheDirectory + filename).c_str(), NC_NETCDF4,
-                          &ncid))) {
+    if (nc_open((mSliceCacheDirectory + filename).c_str(), NC_NETCDF4, &ncid)) {
       std::cerr << "Error opening file: " << filename << std::endl;
+      return 0;
     }
-    if ((retval = nc_inq_varid(ncid, "data", &varid))) {
+    if (nc_inq_varid(ncid, "data", &varid)) {
       return 0;
     }
 
-    if ((retval = nc_inq_var(ncid, varid, nullptr, &xtypep, &ndimsp, dimidsp,
-                             &nattsp))) {
+    if (nc_inq_var(ncid, varid, nullptr, &xtypep, &ndimsp, dimidsp, &nattsp)) {
       return 0;
     }
-    if ((retval = nc_inq_dimlen(ncid, dimidsp[0], &lenp))) {
+    if (nc_inq_dimlen(ncid, dimidsp[0], &lenp)) {
       return 0;
     }
 
     if (maxLen >= lenp) {
-      if ((retval = nc_get_var(ncid, varid, data))) {
+      if (nc_get_var(ncid, varid, data)) {
         return 0;
       }
-      if ((retval = nc_close(ncid))) {
+      if (nc_close(ncid)) {
         std::cerr << "Error closing file: " << filename << std::endl;
       }
       return lenp;
     }
-    if ((retval = nc_close(ncid))) {
+    if (nc_close(ncid)) {
       std::cerr << "Error closing file: " << filename << std::endl;
     }
 #endif
@@ -244,6 +243,12 @@ size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
   } else {
     return 0;
   }
+}
+
+size_t DataPool::readDataSlice(std::string field, std::string sliceDimension,
+                               void *data, size_t maxLen) {
+  return readDataSlice(field, std::vector<std::string>{sliceDimension}, data,
+                       maxLen);
 }
 
 void DataPool::setCacheDirectory(std::string cacheDirectory, al::Socket *src) {

@@ -59,7 +59,7 @@ public:
    */
   void setId(std::string id);
 
-  std::string getDocumentation() const;
+  virtual std::string getDocumentation() const;
   void setDocumentation(const std::string &documentation,
                         al::Socket *src = nullptr);
 

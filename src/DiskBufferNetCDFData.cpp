@@ -32,7 +32,7 @@ void NetCDFData::setType(al::VariantType type) {
     dataVector = new std::vector<uint16_t>;
     break;
   case al::VariantType::VARIANT_UINT32:
-    dataVector = new std::vector<uint32_t>;
+    dataVector = new std::vector<int32_t>;
     break;
   case al::VariantType::VARIANT_INT64:
     dataVector = new std::vector<int64_t>;
@@ -54,45 +54,45 @@ void NetCDFData::setType(al::VariantType type) {
     return;
   }
 
-  ncDataType = type;
+  ncDataType = (al::VariantType)type;
 }
 
 void NetCDFData::deleteData() {
   if (dataVector) {
-    switch (ncDataType) {
-    case al::VariantType::VARIANT_INT16:
+    switch (static_cast<uint16_t>(ncDataType)) {
+    case SHORT:
       delete static_cast<std::vector<int16_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_INT32:
+    case INT:
       delete static_cast<std::vector<int32_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_FLOAT:
+    case FLOAT:
       delete static_cast<std::vector<float> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_DOUBLE:
+    case DOUBLE:
       delete static_cast<std::vector<double> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_UINT8:
-    case al::VariantType::VARIANT_CHAR:
+    case UBYTE:
+    case CHAR:
       delete static_cast<std::vector<uint8_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_UINT16:
+    case USHORT:
       delete static_cast<std::vector<uint16_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_UINT32:
-      delete static_cast<std::vector<uint32_t> *>(dataVector);
+    case UINT:
+      delete static_cast<std::vector<int32_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_INT64:
+    case INT64:
       delete static_cast<std::vector<int64_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_UINT64:
+    case UINT64:
       delete static_cast<std::vector<uint64_t> *>(dataVector);
       break;
-    case al::VariantType::VARIANT_STRING:
+    case STRING:
       delete static_cast<std::vector<std::string> *>(dataVector);
       std::cerr << "string not yet supported in DisnkBufferNetCDF" << std::endl;
       break;
-    case al::VariantType::VARIANT_INT8:
+    case BYTE:
       delete static_cast<std::vector<int8_t> *>(dataVector);
     }
 
@@ -378,7 +378,7 @@ bool DiskBufferNetCDFData::encodeData(std::string fileName,
 
   size_t len;
   void *data_ptr;
-  nc_type xtype = static_cast<nc_type>(newData.getType());
+  nc_type xtype = static_cast<int>(newData.getType());
 
   if (xtype == NC_SHORT) {
     auto &data = newData.getVector<int16_t>();
@@ -463,7 +463,7 @@ bool DiskBufferNetCDFData::encodeData(std::string fileName,
 
   // attributes
   for (auto &attr : newData.attributes) {
-    atttype = static_cast<nc_type>(attr.second.type());
+    atttype = static_cast<uint8_t>(attr.second.type());
 
     if (atttype == NC_SHORT) {
       int16_t val = attr.second.get<int16_t>();

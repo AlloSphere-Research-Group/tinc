@@ -127,6 +127,18 @@ public:
   /**
    * @brief readDataSlice
    * @param field
+   * @param sliceDimensions dimensions that can vary in the slice
+   * @param data
+   * @param maxLen
+   * @return number of elements written to data pointer
+   */
+  size_t readDataSlice(std::string field,
+                       std::vector<std::string> sliceDimensions, void *data,
+                       size_t maxLen);
+
+  /**
+   * @brief readDataSlice
+   * @param field
    * @param sliceDimension dimension that can vary in the slice
    * @param data
    * @param maxLen
