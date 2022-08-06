@@ -19,4 +19,8 @@ void SceneObject::registerWithTinc(TincProtocol &tinc) {
   }
 }
 
+void SceneObject::registerUpdateCallback(std::function<void (bool)> func) {
+    mBuffer.registerUpdateCallback(func);
+}
+
 std::shared_ptr<NetCDFData> SceneObject::getData() { return mBuffer.get(); }

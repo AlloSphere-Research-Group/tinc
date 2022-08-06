@@ -93,23 +93,11 @@ class AtomRenderer : public SceneObject {
 public:
   AtomRenderer(std::string id, std::string filename = "positions.nc",
                std::string relPath = "", std::string rootPath = "",
-               uint16_t size = 2)
-      : SceneObject(id, filename, relPath, rootPath, size),
-        mDataScale("dataScale", id, {1.0f, 1.0f, 1.0f}),
-        mAtomMarkerSize("atomMarkerSize", id, 0.4f, 0.0, 5.0f),
-        mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0f, 0.0f, 1.0f) {
-    registerParameter(mAtomMarkerSize);
-    registerParameter(mDataScale);
-    registerParameter(mShowAtoms);
-    registerParameter(mAlpha);
-    mBuffer.setDocumentation(R"(Atom Render buffer:
-Expects: x0,y0,z0, x1,y1,z1 ... xn, yn, zn
- )");
-  }
+               uint16_t size = 2);
 
   // PositionedVOice callbacks
   virtual void init() override;
-  void update(double dt) override;
+  //  void update(double dt) override;
   void onProcess(al::Graphics &g) override;
 
   virtual void draw(al::Graphics &g, std::map<std::string, AtomData> &atomData,
@@ -117,6 +105,8 @@ Expects: x0,y0,z0, x1,y1,z1 ... xn, yn, zn
 
   // AtomRenderer specific functions
   virtual void setDataBoundaries(al::BoundingBoxData &b);
+  virtual al::BoundingBoxData getDataBoundaries() { return dataBoundary; };
+
   void setPositions(std::vector<al::Vec3f> &positions,
                     std::map<std::string, AtomData> &atomData);
   /**
@@ -140,6 +130,8 @@ Expects: x0,y0,z0, x1,y1,z1 ... xn, yn, zn
   InstancingMesh instancingMesh;
 
   void renderInstances(al::Graphics &g, float *aligned4fData, size_t count);
+
+  void updateBoundaries();
 
 protected:
   std::string instancing_vert =
@@ -289,7 +281,7 @@ public:
 
   // Positioned voice callbacks
   virtual void init() override;
-  void update(double dt) override;
+  //  void update(double dt) override;
   void onProcess(al::Graphics &g) override;
 
   // Atom render callbacks

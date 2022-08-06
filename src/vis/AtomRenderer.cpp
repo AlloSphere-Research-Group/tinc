@@ -47,6 +47,23 @@ void InstancingMesh::draw() {
   }
 }
 
+AtomRenderer::AtomRenderer(std::string id, std::string filename,
+                           std::string relPath, std::string rootPath,
+                           uint16_t size)
+    : SceneObject(id, filename, relPath, rootPath, size),
+      mDataScale("dataScale", id, {1.0f, 1.0f, 1.0f}),
+      mAtomMarkerSize("atomMarkerSize", id, 0.4f, 0.0, 5.0f),
+      mShowAtoms("showAtoms", id), mAlpha("alpha", id, 1.0f, 0.0f, 1.0f) {
+  registerParameter(mAtomMarkerSize);
+  registerParameter(mDataScale);
+  registerParameter(mShowAtoms);
+  registerParameter(mAlpha);
+  mBuffer.setDocumentation(R"(Atom Render buffer:
+Expects: x0,y0,z0, hue0, x1,y1,z1, hue1, ... xn, yn, zn, hue_n
+ )");
+  mBuffer.registerUpdateCallback([this](bool ok) { updateBoundaries(); });
+}
+
 void AtomRenderer::init() {
   // Define mesh for instance drawing
   addSphere(instancingMesh.mesh, 1, 12, 6);
@@ -122,7 +139,7 @@ void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
   //  color = atomMapIt->second.color;
   ImGui::ColorConvertRGBtoHSV(color.r, color.g, color.b, h, s, v);
   counter = 0;
-  al::BoundingBoxData boundaries;
+  //  al::BoundingBoxData boundaries;
   for (auto &pos : positions) {
     *dataIt = pos.x;
     dataIt++;
@@ -133,7 +150,7 @@ void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
     *dataIt = h;
     dataIt++;
 
-    boundaries.includePoint(pos);
+    //    boundaries.includePoint(pos);
     counter++;
     if (counter == atomMapIt->second.counts) {
       color = atomMapIt->second.color;
@@ -141,14 +158,14 @@ void AtomRenderer::setPositions(std::vector<Vec3f> &positions,
       counter = 0;
     }
   }
-  Vec3f center(0.5 * (boundaries.max.x + boundaries.min.x),
-               0.5 * (boundaries.max.y + boundaries.min.y),
-               0.5 * (boundaries.max.z + boundaries.min.z));
-  Vec3f dim(boundaries.max.x - boundaries.min.x,
-            boundaries.max.y - boundaries.min.y,
-            boundaries.max.z - boundaries.min.z);
-  boundaries.setCenterDim(center, dim);
-  setDataBoundaries(boundaries);
+  //  Vec3f center(0.5 * (boundaries.max.x + boundaries.min.x),
+  //               0.5 * (boundaries.max.y + boundaries.min.y),
+  //               0.5 * (boundaries.max.z + boundaries.min.z));
+  //  Vec3f dim(boundaries.max.x - boundaries.min.x,
+  //            boundaries.max.y - boundaries.min.y,
+  //            boundaries.max.z - boundaries.min.z);
+  //  boundaries.setCenterDim(center, dim);
+  //  setDataBoundaries(boundaries);
   mBuffer.setData(newData);
 }
 
@@ -158,9 +175,62 @@ void AtomRenderer::setPositions(float *positions, size_t length) {
   auto &dataVector = newData.getVector<float>();
   dataVector.resize(length);
   memcpy(dataVector.data(), positions, length * sizeof(float));
-  al::BoundingBox boundaries;
+  //  al::BoundingBox boundaries;
   assert(length % 4 == 0);
   auto valueIt = dataVector.begin();
+  while (valueIt != dataVector.end()) {
+    float x, y, z;
+    x = *valueIt++;
+    y = *valueIt++;
+    z = *valueIt++;
+    valueIt++; // Skip 4th component
+    Vec3f vec(x, y, z);
+    //    boundaries.includePoint(vec);
+  }
+  //  Vec3f center(0.5 * (boundaries.max.x + boundaries.min.x),
+  //               0.5 * (boundaries.max.y + boundaries.min.y),
+  //               0.5 * (boundaries.max.z + boundaries.min.z));
+  //  Vec3f dim(boundaries.max.x - boundaries.min.x,
+  //            boundaries.max.y - boundaries.min.y,
+  //            boundaries.max.z - boundaries.min.z);
+  //  boundaries.setCenterDim(center, dim);
+  //  setDataBoundaries(boundaries);
+  mBuffer.setData(newData);
+}
+
+// void tinc::AtomRenderer::update(double dt) {}
+
+void AtomRenderer::onProcess(Graphics &g) {
+  updateShader(g);
+  auto buffer = mBuffer.get();
+  auto &dataVector = buffer->getVector<float>();
+  {
+    g.pushMatrix();
+    applyTransformations(g);
+    renderInstances(g, dataVector.data(), dataVector.size() / 4);
+    g.popMatrix();
+  }
+}
+
+void AtomRenderer::renderInstances(Graphics &g, float *aligned4fData,
+                                   size_t count) {
+  instancingMesh.attrib_data(count * 4 * sizeof(float), aligned4fData, count);
+
+  g.polygonFill();
+  g.shader().uniform("is_line", 0.0f);
+  instancingMesh.draw();
+
+  g.shader().uniform("is_line", 1.0f);
+  g.polygonLine();
+  instancingMesh.draw();
+  g.polygonFill();
+}
+
+void AtomRenderer::updateBoundaries() {
+  auto buffer = mBuffer.get();
+  auto &dataVector = buffer->getVector<float>();
+  auto valueIt = dataVector.begin();
+  BoundingBoxData boundaries;
   while (valueIt != dataVector.end()) {
     float x, y, z;
     x = *valueIt++;
@@ -178,36 +248,6 @@ void AtomRenderer::setPositions(float *positions, size_t length) {
             boundaries.max.z - boundaries.min.z);
   boundaries.setCenterDim(center, dim);
   setDataBoundaries(boundaries);
-  mBuffer.setData(newData);
-}
-
-void tinc::AtomRenderer::update(double dt) {}
-
-void AtomRenderer::onProcess(Graphics &g) {
-  updateShader(g);
-  auto buffer = mBuffer.get();
-  auto &dataVector = buffer->getVector<float>();
-  {
-    g.pushMatrix();
-    applyTransformations(g);
-    renderInstances(g, dataVector.data(), dataVector.size() / 4);
-    g.popMatrix();
-  }
-}
-
-void AtomRenderer::renderInstances(Graphics &g, float *aligned4fData,
-                                   size_t count) {
-
-  instancingMesh.attrib_data(count * 4 * sizeof(float), aligned4fData, count);
-
-  g.polygonFill();
-  g.shader().uniform("is_line", 0.0f);
-  instancingMesh.draw();
-
-  g.shader().uniform("is_line", 1.0f);
-  g.polygonLine();
-  instancingMesh.draw();
-  g.polygonFill();
 }
 
 void AtomRenderer::updateShader(Graphics &g) {
@@ -235,7 +275,6 @@ SlicingAtomRenderer::SlicingAtomRenderer(std::string id, std::string filename,
       mSliceRotationYaw("SliceRotationYaw", id, 0.0, -M_PI, M_PI),
       mSliceRotationRoll("SliceRotationRoll", id, 0.0, -M_PI, M_PI),
       mClippedMultiplier("clippedMultiplier", id, 0.3f, 0.0, 2.0f) {
-
   registerParameters(mSlicingPlaneCorner, mSlicingPlaneSize,
                      mSlicingPlaneNormal, mSlicingPlaneThickness,
                      mSliceRotationPitch, mSliceRotationYaw, mSliceRotationRoll,
@@ -297,7 +336,6 @@ void SlicingAtomRenderer::setDataBoundaries(BoundingBoxData &b) {
 void SlicingAtomRenderer::draw(Graphics &g,
                                std::map<std::string, AtomData> &atomData,
                                std::vector<float> &aligned4fData) {
-
   //  int cumulativeCount = 0;
   // now draw data with custom shaderg.shader(instancing_mesh0.shader);
   updateShader(g);
@@ -314,7 +352,7 @@ void SlicingAtomRenderer::draw(Graphics &g,
   }
 }
 
-void SlicingAtomRenderer::update(double dt) {}
+// void SlicingAtomRenderer::update(double dt) {}
 
 void SlicingAtomRenderer::onProcess(Graphics &g) {
   updateShader(g);

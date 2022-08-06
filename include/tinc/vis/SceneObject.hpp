@@ -33,6 +33,8 @@ public:
 
   std::shared_ptr<NetCDFData> getData();
 
+  void registerUpdateCallback(std::function<void(bool)> func);
+
 protected:
   DiskBufferNetCDFData mBuffer;
 };
