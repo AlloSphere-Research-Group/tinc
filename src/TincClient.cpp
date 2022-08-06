@@ -295,9 +295,9 @@ bool TincClient::unlockLocalSend() {
 
 bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                                  al::ValueSource *src) {
-  if (!src) {
-    mLocalSendLock.lock();
-  }
+  //  if (!src) {
+  //    mLocalSendLock.lock();
+  //  }
   if (!dst) {
     if (!src || mSocket.address() != src->ipAddr ||
         mSocket.port() != src->port) {
@@ -308,9 +308,9 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                   << std::endl;
       }
       if (mSocket.opened()) {
-        if (!src) {
-          mLocalSendLock.unlock();
-        }
+        //        if (!src) {
+        //          mLocalSendLock.unlock();
+        //        }
         return sendProtobufMessage(msg, &mSocket);
       }
     }
@@ -324,15 +324,15 @@ bool TincClient::sendTincMessage(void *msg, al::Socket *dst,
                     << dst->address() << ":" << dst->port() << std::endl;
         }
       }
-      if (!src) {
-        mLocalSendLock.unlock();
-      }
+      //      if (!src) {
+      //        mLocalSendLock.unlock();
+      //      }
       return sendProtobufMessage(msg, dst);
     }
   }
-  if (!src) {
-    mLocalSendLock.unlock();
-  }
+  //  if (!src) {
+  //    mLocalSendLock.unlock();
+  //  }
   return false;
 }
 
