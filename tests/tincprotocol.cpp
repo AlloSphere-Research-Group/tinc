@@ -81,6 +81,7 @@ TEST(TincProtocol, Synchronization) {
     TincClient tclient;
     tclient.setVerbose(true);
     EXPECT_TRUE(tclient.start());
+    tclient.synchronize();
     tserver.waitForConnections(1);
     ParameterSpace ps{"ps"};
     tserver << ps;
