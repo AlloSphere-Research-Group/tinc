@@ -18,6 +18,7 @@ TEST(ProtocolParameter, Float) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -46,6 +47,7 @@ TEST(ProtocolParameter, RemoteFloat) {
 
   TincClient tclient;
   tclient.start();
+  tclient.synchronize();
 
   al::Parameter p{"param", "group", 0.2, -10, 9.9};
 
@@ -85,6 +87,7 @@ TEST(ProtocolParameter, Bool) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -116,6 +119,7 @@ TEST(ProtocolParameter, RemoteBool) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterBool p{"param", "group", false};
 
@@ -157,6 +161,7 @@ TEST(ProtocolParameter, String) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -187,6 +192,7 @@ TEST(ProtocolParameter, RemoteString) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterString p{"param", "group", "default"};
 
@@ -227,6 +233,7 @@ TEST(ProtocolParameter, Int) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
@@ -259,6 +266,7 @@ TEST(ProtocolParameter, RemoteInt) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterInt p{"param", "group", 3, -10, 11};
 
@@ -300,6 +308,7 @@ TEST(ProtocolParameter, Vec3) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -331,6 +340,7 @@ TEST(ProtocolParameter, RemoteVec3) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterVec3 p{"param", "group", al::Vec3f(1, 2, 3)};
 
@@ -370,6 +380,7 @@ TEST(ProtocolParameter, Vec4) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
@@ -400,6 +411,7 @@ TEST(ProtocolParameter, RemoteVec4) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterVec4 p{"param", "group", al::Vec4f(1, 2, 3, 4)};
 
@@ -439,6 +451,7 @@ TEST(ProtocolParameter, Color) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -470,6 +483,7 @@ TEST(ProtocolParameter, RemoteColor) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterColor p{"param", "group", al::Color(0.1f, 0.2f, 0.3f, 0.4f)};
 
@@ -513,6 +527,7 @@ TEST(ProtocolParameter, Pose) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -545,6 +560,7 @@ TEST(ProtocolParameter, RemotePose) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   // in actual use quat values should be normalized
   al::ParameterPose p{"param", "group",
@@ -590,6 +606,7 @@ TEST(ProtocolParameter, Menu) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
   EXPECT_NE(param, nullptr);
@@ -620,6 +637,7 @@ TEST(ProtocolParameter, RemoteMenu) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMenu p{"param", "group", 1};
 
@@ -663,6 +681,7 @@ TEST(ProtocolParameter, Choice) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -697,6 +716,7 @@ TEST(ProtocolParameter, RemoteChoice) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   auto *param = tclient.getParameter("param", "group");
   EXPECT_NE(param, nullptr);
@@ -731,6 +751,7 @@ TEST(ProtocolParameter, Trigger) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::ParameterMeta *param = tclient.getParameter("param", "group");
 
@@ -762,6 +783,7 @@ TEST(ProtocolParameter, RemoteTrigger) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   al::Trigger p{"param", "group"};
 

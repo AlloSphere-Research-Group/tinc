@@ -22,6 +22,7 @@ TEST(ProtocolParameterSpace, Connection) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   auto client_ps = tclient.getParameterSpace("paramspace");
 
@@ -69,6 +70,7 @@ TEST(ProtocolParameterSpace, Configure) {
   ps.setDocumentation("param space before");
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   //  tclient.setVerbose(true);
   auto client_ps = tclient.getParameterSpace("paramspace");
 
@@ -96,6 +98,7 @@ TEST(ProtocolParameterSpace, RootPath) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   auto client_ps = tclient.getParameterSpace("paramspace");
 
@@ -125,6 +128,7 @@ TEST(ProtocolParameterSpace, PathTemplate) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   auto client_ps = tclient.getParameterSpace("paramspace");
 

@@ -18,6 +18,7 @@ TEST(DataPoolProtocol, Connection) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   // TODO ML check that the parameter space details in the data pool are correct
 
@@ -57,6 +58,7 @@ TEST(DataPoolProtocol, Metadata) {
   TincClient tclient;
   //  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   auto externalDataPool =
       static_cast<DataPoolJson *>(tclient.getDataPool("dp"));
@@ -108,6 +110,7 @@ TEST(DataPoolProtocol, Slice) {
   TincClient tclient;
   //  tclient.setVerbose(true);
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   // Now set values from client and slice data pool
   auto internalDimClient = tclient.getDimension("internal");

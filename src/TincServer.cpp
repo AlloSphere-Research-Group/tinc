@@ -308,6 +308,7 @@ bool TincServer::unlockClient(al::Socket *dst) {
 }
 
 void TincServer::markBusy() {
+  TincProtocol::markBusy();
   TincMessage msg;
   msg.set_messagetype(MessageType::STATUS);
   msg.set_objecttype(ObjectType::GLOBAL);
@@ -318,10 +319,10 @@ void TincServer::markBusy() {
   statusDetails->PackFrom(statusMsg);
   msg.set_allocated_details(statusDetails);
   sendTincMessage(&msg);
-  TincProtocol::markBusy();
 }
 
 void TincServer::markAvailable() {
+  TincProtocol::markAvailable();
   TincMessage msg;
   msg.set_messagetype(MessageType::STATUS);
   msg.set_objecttype(ObjectType::GLOBAL);
@@ -332,8 +333,6 @@ void TincServer::markAvailable() {
   statusDetails->PackFrom(statusMsg);
   msg.set_allocated_details(statusDetails);
   sendTincMessage(&msg);
-
-  TincProtocol::markAvailable();
 }
 
 void TincServer::onConnection(al::Socket *newConnection) {

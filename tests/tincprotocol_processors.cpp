@@ -28,6 +28,8 @@ TEST(Processor, Connection) {
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
 
+  al::al_sleep(1.0); // FIXME there should be no need for this wait
+
   auto *proc1Client = tclient.getProcessor("proc1");
   auto *proc2Client = tclient.getProcessor("proc2");
 

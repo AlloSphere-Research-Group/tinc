@@ -40,6 +40,7 @@ TEST(DiskBufferProtocol, DiskBufferImage) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   // tclient.setVerbose(true);
 
   EXPECT_TRUE(tclient.isConnected());
@@ -84,6 +85,7 @@ TEST(DiskBufferProtocol, DiskBufferJson) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   // tclient.setVerbose(true);
 
   EXPECT_TRUE(tclient.isConnected());
@@ -131,6 +133,7 @@ TEST(DiskBufferProtocol, DiskBufferNetCDFData) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
   // tclient.setVerbose(true);
 
   EXPECT_TRUE(tclient.isConnected());
@@ -165,6 +168,7 @@ TEST(DiskBufferProtocol, DiskBufferRootPathMap) {
 
   TincClient tclient;
   EXPECT_TRUE(tclient.start());
+  tclient.synchronize();
 
   EXPECT_TRUE(tclient.isConnected());
   //  tclient.requestDiskBuffers();
