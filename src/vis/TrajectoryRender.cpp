@@ -222,7 +222,8 @@ void TrajectoryRender::update(double dt) {
         //          return;
         //        }
         size_t counter = pointCount - 1;
-        // TODO validate dataVector size
+        // TODO validate dataVector size. Currently checking for end of vector.
+        // TODO should an error be reported if data is inconsistent?
         while (dataIt != dataVector.end()) {
 
           if (counter == pointCount - 1) {
@@ -275,22 +276,41 @@ void TrajectoryRender::update(double dt) {
         }
         size_t counter = pointCount - 1;
         // TODO validate dataVector size
-        while (dataIt != dataVector.end()) {
+        auto end = dataVector.end();
+        while (dataIt != end) {
           al::Vec3f startPoint;
           startPoint.x = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
           startPoint.y = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
           startPoint.z = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
 
           al::Vec3f endPoint;
           endPoint.x = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
           endPoint.y = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
           endPoint.z = *dataIt;
           dataIt++;
+          if (dataIt == end) {
+            break;
+          }
 
           if (arrangement == DATA_POS_ABS) {
             al::HSV hsvColor(0.5f * float(counter) / pointCount, 1.0, 1.0);
@@ -299,10 +319,19 @@ void TrajectoryRender::update(double dt) {
           } else if (arrangement == DATA_POS_ABS_RGB) {
             c.r = *dataIt;
             dataIt++;
+            if (dataIt == end) {
+              break;
+            }
             c.g = *dataIt;
             dataIt++;
+            if (dataIt == end) {
+              break;
+            }
             c.b = *dataIt;
             dataIt++;
+            if (dataIt == end) {
+              break;
+            }
           }
           c.a = alpha;
           addMarkerToMesh(startPoint, endPoint, c);

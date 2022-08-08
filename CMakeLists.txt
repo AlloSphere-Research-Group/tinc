@@ -75,7 +75,6 @@ set(TINC_HEADERS
 
 add_library(tinc ${TINC_SRC} ${TINC_HEADERS})
 
-# binaries are put into the ./bin directory by default
 if(TINC_CPP_17)
     set(C_STANDARD 17)
     set_target_properties(tinc PROPERTIES
@@ -94,6 +93,7 @@ else()
     endif()
 endif(TINC_CPP_17)
 
+# binaries are put into the ./bin directory by default
 set_target_properties(tinc PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin
   RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/bin

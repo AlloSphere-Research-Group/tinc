@@ -75,6 +75,12 @@ You can use the *./build_deps.sh script on *nix platforms. These scripts downloa
 build NetCDF4 and HDF5. You will need ninja and curl installed for these scripts
 to work.
 
+On Linux, to use build_deps.sh you will need:
+
+```
+sudo apt install libcurl4-openssl-dev m4
+```
+
 ## Acknowledgements
 
 TINC is funded by NSF grant # OAC 2004693: "Elements: Cyber-infrastructure for
