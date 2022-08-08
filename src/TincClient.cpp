@@ -26,7 +26,7 @@ bool TincClient::start(uint16_t serverPort, const char *serverAddr) {
   if (TincProtocol::mVerbose) {
     std::cout << "[Client] starting" << std::endl;
   }
-  bool ret = CommandClient::start();
+  bool ret = CommandClient::start(serverPort, serverAddr);
   if (!ret) {
     if (TincProtocol::mVerbose) {
       std::cout << "[Client] failed to start" << std::endl;
