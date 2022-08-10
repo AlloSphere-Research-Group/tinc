@@ -1,4 +1,5 @@
 #include "tinc/vis/TrajectoryRender.hpp"
+#include "tinc/vis/TriangleRender.hpp"
 
 #include "al/app/al_App.hpp"
 
@@ -15,6 +16,7 @@ using namespace tinc;
 class MyApp : public al::App {
 
   TrajectoryRender trajectory{"trajectory", "buffer_file.json"};
+  TriangleRender triangles{"triangles", "buffer_file.json"};
   TincServer tserver;
 
   void onCreate() override {
@@ -23,9 +25,13 @@ class MyApp : public al::App {
 
     tserver.start();
     trajectory.registerWithTinc(tserver);
+    triangles.registerWithTinc(tserver);
   }
 
-  void onAnimate(double dt) override { trajectory.update(dt); }
+  void onAnimate(double dt) override {
+    trajectory.update(dt);
+    triangles.update(dt);
+  }
 
   void onDraw(al::Graphics &g) override {
     g.clear();
@@ -36,6 +42,7 @@ class MyApp : public al::App {
     g.depthTesting(true);
     // Draw the trajectory mesh
     trajectory.onProcess(g);
+    triangles.onProcess(g);
   }
 
   void onExit() override { tserver.stop(); }

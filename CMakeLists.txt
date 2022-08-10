@@ -29,11 +29,11 @@ set(TINC_SRC
     ${CMAKE_CURRENT_LIST_DIR}/src/VASPReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/tinc_protocol.pb.cc
 
-
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/AtomRenderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/GUI.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/SceneObject.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/vis/TrajectoryRender.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/vis/TriangleRender.cpp
   )
 
 set(TINC_INCLUDE_PATH ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -70,6 +70,7 @@ set(TINC_HEADERS
     ${TINC_INCLUDE_PATH}/tinc/vis/GUI.hpp
     ${TINC_INCLUDE_PATH}/tinc/vis/SceneObject.hpp
     ${TINC_INCLUDE_PATH}/tinc/vis/TrajectoryRender.hpp
+    ${TINC_INCLUDE_PATH}/tinc/vis/TriangleRender.hpp
 )
 
 
