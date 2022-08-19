@@ -129,8 +129,6 @@ public:
   bool waitForPong(uint64_t pingCode, float timeoutsec = 30,
                    al::Socket *src = nullptr);
 
-  std::string getWorkingPath();
-
   void setVerbose(bool verbose = true);
   bool verbose() { return TincProtocol::mVerbose; }
 

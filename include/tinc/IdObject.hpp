@@ -65,9 +65,12 @@ public:
 
   std::function<void(al::Socket *src)> modified = [](al::Socket * /*src*/) {};
 
+  void setVerbose(bool set);
+
 protected:
   std::string mId;
   std::string mDocumentation;
+  bool mVerbose;
 };
 } // namespace tinc
 

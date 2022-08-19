@@ -180,8 +180,6 @@ public:
    */
   void registerDoneCallback(std::function<void(bool)> func);
 
-  void setVerbose(bool verbose = true) { mVerbose = verbose; }
-
   /**
    * If set to true, ProcessorChains will continue even if this processor
    * fails. Has no effect if running chain asychronously
@@ -285,7 +283,6 @@ protected:
   std::string mRunningDirectory;
   std::vector<std::string> mOutputFileNames;
   std::vector<std::string> mInputFileNames;
-  bool mVerbose;
 
   bool mUseCache{false};
 
