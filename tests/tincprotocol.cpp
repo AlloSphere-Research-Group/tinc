@@ -34,7 +34,8 @@ TEST(TincProtocol, MultiConnectionDiskBuffer) {
     EXPECT_TRUE(clients[i]->getDiskBuffer("name"));
   }
 
-  buf.setData(nlohmann::basic_json<>{{"hello", 42}});
+  auto data = nlohmann::basic_json<>{{"hello", 42}};
+  buf.setData(data);
 
   al::al_sleep(0.5);
   for (int i = 0; i < numConnections; i++) {
