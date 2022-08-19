@@ -36,7 +36,7 @@ set(TEST_SOURCES main.cpp
   tincprotocol_diskbuffers.cpp
   tincprotocol_datapools.cpp
   tincprotocol_barrier.cpp
-#  tincprotocol_status.cpp
+  tincprotocol_status.cpp
 )
 
 if(BUILD_PYTHON_TESTS)

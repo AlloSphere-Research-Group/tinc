@@ -30,11 +30,11 @@ TEST(ProtocolParameterSpace, Connection) {
 
   EXPECT_EQ(client_ps->getDocumentation(), "param space");
 
-  // auto client_ps_dim = client_ps->getDimension("psdim");
-  // auto client_dim = tclient.getParameter("psdim");
+  auto client_ps_dim = client_ps->getDimension("psdim");
+  auto client_dim = tclient.getParameter("psdim");
 
-  // EXPECT_NE(client_ps_dim, nullptr);
-  // EXPECT_NE(client_dim, nullptr);
+  EXPECT_NE(client_ps_dim, nullptr);
+  EXPECT_NE(client_dim, nullptr);
 
   // al::al_sleep(0.2);
   // ps.removeDimension("psdim");

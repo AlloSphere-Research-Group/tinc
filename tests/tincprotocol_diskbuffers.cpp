@@ -171,13 +171,13 @@ TEST(DiskBufferProtocol, DiskBufferRootPathMap) {
   tclient.synchronize();
 
   EXPECT_TRUE(tclient.isConnected());
-  //  tclient.requestDiskBuffers();
+  // tclient.requestDiskBuffers();
 
   auto *dbClient = tclient.getDiskBuffer("db");
   EXPECT_NE(dbClient, nullptr);
   if (dbClient) {
     EXPECT_EQ(dbClient->getBaseFileName(), "test.png");
-    //    The client is on the same host, so no path mapping
+    // The client is on the same host, so no path mapping
     // should occur.
     EXPECT_TRUE(
         al::File::isSamePath(dbClient->getFullPath(), db.getFullPath()));
