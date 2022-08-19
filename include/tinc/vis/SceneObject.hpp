@@ -23,6 +23,7 @@ public:
               uint16_t size = 2);
 
   void registerWithTinc(TincProtocol &server);
+  void setRootPath(std::string rootPath);
 
   void applyTransformations(al::Graphics &g) override {
     al::PositionedVoice::applyTransformations(g);

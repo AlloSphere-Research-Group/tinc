@@ -2382,6 +2382,9 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
 
   if (src) {
     rootPath = mapFromRemotePath(rootPath, src);
+    if (mVerbose) {
+      std::cout << "Mapping path for buffer: " << rootPath << std::endl;
+    }
   }
 
   if (command.type() == DiskBufferType::JSON) {
@@ -2944,7 +2947,6 @@ bool TincProtocol::processConfigureDiskBuffer(void *any, al::Socket *src,
           return true;
         }
       }
-
       std::cerr << mMessagePrefix + __FUNCTION__ +
                        ": Error configuring DiskBuffer " + id
                 << std::endl;
