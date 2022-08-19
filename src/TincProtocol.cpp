@@ -1785,6 +1785,14 @@ TincProtocol::Status TincProtocol::getStatus() {
 }
 
 void TincProtocol::print(std::ostream &stream) {
+  stream << "Mapped paths: " << std::endl;
+  for (const auto &p : mRootPathMap) {
+    stream << p.first << " -> ";
+    for (const auto &m : p.second) {
+      stream << m.first << " ::: " << m.second << std::endl << "          ";
+    }
+  }
+  stream << std::endl;
   stream << " --- *** ParameterSpaceDimensions *** ---" << std::endl;
   for (auto dim : mParameterSpaceDimensions) {
     dim->print(stream);
@@ -2256,7 +2264,7 @@ bool TincProtocol::processRegisterParameterSpace(void *any, al::Socket *src,
 
   mLocalPSs.emplace_back(std::make_shared<ParameterSpace>(id));
   mLocalPSs.back()->setDocumentation(command.documentation());
-
+  mLocalPSs.back()->setVerbose(mVerbose); // Inherit verbosity
   if (registerParameterSpace(*mLocalPSs.back(), src)) {
     if (forward) {
       sendRegisterMessage(mLocalPSs.back().get(), nullptr, src);
@@ -2326,6 +2334,7 @@ bool TincProtocol::processRegisterProcessor(void *any, al::Socket *src,
   newProc->setOutputFileNames(outputFiles);
   newProc->setRunningDirectory(runDir);
   newProc->setDocumentation(doc);
+  newProc->setVerbose(mVerbose); // Inherit verbosity
 
   if (registerProcessor(*newProc, src)) {
     if (forward) {
@@ -2401,6 +2410,8 @@ bool TincProtocol::processRegisterDiskBuffer(void *any, al::Socket *src,
   }
 
   mLocalDBs.back()->setDocumentation(command.documentation());
+  mLocalDBs.back()->setVerbose(mVerbose); // Inherit verbosity
+
   if (registerDiskBuffer(*mLocalDBs.back(), src)) {
     if (forward) {
       sendRegisterMessage(mLocalDBs.back().get(), nullptr, src);
@@ -2465,6 +2476,8 @@ bool TincProtocol::processRegisterDataPool(void *any, al::Socket *src,
       return false;
     }
     mLocalDPs.back()->setDocumentation(command.documentation());
+    mLocalDPs.back()->setVerbose(mVerbose); // Inherit verbosity
+
     if (registerDataPool(*mLocalDPs.back(), src)) {
       if (forward) {
         sendRegisterMessage(mLocalDPs.back().get(), nullptr, src);

@@ -30,3 +30,5 @@ void IdObject::setDocumentation(const std::string &documentation,
   mDocumentation = documentation;
   modified(src);
 }
+
+void IdObject::setVerbose(bool set) { mVerbose = set; }

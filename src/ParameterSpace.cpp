@@ -1083,6 +1083,9 @@ void ParameterSpace::setRootPath(std::string rootPath, al::Socket *src) {
     al::Dir::make(rootPath);
   }
   mRootPath = al::File::conformDirectory(rootPath);
+  if (mVerbose) {
+    std::cout << "Set root path to: " << mRootPath << std::endl;
+  }
   modified(src);
 }
 
